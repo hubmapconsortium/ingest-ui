@@ -65,13 +65,13 @@ export const SampleForm = (props) => {
     status: "info"
   });
   let organ_types = JSON.parse(localStorage.getItem("organs"));
-  let[permissions,setPermissions] = useState( { 
+  let[permissions,setPermissions] = useState({ 
     has_admin_priv: false,
     has_publish_priv: false,
     has_submit_priv: false,
     has_write_priv: false
-  } );
-  let[entityData, setEntityData] = useState( {
+  });
+  let[entityData, setEntityData] = useState({
     direct_ancestor_uuid: "",
     sample_category: "",
     organ_type_donor_source_organ: "",
@@ -82,8 +82,8 @@ export const SampleForm = (props) => {
     lab_sample_id_not_on_multiple: "",
     description: "",
     register_location_rui: "",
-  } );  
-  let[formValues, setFormValues] = useState( {
+  });  
+  let[formValues, setFormValues] = useState({
     direct_ancestor_uuid: "",
     sample_category: "",
     organ_type_donor_source_organ: "",
@@ -93,9 +93,9 @@ export const SampleForm = (props) => {
     number_to_generate: "",
     lab_tissue_sample_id: "",
     description: "",
-  } );
-  let[formErrors, setFormErrors] = useState( {
-  } );
+  });
+  let[formErrors, setFormErrors] = useState({
+  });
   const organMenu = useMemo(() => {
     return Object.keys(organ_types)
       .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
@@ -136,9 +136,8 @@ export const SampleForm = (props) => {
             setSourceEntity(response.results.direct_ancestor);
             // We already have RUI JSON
             if(entityInfo.rui_location){
-              setRUIManagerObject((prevValues) => ( {...prevValues,
-                details: {...prevValues.details, json: entityInfo.rui_location}
-              }))
+              setRUIManagerObject((prevValues) => ({...prevValues,
+                details: {...prevValues.details, json: entityInfo.rui_location}}))
             }
             setSourceRUIDetails(response.results.direct_ancestor.uuid,response.results.direct_ancestor);
             // Permissions
@@ -147,7 +146,7 @@ export const SampleForm = (props) => {
                 console.debug('%c◉ ingest_api_allowable_edit_states RESPONSE ', 'color:#00ff7b', response);
                 const updatedPermissions = {
                   ...response.results,
-                  ...(entityInfo.data_access_level === "public" && {has_write_priv: false} )
+                  ...(entityInfo.data_access_level === "public" && {has_write_priv: false})
                 };
                 setPermissions(updatedPermissions);
                 ingest_api_get_associated_ids(uuid)
@@ -158,32 +157,32 @@ export const SampleForm = (props) => {
                       console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', related, related.length);
                     // Is there a RUI enabled organ up the chain?
 
-                    } )
+                    })
                     .catch((error) => {
                       console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
-                    } );
-              } )
+                    });
+              })
               .catch((error) => {
                 console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
-              } );            
+              });            
           }else{
             console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
-        } )
+        })
         .catch((error) => {
           console.debug("entity_api_get_entity ERROR", error);
           // setPageErrors(error); its counting no ancestors of ancestors as an error, shush
-        } );
+        });
     }else{
-      setPermissions( {
+      setPermissions({
         has_write_priv: true,
       });
       // We should check if we're being passed a sourceEntity through the URL
       let url = new URL(window.location.href);
       let params = Object.fromEntries(url.searchParams.entries());
-      if (Object.keys(params).length > 0) {
+      if(Object.keys(params).length > 0){
         console.debug('%c◉ URL params ', 'color:#00ff7b', params);
         setFormValues((prevValues) => ({
           ...prevValues,
@@ -196,12 +195,12 @@ export const SampleForm = (props) => {
         });
       }
       // Set the Source if Passed from URL
-      if (params.direct_ancestor_uuid) {
+      if(params.direct_ancestor_uuid){
         // Let's just pass it as if it were a row in the search table
         entity_api_get_entity(params.direct_ancestor_uuid)
           .then((response) => {
             let error = response?.data?.error ?? false;
-            if (!error && (response?.results?.entity_type === "Donor" || response.results.entity_type === "Sample")){
+            if(!error && (response?.results?.entity_type === "Donor" || response.results.entity_type === "Sample")){
               console.debug('%c◉ error ', 'color:#00ff7b', error);
               let passSource = {row: response?.results ? response.results : null};
               console.log("passSource",passSource)
@@ -226,7 +225,7 @@ export const SampleForm = (props) => {
           .catch((error) => {
             console.debug("entity_api_get_entity ERROR", error);
             setPageErrors(error);
-          } );
+          });
       }
     }
     setLoading(false);
@@ -235,10 +234,10 @@ export const SampleForm = (props) => {
   function handleInputChange(e){
     const{id, value, checked} = e.target;
     console.debug('%c◉ handleInputChange ', 'color:#00ff7b', id, value, checked);
-    setFormValues((prevValues) => ( {
+    setFormValues((prevValues) => ({
       ...prevValues,
       [id]: (id ==="generate_ids_for_multiple_samples") ? checked : value
-    } ));
+    }));
     
     if(id ==="generate_ids_for_multiple_samples"){
       setChecked(checked)
@@ -246,9 +245,8 @@ export const SampleForm = (props) => {
 
     if(id === "sample_category" && value === "block"){
       console.debug('%c◉ Block! ', 'color:#005EFF');
-      setRUIManagerObject((prevValues) => ( {...prevValues,
-        interface: {...prevValues.interface, loading: false}
-      }))
+      setRUIManagerObject((prevValues) => ({...prevValues,
+        interface: {...prevValues.interface, loading: false}}))
       // setSourceRUIDetails(formValues.direct_ancestor_uuid);
     }else if(id === "sample_category" && value !== "block"){
       // Other Sample Cats Dont Count
@@ -263,23 +261,23 @@ export const SampleForm = (props) => {
     let errors = 0;
     // If Sample Category for non donor or  Organ for a Donor  Are missing
     if((formValues.sample_category === "" && sourceEntity.entity_type !== "Donor") || (formValues.organ === "" && sourceEntity.entity_type === "Donor")){
-      setFormErrors(prevErrors => ( {
+      setFormErrors(prevErrors => ({
         ...prevErrors,
         sample_category: "Please select a Sample Category",
         organ: "Please select an Organ"
-      } ));
+      }));
       errors++;
     }
 
     //  Validate The Multiples Generation 
     console.debug('%c◉ checked check ', 'color:#00ff7b', checked, formValues.generate_number);
-    if (checked){
+    if(checked){
       // Validate generate_number
-      if (!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))){
-        setFormErrors(prevErrors => ( {
+      if(!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))){
+        setFormErrors(prevErrors => ({
           ...prevErrors,
           generate_number: "Please enter a valid number of samples to generate"
-        } ));
+        }));
         errors++;
       }
     }
@@ -307,9 +305,9 @@ export const SampleForm = (props) => {
       protocol_url: formValues.protocol_url,
       visit: formValues.visit,
       description: formValues.description,
-      ...((formValues.sample_category === "" && formValues.organ) && {organ: formValues.organ} ),
-      ...(( (formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: formValues.rui_location } ),
-      ...((!checked && formValues.lab_tissue_sample_id) && {lab_tissue_sample_id: formValues.lab_tissue_sample_id} )
+      ...((formValues.sample_category === "" && formValues.organ) && {organ: formValues.organ}),
+      ...(((formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: formValues.rui_location}),
+      ...((!checked && formValues.lab_tissue_sample_id) && {lab_tissue_sample_id: formValues.lab_tissue_sample_id})
     }
     if(formValues.rui_location){
       sampleFormData.rui_location = formValues.rui_location
@@ -343,16 +341,16 @@ export const SampleForm = (props) => {
           
           entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(sampleFormData))
           .then((response) => {
-            if (response.status === 200){
-              props.onCreated( {new_samples: response.results, entity: sampleFormData} );
+            if(response.status === 200){
+              props.onCreated({new_samples: response.results, entity: sampleFormData});
             }else{
               badValError(response.error ? response.error : response);
             }
-          } )
+          })
           .catch((error) => {
             console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
             wrapUpPageErrors(error)
-          } );
+          });
         // Nope Just One
         }else{
           console.log("sampleFormData", typeof sampleFormData, sampleFormData)
@@ -364,10 +362,10 @@ export const SampleForm = (props) => {
             }else{
               badValError(response.error ? response.error : response);
             }
-          } )
+          })
           .catch((error) => {
             wrapUpPageErrors(error)
-          } );
+          });
         }
           
       }
@@ -389,14 +387,12 @@ export const SampleForm = (props) => {
           setRUIManagerObject((prevValues) => ({...prevValues,
             details: {...prevValues.details, 
               donorSex: sex,
-              organ: source.organ ? source.organ : getSourceOrganDetail(response)
-            },
+              organ: source.organ ? source.organ : getSourceOrganDetail(response)},
             interface: {
               ...prevValues.interface,
               loading: false,
               tempSex: sex ? sex : null,
-            }
-          }))    
+            }}))    
           
         })
         .catch((error) => { 
@@ -447,18 +443,17 @@ export const SampleForm = (props) => {
     handleClose(e);
     setSourceEntity(e.row);
     setSourceRUIDetails(e.row.uuid,e.row);
-    setFormValues((prevValues) => ( {
+    setFormValues((prevValues) => ({
       ...prevValues,
       direct_ancestor_uuid: e.row.uuid,
-      ...((e.row.organ) && {organ: e.row.organ} ),
+      ...((e.row.organ) && {organ: e.row.organ}),
       // ...((ruiOrgan === true) && {RUIOrgan: true} ),
-    } ));
+    }));
 
     // If the source is a Donor we already know we're not RUI Enabled abymore
     if(e.row.entity_type === "Donor"){
-      setRUIManagerObject((prevValues) => ( {...prevValues,
-        interface: {...prevValues.interface, loading: true}
-      }))
+      setRUIManagerObject((prevValues) => ({...prevValues,
+        interface: {...prevValues.interface, loading: true}}))
 
     }
   }
@@ -517,23 +512,21 @@ export const SampleForm = (props) => {
   // RUI
   function handleRUIJson(dataFromChild){
     console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',typeof dataFromChild, dataFromChild);
-    setFormValues((prevValues) => ( {
+    setFormValues((prevValues) => ({
       ...prevValues,
       rui_location: JSON.parse(dataFromChild)
     })); 
-    setRUIManagerObject((prevValues) => ( {...prevValues,
-      details: {...prevValues.details, json: JSON.parse(dataFromChild)},
-    }))
+    setRUIManagerObject((prevValues) => ({...prevValues,
+      details: {...prevValues.details, json: JSON.parse(dataFromChild)},}))
   }
   function closeRUIModal(){
-    setRUIManagerObject((prevValues) => ( {...prevValues,
-      interface: {...prevValues.interface, openReg: false}
-    }))
+    setRUIManagerObject((prevValues) => ({...prevValues,
+      interface: {...prevValues.interface, openReg: false}}))
   }
   function shouldShowRUIInterface(){
     // console.debug('%c◉ ruiEnabled ', 'color:#00ff7b', ruiEnabled);
     console.debug('%c◉ shouldShowRUIInterface ', 'color:#00ff7b', RUIManagerObject);
-    return (RUIManagerObject.details.organ && formValues.sample_category === "block") ? true : false // We've got a RUI Organ!
+    return(RUIManagerObject.details.organ && formValues.sample_category === "block") ? true : false // We've got a RUI Organ!
   }
   function preloadRUI(values){
     console.debug('%c◉ preloadRUI ', 'color:#00ff7b',values);
@@ -554,7 +547,7 @@ export const SampleForm = (props) => {
   }
   function renderRuiRegisterButtonset(){
     if(RUIManagerObject.details.donorSex){ // Has DonorMetadata
-      return (
+      return(
         <Button
           className="mt-2"
           disabled={!permissions.has_write_priv}
@@ -649,7 +642,7 @@ export const SampleForm = (props) => {
                     flexWrap: "wrap",
                   }}>
                   {relatedEntities.length > 0 && relatedEntities.map((item, index) => {
-                    return (
+                    return(
                       <li key={index+"_"+item.submission_id} >
                           <Button 
                             style={{
@@ -662,7 +655,7 @@ export const SampleForm = (props) => {
                         </Button>
                       </li>
                     );
-                  } )}
+                  })}
                 </ul>
             </Collapse> 
           </Alert>
@@ -897,9 +890,8 @@ export const SampleForm = (props) => {
               {(formValues.rui_location) && !checked && ( // View JSON Data
                 <Dialog 
                   sx={{height: "80%",}}
-                  onClose={() => setRUIManagerObject((prevValues) => ( {...prevValues,
-                    interface: {...prevValues.interface, JSONView: false}
-                  }))}
+                  onClose={() => setRUIManagerObject((prevValues) => ({...prevValues,
+                    interface: {...prevValues.interface, JSONView: false}}))}
                   aria-labelledby="rui-view-dialog"
                   open={RUIManagerObject.interface.JSONView}>
                   <DialogTitle>Sample Location Information</DialogTitle>
@@ -910,9 +902,8 @@ export const SampleForm = (props) => {
                   </DialogContent>
                   <DialogActions>
                     <Button
-                      onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues,
-                        interface: {...prevValues.interface, JSONView: false}
-                      }))}
+                      onClick={() => setRUIManagerObject((prevValues) => ({...prevValues,
+                        interface: {...prevValues.interface, JSONView: false}}))}
                       variant="contained"
                       color="primary">
                       Close
@@ -950,7 +941,6 @@ export const SampleForm = (props) => {
                     </>
                   )}
 
-
               </Alert>
               )}
             {/* END RUI State Feedback */}
@@ -964,7 +954,7 @@ export const SampleForm = (props) => {
                       <Button
                         className="mt-2"
                         disabled={!permissions.has_write_priv}
-                        onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues, interface: {...prevValues.interface, openReg: true} }))}
+                        onClick={() => setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, openReg: true}}))}
                         variant="contained">
                         Modify Location Information
                       </Button>
@@ -980,7 +970,7 @@ export const SampleForm = (props) => {
                         className="btn btn-link"
                         type="button"
                         startIcon={<PageviewIcon />}
-                        onClick={() => setRUIManagerObject((prevValues) => ( {...prevValues, interface: {...prevValues.interface, JSONView: true} }))}>
+                        onClick={() => setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, JSONView: true}}))}>
                         View Location
                       </Button>
                     )}
@@ -1088,9 +1078,9 @@ export const SampleForm = (props) => {
             horizontal: 'right'
           }}
           autoHideDuration={6000} 
-          onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}>
+          onClose={() => setSnackbarController(prev => ({...prev, open: false}))}>
           <Alert
-            onClose={() => setSnackbarController(prev => ({ ...prev, open: false }))}
+            onClose={() => setSnackbarController(prev => ({...prev, open: false}))}
             severity={snackbarController.status}
             variant="filled"
             sx={{ 
@@ -1105,4 +1095,3 @@ export const SampleForm = (props) => {
     );
   }
 }
-
