@@ -72,115 +72,6 @@ export function IconSelection(entity_type,status){
   }
 }
 
-function buildPriorityProjectList(list){
-  if(list.length>1){
-    return list.join(", ");
-  }else{
-    return list[0]
-  }
-}	
-
-function topHeader(entityData){
-  if(entityData[0] !== "new"){
-    return (
-      <React.Fragment>
-        <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
-        </Grid>
-        <Grid item xs={6} className="" >
-          <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
-          {entityData.status && (
-            <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
-          )}
-          {entityData.priority_project_list	 && (
-            <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
-            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
-        </Grid>
-      </React.Fragment>
-    ) 
-  }else{
-    return (
-      <React.Fragment>
-        <Grid item xs={entityData[1] === "Upload" ? 12 : 6} className="" >  
-          {newBadge(entityData[1],"new")}
-          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityData[1]}</h3>
-        </Grid>
-        
-        {entityData[1] === "Upload" && (
-          <Grid item xs={6} className="" >
-            <Typography sx={{marginRight: "10px"}} >
-              Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
-            </Typography>
-          </Grid>
-        )}
-        
-      </React.Fragment>
-    )
-  }
-}
-
-function infoPanels(entityData,permissions,globusURL){
-  return (
-    <Grid item xs={6} className="" >
-      {globusURL&& (
-        <Typography className="pb-1">
-          <strong><big>
-            <a href={globusURL}
-              target='_blank'
-              rel='noopener noreferrer'>   
-                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
-                  <>Open data repository {" "}</>
-                )}
-                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
-                  <>To add or modify data files go to the data repository {" "}</>
-                )}
-                <OpenInNewIcon />
-            </a>
-          </big></strong>
-        </Typography>
-      )}
-      {permissions.has_write_priv && entityData.entity_type !== "publication" &&(
-        <HIPPA />
-      )}
-    {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
-        // They might not have write access but not because of data_access_level
-        <Alert severity="warning" 
-          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
-          sx={{
-            // minHeight: "100%",
-            minWidth: "100%",
-            padding: "10px"
-          }}>
-          This entity is no longer editable. It was locked when it became publicly
-          acessible when data associated with it was published.
-        </Alert>
-      )}
-      {!permissions.has_write_priv && !permissions.has_admin_priv && (
-        <Alert  
-          variant="caption" 
-          severity="info" 
-          sx={{
-            color: "rgba(0, 0, 0, 0.38)",
-            minWidth: "100%", 
-            margin: "0px",
-            padding: "0px",
-          }}
-          iconMapping={{
-            warning: <WarningIcon style={{fontSize: "2em"}} />
-          }} >
-          You do not have permission to modify this item.
-        </Alert>
-      )}
-     
-    </Grid>
-  )
-}
-
 export function badgeClass(status){
   var badge_class = "";
   if(status=== undefined || !status){
@@ -239,12 +130,27 @@ export function badgeClass(status){
   }
 }
 
-export function statusBadge(status){
+
+function errorNote(){
+  return (<>
+    <Typography variant="caption" color={"#444a65"}>
+      <strong><FontAwesomeIcon sx={{padding: "1.2em"}} icon={faHeadset}/></strong>If this message persists, please reach out to help@hubmapconsortium.org symbol beneith the table will re-launch this message
+    </Typography>
+  </>)
+}
+function noteWrap(note){
+  return (
+    <Typography variant="caption" color={"#444a65"}>
+      <strong>Note: </strong>{note}
+    </Typography>
+  );
+}
+function statusBadge(status){
   return (
     <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
-export function newBadge(type){
+function newBadge(type){
   console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
   let newBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
@@ -255,12 +161,118 @@ export function newBadge(type){
     height: "auto",
     display: "inlineTable",
     verticalAlign: "super",
-   
   }
   return (  
     <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
+function buildPriorityProjectList(list){
+  if(list.length>1){
+    return list.join(", ");
+  }else{
+    return list[0]
+  }
+}	
+function topHeader(entityData){
+  if(entityData[0] !== "new"){
+    return (
+      <React.Fragment>
+        <Grid item xs={12} className="" > 
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
+        </Grid>
+        <Grid item xs={6} className="" >
+          <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
+          {entityData.status && (
+            <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
+          )}
+          {entityData.priority_project_list	 && (
+            <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
+          )}
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
+            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+          )}
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
+        </Grid>
+      </React.Fragment>
+    ) 
+  }else{
+    return (
+      <React.Fragment>
+        <Grid item xs={entityData[1] === "Upload" ? 12 : 6} className="" >  
+          {newBadge(entityData[1],"new")}
+          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityData[1]}</h3>
+        </Grid>
+        
+        {entityData[1] === "Upload" && (
+          <Grid item xs={6} className="" >
+            <Typography sx={{marginRight: "10px"}} >
+              Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
+            </Typography>
+          </Grid>
+        )}
+        
+      </React.Fragment>
+    )
+  }
+}
+function infoPanels(entityData,permissions,globusURL){
+  return (
+    <Grid item xs={6} className="" >
+      {globusURL&& (
+        <Typography className="pb-1">
+          <strong><big>
+            <a href={globusURL}
+              target='_blank'
+              rel='noopener noreferrer'>   
+                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
+                  <>Open data repository {" "}</>
+                )}
+                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                  <>To add or modify data files go to the data repository {" "}</>
+                )}
+                <OpenInNewIcon />
+            </a>
+          </big></strong>
+        </Typography>
+      )}
+      {permissions.has_write_priv && entityData.entity_type !== "publication" &&(
+        <HIPPA />
+      )}
+    {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
+        // They might not have write access but not because of data_access_level
+        <Alert severity="warning" 
+          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
+          sx={{
+            // minHeight: "100%",
+            minWidth: "100%",
+            padding: "10px"
+          }}>
+          This entity is no longer editable. It was locked when it became publicly
+          acessible when data associated with it was published.
+        </Alert>
+      )}
+      {!permissions.has_write_priv && !permissions.has_admin_priv && (
+        <Alert  
+          variant="caption" 
+          severity="info" 
+          sx={{
+            color: "rgba(0, 0, 0, 0.38)",
+            minWidth: "100%", 
+            margin: "0px",
+            padding: "0px",
+          }}
+          iconMapping={{
+            warning: <WarningIcon style={{fontSize: "2em"}} />
+          }} >
+          You do not have permission to modify this item.
+        </Alert>
+      )}
+     
+    </Grid>
+  )
+}
+
 
 export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
@@ -396,22 +408,6 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
   );
 }
 
-function errorNote(){
-		return (<>
-			<Typography variant="caption" color={"#444a65"}>
-				<strong><FontAwesomeIcon sx={{padding: "1.2em"}} icon={faHeadset}/></strong>If this message persists, please reach out to help@hubmapconsortium.org symbol beneith the table will re-launch this message
-			</Typography>
-		</>)
-	}
-  
-function noteWrap(note){
-  return (
-    <Typography variant="caption" color={"#444a65"}>
-      <strong>Note: </strong>{note}
-    </Typography>
-  );
-}
-
 export function FeedbackDialog( { 
   showMessage, 
   setShowMessage, 
@@ -529,37 +525,47 @@ export function FeedbackDialog( {
 }
 
 export function EntityValidationMessage(props) {
-    const {response, eValopen, setEValopen} = props
-    console.debug('%c◉ EntityValidationMessage Inner Response  ', 'color:#00ff7b', response);
-    let message = response?.results ?? response?.data ?? "No Response";
-    let severity = message?.error ? "error" : "info";
-    if (message?.error) message = message.error;
-    if (response?.status === 202) message = "This Entity has been accepted for validation.";
-    
-    const handleClose = (event, reason) => reason !== 'clickaway' && setEValopen(false);
-    
-    return (
-      <Snackbar
-        sx={{ marginBottom: "20px" }}
-        direction="up"
-        autoHideDuration={5000}
-        disableWindowBlurListener
-        open={eValopen}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+  const {response, eValopen, setEValopen} = props
+  console.debug('%c◉ EntityValidationMessage Inner Response  ', 'color:#00ff7b', response);
+  let message = response?.results ?? response?.data ?? "No Response";
+  let severity = message?.error ? "error" : "info";
+  if (message?.error) message = message.error;
+  if (response?.status === 202) message = "This Entity has been accepted for validation.";
+  
+  const handleClose = (event, reason) => reason !== 'clickaway' && setEValopen(false);
+  
+  return (
+    <Snackbar
+      sx={{ marginBottom: "20px" }}
+      direction="up"
+      autoHideDuration={5000}
+      disableWindowBlurListener
+      open={eValopen}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      onClose={handleClose}>
+      <Alert
+        className="eValSnackbar"
+        variant="filled"
+        severity={severity}
+        sx={severity === "info" ? { backgroundColor: "#444a65" } : {}}
         onClose={handleClose}>
-        <Alert
-          className="eValSnackbar"
-          variant="filled"
-          severity={severity}
-          sx={severity === "info" ? { backgroundColor: "#444a65" } : {}}
-          onClose={handleClose}>
-          {message}
-        </Alert>
-      </Snackbar>
-    );
-  }
+        {message}
+      </Alert>
+    </Snackbar>
+  );
+}
 
-// TODO: Move this into.... idk a Value/Calculation helper service/thing?
+// @TODO: Eventually unify the Snackbar Feedback across forms into one
+// export function snackbarFeedback(props){
+//   const {snackbarController, setSnackbarController, } = props
+//   return(
+//     {/* Snackbar Feedback*/}
+//       <Snackbar 
+//       </Snackbar>
+//   );
+// }
+
+  // TODO: Move this into.... idk a Value/Calculation helper service/thing?
 export function HexToHsl(hex){
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
