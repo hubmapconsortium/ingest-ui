@@ -916,22 +916,21 @@ export const SampleForm = (props) => {
             {/* RUI State Feedback */}
             {!shouldShowRUIInterface() && !checked && (permissions.has_admin_priv || permissions.has_write_priv) &&( // RUI is Not Available (but user could edit)
               <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
-                
+                {formValues.direct_ancestor_uuid && (!formValues.sample_category || !RUIManagerObject.details.organ) && (  // Waiting for Category to be selected
+                  <GridLoader size={4} />
+                )}
                 {sourceEntity && sourceEntity.entity_type === "Donor" &&(  // Waiting for Source to be present
                   <Typography variant="caption">RUI Interface is only available on Block Samples  < br/></Typography>
                 )}
-
                 {!formValues.direct_ancestor_uuid &&(  // Waiting for Source to be present
                   <Typography variant="caption">Please select a source to begin determining RUI Eligibility  < br/></Typography>
                 )}
-
                 {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && !formValues.sample_category && (  // Waiting for Category to be selected
-                  <Typography variant="caption">Please select the category 'Block' to enable RUI Interface  < br/></Typography>
+                  <Typography variant="caption"> Waiting on Category Selection... < br/></Typography>
                 )}
-
                   {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && formValues.sample_category && ( // RUI is Unavailable, not loading or waiting
                     <> 
-                      <Typography variant="caption">RUI Interface not Available < br/></Typography>
+                      {/* <Typography variant="caption">RUI Interface not Available < br/></Typography> */}
                       {(formValues.sample_category !== "block") && (  // Sample Category is not Block or from supported Organ 
                         <Typography variant="caption">(Sample must be a Block from a Supported Organ Type)<br /></Typography>
                       )}
