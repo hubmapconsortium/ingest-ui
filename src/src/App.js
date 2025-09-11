@@ -358,7 +358,6 @@ export function App(props){
   }
 
   console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
-  // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
@@ -373,7 +372,6 @@ export function App(props){
   var[errorInfo,setErrorInfo] = useState("");
   var[errorInfoShow,setErrorInfoShow] = useState(false);
   var[errorDetail, setErrorDetail] = useState({});
-  // var [keySet, setKeySet] = useState([]);
 
   function reportError(error, details){
     console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
@@ -564,7 +562,7 @@ export function App(props){
  
                   <Dialog 
                     aria-labelledby="result-dialog" 
-                    open={successDialogRender?successDialogRender.toString():false} 
+                    open={successDialogRender?true:false} 
                     sx={{margin: "auto"}}
                     fullWidth={ (newEntity && newEntity.newSamples) ? true : false}>
                     <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>

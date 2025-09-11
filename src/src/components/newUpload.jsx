@@ -45,7 +45,7 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
-import {FormHeader,UserGroupSelectMenu,EntityValidationMessage} from "./ui/formParts";
+import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,SnackbarFeedback} from "./ui/formParts";
 import {RenderPageError} from "../utils/error_helper";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
@@ -57,6 +57,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
   const [eValopen, setEValopen] = useState(true);
+  let [snackbarController, setSnackbarController] = useState({
+    open: false,
+    message: "",
+    status: "info"
+  });
   let [submitProcessModal, setSubmitProcessModal] = useState(false);
   let[entityData, setEntityData] = useState({
     title: "",
@@ -97,7 +102,6 @@ export const UploadForm = (props) => {
   // let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let validateRestrictions = ["reorganized", "processing"]
   let[validationError, setValidationError] = useState(null);
-  let[showValidModal, setShowValidModal] = useState(false);
   const{uuid} = useParams();
   dayjs.extend(isBetween);
   const [SWAT, setSWAT] = useState(false);
@@ -182,6 +186,22 @@ export const UploadForm = (props) => {
           wrapUp(error)
         });
     }else{
+      // URL Form Pre-fill
+      let url = new URL(window.location.href);
+      let params = Object.fromEntries(url.searchParams.entries());
+      if(Object.keys(params).length > 0){
+        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          ...params
+        }));
+        setSnackbarController({
+          open: true,
+          message: "Passing Form values from URL parameters",
+          status: "success"
+        });
+      }
+
       setPermissions({
         has_write_priv: true,
       });
@@ -253,9 +273,9 @@ export const UploadForm = (props) => {
 
     // They Could have Typed the Date... is it within range?
     if(formValues.anticipated_complete_upload_month && formValues.anticipated_complete_upload_month !== ""){
-      const earliest = dayjs().subtract(1, 'day')
+      const earliest = dayjs().subtract(1, 'day').startOf('M')
       const latest = dayjs('2026-12-31')
-      const selectedDate = dayjs(formValues.anticipated_complete_upload_month, 'YYYY-MM')
+      const selectedDate = dayjs(formValues.anticipated_complete_upload_month, 'YYYY-MM').startOf('M')
       if(!selectedDate.isBetween(earliest, latest, 'day', '[)')){
         newFormErrors['anticipated_complete_upload_month'] = true;
         e_messages.push("Please select a date between "+earliest.format("YYYY-MM") + " and " + latest.format("YYYY-MM"));
@@ -309,7 +329,6 @@ export const UploadForm = (props) => {
       }
     
   }
-
 
   function submitForm(e,target){
     e.preventDefault()    
@@ -903,6 +922,9 @@ export const UploadForm = (props) => {
         {pageErrors && (
           <>{RenderPageError(pageErrors)}</>
         )}
+
+        <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
+
       </Box>
     );
   }
