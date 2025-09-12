@@ -392,7 +392,7 @@ export function App(props){
 
   return(
     <React.Fragment>
-      <div className={"App env-"+process.env.REACT_APP_NODE_ENV }>
+      <div className={"App pb-3 env-"+process.env.REACT_APP_NODE_ENV }>
         <Snackbar
           open={expiredKey}
           anchorOrigin={{vertical: 'top', horizontal: 'center'}}
