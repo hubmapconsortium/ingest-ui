@@ -28,6 +28,11 @@ import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
 
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
+import DynamicFormIcon from '@mui/icons-material/DynamicForm';
+
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
 // const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
@@ -404,6 +409,68 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
         value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
         {memoizedUserGroupSelectMenuPatch}
       </NativeSelect>
+    </Box>
+  );
+}
+
+export function HandleCopyFormUrl(e) {
+    const url = new URL(window.location.origin + window.location.pathname);
+    let formValues = document.querySelectorAll("input, textarea");
+    Object.entries(formValues).forEach(([key, value]) => {
+      console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
+      if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
+        url.searchParams.set(value.id, value.value);
+      }
+      else if (value.type === "checkbox" && value.checked ) {
+        url.searchParams.set(value.id, value.checked === true ? "true" : "false");
+      }
+    });
+    navigator.clipboard.writeText(url.toString())
+      .then(() => {
+        // setSnackMessage("Form URL copied to clipboard!");
+        // setShowSnack(true)
+      })
+      .catch(() => {
+        // setSnackMessage("Form URL Failed to copy to clipboard!");
+        // setShowSnack(true)
+      });
+  }
+export default function SpeedDialTooltipOpen() {
+  const actions = [
+    // { icon: <FileCopyIcon />, name: 'Copy' },
+    // { icon: <SaveIcon />, name: 'Save' },
+    { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
+    // { icon: <ReportIcon />, name: 'Share' },
+  ];
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  return (
+    <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', top: 0, right: 16 }}
+        icon={<OfflineBoltIcon />}
+        direction={"down"}>
+        {actions.map((action) => (
+          <SpeedDialAction
+            key={action.name}
+            icon={action.icon}
+            onClick={() => action.action ? action.action() : alert(action.name)}
+            slotProps={{
+              tooltip: {
+                title: action.name,
+              },
+            }}
+          />
+        ))}
+      </SpeedDial>
+      {/* <Snackbar
+        open={false}
+        autoHideDuration={6000}
+        onClose={() => e.setShowSnack(false)}
+        message={e.snackMessage}
+        /> */}
     </Box>
   );
 }
