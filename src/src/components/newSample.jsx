@@ -1,7 +1,6 @@
 import React, {useEffect, useState, useMemo} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import Alert from "@mui/material/Alert";
-import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
@@ -18,6 +17,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import LoadingButton from "@mui/lab/LoadingButton";
+import Tooltip from '@mui/material/Tooltip';
 import NativeSelect from '@mui/material/NativeSelect';
 import SearchIcon from '@mui/icons-material/Search';
 import PageviewIcon from '@mui/icons-material/Pageview';
@@ -25,9 +25,7 @@ import TextField from "@mui/material/TextField";
 import {Typography} from "@mui/material";
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Snackbar from '@mui/material/Snackbar';
-import CloseIcon from '@mui/icons-material/Close';
 import Checkbox from '@mui/material/Checkbox';
-import EmojiNatureIcon from '@mui/icons-material/EmojiNature';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
 import {GridLoader} from "react-spinners";
@@ -459,7 +457,7 @@ export const SampleForm = (props) => {
     }
   }
 
-  function handleClose(e){
+  function handleClose(){
     setOpenSearch(false);
   }
 
@@ -526,9 +524,11 @@ export const SampleForm = (props) => {
   }
   function shouldShowRUIInterface(){
     if(!RUIManagerObject.interface.validOrgan || RUIManagerObject.interface.validOrgan === false){
-      return false
+      // lets double check
+      let checkVal = RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? true : null
+      return checkVal
     }
-    return( (RUIManagerObject.details.organ && RUIManagerObject.details.organ !== null) && formValues.sample_category === "block" ? true : false)
+    return((RUIManagerObject.details.organ && RUIManagerObject.details.organ !== null) && formValues.sample_category === "block" ? true : false)
   }
   
   function preloadRUI(values){
@@ -918,36 +918,98 @@ export const SampleForm = (props) => {
 
             {/* RUI State Feedback */}
             {!shouldShowRUIInterface() && !checked && (permissions.has_admin_priv || permissions.has_write_priv) &&( // RUI is Not Available (but user could edit)
-              <Alert variant="caption" severity="info" sx={{backgroundColor: "rgba(0, 0, 0, 0.03)", color: "rgba(0, 0, 0, 0.38)"}}>
-                {/* Please Begin */}
-                {!sourceEntity &&(  // Waiting for Source
-                  <Typography variant="caption">Please select a source to begin determining RUI Eligibility  < br/></Typography>
+              <Alert 
+                variant="caption" 
+                severity="info" 
+                sx={
+                  sourceEntity ? {backgroundColor: "#eee", color: "rgba(0, 0, 0, 0.38)"} : 
+                  {display: "none"}}>
+                    
+                {(process.env.REACT_APP_NODE_ENV === "local" || process.env.REACT_APP_NODE_ENV === "development" || process.env.REACT_APP_NODE_ENV === "test") && (
+                  // Only rendered when the Environment Variable REACT_APP_NODE_ENV is set to local, test, or development
+                  <Tooltip
+                    // sx={{padding: "0px",backgroundColor: "#eee"}}
+                    placement="top" 
+                    componentProps={{
+                        tooltip: {
+                            sx: {
+                                width: '1000px!important'
+                            },
+                        },
+                    }}
+                    title={
+                      <Box sx={{padding: "10px", width: "500px"}}>
+                      <Typography 
+                        variant="caption" 
+                        sx={RUIManagerObject.interface.loading ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                            RUIManagerObject loading: {RUIManagerObject.interface.loading.toString()}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={(RUIManagerObject.details.organ) ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Organ:  {RUIManagerObject.details.organ+" ("+organ_types[RUIManagerObject.details.organ]+")" || null}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            RUIOrgan:  {RUIManagerObject.details.organ && RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? "true" : "false"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={!formValues.sample_category ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Category: {formValues.sample_category ? (formValues.sample_category).toString() : "null"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={!RUIManagerObject.details.json ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            JSON:  {RUIManagerObject.details.json ? "true" : "false"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={!RUIManagerObject.details.donorSex ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Donor Sex:  {RUIManagerObject.details.donorSex || "null"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={!formValues.direct_ancestor_uuid ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Source: {sourceEntity ? sourceEntity?.hubmap_id : "null"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={!formValues.direct_ancestor_uuid ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Source Type: {sourceEntity ? sourceEntity?.entity_type : "null"}
+                      </Typography><br />
+                      <Typography 
+                        variant="caption" 
+                        sx={checked ? {color: "FFB2D6"} : {color: "PaleGreen"}}>
+                            Checked: {checked.toString()} 
+                      </Typography>
+                      </Box>
+                    }
+                    slotProps={{
+                      popper: {
+                        modifiers: [{
+                          name: 'offset',
+                          options: {
+                            offset: [0, -20],
+                          }
+                        }],
+                      }
+                    }}>
+                      <Typography variant="caption">RUI Interface Unavailable</Typography> 
+                  </Tooltip>
                 )}
-                {/* Bad Source (donor) */}
-                {sourceEntity && sourceEntity.entity_type === "Donor" &&(  // Waiting for Source to be present
-                  <Typography variant="caption">RUI Interface is only available on Select Block Samples  < br/></Typography>
-                )}
-                {/* Loading */}
-                {sourceEntity && (!formValues.sample_category && sourceEntity.entity_type === "Sample") && (  // Waiting for Category (if we're a Sample source not Donor)
-                  <GridLoader size={4} />
-                )}
-                {/* Wait */}
-                {(sourceEntity && sourceEntity.entity_type === "Sample") && !formValues.sample_category && (  // Waiting for Category to be selected
-                  <Typography variant="caption"> Waiting on Category Selection... < br/></Typography>
-                )}
-
-                  {!RUIManagerObject.interface.loading && formValues.direct_ancestor_uuid && formValues.sample_category && ( // RUI is Unavailable, not loading or waiting
-                    <> 
-                      {/* <Typography variant="caption">RUI Interface not Available < br/></Typography> */}
-                      {(formValues.sample_category !== "block") && (  // Sample Category is not Block or from supported Organ 
-                        <Typography variant="caption"> (Sample must be a Block from a Supported Organ Type)<br /></Typography>
-                      )}
-                      {checked && ( // Multiples Checked
-                        <Typography variant="caption"> RUI Interface is not compatible with the Multi-Registration system < br/></Typography>
-                      )}
-                    </>
-                  )}
-
+                {sourceEntity && (!formValues.sample_category && sourceEntity.entity_type === "Sample") && (<>   
+                  <Typography variant="caption"> <GridLoader size={4} /> Waiting on Category Selection... < br/></Typography>
+                  {!RUIManagerObject.interface.loading && ((formValues.sample_category && formValues.sample_category !== "block") || (RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ)))&& (<>
+                    {(formValues.sample_category !== "block") && (  // Sample Category is not Block or from supported Organ 
+                      <Typography variant="caption"> (Sample must be a Block from a Supported Organ Type for RUI Support)<br /></Typography>
+                    )}
+                    {checked && ( // Multiples Checked
+                      <Typography variant="caption"> RUI Interface is not compatible with the Multi-Registration system < br/></Typography>
+                    )}
+                  </>)}
+                </>)}
               </Alert>
               )}
             {/* END RUI State Feedback */}
@@ -986,56 +1048,6 @@ export const SampleForm = (props) => {
               )}
               
             {/* END  Manager Interface (Buttons) */}
-              
-              {/* TODO: Would be nice to test rendering/viewing toggles to provide this info by choice on dev/test/prod */}
-              {/* <Alert 
-                icon={<EmojiNatureIcon fontSize="inherit" />} 
-                variant="caption" 
-                severity="info" 
-                sx={{
-                  backgroundColor: "rgba(0, 0, 0, 0.03)", 
-                  color: "rgba(0, 0, 0, 0.38)", 
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                  // display: ValidateLocalhost() ? "flex" : "none"
-                }}> 
-                <AlertTitle>RUI Debugger: (Localhost View Only)</AlertTitle>
-                <Typography 
-                  variant="caption" 
-                  sx={RUIManagerObject.interface.loading ? {color: "red"} : {color: "green"}}>
-                      RUIManagerObject.interface.loading: {RUIManagerObject.interface.loading.toString()}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={!RUIManagerObject.details.organ ? {color: "red"} : {color: "green"}}>
-                      RUIOrgan:  {RUIManagerObject.details.organ || null}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={!RUIManagerObject.details.json ? {color: "red"} : {color: "green"}}>
-                      RUIJSON:  {RUIManagerObject.details.json ? "true" : "false"}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={!RUIManagerObject.details.donorSex ? {color: "red"} : {color: "green"}}>
-                      Donor Sex:  {RUIManagerObject.details.donorSex || null}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={!formValues.direct_ancestor_uuid ? {color: "red"} : {color: "green"}}>
-                      direct_ancestor_uuid: {formValues.direct_ancestor_uuid ? (formValues.direct_ancestor_uuid).toString() : "null"}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={!formValues.sample_category ? {color: "red"} : {color: "green"}}>
-                      sample_category: {formValues.sample_category ? (formValues.sample_category).toString() : "null"}
-                </Typography><br />
-                <Typography 
-                  variant="caption" 
-                  sx={checked ? {color: "red"} : {color: "green"}}>
-                      checked: {checked.toString()} 
-                </Typography><br />
-              </Alert> */}
           {/* END RUI Manager Display */}
       
           {/* Group */}
