@@ -524,12 +524,14 @@ export const SampleForm = (props) => {
       interface: {...prevValues.interface, openReg: false}}))
   }
   function shouldShowRUIInterface(){
-    if(!RUIManagerObject.interface.validOrgan || RUIManagerObject.interface.validOrgan === false){
-      // lets double check
-      let checkVal = RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? true : null
-      return checkVal
+  console.debug('%c◉ shouldShowRUIInterface', 'color:#E7EEFF;background: #0F87FF;padding:200', RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ,formValues.sample_category === "block");
+  let goodOrgan = RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ);
+  let goodCat = (formValues.sample_category === "block")
+    if(goodOrgan && goodCat){
+      return true
+    }else{
+      return false
     }
-    return((RUIManagerObject.details.organ && RUIManagerObject.details.organ !== null) && formValues.sample_category === "block" ? true : false)
   }
   
   function preloadRUI(values){
@@ -985,7 +987,7 @@ export const SampleForm = (props) => {
                 {(!["localhost", "ingest.dev.hubmapconsortium.org", "ingest.test.hubmapconsortium.org"].includes(window.location.hostname)) && (
                   <Typography variant="caption">RUI Interface Unavailable</Typography> 
                 )}
-                {sourceEntity && (formValues.organ && !RUI_ORGAN_TYPES.includes(formValues.organ)) && (
+                {sourceEntity && ((formValues.organ || sourceEntity.organ) && !RUI_ORGAN_TYPES.includes(formValues.organ)) && (
                   <Typography variant="caption"><br />(Organ not supported in RUI Interface)<br /></Typography>
                 )}
                 {sourceEntity && (!formValues.sample_category && sourceEntity.entity_type === "Sample") && (<>   
