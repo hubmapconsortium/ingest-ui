@@ -43,6 +43,7 @@ import RUIIntegration from "./ui/ruiIntegration";
 import SearchComponent from "./search/SearchComponent";
 import {toTitleCase} from "../utils/string_helper";
 import {RUI_ORGAN_TYPES} from "../constants";
+import EmojiNatureIcon from '@mui/icons-material/EmojiNature';
 // import {ValidateLocalhost} from "../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
@@ -233,6 +234,9 @@ export const SampleForm = (props) => {
   function handleInputChange(e){
     const{id, value, checked} = e.target;
     console.debug('%c◉ handleInputChange ', 'color:#00ff7b', id, value, checked);
+    console.debug('%c◉ window.location.hostname ', 'color:#00ff7b', window.location.hostname);
+    console.debug('%c◉ Are we? ', 'color:#00ff7b', ["localhost", "ingest.dev.hubmapconsortium.org", "ingest.test.hubmapconsortium.org"].includes(window.location.hostname));
+
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: (id ==="generate_ids_for_multiple_samples") ? checked : value
@@ -524,16 +528,18 @@ export const SampleForm = (props) => {
       interface: {...prevValues.interface, openReg: false}}))
   }
   function shouldShowRUIInterface(){
-  console.debug('%c◉ shouldShowRUIInterface', 'color:#E7EEFF;background: #0F87FF;padding:200', RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ,formValues.sample_category === "block");
-  let goodOrgan = RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ);
-  let goodCat = (formValues.sample_category === "block")
+    console.debug('%c◉ shouldShowRUIInterface', 'color:#E7EEFF;background: #0F87FF;padding: 200', RUIManagerObject.details.organ, RUI_ORGAN_TYPES, RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ),formValues, formValues, RUIManagerObject);
+    let goodOrgan = RUIManagerObject.details.organ && RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ);
+    let goodCat = (formValues.sample_category === "block" && sourceEntity && (sourceEntity.entity_type === "Donor" || (sourceEntity.entity_type === "Sample" && (sourceEntity.sample_category === "organ" || sourceEntity.sample_category === "block"))));
     if(goodOrgan && goodCat){
+      console.log("Both True for ShouldIShow")
       return true
     }else{
+      console.log("Both/Either NOW True for ShouldIShow")
       return false
     }
   }
-  
+
   function preloadRUI(values){
     console.debug('%c◉ preloadRUI ', 'color:#00ff7b',values);
     // console.debug(RUIManagerObject);
@@ -927,8 +933,7 @@ export const SampleForm = (props) => {
                   sourceEntity ? {backgroundColor: "#eee", color: "rgba(0, 0, 0, 0.38)", display:"inline-flex", cursor:(["localhost", "ingest.dev.hubmapconsortium", "ingest.test.hubmapconsortium"].includes(window.location.hostname)) ? "pointer!important" : "default!important"} :
                   {display: "none"}}>
                     
-                {(["localhost", "ingest.dev.hubmapconsortium", "ingest.test.hubmapconsortium"].includes(window.location.hostname)) && (
-                  // Only rendered when the Environment Variable REACT_APP_NODE_ENV is set to local, test, or development
+                {/* {(["localhost", "ingest.dev.hubmapconsortium", "ingest.test.hubmapconsortium"].includes(window.location.hostname)) && ( */}
                   <Tooltip
                     sx={(["localhost", "ingest.dev.hubmapconsortium", "ingest.test.hubmapconsortium"].includes(window.location.hostname)) ? {padding: "0px",backgroundColor: "#eee"} : {display: "none"}}
                     placement="top" 
@@ -983,9 +988,9 @@ export const SampleForm = (props) => {
                     }>
                       <Typography variant="caption">RUI Interface Unavailable</Typography>  {}
                   </Tooltip>
-                )}
-                {(!["localhost", "ingest.dev.hubmapconsortium.org", "ingest.test.hubmapconsortium.org"].includes(window.location.hostname)) && (
-                  <Typography variant="caption">RUI Interface Unavailable</Typography> 
+                {/* )} */}
+                { (!["localhost", "ingest.dev.hubmapconsortium.org", "ingest.test.hubmapconsortium.org"].includes(window.location.hostname) ) && (
+                  <Typography sx={{display:"block", marginBottom:"10px"}} variant="caption">RUI Interface Unavailable</Typography> 
                 )}
                 {sourceEntity && ((formValues.organ || sourceEntity.organ) && !RUI_ORGAN_TYPES.includes(formValues.organ)) && (
                   <Typography variant="caption"><br />(Organ not supported in RUI Interface)<br /></Typography>
@@ -1040,6 +1045,60 @@ export const SampleForm = (props) => {
               )}
               
             {/* END  Manager Interface (Buttons) */}
+
+            <Box sx={{padding: "10px", width: "500px", backgroundColor: "#222222ee", marginTop: "20px", border:"2px solid #000000", borderRadius: "10px", }}>
+              <Typography sx={{color:"white"}}> RUI DEBUGER <EmojiNatureIcon sx={{width:"0.8em", marginTop:"-5px"}} /> </Typography>
+              <Typography 
+                variant="caption" 
+                sx={RUIManagerObject.interface.loading ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    RUIManagerObject loading: {RUIManagerObject.interface.loading.toString()}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={(!RUIManagerObject.details.organ) ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Organ: {organ_types[RUIManagerObject.details.organ]+" ("+RUIManagerObject.details.organ+")" || null}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={RUIManagerObject.details.organ && !RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    RUIOrgan:  {RUIManagerObject.details.organ && RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ? "true" : "false"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!formValues.sample_category ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Category: {formValues.sample_category ? (formValues.sample_category).toString() : "null"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!RUIManagerObject.details.json ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    JSON:  {RUIManagerObject.details.json ? "true" : "false"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!RUIManagerObject.details.donorSex ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Donor Sex:  {RUIManagerObject.details.donorSex || "null"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!formValues.direct_ancestor_uuid ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Source: {sourceEntity ? sourceEntity?.hubmap_id : "null"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!formValues.direct_ancestor_uuid ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Source Type: {sourceEntity ? sourceEntity?.entity_type : "null"}
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={checked ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Checked: {checked.toString()} 
+              </Typography><br />
+              <Typography 
+                variant="caption" 
+                sx={!["localhost", "ingest.dev.hubmapconsortium.org", "ingest.test.hubmapconsortium.org"].includes(window.location.hostname) ? {color: "#FFB2D6"} : {color: "PaleGreen"}}>
+                    Hostname: {window.location.hostname.toString()} 
+              </Typography>
+            </Box>
           {/* END RUI Manager Display */}
       
           {/* Group */}
