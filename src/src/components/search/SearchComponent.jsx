@@ -438,12 +438,12 @@ class SearchComponent extends Component {
     });
   };
 
-  handleTableCellClick = (event, params, details) => {
-    console.debug('%c◉ handleTableCellClick SC', 'color:#00ff7b', event, params, details);  
+  handleTableCellClick = (params, event ) => {
+    console.debug('%c◉ handleTableCellClick SC', 'color:#00ff7b', event, params);  
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
-      this.props.urlChange(event, typeText + "/" + params.row.uuid, details);
+      this.props.urlChange(event, typeText + "/" + params.row.uuid);
     }
   };
   
