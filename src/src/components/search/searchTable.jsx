@@ -305,12 +305,17 @@ export const RenderSearchTable = (props) => {
   }
   
   function handleTableCellClick(params) {
+    console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
       urlChange(typeText + "/" + params.row.uuid);
     }
   }
+
+  // const handleRowClick = (params) => {
+  //   setMessage(`Movie "${params.row.title}" clicked`);
+  // };
   
   function handleClearFilter() {
     setFormFilters({
@@ -474,7 +479,7 @@ export const RenderSearchTable = (props) => {
           disableColumnMenu={true}
           hideFooterSelectedRowCount
           loading={tableLoading}
-          onCellClick={props.handleTableCellClick ? (e)=> props.handleTableCellClick(e) : (e) => handleTableCellClick(e)} // this allows a props handler to override the local handler
+          onCellClick={props.handleTableCellClick ? (event, params, details)=> props.handleTableCellClick(event, params, details) : (event, params, details) => handleTableCellClick(event, params, details)} // this allows a props handler to override the local handler
           onPaginationModelChange={(e) => handlePageChange(e)}
           pageSizeOptions={[10, 50, 100]}
           pagination

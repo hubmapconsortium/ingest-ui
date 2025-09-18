@@ -393,13 +393,10 @@ class SearchComponent extends Component {
     }
   }
 
-
   handleSearchClick = () => {
     // Was deprecated, kept this to keep things from exploding I think
-    // @TODO: Address the Search Components in the 2025techdebtcrunch 
-    // eventually
+    // @TODO: Address the Search Components in the 2025techdebtcrunch  eventually
   }
-
   handleUrlChange = (targetPath) => {
     if ((!targetPath || targetPath === undefined || targetPath === "") &&
       this.props.modecheck !== "Source"
@@ -441,56 +438,12 @@ class SearchComponent extends Component {
     });
   };
 
-  handleTableCellClick = (params) => {
-    // console.debug('%c⊙ cell click SC', 'color:#00ff7b',  params);
+  handleTableCellClick = (params, event ) => {
+    console.debug('%c◉ handleTableCellClick SC', 'color:#00ff7b', event, params);  
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
-      this.props.urlChange(typeText + "/" + params.row.uuid);
-      /* We're controlling the Routing and Most other views from the outer App wrapping, not within the SearchComponent Itself Anymore */
-      // Exception being Uploads
-      entity_api_get_entity(
-        params.row.uuid,
-        JSON.parse(localStorage.getItem("info")).groups_token
-      ).then((response) => {
-        if (response.status === 200) {
-          let entity_data = response.results;
-          if (entity_data.read_only_state) {
-            ingest_api_allowable_edit_states(
-              params.row.uuid,
-              JSON.parse(localStorage.getItem("info")).groups_token
-            ).then((resp) => {
-              //
-              let read_only_state = false;
-              if (resp.status === 200) {
-                read_only_state = !resp.results.has_write_priv; //results map opposite for UI
-              }
-              this.setState({
-                updateSuccess: null,
-                editingEntity: entity_data,
-                readOnly: read_only_state, // used for hidding UI components
-                editForm: true,
-                show_modal: true,
-                show_search: false,
-                loading: false,
-              });
-            });
-          } else {
-            this.setState({
-              updateSuccess: null,
-              editingEntity: entity_data,
-              readOnly: "read_only_state", // used for hidding UI components
-              editForm: true,
-              show_modal: true,
-              show_search: false,
-              loading: false,
-            });
-          }
-          this.handleUrlChange(
-            entity_data.entity_type + "/" + entity_data.uuid
-          );
-        }
-      });
+      this.props.urlChange(event, typeText + "/" + params.row.uuid);
     }
   };
   
@@ -548,7 +501,7 @@ class SearchComponent extends Component {
                 searchSubtitle={this.props.custom_subtitle ? this.props.custom_subtitle : null}
                 // handleTableCellClick={(params) => this.handleTableCellClick(params)}
                 // handleSearchButtonClick={() => this.handleSearchButtonClick()}
-                handleTableCellClick={this.props.select?(e)=>this.props.select(e):(e)=>this.handleTableCellClick(e)}
+                handleTableCellClick={this.props.select?(event, params, details)=>this.props.select(event, params, details):(event, params, details)=>this.handleTableCellClick(event, params, details)}
                 // select={this.props.select?this.props.select:null}
                 reportError={(error) => this.props.reportError(error)}
                 urlChange={(target) => this.props.urlChange(target) } />
