@@ -327,10 +327,15 @@ export function App(props){
     onClose();
   }
   
-  function urlChange(target){
+  function urlChange(event, target, details){
+    console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target, details );
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
-      navigate(lowerTarget, {replace: true});
+      if(event.ctrlKey || event.metaKey){
+        window.open(target,'_blank')
+      }else{
+        navigate(lowerTarget, {replace: true});
+      }
     }
   }
 
@@ -342,7 +347,6 @@ export function App(props){
   }
   function onCreateNext(source){
     console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", source );
-    // let target = source.entity_type.toLowerCase() === "donor" ? "sample" : source.entity_type.toLowerCase(); 
     window.location.replace(
       `${process.env.REACT_APP_URL}/new/sample/?source=${JSON.stringify(source)}`
     )
@@ -357,7 +361,6 @@ export function App(props){
   }
 
   console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
-  // const app_info_storage = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")) : "";
   const{search} = useLocation();
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
@@ -372,7 +375,6 @@ export function App(props){
   var[errorInfo,setErrorInfo] = useState("");
   var[errorInfoShow,setErrorInfoShow] = useState(false);
   var[errorDetail, setErrorDetail] = useState({});
-  // var [keySet, setKeySet] = useState([]);
 
   function reportError(error, details){
     console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
@@ -515,9 +517,9 @@ export function App(props){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
-                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={urlChange} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
                     <Route path="/login" element={<Login />} />
 
                     <Route path="/new">
@@ -527,17 +529,17 @@ export function App(props){
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} routingMessage={routingMessage.Datasets} />} ></Route>
+                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
                     </Route>
                     
                     <Route path="/donors" element={<DonorForm />} ></Route>
-                    <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={urlChange} />} ></Route>
-                    <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={urlChange} />} ></Route>
-                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={urlChange} />} ></Route>
-                    <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={urlChange} />} ></Route>
+                    <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
+                    <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
+                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
+                    <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
@@ -563,7 +565,7 @@ export function App(props){
  
                   <Dialog 
                     aria-labelledby="result-dialog" 
-                    open={successDialogRender?successDialogRender.toString():false} 
+                    open={successDialogRender?true:false} 
                     sx={{margin: "auto"}}
                     fullWidth={ (newEntity && newEntity.newSamples) ? true : false}>
                     <DialogTitle sx={{background: "rgb(209, 231, 221)", marginBottom: "0.5em",}} >Success!</DialogTitle>

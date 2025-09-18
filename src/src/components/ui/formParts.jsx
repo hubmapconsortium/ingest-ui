@@ -598,9 +598,7 @@ export function EntityValidationMessage(props) {
   let severity = message?.error ? "error" : "info";
   if (message?.error) message = message.error;
   if (response?.status === 202) message = "This Entity has been accepted for validation.";
-  
   const handleClose = (event, reason) => reason !== 'clickaway' && setEValopen(false);
-  
   return (
     <Snackbar
       sx={{ marginBottom: "20px" }}
@@ -623,14 +621,34 @@ export function EntityValidationMessage(props) {
 }
 
 // @TODO: Eventually unify the Snackbar Feedback across forms into one
-// export function snackbarFeedback(props){
-//   const {snackbarController, setSnackbarController, } = props
-//   return(
-//     {/* Snackbar Feedback*/}
-//       <Snackbar 
-//       </Snackbar>
-//   );
-// }
+export function SnackbarFeedback(props){
+  const {snackbarController, setSnackbarController, } = props
+  function closeSnack(){
+    setSnackbarController(prev => ({...prev, open: false}))
+  }
+  return(
+    <Snackbar 
+      open={snackbarController.open} 
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right'
+      }}
+      autoHideDuration={snackbarController.hide ? snackbarController.hide : 6000} 
+      onClose={closeSnack}>
+      <Alert
+        onClose={closeSnack}
+        severity={snackbarController.status}
+        variant="filled"
+        sx={{ 
+          width: '100%',
+          backgroundColor: snackbarController.color ? snackbarController : 
+            snackbarController.status === "error" ? "#f44336" : "#4caf50",
+        }}>
+        {snackbarController.message}
+      </Alert>
+    </Snackbar>
+  );
+}
 
   // TODO: Move this into.... idk a Value/Calculation helper service/thing?
 export function HexToHsl(hex){
