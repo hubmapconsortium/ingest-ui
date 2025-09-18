@@ -599,7 +599,7 @@ export function App(props){
           </StandardErrorBoundary>
         </div>
       </div>
-      {JSON.parse(localStorage.getItem("info")).email === "JJW118@pitt.edu" && (
+      {localStorage.getItem("info") && JSON.parse(localStorage.getItem("info")).email === "JJW118@pitt.edu" && (
         <SpeedDialTooltipOpen />
       )}
     </React.Fragment>
