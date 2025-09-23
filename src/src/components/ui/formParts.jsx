@@ -1,3 +1,4 @@
+import {useNavigate} from "react-router-dom";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
@@ -42,6 +43,7 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
+  console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
@@ -135,6 +137,22 @@ export function badgeClass(status){
   }
 }
 
+function renderUploadLink(entityData){
+  return (
+    <Box sx={{ display: "flex" }}>
+      <Box sx={{ width: "100%" }}>
+        <strong>
+          This {entityData.entityType} is contained in the data Upload{" "}
+        </strong>
+        <Button
+          variant="text"
+          onClick={this.handlePublicationSelect}>
+          {entityData.upload.hubmap_id}
+        </Button>
+      </Box>
+    </Box>
+  )
+}
 
 function errorNote(){
   return (<>
@@ -256,6 +274,9 @@ function infoPanels(entityData,permissions,globusURL){
           This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
+      )}
+      {entityData && (entityData.upload) &&(
+        renderUploadLink(entityData)
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
@@ -414,32 +435,34 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
 }
 
 export function HandleCopyFormUrl(e) {
-    const url = new URL(window.location.origin + window.location.pathname);
-    let formValues = document.querySelectorAll("input, textarea, select");
-    Object.entries(formValues).forEach(([key, value]) => {
-      console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
-      if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
-        url.searchParams.set(value.id, value.value);
-      }
-      else if (value.type === "checkbox" && value.checked ) {
-        url.searchParams.set(value.id, value.checked === true ? "true" : "false");
-      }
+  const url = new URL(window.location.origin + window.location.pathname);
+  let formValues = document.querySelectorAll("input, textarea, select");
+  Object.entries(formValues).forEach(([key, value]) => {
+    console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
+    if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
+      url.searchParams.set(value.id, value.value);
+    }
+    else if (value.type === "checkbox" && value.checked ) {
+      url.searchParams.set(value.id, value.checked === true ? "true" : "false");
+    }
+  });
+  navigator.clipboard.writeText(url.toString())
+    .then(() => {
+      // setSnackMessage("Form URL copied to clipboard!");
+      // setShowSnack(true)
+    })
+    .catch(() => {
+      // setSnackMessage("Form URL Failed to copy to clipboard!");
+      // setShowSnack(true)
     });
-    navigator.clipboard.writeText(url.toString())
-      .then(() => {
-        // setSnackMessage("Form URL copied to clipboard!");
-        // setShowSnack(true)
-      })
-      .catch(() => {
-        // setSnackMessage("Form URL Failed to copy to clipboard!");
-        // setShowSnack(true)
-      });
-  }
+}
 export default function SpeedDialTooltipOpen() {
+  let navigate = useNavigate();
   const actions = [
     // { icon: <FileCopyIcon />, name: 'Copy' },
     // { icon: <SaveIcon />, name: 'Save' },
     { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
+    { icon: <TableChartIcon />, name: 'Create Dataset', action: (e) => navigate(`/new/datasetAdmin`) },
     // { icon: <ReportIcon />, name: 'Share' },
   ];
   const [open, setOpen] = React.useState(false);
@@ -449,7 +472,7 @@ export default function SpeedDialTooltipOpen() {
     <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
       <SpeedDial
         ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', top: 0, right: 16 }}
+        sx={{ position: 'absolute', top: 0, right: 16,/*  background:"#0080d009", borderRadius:"1.2em"*/ }}
         icon={<OfflineBoltIcon />}
         direction={"down"}>
         {actions.map((action) => (
