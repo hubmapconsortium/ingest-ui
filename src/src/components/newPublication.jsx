@@ -44,6 +44,8 @@ export const PublicationForm = (props) => {
   let[isProcessing, setIsProcessing] = useState(false);
   let[valErrorMessages, setValErrorMessages] = useState([]);
   let[pageErrors, setPageErrors] = useState(null);
+  let[globusPath, setGlobusPath] = useState(null);
+  
 
   let [bulkError, setBulkError] = useState(false);
   let [bulkWarning, setBulkWarning] = useState(false);
@@ -161,10 +163,6 @@ export const PublicationForm = (props) => {
 
   const{uuid} = useParams();
 
-	const memoizedFormHeader = React.useMemo(
-		() => <FormHeader entityData={uuid ? entityData : ["new", "Publication"]} permissions={permissions} />,
-		[uuid, entityData, permissions]
-	);
 	const memoizedUserGroupSelectMenuPatch = React.useMemo(
 		() => <UserGroupSelectMenuPatch />,
 		[]
@@ -200,6 +198,11 @@ export const PublicationForm = (props) => {
                 description: entityData.description || "",
                 direct_ancestor_uuids: entityData.direct_ancestors.map(obj => obj.uuid) || [],
               } );
+
+              entity_api_get_globus_url(uuid)
+                .then((response) => {
+                  setGlobusPath(response.results);
+                }) //Nothing's wrong if this fails; no need to catch
               
               // Populate values for Source Management
               let string = entityData.direct_ancestors.map(obj => obj.hubmap_id).join(", ");
@@ -819,7 +822,7 @@ export const PublicationForm = (props) => {
   }else{
     return(<div className={formErrors}>
       <Grid container className='mb-2'>
-				{memoizedFormHeader}
+        <FormHeader entityData={uuid ? entityData : ["new","Upload"]} permissions={permissions} globusURL={globusPath?globusPath:null}/>
       </Grid>
       <form onSubmit={(e) => handleSubmit(e)}>
         <BulkSelector
