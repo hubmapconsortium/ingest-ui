@@ -1,0 +1,389 @@
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import LoadingButton from "@mui/lab/LoadingButton";
+import { Typography } from "@mui/material";
+import Alert from "@mui/material/Alert";
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from "@mui/material/Box";
+import Grid from '@mui/material/Grid';
+import InputLabel from "@mui/material/InputLabel";
+import LinearProgress from "@mui/material/LinearProgress";
+import NativeSelect from '@mui/material/NativeSelect';
+import { useNavigate, useParams } from "react-router-dom";
+import { BulkSelector } from "./ui/bulkSelector";
+import { FormHeader, UserGroupSelectMenuPatch } from "./ui/formParts";
+import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
+import { humanize } from "../utils/string_helper";
+import { validateRequired } from "../utils/validators";
+import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
+import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
+
+export const DatasetForm = (props) => {
+  let navigate = useNavigate();
+  let [entityData, setEntityData] = useState();
+  let [isLoading, setLoading] = useState(true);
+  let [isProcessing, setIsProcessing] = useState(false);
+  let [valErrorMessages, setValErrorMessages] = useState([]);
+  let [pageErrors, setPageErrors] = useState(null);
+
+  let [permissions, setPermissions] = useState({
+    has_admin_priv: false,
+    has_publish_priv: false,
+    has_submit_priv: false,
+    has_write_priv: false
+  });
+  let [buttonLoading, setButtonLoading] = useState({
+    process: false,
+    save: false,
+    submit: false,
+  });
+  let [formValues, setFormValues] = useState({
+    lab_dataset_id: "",
+    description: "",
+    dataset_info: "",
+    contains_human_genetic_sequences: "",
+    dt_select: "",
+    direct_ancestor_uuids: [],
+  });
+  let [formErrors, setFormErrors] = useState({ ...formValues });
+  let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
+  let [selectedBulkData, setSelectedBulkData] = useState([]);
+
+  const formFields = useMemo(() => [
+    {
+      id: "lab_dataset_id",
+      label: "Lab Name or ID",
+      helperText: "Lab Name or ID",
+      required: true,
+      type: "text"
+    },
+    {
+      id: "description",
+      label: "Description",
+      helperText: "Description Tips",
+      required: true,
+      type: "textarea"
+    },
+    {
+      id: "dataset_info",
+      label: "Additional Information",
+      helperText: "Add information here which can be used to find this data, including lab specific (non-PHI) identifiers.",
+      required: false,
+      type: "textarea"
+    },
+    {
+      id: "contains_human_genetic_sequences",
+      label: "Gene Sequences",
+      helperText: "",
+      required: true,
+      type: "radio"
+    },
+    {
+      id: "dt_select",
+      label: "Dataset Type",
+      helperText: "",
+      required: true,
+      type: "select",
+      writeEnabled: !entityData || !entityData.uuid,
+      values: localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => ({ value: dt.dataset_type, label: dt.dataset_type })) : []  
+    }
+  ], []);
+
+  const { uuid } = useParams();
+
+  const memoizedFormHeader = useMemo(
+    () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} />, [uuid, entityData, permissions]
+  );
+
+
+  useEffect(() => {
+    if (uuid && uuid !== "") {
+      entity_api_get_entity(uuid)
+        .then((response) => {
+          if (response.status === 200) {
+            const entityType = response.results.entity_type;
+            if (entityType !== "Dataset") {
+              window.location.replace(
+                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
+              );
+            } else {
+              const entityData = response.results;
+              setEntityData(entityData);
+              setFormValues({
+                lab_dataset_id: entityData.lab_dataset_id,
+                description: entityData.description,
+                dataset_info: entityData.dataset_info,
+                contains_human_genetic_sequences: entityData.contains_human_genetic_sequences,
+                dt_select: entityData.dataset_type,
+              });
+              setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
+              setSelectedBulkData(entityData.direct_ancestors);
+              console.log("Entity Data:", entityData.direct_ancestors, selectedBulkData);
+              ingest_api_allowable_edit_states(uuid)
+                .then((response) => {
+                  if (entityData.data_access_level === "public") {
+                    setPermissions({
+                      has_write_priv: false,
+                    });
+                  }
+                  setPermissions(response.results);
+                })
+                .catch((error) => {
+                  setPageErrors(error);
+                });
+            }
+          } else {
+            setPageErrors(response);
+          }
+        })
+        .catch((error) => {
+          setPageErrors(error);
+        });
+    } else {
+      setPermissions({
+        has_write_priv: true,
+      });
+    }
+    setLoading(false);
+    // eslint-disable-next-line
+  }, [uuid]);
+
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormValues(prev => {
+      if (prev[name] === value) return prev;
+      return { ...prev, [name]: value };
+    });
+  }, []);
+
+  // Callback for BulkSelector
+  const handleBulkSelectionChange = (uuids, hids, string, data) => {
+    setFormValues(prev => ({
+      ...prev,
+      direct_ancestor_uuids: uuids
+    }));
+    setSelectedBulkUUIDs(uuids);
+    setSelectedBulkData(data);
+  };
+
+  const validateForm = () => {
+    setValErrorMessages(null);
+    let errors = 0;
+    let e_messages = [];
+    let requiredFields = ["lab_dataset_id", "description", "contains_human_genetic_sequences", "dt_select"];
+    for (let field of requiredFields) {
+      if (!validateRequired(formValues[field])) {
+        let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
+        e_messages.push(fieldName + " is a required field");
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          [field]: " Required",
+        }));
+        errors++;
+      } else {
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          [field]: "",
+        }));
+      }
+    }
+    if (!selectedBulkData || selectedBulkData.length <= 0) {
+      e_messages.push("Please select at least one Source");
+      errors++;
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        ["direct_ancestor_uuids"]: "Required",
+      }));
+    } else if (selectedBulkData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0) {
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        'direct_ancestor_uuids': selectedBulkData.map(obj => obj.uuid),
+      }));
+    }
+    setValErrorMessages(errors > 0 ? e_messages : null);
+    return errors === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      setIsProcessing(true);
+      let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
+      let cleanForm = {
+        ...formValues,
+        direct_ancestor_uuids: selectedUUIDs
+      };
+      if (uuid) {
+        let target = e.target.name;
+        setButtonLoading((prev) => ({
+          ...prev,
+          [target]: true,
+        }));
+        entity_api_update_entity(uuid, JSON.stringify(cleanForm))
+          .then((response) => {
+            if (response.status < 300) {
+              props.onUpdated(response.results);
+            } else {
+              setPageErrors(response);
+              setButtonLoading((prev) => ({
+                ...prev,
+                [target]: false,
+              }));
+            }
+          })
+          .catch((error) => {
+            setPageErrors(error);
+            setButtonLoading((prev) => ({
+              ...prev,
+              [target]: false,
+            }));
+          });
+      } else {
+        ingest_api_create_dataset(JSON.stringify(cleanForm))
+          .then((response) => {
+            if (response.status === 200) {
+              props.onCreated(response.results);
+            } else {
+              setPageErrors(response.error ? response.error : response);
+            }
+          })
+          .catch((error) => {
+            setPageErrors(error);
+          });
+      }
+    } else {
+      setButtonLoading(() => ({
+        process: false,
+        save: false,
+        submit: false,
+      }));
+    }
+  };
+
+  const buttonEngine = () => {
+    return (
+      <Box sx={{ textAlign: "right" }}>
+        <LoadingButton
+          variant="contained"
+          className="m-2"
+          onClick={() => navigate("/")}
+        >
+          Cancel
+        </LoadingButton>
+        {!uuid && (
+          <LoadingButton
+            variant="contained"
+            name="generate"
+            loading={isProcessing}
+            className="m-2"
+            onClick={(e) => handleSubmit(e)}
+            type="submit"
+          >
+            Save
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (
+          <LoadingButton
+            loading={buttonLoading['process']}
+            name="process"
+            onClick={(e) => handleSubmit(e)}
+            variant="contained"
+            className="m-2"
+          >
+            Process
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "new" && (
+          <LoadingButton
+            loading={buttonLoading['submit']}
+            onClick={(e) => handleSubmit(e)}
+            name="submit"
+            variant="contained"
+            className="m-2"
+          >
+            Submit
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "published" && (
+          <LoadingButton
+            loading={buttonLoading['save'] === true ? true : false}
+            name="save"
+            onClick={(e) => handleSubmit(e)}
+            variant="contained"
+            className="m-2"
+          >
+            Save
+          </LoadingButton>
+        )}
+      </Box>
+    );
+  };
+
+  if (isLoading || ((!entityData || !formValues) && uuid)) {
+    return (<LinearProgress />);
+  } else {
+    return (
+      <div className={formErrors}>
+        <Grid container className='mb-2'>
+          {memoizedFormHeader}
+        </Grid>
+        <form onSubmit={(e) => handleSubmit(e)}>
+          <BulkSelector
+            permissions={permissions}
+            initialSelectedUUIDs={selectedBulkUUIDs}
+            initialSourcesData={selectedBulkData}
+            onBulkSelectionChange={handleBulkSelectionChange}
+            searchFilters={{
+              custom_title: "Search for a Source ID for your Dataset",
+              custom_subtitle: "Collections may not be selected for Dataset sources",
+              blacklist: ['collection']
+            }}
+          />
+          <DatasetFormFields
+            formFields={formFields}
+            formValues={formValues}
+            formErrors={formErrors}
+            permissions={permissions}
+            handleInputChange={handleInputChange}
+          />
+          {!uuid && (
+            <Box className="my-3">
+              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={handleInputChange}
+                fullWidth
+                className="p-2"
+                sx={{
+                  borderTopLeftRadius: "4px",
+                  borderTopRightRadius: "4px",
+                }}
+                disabled={uuid ? true : false}
+                value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
+                <UserGroupSelectMenuPatch />
+              </NativeSelect>
+            </Box>
+          )}
+          {valErrorMessages && valErrorMessages.length > 0 && (
+            <Alert severity="error">
+              <AlertTitle>Please Review the following problems:</AlertTitle>
+              {valErrorMessages.map(error => (
+                <Typography key={error}>
+                  {error}
+                </Typography>
+              ))}
+            </Alert>
+          )}
+          {buttonEngine()}
+        </form>
+        {pageErrors && (
+          <Alert variant="filled" severity="error">
+            <strong>Error:</strong> {JSON.stringify(pageErrors)}
+          </Alert>
+        )}
+      </div>
+    );
+  }
+};
