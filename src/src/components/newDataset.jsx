@@ -8,9 +8,11 @@ import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
+import TextField from "@mui/material/TextField";
+import FormHelperText from '@mui/material/FormHelperText';
 import { useNavigate, useParams } from "react-router-dom";
 import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenuPatch } from "./ui/formParts";
+import { FormHeader, UserGroupSelectMenuPatch,TaskAssignment } from "./ui/formParts";
 import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
 import { humanize } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
@@ -47,6 +49,7 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({ ...formValues });
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
+  const allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
 
   const formFields = useMemo(() => [
     {
@@ -153,6 +156,7 @@ export const DatasetForm = (props) => {
       if (prev[name] === value) return prev;
       return { ...prev, [name]: value };
     });
+    console.debug('%c◉  handleInputChange', 'color:#00ff7b',name, value );
   }, []);
 
   // Callback for BulkSelector
@@ -209,9 +213,23 @@ export const DatasetForm = (props) => {
       setIsProcessing(true);
       let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
       let cleanForm = {
-        ...formValues,
-        direct_ancestor_uuids: selectedUUIDs
+        lab_dataset_id:formValues.lab_dataset_id,
+        contains_human_genetic_sequences:formValues.contains_human_genetic_sequences,
+        description:formValues.description, 
+        dataset_info:formValues.dataset_info,
+        direct_ancestor_uuids: selectedUUIDs,
       };
+      console.debug('%c⭗ Data', 'color:#00ff7b',cleanForm  );
+      // if(this.state.has_admin_priv){
+      //   console.debug('%c⊙', 'color:#8b1fff', this.state.assigned_to_group_name, this.state.ingest_task );
+      //   if (this.state.assigned_to_group_name && this.state.assigned_to_group_name.length > 0){
+      //     data["assigned_to_group_name"]=this.state.assigned_to_group_name;
+      //   }
+      //   if (this.state.ingest_task && this.state.ingest_task.length > 0){
+      //     data["ingest_task"]=this.state.ingest_task;
+      //   }
+      // }
+      console.debug('%c⭗ Data', 'color:#00ff7b',cleanForm);
       if (uuid) {
         let target = e.target.name;
         setButtonLoading((prev) => ({
@@ -238,6 +256,9 @@ export const DatasetForm = (props) => {
             }));
           });
       } else {
+        let group_uuid = formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid;
+        cleanForm.dataset_type = this.state.dataset_type;
+        cleanForm.group_uuid = group_uuid;
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {
@@ -345,6 +366,18 @@ export const DatasetForm = (props) => {
             permissions={permissions}
             handleInputChange={handleInputChange}
           />
+          {/* TASK ASSIGNMENT */}
+          {uuid && (
+            <TaskAssignment
+              uuid={uuid}
+              permissions={permissions}
+              entityData={entityData}
+              formValues={formValues}
+              formErrors={formErrors}
+              handleInputChange={handleInputChange}
+              allGroups={allGroups}
+            />
+          )}
           {!uuid && (
             <Box className="my-3">
               <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">

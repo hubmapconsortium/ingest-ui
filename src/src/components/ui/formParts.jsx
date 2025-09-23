@@ -28,11 +28,12 @@ import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
-
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
+import TextField from "@mui/material/TextField";
+import FormHelperText from "@mui/material/FormHelperText";
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
@@ -298,7 +299,6 @@ function infoPanels(entityData,permissions,globusURL){
     </Grid>
   )
 }
-
 
 export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));

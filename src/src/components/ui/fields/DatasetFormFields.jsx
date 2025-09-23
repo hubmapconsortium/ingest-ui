@@ -1,5 +1,17 @@
 import React from "react";
-import { TextField, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Select, MenuItem, FormHelperText, Box, Typography } from "@mui/material";
+import { 
+  Box, 
+  FormControl,
+  FormControlLabel, 
+  FormHelperText, 
+  FormLabel, 
+  MenuItem, 
+  Radio, 
+  RadioGroup, 
+  Select, 
+  TextField, 
+  Typography 
+} from "@mui/material";
 
 export const DatasetFormFields = ({ formFields, formValues, formErrors, permissions, handleInputChange }) => {
   
@@ -53,12 +65,13 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
         }
         if (field.id === "dt_select") {
           let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
-          let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt.dataset_type, label: dt.dataset_type })) : []
-          console.debug('%c◉  dtvalues', 'color:#00ff7b',dtvalues );
-          if(!field.values.includes(formValues[field.id])){
-            field.values.push(formValues[field.id]);
+          let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
+          let found = dtvalues.some(item => item.label === formValues[field.id]);
+          console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
+          if(!found){
+            field.values.push({label: formValues[field.id], value: formValues[field.id]});
+            console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
           }
-          console.debug('%c◉ providedType ', 'color:#00ff7b', field.values.includes(formValues[field.id]),formValues[field.id]);
           return (
             <FormControl
               key={field.id}
@@ -70,7 +83,7 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
             >
               <FormLabel>{field.label}</FormLabel>
               {!field.writeEnabled && (
-                <Typography variant="body2" color="textSecondary" sx={{ mb: 1, mt: 0.5 }}>
+                <Typography variant="body2" color="textSecondary" sx={{ marginBottom: "10px", marginTop: "5px", color: "rgba(0, 0, 0, 0.3)" }}>
                   {formValues[field.id]}
                 </Typography>
               )}
@@ -79,13 +92,12 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
                   id={field.id}
                   name={field.id}
                   value={formValues[field.id] || ""}
-                  onChange={handleInputChange}
-                  displayEmpty>
+                  onChange={handleInputChange}  >
                   {!field.values.includes(formValues[field.id]) && (
-                    <MenuItem key={formValues[field.id]} value={formValues[field.id]} selected>{formValues[field.id]}</MenuItem>
+                    <MenuItem key={formValues[field.id]+1} value={formValues[field.id]} selected>{formValues[field.id]}</MenuItem>
                   )}
-                  {field.values && field.values.map((val) => (
-                    <MenuItem key={val.value} value={val.value}>{val.label}</MenuItem>
+                  {field.values && field.values.map((val, index) => (
+                    <MenuItem key={(val.value)+"-i"+index} value={val.value}>{val.label}</MenuItem>
                   ))}
                 </Select>
               )}
