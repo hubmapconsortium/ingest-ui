@@ -98,7 +98,7 @@ export const DatasetForm = (props) => {
       helperText: "",
       required: true,
       type: "select",
-      writeEnabled: !entityData || !entityData.uuid,
+      writeEnabled: entityData?.uuid ? true : false,
       values: localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => ({ value: dt.dataset_type, label: dt.dataset_type })) : []  
     }
   ], []);
@@ -317,7 +317,7 @@ export const DatasetForm = (props) => {
       let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
       let cleanForm = {
         lab_dataset_id:formValues.lab_dataset_id,
-        contains_human_genetic_sequences:formValues.contains_human_genetic_sequences,
+        contains_human_genetic_sequences:formValues.contains_human_genetic_sequences === "yes" ? true : false,
         description:formValues.description, 
         dataset_info:formValues.dataset_info,
         direct_ancestor_uuids: selectedUUIDs,
@@ -360,8 +360,10 @@ export const DatasetForm = (props) => {
           });
       } else {
         let group_uuid = formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid;
-        cleanForm.dataset_type = formValues.dataset_type;
-        cleanForm.group_uuid = group_uuid;
+        cleanForm.dataset_type = formValues.dt_select;
+        cleanForm.group_uuid = formValues.group_uuid;
+        console.log(formValues, formValues.contains_human_genetic_sequences )
+        console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {
