@@ -1,3 +1,4 @@
+import {useNavigate} from "react-router-dom";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
@@ -27,11 +28,12 @@ import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
-
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
+import TextField from "@mui/material/TextField";
+import FormHelperText from "@mui/material/FormHelperText";
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
@@ -42,6 +44,7 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
+  console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
@@ -135,6 +138,84 @@ export function badgeClass(status){
   }
 }
 
+export function TaskAssignment({
+    uuid,
+    permissions,
+    entityData,
+    formValues,
+    formErrors,
+    handleInputChange,
+    allGroups
+  }) {
+  return (
+    <Box sx={{ width: '100%', display: "flex", marginTop: "20px" }} >
+      <Box sx={{ marginRight: "20px" }} className={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? "col-6 taskAssignment disabled" : "col-6"}>
+        <InputLabel htmlFor="ingest_task">
+          Ingest Task
+        </InputLabel>
+        <TextField
+          id="ingest_task"
+          name="ingest_task"
+          value={formValues ? formValues.ingest_task : ""}
+          error={formErrors.ingest_task}
+          InputLabelProps={{ shrink: ((uuid || (formValues?.ingest_task)) ? true : false) }}
+          onChange={handleInputChange}
+          fullWidth
+          disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}
+          className="taskInputStyling"
+        />
+        <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? { color: "rgba(0, 0, 0, 0.6)" } : { color: "rgba(0, 0, 0, 0.3)" }}>
+          The next task in the data ingest process.
+        </FormHelperText>
+      </Box>
+      <Box className="col-6 ">
+        <InputLabel htmlFor="assigned_to_group_name">
+          Assigned to Group
+        </InputLabel>
+        <NativeSelect
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
+          onChange={handleInputChange}
+          fullWidth
+          inputProps={{ style: { padding: "0.8em" } }}
+          className="taskInputStyling"
+          disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}
+          value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}
+        >
+          <option key={"0000"} value={""}></option>
+          {allGroups && allGroups.map(group => (
+            <option key={group.uuid} value={group.displayname}>
+              {group.displayname}
+            </option>
+          ))}
+        </NativeSelect>
+        <FormHelperText disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? true : false}>
+          The group responsible for the next step in the data ingest process.
+        </FormHelperText>
+      </Box>
+    </Box>
+  );
+}
+
+export function renderUploadLink(entityData){
+  function handleUploadSelect(e, uuid){
+    window.location.assign(`/upload/${uuid}`,);
+  }
+  return (
+    <Box sx={{ display: "flex" }}>
+      <Box sx={{ width: "100%" }}>
+        <strong>
+          This {entityData.entityType} is contained in the data Upload{" "}
+        </strong>
+        <Button
+          variant="text"
+          onClick={(e) => handleUploadSelect(e, entityData.upload.hubmap_id)}>
+          {entityData.upload.hubmap_id}
+        </Button>
+      </Box>
+    </Box>
+  )
+}
 
 function errorNote(){
   return (<>
@@ -257,6 +338,9 @@ function infoPanels(entityData,permissions,globusURL){
           acessible when data associated with it was published.
         </Alert>
       )}
+      {entityData && (entityData.upload) &&(
+        renderUploadLink(entityData)
+      )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
           variant="caption" 
@@ -276,6 +360,16 @@ function infoPanels(entityData,permissions,globusURL){
      
     </Grid>
   )
+}
+function getHubmapIDsFromBulkTable() {
+  const wrapper = document.getElementById('bulkTableWrapper');
+  if (!wrapper) return [];
+  const table = wrapper.querySelector('table');
+  if (!table) return [];
+  // Select all first-column <a> elements in table rows
+  const idLinks = table.querySelectorAll('tbody tr td:first-child a');
+  console.log("idLinks",idLinks);
+  return Array.from(idLinks).map(a => a.textContent.trim());
 }
 
 
@@ -413,33 +507,42 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
   );
 }
 
+
 export function HandleCopyFormUrl(e) {
-    const url = new URL(window.location.origin + window.location.pathname);
-    let formValues = document.querySelectorAll("input, textarea, select");
-    Object.entries(formValues).forEach(([key, value]) => {
-      console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
-      if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
-        url.searchParams.set(value.id, value.value);
-      }
-      else if (value.type === "checkbox" && value.checked ) {
-        url.searchParams.set(value.id, value.checked === true ? "true" : "false");
-      }
-    });
-    navigator.clipboard.writeText(url.toString())
-      .then(() => {
-        // setSnackMessage("Form URL copied to clipboard!");
-        // setShowSnack(true)
-      })
-      .catch(() => {
-        // setSnackMessage("Form URL Failed to copy to clipboard!");
-        // setShowSnack(true)
-      });
+  const url = new URL(window.location.origin + window.location.pathname);
+  let formValues = document.querySelectorAll("input, textarea, select");
+  console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
+  Object.entries(formValues).forEach(([key, value]) => {
+    console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
+    if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
+      url.searchParams.set(value.id, value.value);
+    }
+    else if (value.type === "checkbox" && value.checked ) {
+      url.searchParams.set(value.id, value.checked === true ? "true" : "false");
+    }
+  });
+  let sourceTable = getHubmapIDsFromBulkTable();
+  if (sourceTable.length > 0) {
+    url.searchParams.set("source_list", sourceTable.join(","));
   }
-export default function SpeedDialTooltipOpen() {
+  navigator.clipboard.writeText(url.toString())
+    .then(() => {
+      // setSnackMessage("Form URL copied to clipboard!");
+      // setShowSnack(true)
+    })
+    .catch(() => {
+      // setSnackMessage("Form URL Failed to copy to clipboard!");
+      // setShowSnack(true)
+    });
+}
+
+export function SpeedDialTooltipOpen() {
+  let navigate = useNavigate();
   const actions = [
     // { icon: <FileCopyIcon />, name: 'Copy' },
     // { icon: <SaveIcon />, name: 'Save' },
     { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
+    { icon: <TableChartIcon />, name: 'Create Dataset', action: (e) => navigate(`/new/datasetAdmin`) },
     // { icon: <ReportIcon />, name: 'Share' },
   ];
   const [open, setOpen] = React.useState(false);
@@ -449,7 +552,7 @@ export default function SpeedDialTooltipOpen() {
     <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
       <SpeedDial
         ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', top: 0, right: 16 }}
+        sx={{ position: 'absolute', top: 0, right: 16,/*  background:"#0080d009", borderRadius:"1.2em"*/ }}
         icon={<OfflineBoltIcon />}
         direction={"down"}>
         {actions.map((action) => (
