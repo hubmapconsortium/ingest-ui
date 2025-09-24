@@ -14,10 +14,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { BulkSelector } from "./ui/bulkSelector";
 import { FormHeader, UserGroupSelectMenuPatch,TaskAssignment } from "./ui/formParts";
 import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
-import { humanize } from "../utils/string_helper";
+import {RevertFeature} from "../utils/revertModal";
+import { humanize, toTitleCase } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
+import {ubkg_api_generate_display_subtype} from "../service/ubkg_api";
 
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
@@ -26,6 +28,7 @@ export const DatasetForm = (props) => {
   let [isProcessing, setIsProcessing] = useState(false);
   let [valErrorMessages, setValErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [readOnlySources, setReadOnlySources] = useState(false);
 
   let [permissions, setPermissions] = useState({
     has_admin_priv: false,
@@ -49,6 +52,8 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({ ...formValues });
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
+  let [selectedBulkDataFormatted, setSelectedBulkDataFormatted] = useState([]);
+
   const allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
 
   const formFields = useMemo(() => [
@@ -118,17 +123,31 @@ export const DatasetForm = (props) => {
                 contains_human_genetic_sequences: entityData.contains_human_genetic_sequences,
                 dt_select: entityData.dataset_type,
               });
+              let formattedAncestors = assembleSourceAncestorData(entityData.direct_ancestors);
+
               setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
-              setSelectedBulkData(entityData.direct_ancestors);
+              setSelectedBulkData(formattedAncestors);
               console.log("Entity Data:", entityData.direct_ancestors, selectedBulkData);
+
+              // Set the Bulk Table to read only if the Dataset is not in a modifiable state
+              if (entityData.creation_action === "Multi-Assay Split" || entityData.creation_action === "Central Process"){
+                setReadOnlySources(true);
+              }
+
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
+                  console.debug('%c◉  ingest_api_allowable_edit_states Permissions', 'color:#00ff7b', response.results);
                   if (entityData.data_access_level === "public") {
+                    setReadOnlySources(true);
                     setPermissions({
                       has_write_priv: false,
                     });
                   }
+                  if(response.results.has_write_priv === false){
+                    setReadOnlySources(true);
+                  }
                   setPermissions(response.results);
+                  
                 })
                 .catch((error) => {
                   setPageErrors(error);
@@ -149,6 +168,17 @@ export const DatasetForm = (props) => {
     setLoading(false);
     // eslint-disable-next-line
   }, [uuid]);
+
+  const assembleSourceAncestorData = (source_uuids) =>{   
+    var dst="";
+    source_uuids.forEach(function(row, index) {
+      dst=ubkg_api_generate_display_subtype(row);
+      console.debug("dst", dst);
+      source_uuids[index].display_subtype=toTitleCase(dst);
+    });
+    console.debug('%c◉  selectedBulkDataFormatted', 'color:#00ff7b',selectedBulkDataFormatted );
+    return (source_uuids)
+  }
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -281,13 +311,17 @@ export const DatasetForm = (props) => {
   };
 
   const buttonEngine = () => {
-    return (
+    return (<>
+      <Box sx={{ textAlign: "left" }}>
+        {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
+          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+        )}
+      </Box>
       <Box sx={{ textAlign: "right" }}>
         <LoadingButton
           variant="contained"
           className="m-2"
-          onClick={() => navigate("/")}
-        >
+          onClick={() => navigate("/")}>
           Cancel
         </LoadingButton>
         {!uuid && (
@@ -297,19 +331,18 @@ export const DatasetForm = (props) => {
             loading={isProcessing}
             className="m-2"
             onClick={(e) => handleSubmit(e)}
-            type="submit"
-          >
+            type="submit">
             Save
           </LoadingButton>
         )}
+        
         {uuid && uuid.length > 0 && permissions.has_admin_priv && (
           <LoadingButton
             loading={buttonLoading['process']}
             name="process"
             onClick={(e) => handleSubmit(e)}
             variant="contained"
-            className="m-2"
-          >
+            className="m-2">
             Process
           </LoadingButton>
         )}
@@ -336,7 +369,7 @@ export const DatasetForm = (props) => {
           </LoadingButton>
         )}
       </Box>
-    );
+    </>);
   };
 
   if (isLoading || ((!entityData || !formValues) && uuid)) {
@@ -358,6 +391,7 @@ export const DatasetForm = (props) => {
               custom_subtitle: "Collections may not be selected for Dataset sources",
               blacklist: ['collection']
             }}
+            readOnly={readOnlySources}
           />
           <DatasetFormFields
             formFields={formFields}
@@ -365,6 +399,7 @@ export const DatasetForm = (props) => {
             formErrors={formErrors}
             permissions={permissions}
             handleInputChange={handleInputChange}
+            readOnly = {uuid && true}
           />
           {/* TASK ASSIGNMENT */}
           {uuid && (

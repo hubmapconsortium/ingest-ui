@@ -138,7 +138,69 @@ export function badgeClass(status){
   }
 }
 
-function renderUploadLink(entityData){
+export function TaskAssignment({
+    uuid,
+    permissions,
+    entityData,
+    formValues,
+    formErrors,
+    handleInputChange,
+    allGroups
+  }) {
+  return (
+    <Box sx={{ width: '100%', display: "flex", marginTop: "20px" }} >
+      <Box sx={{ marginRight: "20px" }} className={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? "col-6 taskAssignment disabled" : "col-6"}>
+        <InputLabel htmlFor="ingest_task">
+          Ingest Task
+        </InputLabel>
+        <TextField
+          id="ingest_task"
+          name="ingest_task"
+          value={formValues ? formValues.ingest_task : ""}
+          error={formErrors.ingest_task}
+          InputLabelProps={{ shrink: ((uuid || (formValues?.ingest_task)) ? true : false) }}
+          onChange={handleInputChange}
+          fullWidth
+          disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}
+          className="taskInputStyling"
+        />
+        <FormHelperText id="organIDHelp" className="mb-3" sx={permissions.has_write_priv ? { color: "rgba(0, 0, 0, 0.6)" } : { color: "rgba(0, 0, 0, 0.3)" }}>
+          The next task in the data ingest process.
+        </FormHelperText>
+      </Box>
+      <Box className="col-6 ">
+        <InputLabel htmlFor="assigned_to_group_name">
+          Assigned to Group
+        </InputLabel>
+        <NativeSelect
+          id="assigned_to_group_name"
+          name="assigned_to_group_name"
+          onChange={handleInputChange}
+          fullWidth
+          inputProps={{ style: { padding: "0.8em" } }}
+          className="taskInputStyling"
+          disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}
+          value={formValues.assigned_to_group_name ? formValues.assigned_to_group_name : ""}
+        >
+          <option key={"0000"} value={""}></option>
+          {allGroups && allGroups.map(group => (
+            <option key={group.uuid} value={group.displayname}>
+              {group.displayname}
+            </option>
+          ))}
+        </NativeSelect>
+        <FormHelperText disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false ? true : false}>
+          The group responsible for the next step in the data ingest process.
+        </FormHelperText>
+      </Box>
+    </Box>
+  );
+}
+
+export function renderUploadLink(entityData){
+  function handleUploadSelect(e, uuid){
+    window.location.assign(`/upload/${uuid}`,);
+  }
   return (
     <Box sx={{ display: "flex" }}>
       <Box sx={{ width: "100%" }}>
@@ -147,7 +209,7 @@ function renderUploadLink(entityData){
         </strong>
         <Button
           variant="text"
-          onClick={this.handlePublicationSelect}>
+          onClick={(e) => handleUploadSelect(e, entityData.upload.hubmap_id)}>
           {entityData.upload.hubmap_id}
         </Button>
       </Box>
@@ -299,6 +361,7 @@ function infoPanels(entityData,permissions,globusURL){
     </Grid>
   )
 }
+
 
 export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
@@ -456,7 +519,7 @@ export function HandleCopyFormUrl(e) {
       // setShowSnack(true)
     });
 }
-export default function SpeedDialTooltipOpen() {
+export function SpeedDialTooltipOpen() {
   let navigate = useNavigate();
   const actions = [
     // { icon: <FileCopyIcon />, name: 'Copy' },

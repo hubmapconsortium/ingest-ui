@@ -26,6 +26,7 @@ import SearchComponent from "../search/SearchComponent";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
+import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 
 export function BulkSelector({
   dialogTitle = "Associated Dataset IDs",
@@ -37,6 +38,8 @@ export function BulkSelector({
   initialSourcesData = [],
   onBulkSelectionChange,
 	searchFilters,
+  readOnly
+
 }) {
   // Bulk selection state
   const [showSearchDialog, setShowSearchDialog] = useState(false);
@@ -52,6 +55,8 @@ export function BulkSelector({
   const [selected_UUIDs, setSelectedUUIDs] = useState(initialSelectedUUIDs);
   const [selected_string, setSelectedString] = useState(initialSelectedString);
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
+  
+  let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
 
   // Sync sourcesData with prop changes
   useEffect(() => {
@@ -299,6 +304,14 @@ export function BulkSelector({
     </>);
   }
 
+
+  function handleOpenPage(e,row) {
+    console.log("row",row)
+    e.preventDefault()    
+    let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`
+    window.open(url, "_blank");
+  }
+
   let totalWarnings = 0;
   if (bulkWarning && bulkWarning.length > 0) {
     for (let warningSets of bulkWarning) {
@@ -424,7 +437,9 @@ export function BulkSelector({
                   key={row.hubmap_id + "" + index}
                   className="row-selection">
                   <TableCell className="clicky-cell" sx={{ width: "166px" }} scope="row">
-                    {row.hubmap_id}
+                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor:"pointer"}} >
+                      {row.hubmap_id}
+                      </a>
                   </TableCell>
                   <TableCell className="clicky-cell" scope="row" sx={{ maxWidth: "210px" }}>
                     {row.dataset_type ? row.dataset_type : row.display_subtype}
@@ -439,7 +454,7 @@ export function BulkSelector({
                       </span>
                     )}
                   </TableCell>
-                  {permissions.has_write_priv && (
+                  {permissions.has_write_priv && !readOnlyState && (
                     <TableCell
                       className="clicky-cell"
                       align="right"
@@ -522,7 +537,7 @@ export function BulkSelector({
 
     <Box className="mt-0 mb-4" >
       <Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
-        <Box className="m-0 text-right" id="bulkButtons" display={!permissions.has_write_priv ? "none" : "inline-flex"} flexDirection="row" >
+        <Box className="m-0 text-right" id="bulkButtons" display={(!permissions.has_write_priv || readOnlyState)? "none" : "inline-flex"} flexDirection="row" >
           <Button
             sx={{ maxHeight: "35px", verticalAlign: 'bottom', background: "#444a65!important" }}
             variant="contained"
