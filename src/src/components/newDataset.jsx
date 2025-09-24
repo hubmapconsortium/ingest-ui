@@ -10,6 +10,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import TextField from "@mui/material/TextField";
 import FormHelperText from '@mui/material/FormHelperText';
+import Snackbar from '@mui/material/Snackbar';
 import { useNavigate, useParams } from "react-router-dom";
 import { BulkSelector } from "./ui/bulkSelector";
 import { FormHeader, UserGroupSelectMenuPatch,TaskAssignment } from "./ui/formParts";
@@ -23,6 +24,7 @@ import {ubkg_api_generate_display_subtype} from "../service/ubkg_api";
 
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
+
   let [entityData, setEntityData] = useState();
   let [isLoading, setLoading] = useState(true);
   let [isProcessing, setIsProcessing] = useState(false);
@@ -52,7 +54,11 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({ ...formValues });
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
-  let [selectedBulkDataFormatted, setSelectedBulkDataFormatted] = useState([]);
+  let [snackbarController, setSnackbarController] = useState({
+    open: false,
+    message: "", 
+    status: "info"
+  });
 
   const allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
 
@@ -124,7 +130,6 @@ export const DatasetForm = (props) => {
                 dt_select: entityData.dataset_type,
               });
               let formattedAncestors = assembleSourceAncestorData(entityData.direct_ancestors);
-
               setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
               setSelectedBulkData(formattedAncestors);
               console.log("Entity Data:", entityData.direct_ancestors, selectedBulkData);
@@ -161,9 +166,68 @@ export const DatasetForm = (props) => {
           setPageErrors(error);
         });
     } else {
+      let url = new URL(window.location.href);
+      let params = Object.fromEntries(url.searchParams.entries());
+      if(Object.keys(params).length > 0){
+        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
+        setFormValues((prevValues) => ({
+          ...prevValues,
+          ...params
+        }));
+        setSnackbarController({
+          open: true,
+          message: "Passing Form values from URL parameters",
+          status: "success"
+        });
+      }
       setPermissions({
         has_write_priv: true,
       });
+      // Set the Source if Passed from URL
+        if(params.source_list){
+          // Support comma-separated list of UUIDs
+          const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
+          let ancestorData = [];
+          ancestorUUIDs.forEach((uuidItem) => {
+            entity_api_get_entity(uuidItem)
+              .then((response) => {
+                let error = response?.data?.error ?? false;
+                console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
+                if(!error && (response?.results?.entity_type !== "Collection")){
+                  console.debug('%c◉ error ', 'color:#00ff7b', error);
+                  let passSource = {row: response?.results ? response.results : null};
+                  console.log("passSource",passSource)
+                  ancestorData.push(passSource.row);
+                }
+                else if(!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample"){
+                  setSnackbarController({
+                    open: true,
+                    message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
+                    status: "error"
+                  });
+                }else if(error){
+                  setSnackbarController({
+                    open: true,
+                    message: `Sorry, There was an error selecting your source: ${error}`,
+                    status: "error"
+                  });
+                }else{
+                  throw new Error(response)
+                }
+              })
+              .catch((error) => {
+                console.debug("entity_api_get_entity ERROR", error);
+                setPageErrors(error);
+              });
+          });
+          setSelectedBulkUUIDs(ancestorUUIDs);
+          setSelectedBulkData(assembleSourceAncestorData(ancestorData));
+          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            direct_ancestor_uuids: ancestorUUIDs
+          }));
+        }
     }
     setLoading(false);
     // eslint-disable-next-line
@@ -176,7 +240,6 @@ export const DatasetForm = (props) => {
       console.debug("dst", dst);
       source_uuids[index].display_subtype=toTitleCase(dst);
     });
-    console.debug('%c◉  selectedBulkDataFormatted', 'color:#00ff7b',selectedBulkDataFormatted );
     return (source_uuids)
   }
 
@@ -287,7 +350,7 @@ export const DatasetForm = (props) => {
           });
       } else {
         let group_uuid = formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid;
-        cleanForm.dataset_type = this.state.dataset_type;
+        cleanForm.dataset_type = formValues.dataset_type;
         cleanForm.group_uuid = group_uuid;
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
@@ -299,8 +362,14 @@ export const DatasetForm = (props) => {
           })
           .catch((error) => {
             setPageErrors(error);
+            setButtonLoading(() => ({
+              process: false,
+              save: false,
+              submit: false,
+            }));
           });
       }
+      
     } else {
       setButtonLoading(() => ({
         process: false,
@@ -376,7 +445,7 @@ export const DatasetForm = (props) => {
     return (<LinearProgress />);
   } else {
     return (
-      <div className={formErrors}>
+      <Box className={formErrors}>
         <Grid container className='mb-2'>
           {memoizedFormHeader}
         </Grid>
@@ -451,7 +520,28 @@ export const DatasetForm = (props) => {
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
-      </div>
+        
+        {/* Snackbar Feedback*/}
+        <Snackbar 
+          open={snackbarController.open} 
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          autoHideDuration={6000} 
+          onClose={() => setSnackbarController(prev => ({...prev, open: false}))}>
+          <Alert
+            onClose={() => setSnackbarController(prev => ({...prev, open: false}))}
+            severity={snackbarController.status}
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              backgroundColor: snackbarController.status === "error" ? "#f44336" : "#4caf50",
+              }}>
+            {snackbarController.message}
+          </Alert>
+        </Snackbar>
+      </Box>
     );
   }
 };

@@ -361,6 +361,16 @@ function infoPanels(entityData,permissions,globusURL){
     </Grid>
   )
 }
+function getHubmapIDsFromBulkTable() {
+  const wrapper = document.getElementById('bulkTableWrapper');
+  if (!wrapper) return [];
+  const table = wrapper.querySelector('table');
+  if (!table) return [];
+  // Select all first-column <a> elements in table rows
+  const idLinks = table.querySelectorAll('tbody tr td:first-child a');
+  console.log("idLinks",idLinks);
+  return Array.from(idLinks).map(a => a.textContent.trim());
+}
 
 
 export function UserGroupSelectMenu(formValues){
@@ -497,6 +507,7 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
   );
 }
 
+
 export function HandleCopyFormUrl(e) {
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
@@ -509,6 +520,10 @@ export function HandleCopyFormUrl(e) {
       url.searchParams.set(value.id, value.checked === true ? "true" : "false");
     }
   });
+  let sourceTable = getHubmapIDsFromBulkTable();
+  if (sourceTable.length > 0) {
+    url.searchParams.set("source_list", sourceTable.join(","));
+  }
   navigator.clipboard.writeText(url.toString())
     .then(() => {
       // setSnackMessage("Form URL copied to clipboard!");
@@ -519,6 +534,7 @@ export function HandleCopyFormUrl(e) {
       // setShowSnack(true)
     });
 }
+
 export function SpeedDialTooltipOpen() {
   let navigate = useNavigate();
   const actions = [

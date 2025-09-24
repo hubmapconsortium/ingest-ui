@@ -68,10 +68,11 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
           let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
           let found = dtvalues.some(item => item.label === formValues[field.id]);
           console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
-          if(!found){
+          if(!found && formValues[field.id] && formValues[field.id] !== ""){
             field.values.push({label: formValues[field.id], value: formValues[field.id]});
             console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
           }
+          console.debug('%c◉ field.values ', 'color:#00ff7b',field.values);
           return (
             <FormControl
               key={field.id}
@@ -93,9 +94,9 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
                   name={field.id}
                   value={formValues[field.id] || ""}
                   onChange={handleInputChange}  >
-                  {!field.values.includes(formValues[field.id]) && (
+                  {/* {!field.values.includes(formValues[field.id]) && (
                     <MenuItem key={formValues[field.id]+1} value={formValues[field.id]} selected>{formValues[field.id]}</MenuItem>
-                  )}
+                  )} */}
                   {field.values && field.values.map((val, index) => (
                     <MenuItem key={(val.value)+"-i"+index} value={val.value}>{val.label}</MenuItem>
                   ))}
