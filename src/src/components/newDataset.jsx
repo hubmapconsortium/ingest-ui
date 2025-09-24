@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { Typography } from "@mui/material";
@@ -20,6 +21,8 @@ import { humanize } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
+import { handleSourceListFromParams } from "./ui/formParts";
+import { prefillFormValuesFromUrl } from "./ui/formParts";
 
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
@@ -166,74 +169,18 @@ export const DatasetForm = (props) => {
           setPageErrors(error);
         });
     } else {
-      let url = new URL(window.location.href);
-      let params = Object.fromEntries(url.searchParams.entries());
-      if(Object.keys(params).length > 0){
-        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
-        setFormValues((prevValues) => ({
-          ...prevValues,
-          ...params
-        }));
-        setSnackbarController({
-          open: true,
-          message: "Passing Form values from URL parameters",
-          status: "success"
-        });
-      }
-      // Set the Source if Passed from URL
-      if(params.source_list){
-        setPreLoadingBulk(true);
-        console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
-        // Support comma-separated list of UUIDs
-        const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
-        let ancestorData = [];
-        let fetchCount = 0;
-        ancestorUUIDs.forEach((uuidItem) => {
-          entity_api_get_entity(uuidItem)
-            .then((response) => {
-              let error = response?.data?.error ?? false;
-              console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
-              if(!error && (response?.results?.entity_type !== "Collection")){
-                console.debug('%c◉ error ', 'color:#00ff7b', error);
-                let passSource = {row: response?.results ? response.results : null};
-                console.log("passSource",passSource)
-                ancestorData.push(passSource.row);
-              }
-              else if(!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample"){
-                setSnackbarController({
-                  open: true,
-                  message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
-                  status: "error"
-                });
-              }else if(error){
-                setSnackbarController({
-                  open: true,
-                  message: `Sorry, There was an error selecting your source: ${error}`,
-                  status: "error"
-                });
-              }else{
-                throw new Error(response)
-              }
-            })
-            .catch((error) => {
-              console.debug("entity_api_get_entity ERROR", error);
-              setPageErrors(error);
-            })
-            .finally(() => {
-              fetchCount++;
-              if (fetchCount === ancestorUUIDs.length) {
-                setSelectedBulkUUIDs(ancestorUUIDs);
-                setSelectedBulkData(ancestorData);
-                handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
-                setFormValues((prevValues) => ({
-                  ...prevValues,
-                  direct_ancestor_uuids: ancestorUUIDs
-                }));
-                setPreLoadingBulk(false);
-              }
-            });
-        });
-      }
+    // Pre-fill form values from URL parameters
+    const params = prefillFormValuesFromUrl(setFormValues, setSnackbarController);
+      // Handle source_list from URL params
+      handleSourceListFromParams(params, {
+        setPreLoadingBulk,
+        setSnackbarController,
+        setSelectedBulkUUIDs,
+        setSelectedBulkData,
+        handleBulkSelectionChange,
+        setFormValues,
+        setPageErrors
+      });
       setPermissions({
         has_write_priv: true,
       });

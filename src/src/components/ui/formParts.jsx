@@ -34,6 +34,7 @@ import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
+import { entity_api_get_entity } from "../../service/entity_api";
 
 // import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 // import {entity_api_get_entity} from "../../service/entity_api";
@@ -138,6 +139,67 @@ export function badgeClass(status){
   }
 }
 
+export function handleSourceListFromParams(params, {
+  setPreLoadingBulk,
+  setSnackbarController,
+  setSelectedBulkUUIDs,
+  setSelectedBulkData,
+  handleBulkSelectionChange,
+  setFormValues,
+  setPageErrors
+  }) {
+  if (!params.source_list) return;
+  setPreLoadingBulk(true);
+  console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
+  const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
+  let ancestorData = [];
+  let fetchCount = 0;
+  ancestorUUIDs.forEach((uuidItem) => {
+    entity_api_get_entity(uuidItem)
+      .then((response) => {
+        let error = response?.data?.error ?? false;
+        console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
+        if (!error && (response?.results?.entity_type !== "Collection")) {
+          console.debug('%c◉ error ', 'color:#00ff7b', error);
+          let passSource = { row: response?.results ? response.results : null };
+          console.log("passSource", passSource);
+          ancestorData.push(passSource.row);
+        } else if (!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample") {
+          setSnackbarController({
+            open: true,
+            message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
+            status: "error"
+          });
+        } else if (error) {
+          setSnackbarController({
+            open: true,
+            message: `Sorry, There was an error selecting your source: ${error}`,
+            status: "error"
+          });
+        } else {
+          throw new Error(response);
+        }
+      })
+      .catch((error) => {
+        console.debug("entity_api_get_entity ERROR", error);
+        setPageErrors(error);
+      })
+      .finally(() => {
+        fetchCount++;
+        if (fetchCount === ancestorUUIDs.length) {
+          setSelectedBulkUUIDs(ancestorUUIDs);
+          setSelectedBulkData(ancestorData);
+          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            direct_ancestor_uuids: ancestorUUIDs
+          }));
+          setPreLoadingBulk(false);
+        }
+      });
+  });
+}
+
 export function TaskAssignment({
     uuid,
     permissions,
@@ -215,6 +277,26 @@ export function renderUploadLink(entityData){
       </Box>
     </Box>
   )
+}
+
+// Reusable helper to pre-fill form values from URL parameters
+export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
+  const url = new URL(window.location.href);
+  const params = Object.fromEntries(url.searchParams.entries());
+  if (Object.keys(params).length > 0) {
+    setFormValues((prevValues) => ({
+      ...prevValues,
+      ...params
+    }));
+    if (setSnackbarController) {
+      setSnackbarController({
+        open: true,
+        message: "Passing Form values from URL parameters",
+        status: "success"
+      });
+    }
+  }
+  return params;
 }
 
 function errorNote(){
