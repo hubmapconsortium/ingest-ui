@@ -511,6 +511,7 @@ export function GroupSelector( {formValues, handleInputChange, memoizedUserGroup
 export function HandleCopyFormUrl(e) {
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
+  console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
   Object.entries(formValues).forEach(([key, value]) => {
     console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
     if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {

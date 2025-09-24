@@ -38,8 +38,8 @@ export function BulkSelector({
   initialSourcesData = [],
   onBulkSelectionChange,
 	searchFilters,
-  readOnly
-
+  readOnly,
+  preLoad,
 }) {
   // Bulk selection state
   const [showSearchDialog, setShowSearchDialog] = useState(false);
@@ -57,6 +57,7 @@ export function BulkSelector({
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
   
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
+  let [loadingState, setLoadingState] = useState(preLoad)
 
   // Sync sourcesData with prop changes
   useEffect(() => {
@@ -160,6 +161,7 @@ export function BulkSelector({
         setBulkWarning([]);
         setSourceBulkStatus("complete");
         setSelectedUUIDs([]);
+        setLoadingState(false);
       } else {
         let cols = ["hubmap_id", "uuid", "entity_type", "subtype", "group_name", "status", "dataset_type", "display_subtype"];
         search_api_es_query_ids(cleanList, ['datasets'], cols)
@@ -424,6 +426,7 @@ export function BulkSelector({
                 <TableRow sx={{ borderBottom: "0px!important" }}>
                   <TableCell colSpan={6} sx={{ textAlign: "center" }}>
                     No Data Loaded
+                    {loadingState === true && (<> <br />Loading...</>)}
                   </TableCell>
                 </TableRow>
               )}

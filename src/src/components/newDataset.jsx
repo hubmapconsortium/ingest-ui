@@ -31,6 +31,7 @@ export const DatasetForm = (props) => {
   let [valErrorMessages, setValErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
   let [readOnlySources, setReadOnlySources] = useState(false);
+  let [preLoadingBulk, setPreLoadingBulk] = useState(false);
 
   let [permissions, setPermissions] = useState({
     has_admin_priv: false,
@@ -185,9 +186,12 @@ export const DatasetForm = (props) => {
       });
       // Set the Source if Passed from URL
         if(params.source_list){
+          setPreLoadingBulk(true);
+          console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
           // Support comma-separated list of UUIDs
           const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
           let ancestorData = [];
+          let fetchCount = 0;
           ancestorUUIDs.forEach((uuidItem) => {
             entity_api_get_entity(uuidItem)
               .then((response) => {
@@ -218,15 +222,21 @@ export const DatasetForm = (props) => {
               .catch((error) => {
                 console.debug("entity_api_get_entity ERROR", error);
                 setPageErrors(error);
+              })
+              .finally(() => {
+                fetchCount++;
+                if (fetchCount === ancestorUUIDs.length) {
+                  setSelectedBulkUUIDs(ancestorUUIDs);
+                  setSelectedBulkData(assembleSourceAncestorData(ancestorData));
+                  handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
+                  setFormValues((prevValues) => ({
+                    ...prevValues,
+                    direct_ancestor_uuids: ancestorUUIDs
+                  }));
+                  setPreLoadingBulk(false);
+                }
               });
           });
-          setSelectedBulkUUIDs(ancestorUUIDs);
-          setSelectedBulkData(assembleSourceAncestorData(ancestorData));
-          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
-          setFormValues((prevValues) => ({
-            ...prevValues,
-            direct_ancestor_uuids: ancestorUUIDs
-          }));
         }
     }
     setLoading(false);
@@ -450,18 +460,19 @@ export const DatasetForm = (props) => {
           {memoizedFormHeader}
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
-          <BulkSelector
-            permissions={permissions}
-            initialSelectedUUIDs={selectedBulkUUIDs}
-            initialSourcesData={selectedBulkData}
-            onBulkSelectionChange={handleBulkSelectionChange}
-            searchFilters={{
-              custom_title: "Search for a Source ID for your Dataset",
-              custom_subtitle: "Collections may not be selected for Dataset sources",
-              blacklist: ['collection']
-            }}
-            readOnly={readOnlySources}
-          />
+            <BulkSelector
+              permissions={permissions}
+              initialSelectedUUIDs={selectedBulkUUIDs}
+              initialSourcesData={selectedBulkData}
+              onBulkSelectionChange={handleBulkSelectionChange}
+              searchFilters={{
+                custom_title: "Search for a Source ID for your Dataset",
+                custom_subtitle: "Collections may not be selected for Dataset sources",
+                blacklist: ['collection']
+              }}
+              readOnly={readOnlySources}
+              preLoad = {preLoadingBulk}
+            />
           <DatasetFormFields
             formFields={formFields}
             formValues={formValues}

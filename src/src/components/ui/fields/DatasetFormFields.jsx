@@ -93,10 +93,11 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
                   id={field.id}
                   name={field.id}
                   value={formValues[field.id] || ""}
-                  onChange={handleInputChange}  >
-                  {/* {!field.values.includes(formValues[field.id]) && (
-                    <MenuItem key={formValues[field.id]+1} value={formValues[field.id]} selected>{formValues[field.id]}</MenuItem>
-                  )} */}
+                  onChange={handleInputChange}
+                  inputProps={{
+                    name: field.id,
+                    id: field.id,
+                  }} >
                   {field.values && field.values.map((val, index) => (
                     <MenuItem key={(val.value)+"-i"+index} value={val.value}>{val.label}</MenuItem>
                   ))}
