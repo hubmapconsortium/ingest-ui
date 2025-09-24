@@ -16,11 +16,10 @@ import { BulkSelector } from "./ui/bulkSelector";
 import { FormHeader, UserGroupSelectMenuPatch,TaskAssignment } from "./ui/formParts";
 import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
 import {RevertFeature} from "../utils/revertModal";
-import { humanize, toTitleCase } from "../utils/string_helper";
+import { humanize } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
-import {ubkg_api_generate_display_subtype} from "../service/ubkg_api";
 
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
@@ -130,9 +129,9 @@ export const DatasetForm = (props) => {
                 contains_human_genetic_sequences: entityData.contains_human_genetic_sequences,
                 dt_select: entityData.dataset_type,
               });
-              let formattedAncestors = assembleSourceAncestorData(entityData.direct_ancestors);
+              // let formattedAncestors = assembleSourceAncestorData(entityData.direct_ancestors);
               setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
-              setSelectedBulkData(formattedAncestors);
+              setSelectedBulkData(entityData.direct_ancestors);
               console.log("Entity Data:", entityData.direct_ancestors, selectedBulkData);
 
               // Set the Bulk Table to read only if the Dataset is not in a modifiable state
@@ -181,77 +180,69 @@ export const DatasetForm = (props) => {
           status: "success"
         });
       }
+      // Set the Source if Passed from URL
+      if(params.source_list){
+        setPreLoadingBulk(true);
+        console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
+        // Support comma-separated list of UUIDs
+        const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
+        let ancestorData = [];
+        let fetchCount = 0;
+        ancestorUUIDs.forEach((uuidItem) => {
+          entity_api_get_entity(uuidItem)
+            .then((response) => {
+              let error = response?.data?.error ?? false;
+              console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
+              if(!error && (response?.results?.entity_type !== "Collection")){
+                console.debug('%c◉ error ', 'color:#00ff7b', error);
+                let passSource = {row: response?.results ? response.results : null};
+                console.log("passSource",passSource)
+                ancestorData.push(passSource.row);
+              }
+              else if(!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample"){
+                setSnackbarController({
+                  open: true,
+                  message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
+                  status: "error"
+                });
+              }else if(error){
+                setSnackbarController({
+                  open: true,
+                  message: `Sorry, There was an error selecting your source: ${error}`,
+                  status: "error"
+                });
+              }else{
+                throw new Error(response)
+              }
+            })
+            .catch((error) => {
+              console.debug("entity_api_get_entity ERROR", error);
+              setPageErrors(error);
+            })
+            .finally(() => {
+              fetchCount++;
+              if (fetchCount === ancestorUUIDs.length) {
+                setSelectedBulkUUIDs(ancestorUUIDs);
+                setSelectedBulkData(ancestorData);
+                handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
+                setFormValues((prevValues) => ({
+                  ...prevValues,
+                  direct_ancestor_uuids: ancestorUUIDs
+                }));
+                setPreLoadingBulk(false);
+              }
+            });
+        });
+      }
       setPermissions({
         has_write_priv: true,
       });
-      // Set the Source if Passed from URL
-        if(params.source_list){
-          setPreLoadingBulk(true);
-          console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
-          // Support comma-separated list of UUIDs
-          const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
-          let ancestorData = [];
-          let fetchCount = 0;
-          ancestorUUIDs.forEach((uuidItem) => {
-            entity_api_get_entity(uuidItem)
-              .then((response) => {
-                let error = response?.data?.error ?? false;
-                console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
-                if(!error && (response?.results?.entity_type !== "Collection")){
-                  console.debug('%c◉ error ', 'color:#00ff7b', error);
-                  let passSource = {row: response?.results ? response.results : null};
-                  console.log("passSource",passSource)
-                  ancestorData.push(passSource.row);
-                }
-                else if(!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample"){
-                  setSnackbarController({
-                    open: true,
-                    message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
-                    status: "error"
-                  });
-                }else if(error){
-                  setSnackbarController({
-                    open: true,
-                    message: `Sorry, There was an error selecting your source: ${error}`,
-                    status: "error"
-                  });
-                }else{
-                  throw new Error(response)
-                }
-              })
-              .catch((error) => {
-                console.debug("entity_api_get_entity ERROR", error);
-                setPageErrors(error);
-              })
-              .finally(() => {
-                fetchCount++;
-                if (fetchCount === ancestorUUIDs.length) {
-                  setSelectedBulkUUIDs(ancestorUUIDs);
-                  setSelectedBulkData(assembleSourceAncestorData(ancestorData));
-                  handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
-                  setFormValues((prevValues) => ({
-                    ...prevValues,
-                    direct_ancestor_uuids: ancestorUUIDs
-                  }));
-                  setPreLoadingBulk(false);
-                }
-              });
-          });
-        }
     }
     setLoading(false);
     // eslint-disable-next-line
   }, [uuid]);
 
-  const assembleSourceAncestorData = (source_uuids) =>{   
-    var dst="";
-    source_uuids.forEach(function(row, index) {
-      dst=ubkg_api_generate_display_subtype(row);
-      console.debug("dst", dst);
-      source_uuids[index].display_subtype=toTitleCase(dst);
-    });
-    return (source_uuids)
-  }
+  // assembleSourceAncestorData moved to BulkSelector
 
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;

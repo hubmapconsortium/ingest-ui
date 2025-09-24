@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -19,6 +20,8 @@ import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
 import TableChartIcon from '@mui/icons-material/TableChart';
 import PublishIcon from '@mui/icons-material/Publish';
+import { ubkg_api_generate_display_subtype } from "../../service/ubkg_api";
+import { toTitleCase } from "../../utils/string_helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faPenToSquare, faFolderTree, faTrash, faCircleExclamation, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
@@ -26,7 +29,6 @@ import SearchComponent from "../search/SearchComponent";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
-import {ubkg_api_generate_display_subtype} from "../../service/ubkg_api";
 
 export function BulkSelector({
   dialogTitle = "Associated Dataset IDs",
@@ -61,7 +63,8 @@ export function BulkSelector({
 
   // Sync sourcesData with prop changes
   useEffect(() => {
-    setSourcesData(initialSourcesData);
+    let sources = assembleSourceAncestorData(initialSourcesData);
+    setSourcesData(sources);
   }, [initialSourcesData]);
 
 	console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
@@ -134,6 +137,20 @@ export function BulkSelector({
       setShowBulkError(true);
     }
     return goodArray;
+  }
+
+  // Helper to format display_subtype for sources
+  function assembleSourceAncestorData(sources) {
+    var dst = "";
+    sources.forEach(function(row, index) {
+      dst = ubkg_api_generate_display_subtype(row);
+      console.debug("dst", dst);
+      if (row.entity_type !== "Dataset") {
+        dst = toTitleCase(dst);
+      }
+      sources[index].display_subtype = toTitleCase(dst);
+    });
+    return sources;
   }
 
   // Handle bulk input dialog update
