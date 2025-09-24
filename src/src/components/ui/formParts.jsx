@@ -36,10 +36,6 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import { entity_api_get_entity } from "../../service/entity_api";
 
-// import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
-// import {entity_api_get_entity} from "../../service/entity_api";
-// const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
-
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
@@ -137,67 +133,6 @@ export function badgeClass(status){
     }
     return badge_class;
   }
-}
-
-export function handleSourceListFromParams(params, {
-  setPreLoadingBulk,
-  setSnackbarController,
-  setSelectedBulkUUIDs,
-  setSelectedBulkData,
-  handleBulkSelectionChange,
-  setFormValues,
-  setPageErrors
-  }) {
-  if (!params.source_list) return;
-  setPreLoadingBulk(true);
-  console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
-  const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
-  let ancestorData = [];
-  let fetchCount = 0;
-  ancestorUUIDs.forEach((uuidItem) => {
-    entity_api_get_entity(uuidItem)
-      .then((response) => {
-        let error = response?.data?.error ?? false;
-        console.debug('%c◉ entity_api_get_entity response ', 'color:#00ff7b', response, error);
-        if (!error && (response?.results?.entity_type !== "Collection")) {
-          console.debug('%c◉ error ', 'color:#00ff7b', error);
-          let passSource = { row: response?.results ? response.results : null };
-          console.log("passSource", passSource);
-          ancestorData.push(passSource.row);
-        } else if (!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample") {
-          setSnackbarController({
-            open: true,
-            message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
-            status: "error"
-          });
-        } else if (error) {
-          setSnackbarController({
-            open: true,
-            message: `Sorry, There was an error selecting your source: ${error}`,
-            status: "error"
-          });
-        } else {
-          throw new Error(response);
-        }
-      })
-      .catch((error) => {
-        console.debug("entity_api_get_entity ERROR", error);
-        setPageErrors(error);
-      })
-      .finally(() => {
-        fetchCount++;
-        if (fetchCount === ancestorUUIDs.length) {
-          setSelectedBulkUUIDs(ancestorUUIDs);
-          setSelectedBulkData(ancestorData);
-          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
-          setFormValues((prevValues) => ({
-            ...prevValues,
-            direct_ancestor_uuids: ancestorUUIDs
-          }));
-          setPreLoadingBulk(false);
-        }
-      });
-  });
 }
 
 export function TaskAssignment({
@@ -298,6 +233,87 @@ export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
   }
   return params;
 }
+
+export function handleSourceListFromParams(params, {
+  setPreLoadingBulk,
+  setSnackbarController,
+  setSelectedBulkUUIDs,
+  setSelectedBulkData,
+  handleBulkSelectionChange,
+  setFormValues,
+  setPageErrors,
+  restrictions
+  }) {
+  if (!params.source_list) return;
+  setPreLoadingBulk(true);
+  console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
+  const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
+  let ancestorData = [];
+  let fetchCount = 0;
+  let errorSet = []
+  ancestorUUIDs.forEach((uuidItem) => {
+    entity_api_get_entity(uuidItem)
+      .then((response) => {
+        let error = response?.data?.error ?? false;
+        console.debug('%c◉ Ancestor Prepop entity_api_get_entity response ', 'color:#00ff7b', response, error);
+        // Restriction time, 
+        if(restrictions){
+          console.log("Rest Al",restrictions.allowedTypes.includes(response?.results?.entity_type))
+          let blockedType = restrictions.blockedTypes.includes(response?.results?.entity_type) ? true : false; // blocked includes Result type
+          let allowedType = restrictions.allowedTypes.includes(response?.results?.entity_type) ? true : false; // allowed includes Result type
+          console.debug('%c◉ REST SET ', 'color:#00ff7b', blockedType, allowedType);
+          if(!allowedType || blockedType){
+            errorSet.push(`The entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source type`);
+          }
+        }
+        if (!error && (response?.results?.entity_type !== "Collection")) {
+          console.debug('%c◉ error ', 'color:#00ff7b', error);
+          let passSource = { row: response?.results ? response.results : null };
+          console.log("passSource", passSource);
+          ancestorData.push(passSource.row);
+        } else if (!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample") {
+          setSnackbarController({
+            open: true,
+            message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
+            status: "error"
+          });
+        } else if (error) {
+          setSnackbarController({
+            open: true,
+            message: `Sorry, There was an error selecting your source: ${error}`,
+            status: "error"
+          });
+        } else {
+          throw new Error(response);
+        }
+        if(errorSet.length>0){
+          setSnackbarController({
+            open: true,
+            message: errorSet.join(" ; "),
+            status: "error"
+          });
+        }
+      })
+      .catch((error) => {
+        console.debug("entity_api_get_entity ERROR", error);
+        setPageErrors(error);
+      })
+      .finally(() => {
+        fetchCount++;
+        if (fetchCount === ancestorUUIDs.length) {
+          setSelectedBulkUUIDs(ancestorUUIDs);
+          setSelectedBulkData(ancestorData);
+          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
+          setFormValues((prevValues) => ({
+            ...prevValues,
+            direct_ancestor_uuids: ancestorUUIDs
+          }));
+          setPreLoadingBulk(false);
+        }
+      });
+  });
+}
+
 
 function errorNote(){
   return (<>

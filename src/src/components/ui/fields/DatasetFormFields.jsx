@@ -34,8 +34,7 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               multiline={field.type === "textarea" || field.multiline}
               minRows={field.rows || (field.type === "textarea" ? 4 : undefined)}
               disabled={permissions.has_write_priv === false}
-              required={field.required}
-            />
+              required={field.required}/>
           );
         }
         if (field.type === "radio") {
@@ -63,14 +62,21 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
             </FormControl>
           );
         }
-        if (field.id === "dt_select") {
-          let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
-          let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
-          let found = dtvalues.some(item => item.label === formValues[field.id]);
-          console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
-          if(!found && formValues[field.id] && formValues[field.id] !== ""){
-            field.values.push({label: formValues[field.id], value: formValues[field.id]});
-            console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
+
+          if (field.id === "dt_select") {
+            let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
+            let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
+            let found = dtvalues.some(item => item.label === formValues[field.id]);
+            console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
+            if(!found && formValues[field.id] && formValues[field.id] !== ""){
+              field.values.push({label: formValues[field.id], value: formValues[field.id]});
+              console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
+            }
+          }
+          let selectedGroup = null;
+          if (field.id === "group_uuid" && !field.writeEnabled) {
+            selectedGroup = field.values.find(v => v.value === formValues[field.id]);
+            console.debug('%c◉ selectedGroup ', 'color:#00ff7b', selectedGroup, field.writeEnabled);
           }
           console.debug('%c◉ field.values ', 'color:#00ff7b',field.values);
           return (
@@ -80,12 +86,11 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               margin="normal"
               error={!!formErrors[field.id]}
               required={field.required}
-              disabled={permissions.has_write_priv === false}
-            >
+              disabled={permissions.has_write_priv === false}>
               <FormLabel>{field.label}</FormLabel>
               {!field.writeEnabled && (
                 <Typography variant="body2" color="textSecondary" sx={{ marginBottom: "10px", marginTop: "5px", color: "rgba(0, 0, 0, 0.3)" }}>
-                  {formValues[field.id]}
+                {selectedGroup ? selectedGroup.label : formValues[field.id]}  
                 </Typography>
               )}
               {field.writeEnabled && (
@@ -106,7 +111,7 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               <FormHelperText>{formErrors[field.id] || field.helperText}</FormHelperText>
             </FormControl>
           );
-        }
+        
         return null;
       })}
     </Box>

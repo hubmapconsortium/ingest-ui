@@ -9,8 +9,6 @@ import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
-import TextField from "@mui/material/TextField";
-import FormHelperText from '@mui/material/FormHelperText';
 import Snackbar from '@mui/material/Snackbar';
 import { useNavigate, useParams } from "react-router-dom";
 import { BulkSelector } from "./ui/bulkSelector";
@@ -65,6 +63,7 @@ export const DatasetForm = (props) => {
 
   const allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
 
+  const { uuid } = useParams();
   const formFields = useMemo(() => [
     {
       id: "lab_dataset_id",
@@ -100,12 +99,20 @@ export const DatasetForm = (props) => {
       helperText: "",
       required: true,
       type: "select",
-      writeEnabled: entityData?.uuid ? true : false,
+      writeEnabled: (uuid?.length<=0 || uuid === undefined || uuid === null) ? true : false,
       values: localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => ({ value: dt.dataset_type, label: dt.dataset_type })) : []  
+    },
+    {
+      id: "group_uuid",
+      label: "Group",
+      helperText: (uuid?.length<=0 || uuid === undefined || uuid === null) ? "" : `Select the group for this dataset.`,
+      required: true,
+      type: "select", 
+      writeEnabled: (uuid?.length<=0 || uuid === undefined || uuid === null) ? true : false,
+      values: localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups")).map(g => ({ value: g.uuid, label: g.displayname })) : []
     }
   ], []);
 
-  const { uuid } = useParams();
 
   const memoizedFormHeader = useMemo(
     () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} />, [uuid, entityData, permissions]
@@ -131,12 +138,12 @@ export const DatasetForm = (props) => {
                 dataset_info: entityData.dataset_info,
                 contains_human_genetic_sequences: entityData.contains_human_genetic_sequences,
                 dt_select: entityData.dataset_type,
+                group_uuid: entityData.group_uuid,
               });
               // let formattedAncestors = assembleSourceAncestorData(entityData.direct_ancestors);
               setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
               setSelectedBulkData(entityData.direct_ancestors);
               console.log("Entity Data:", entityData.direct_ancestors, selectedBulkData);
-
               // Set the Bulk Table to read only if the Dataset is not in a modifiable state
               if (entityData.creation_action === "Multi-Assay Split" || entityData.creation_action === "Central Process"){
                 setReadOnlySources(true);
@@ -179,7 +186,7 @@ export const DatasetForm = (props) => {
         setSelectedBulkData,
         handleBulkSelectionChange,
         setFormValues,
-        setPageErrors
+        setPageErrors,
       });
       setPermissions({
         has_write_priv: true,
@@ -254,10 +261,10 @@ export const DatasetForm = (props) => {
       setIsProcessing(true);
       let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
       let cleanForm = {
-        lab_dataset_id:formValues.lab_dataset_id,
-        contains_human_genetic_sequences:formValues.contains_human_genetic_sequences === "yes" ? true : false,
-        description:formValues.description, 
-        dataset_info:formValues.dataset_info,
+        lab_dataset_id: formValues.lab_dataset_id,
+        contains_human_genetic_sequences: formValues.contains_human_genetic_sequences === "yes" ? true : false,
+        description: formValues.description, 
+        dataset_info: formValues.dataset_info,
         direct_ancestor_uuids: selectedUUIDs,
       };
       console.debug('%c⭗ Data', 'color:#00ff7b',cleanForm  );
@@ -299,7 +306,7 @@ export const DatasetForm = (props) => {
       } else {
         let group_uuid = formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid;
         cleanForm.dataset_type = formValues.dt_select;
-        cleanForm.group_uuid = formValues.group_uuid;
+        cleanForm.group_uuid = group_uuid;
         console.log(formValues, formValues.contains_human_genetic_sequences )
         console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         ingest_api_create_dataset(JSON.stringify(cleanForm))
@@ -432,27 +439,6 @@ export const DatasetForm = (props) => {
               handleInputChange={handleInputChange}
               allGroups={allGroups}
             />
-          )}
-          {!uuid && (
-            <Box className="my-3">
-              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
-                Group
-              </InputLabel>
-              <NativeSelect
-                id="group_uuid"
-                label="Group"
-                onChange={handleInputChange}
-                fullWidth
-                className="p-2"
-                sx={{
-                  borderTopLeftRadius: "4px",
-                  borderTopRightRadius: "4px",
-                }}
-                disabled={uuid ? true : false}
-                value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
-                <UserGroupSelectMenuPatch />
-              </NativeSelect>
-            </Box>
           )}
           {valErrorMessages && valErrorMessages.length > 0 && (
             <Alert severity="error">
