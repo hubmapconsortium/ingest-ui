@@ -302,19 +302,12 @@ export const SampleForm = (props) => {
   function handleSubmit(e){
     e.preventDefault()    
     setIsProcessing(true);
-
     let sampleFormData = {
-      direct_ancestor_uuid: formValues.direct_ancestor_uuid,
       protocol_url: formValues.protocol_url,
       visit: formValues.visit,
       description: formValues.description,
-      ...((sourceEntity.entity_type === 'Donor' && formValues.organ) && {organ: formValues.organ}),
-      ...((sourceEntity.entity_type !== 'Donor' && formValues.sample_category) && {sample_category: formValues.sample_category}),
+      lab_tissue_sample_id: formValues.lab_tissue_sample_id,
       ...(((formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: formValues.rui_location}),
-      ...((!checked && formValues.lab_tissue_sample_id) && {lab_tissue_sample_id: formValues.lab_tissue_sample_id})
-    }
-    if(formValues.rui_location){
-      sampleFormData.rui_location = formValues.rui_location
     }
     console.debug('%c◉ handleSubmit:  ', 'color:#E7EEFF;background: #9359FF;padding:200',sampleFormData,formValues,);
     if(validateForm()){
@@ -331,17 +324,16 @@ export const SampleForm = (props) => {
           });
       }else{
         // We're in Create mode
-        // They might not have changed the Group Selector, so lets check for the value
-        // actually there will always be /A/ value, so no need to mess with grabbing a default group
-        let selectedGroup = document.getElementById("group_uuid");
-        sampleFormData.group_uuid = selectedGroup?.value ? selectedGroup.value : "";
-        // We need to add the Category back to the Form being submitted 
-        sampleFormData.sample_category = ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category)
-        
+        sampleFormData = {
+          ...sampleFormData,
+          direct_ancestor_uuid: formValues.direct_ancestor_uuid,
+          group_uuid: document.getElementById("group_uuid")?.value,
+          sample_category: ((formValues.sample_category === "" && formValues.organ) ? "organ": formValues.sample_category),
+          ...(sourceEntity.entity_type === 'Donor' && formValues.organ ? {organ: formValues.organ} : {}),
+        }
         // Are we making multiples?
         if(checked){
           console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,sampleFormData,JSON.stringify(sampleFormData));
-          
           entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(sampleFormData))
           .then((response) => {
             if(response.status === 200){
@@ -354,7 +346,7 @@ export const SampleForm = (props) => {
             console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
             wrapUpPageErrors(error)
           });
-        // Nope Just One
+        // Nope Just One  
         }else{
           console.log("sampleFormData", typeof sampleFormData, sampleFormData)
           console.log("RUIManagerObject.details.json", typeof RUIManagerObject.details.json, RUIManagerObject.details.json)
