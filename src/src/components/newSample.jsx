@@ -308,7 +308,8 @@ export const SampleForm = (props) => {
       protocol_url: formValues.protocol_url,
       visit: formValues.visit,
       description: formValues.description,
-      ...((formValues.sample_category === "" && formValues.organ) && {organ: formValues.organ}),
+      ...((sourceEntity.entity_type === 'Donor' && formValues.organ) && {organ: formValues.organ}),
+      ...((sourceEntity.entity_type !== 'Donor' && formValues.sample_category) && {sample_category: formValues.sample_category}),
       ...(((formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: formValues.rui_location}),
       ...((!checked && formValues.lab_tissue_sample_id) && {lab_tissue_sample_id: formValues.lab_tissue_sample_id})
     }
@@ -316,7 +317,6 @@ export const SampleForm = (props) => {
       sampleFormData.rui_location = formValues.rui_location
     }
     console.debug('%c◉ handleSubmit:  ', 'color:#E7EEFF;background: #9359FF;padding:200',sampleFormData,formValues,);
-
     if(validateForm()){
       if(uuid){
         // We're in Edit mode
