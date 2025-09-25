@@ -307,7 +307,7 @@ export const SampleForm = (props) => {
       visit: formValues.visit,
       description: formValues.description,
       lab_tissue_sample_id: formValues.lab_tissue_sample_id,
-      ...(((formValues.rui_location && formValues.rui_location.length>0)) && {rui_location: formValues.rui_location}),
+      ...(formValues.rui_location ? {rui_location: formValues.rui_location} : {}),
     }
     console.debug('%c◉ handleSubmit:  ', 'color:#E7EEFF;background: #9359FF;padding:200',sampleFormData,formValues,);
     if(validateForm()){
