@@ -27,7 +27,7 @@ import {
   validateSingleProtocolIODOI
 } from "../utils/validators";
 import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenuPatch } from "./ui/formParts";
+import { FormHeader, UserGroupSelectMenu } from "./ui/formParts";
 import { PublicationFormFields } from "./ui/fields/PublicationFormFields";
 
 export const PublicationForm = (props) => {
@@ -145,8 +145,8 @@ export const PublicationForm = (props) => {
 
   const { uuid } = useParams();
 
-  const memoizedUserGroupSelectMenuPatch = React.useMemo(
-    () => <UserGroupSelectMenuPatch />,
+  const memoizedUserGroupSelectMenu = React.useMemo(
+    () => <UserGroupSelectMenu />,
     []
   );
 
@@ -561,7 +561,7 @@ export const PublicationForm = (props) => {
                 }}
                 disabled={uuid ? true : false}
                 value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
-                {memoizedUserGroupSelectMenuPatch}
+                {memoizedUserGroupSelectMenu}
               </NativeSelect>
             </Box>
           )}
