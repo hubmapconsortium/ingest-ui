@@ -36,6 +36,7 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import { entity_api_get_entity } from "../../service/entity_api";
 
+// The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
   let entityData = props.entityData;
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
@@ -51,6 +52,7 @@ export const FormHeader = (props) => {
   )
 }
 
+// Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
   console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
   console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
@@ -77,6 +79,7 @@ export function IconSelection(entity_type,status){
   }
 }
 
+// Returns the badge class associated with provided status
 export function badgeClass(status){
   var badge_class = "";
   if(status=== undefined || !status){
@@ -135,6 +138,7 @@ export function badgeClass(status){
   }
 }
 
+// Admin Tool for Assigning Tasks to Groups to Entities
 export function TaskAssignment({
     uuid,
     permissions,
@@ -194,6 +198,7 @@ export function TaskAssignment({
   );
 }
 
+// Returns a styalized Globus Link Button
 export function renderUploadLink(entityData){
   function handleUploadSelect(e, uuid){
     window.location.assign(`/upload/${uuid}`,);
@@ -215,6 +220,7 @@ export function renderUploadLink(entityData){
 }
 
 // Reusable helper to pre-fill form values from URL parameters
+// NOTE: source_list is specifically handled inside the BulkSelector component itself
 export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
   const url = new URL(window.location.href);
   const params = Object.fromEntries(url.searchParams.entries());
@@ -234,87 +240,56 @@ export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
   return params;
 }
 
-export function handleSourceListFromParams(params, {
-  setPreLoadingBulk,
-  setSnackbarController,
-  setSelectedBulkUUIDs,
-  setSelectedBulkData,
-  handleBulkSelectionChange,
-  setFormValues,
-  setPageErrors,
-  restrictions
-  }) {
-  if (!params.source_list) return;
-  setPreLoadingBulk(true);
-  console.debug('%c◉ params.source_list  setPreLoadingBulk TRUEW', 'color:#00ff7b', params.source_list);
-  const ancestorUUIDs = params.source_list.split(',').map(s => s.trim()).filter(Boolean);
-  let ancestorData = [];
-  let fetchCount = 0;
-  let errorSet = []
-  ancestorUUIDs.forEach((uuidItem) => {
-    entity_api_get_entity(uuidItem)
-      .then((response) => {
-        let error = response?.data?.error ?? false;
-        console.debug('%c◉ Ancestor Prepop entity_api_get_entity response ', 'color:#00ff7b', response, error);
-        // Restriction time, 
-        if(restrictions){
-          console.log("Rest Al",restrictions.allowedTypes.includes(response?.results?.entity_type))
-          let blockedType = restrictions.blockedTypes.includes(response?.results?.entity_type) ? true : false; // blocked includes Result type
-          let allowedType = restrictions.allowedTypes.includes(response?.results?.entity_type) ? true : false; // allowed includes Result type
-          console.debug('%c◉ REST SET ', 'color:#00ff7b', blockedType, allowedType);
-          if(!allowedType || blockedType){
-            errorSet.push(`The entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source type`);
-          }
-        }
-        if (!error && (response?.results?.entity_type !== "Collection")) {
-          console.debug('%c◉ error ', 'color:#00ff7b', error);
-          let passSource = { row: response?.results ? response.results : null };
-          console.log("passSource", passSource);
-          ancestorData.push(passSource.row);
-        } else if (!error && response?.results?.entity_type === "Donor" && response.results.entity_type !== "Sample") {
-          setSnackbarController({
-            open: true,
-            message: `Sorry, the entity ${response.results.hubmap_id} (${response.results.entity_type}) is not a valid Source (Must not be a Collection) `,
-            status: "error"
-          });
-        } else if (error) {
-          setSnackbarController({
-            open: true,
-            message: `Sorry, There was an error selecting your source: ${error}`,
-            status: "error"
-          });
-        } else {
-          throw new Error(response);
-        }
-        if(errorSet.length>0){
-          setSnackbarController({
-            open: true,
-            message: errorSet.join(" ; "),
-            status: "error"
-          });
-        }
-      })
-      .catch((error) => {
-        console.debug("entity_api_get_entity ERROR", error);
-        setPageErrors(error);
-      })
-      .finally(() => {
-        fetchCount++;
-        if (fetchCount === ancestorUUIDs.length) {
-          setSelectedBulkUUIDs(ancestorUUIDs);
-          setSelectedBulkData(ancestorData);
-          handleBulkSelectionChange(ancestorUUIDs, [], "", ancestorData);
-          setFormValues((prevValues) => ({
-            ...prevValues,
-            direct_ancestor_uuids: ancestorUUIDs
-          }));
-          setPreLoadingBulk(false);
-        }
-      });
-  });
+// Not yet in use Modal similar to the one in the legacy forms that prompts for your group if you have multiple groups
+// Considering switching back to this, saving for now
+export function GroupModal ({
+    submitWithGroup,
+    showGroupSelect,
+    closeGroupModal
+  }){
+    let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
+    return (
+       <Dialog aria-labelledby="group-dialog" open={showGroupSelect}>
+        <DialogTitle >
+          You currently have multiple group assignments, Please select a primary group for submission
+        </DialogTitle>
+       <DialogContent>
+          <select
+            name="selected_group"
+            id="selected_group"
+            className="form-control">
+            {userGroups
+              .filter((g) => g.data_provider)  // only show those designated as data providers
+              .map(g => {
+              return (
+                <option id={g.uuid} value={g.uuid} key={g.name}>
+                  {g.displayname}
+                </option>
+              );
+            })}
+          </select>               
+         </DialogContent>
+           <DialogActions>
+            <Button
+            className="btn btn-primary mr-1"
+            onClick={(e) => submitWithGroup()}>
+            Submit
+          </Button>
+          <Button
+           variant="outlined"
+            onClick={(e) => closeGroupModal()}>
+            Cancel
+          </Button>          
+          </DialogActions>
+        </Dialog>
+    
+    );
 }
 
 
+
+
+// Styalized snackbar component rendering Error Notes for FeedbackDialog
 function errorNote(){
   return (<>
     <Typography variant="caption" color={"#444a65"}>
@@ -322,6 +297,8 @@ function errorNote(){
     </Typography>
   </>)
 }
+
+// Styalized Footnote component for FeedbackDialog
 function noteWrap(note){
   return (
     <Typography variant="caption" color={"#444a65"}>
@@ -329,11 +306,15 @@ function noteWrap(note){
     </Typography>
   );
 }
+
+// Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
 function statusBadge(status){
   return (
     <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
+
+// Returns Special a Chip / Badge with NEW text and color (Purple)
 function newBadge(type){
   console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
   let newBadgeStyle = {
@@ -350,6 +331,8 @@ function newBadge(type){
     <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
+
+// SWAT / MOSDAP Helper to build a pretty list of priority projects
 function buildPriorityProjectList(list){
   if(list.length>1){
     return list.join(", ");
@@ -357,6 +340,8 @@ function buildPriorityProjectList(list){
     return list[0]
   }
 }	
+
+// The TopLeftmost part of the Form Header 
 function topHeader(entityData){
   if(entityData[0] !== "new"){
     return (
@@ -370,7 +355,11 @@ function topHeader(entityData){
             <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
           )}
           {entityData.priority_project_list	 && (
-            <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
+              <Typography variant="caption" sx={{display: "inline-block"}}>
+                <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
+                  ? entityData.priority_project_list.join(", ")
+                  : entityData.priority_project_list?.[0]}
+              </Typography>   
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
@@ -401,6 +390,8 @@ function topHeader(entityData){
     )
   }
 }
+
+// The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
   return (
     <Grid item xs={6} className="" >
@@ -460,6 +451,9 @@ function infoPanels(entityData,permissions,globusURL){
     </Grid>
   )
 }
+
+// Looks at the Bulk Selector Table and returns an array of  all Hubmap IDs
+// Used in HandleCopyFormUrl to populate source_list
 function getHubmapIDsFromBulkTable() {
   const wrapper = document.getElementById('bulkTableWrapper');
   if (!wrapper) return [];
@@ -471,7 +465,8 @@ function getHubmapIDsFromBulkTable() {
   return Array.from(idLinks).map(a => a.textContent.trim());
 }
 
-
+// Returns a select menu of the User's dataprovider groups
+// Possibly Deprecating with move of GroupsSelector into modal or Field managers
 export function UserGroupSelectMenu(formValues){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
   if(formValues.group_name){
@@ -493,28 +488,8 @@ export function UserGroupSelectMenu(formValues){
   } 
 }
 
-export function UserGroupSelectMenuPatch(formValues){
-  console.debug('%c◉ UserGroupSelectMenuPatch ', 'color:#0026FF', formValues);
-  let userGroups = JSON.parse(localStorage.getItem("userGroups"));
-  if(formValues.group_name){
-    return(
-      <option key={formValues.group_uuid} value={formValues.group_uuid}>
-        {formValues.group_name}
-      </option>
-    )
-  }else{
-    let menuArray = [];
-    for(let group of userGroups){
-      menuArray.push(
-        <option key={group.uuid} value={group.uuid}>
-          {group.shortname}
-        </option>
-      );
-    }
-    return menuArray;
-  } 
-}
-
+// Checks if the entityType in the URL matches the type of entity requested
+// if it's not, redirects you on over to the proper form
 export function FormCheckRedirect(uuid,entityType,form){
   console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
@@ -525,12 +500,11 @@ export function FormCheckRedirect(uuid,entityType,form){
   }
 }
 
+// Prevents the Search Filter Restrictions from lingering & effecting the main Search View
 export function combineTypeOptionsComplete(){
   // Removes the Whitelist / Blacklist stuff,
   // mostly for use for resetting the main Search Page View
-
   var combinedList = [];
-
   // FIRST: Main Entity Types
   combinedList.push( {  // @TODO: Find out why Importing Warps this
     donor: "Donor" ,
@@ -543,7 +517,6 @@ export function combineTypeOptionsComplete(){
   // NEXT: Sample Categories
   combinedList.push(SAMPLE_CATEGORIES);
   // @TODO: Switch these to UBKG too?
-
   // LAST: Organs
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
@@ -564,8 +537,8 @@ export function combineTypeOptionsComplete(){
   }
 };
 
+// Returns a sorted Map of Organs (accounting for L/R) for use in Search Filters 
 export function handleSortOrgans(organList){
-  // console.debug('%c⊙', 'color:#00ff7b', "handleSortOrgans", organList );
   let sortedDataProp = {};
   let sortedDataArray = [];
   var sortedMap = new Map();
@@ -581,32 +554,7 @@ export function handleSortOrgans(organList){
   return sortedMap;
 };
 
-export function GroupSelector( {formValues, handleInputChange, memoizedUserGroupSelectMenuPatch, uuid} ){
-  if (uuid) return null;
-  return (
-    <Box className="my-3">
-      <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
-        Group
-      </InputLabel>
-      <NativeSelect
-        id="group_uuid"
-        label="Group"
-        onChange={handleInputChange}
-        fullWidth
-        className="p-2"
-        sx={{
-          BorderTopLeftRadius: "4px",
-          BorderTopRightRadius: "4px",
-        }}
-        disabled={!!uuid}
-        value={formValues["group_uuid"] ? formValues["group_uuid"].value : JSON.parse(localStorage.getItem("userGroups"))[0].uuid}>
-        {memoizedUserGroupSelectMenuPatch}
-      </NativeSelect>
-    </Box>
-  );
-}
-
-
+// Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL
 export function HandleCopyFormUrl(e) {
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
@@ -635,14 +583,12 @@ export function HandleCopyFormUrl(e) {
     });
 }
 
+// The SpeedDial tool being used for quick actions like Copy Form URL & Create Dataset (Admin quick access)
 export function SpeedDialTooltipOpen() {
   let navigate = useNavigate();
   const actions = [
-    // { icon: <FileCopyIcon />, name: 'Copy' },
-    // { icon: <SaveIcon />, name: 'Save' },
     { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
     { icon: <TableChartIcon />, name: 'Create Dataset', action: (e) => navigate(`/new/datasetAdmin`) },
-    // { icon: <ReportIcon />, name: 'Share' },
   ];
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -667,16 +613,11 @@ export function SpeedDialTooltipOpen() {
           />
         ))}
       </SpeedDial>
-      {/* <Snackbar
-        open={false}
-        autoHideDuration={6000}
-        onClose={() => e.setShowSnack(false)}
-        message={e.snackMessage}
-        /> */}
     </Box>
   );
 }
 
+// Returns a Feedback Dialog Modal for displaying Warnings, Errors, etc
 export function FeedbackDialog( { 
   showMessage, 
   setShowMessage, 
@@ -686,7 +627,7 @@ export function FeedbackDialog( {
   note,
   color,
   icon
-} ){
+  } ){
   let messageColor = color ? color : "#444A65";
   let altColorLight = LightenHex(messageColor, 20);
   let altColorDark = DarkenHex(messageColor, 20);
@@ -763,11 +704,9 @@ export function FeedbackDialog( {
         borderTop:"none",
         borderBottomLeftRadius: "4px",
         borderBottomRightRadius: "4px"}}>
-          
         {note && (
           noteWrap(note)  
         )}
-          
         {((!message || message.length <= 0) && (!summary || summary.length<=0)) && (!note || note.length<=0) && (
           errorNote(errorNote)  
         )}
@@ -793,9 +732,9 @@ export function FeedbackDialog( {
   )
 }
 
+// Returns a Snackbar on Entity Validation messages
 export function EntityValidationMessage(props) {
   const {response, eValopen, setEValopen} = props
-  console.debug('%c◉ EntityValidationMessage Inner Response  ', 'color:#00ff7b', response);
   let message = response?.results ?? response?.data ?? "No Response";
   let severity = message?.error ? "error" : "info";
   if (message?.error) message = message.error;
@@ -822,7 +761,7 @@ export function EntityValidationMessage(props) {
   );
 }
 
-// @TODO: Eventually unify the Snackbar Feedback across forms into one
+// Universal Snackbar for messages
 export function SnackbarFeedback(props){
   const {snackbarController, setSnackbarController, } = props
   function closeSnack(){
@@ -852,8 +791,8 @@ export function SnackbarFeedback(props){
   );
 }
 
-  // TODO: Move this into.... idk a Value/Calculation helper service/thing?
-export function HexToHsl(hex){
+// Color manipullation (Right now namely for Feedback Dialog Colors)
+function HexToHsl(hex){
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
   const num = parseInt(hex, 16);
@@ -875,7 +814,7 @@ export function HexToHsl(hex){
   }
   return {h: h * 360, s: s * 100, l: l * 100};
 }
-export function HslToHex(h, s, l){
+function HslToHex(h, s, l){
   s /= 100; l /= 100;
   let c = (1 - Math.abs(2 * l - 1)) * s;
   let x = c * (1 - Math.abs((h / 60) % 2 - 1));
@@ -892,12 +831,12 @@ export function HslToHex(h, s, l){
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
     .toString(16).slice(1).toUpperCase();
 }
-export function LightenHex(hex, amount = 15){
+function LightenHex(hex, amount = 15){
   let {h, s, l} = HexToHsl(hex);
   l = Math.min(100, l + amount); // Increase lightness by 'amount'
   return HslToHex(h, s, l);
 }
-export function DarkenHex(hex, amount = 15){
+function DarkenHex(hex, amount = 15){
   let {h, s, l} = HexToHsl(hex);
   l = Math.max(0, l - amount); // Decrease lightness by 'amount', but not below 0
   return HslToHex(h, s, l);
