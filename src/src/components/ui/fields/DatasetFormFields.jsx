@@ -13,11 +13,12 @@ import {
   Typography 
 } from "@mui/material";
 
-export const DatasetFormFields = ({ formFields, formValues, formErrors, permissions, handleInputChange }) => {
-  
+export const DatasetFormFields = ({ formFields, formValues, formErrors, permissions, handleInputChange, errorHighlight }) => {
   return (
     <Box>
       {formFields.map((field) => {
+        const error = formErrors && formErrors[field.id];
+        const errorStyle = errorHighlight && error ? { borderColor: '#f44336', background: '#fff0f0' } : {};
         if (field.type === "text" || field.type === "textarea") {
           return (
             <TextField
@@ -27,14 +28,16 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               label={field.label}
               value={formValues[field.id] || ""}
               onChange={handleInputChange}
-              error={!!formErrors[field.id]}
-              helperText={formErrors[field.id] || field.helperText}
+              error={!!error}
+              helperText={error ? error : field.helperText}
               fullWidth
               margin="normal"
               multiline={field.type === "textarea" || field.multiline}
               minRows={field.rows || (field.type === "textarea" ? 4 : undefined)}
               disabled={permissions.has_write_priv === false}
-              required={field.required}/>
+              required={field.required}
+              sx={errorStyle}
+            />
           );
         }
         if (field.type === "radio") {
@@ -43,10 +46,11 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               key={field.id}
               component="fieldset"
               margin="normal"
-              error={!!formErrors[field.id]}
+              error={!!error}
               required={field.required}
               disabled={permissions.has_write_priv === false}
               fullWidth
+              sx={errorStyle}
             >
               <FormLabel component="legend">{field.label}</FormLabel>
               <RadioGroup
@@ -58,11 +62,12 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
                 <FormControlLabel value="yes" control={<Radio />} label="Yes" />
                 <FormControlLabel value="no" control={<Radio />} label="No" />
               </RadioGroup>
-              <FormHelperText>{formErrors[field.id] || field.helperText}</FormHelperText>
+              <FormHelperText>{error ? error : field.helperText}</FormHelperText>
             </FormControl>
           );
-        }
-
+        }      
+        
+        if (field.type === "select") {
           if (field.id === "dt_select") {
             let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
             let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
@@ -76,21 +81,20 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
           let selectedGroup = null;
           if (field.id === "group_uuid" && !field.writeEnabled) {
             selectedGroup = field.values.find(v => v.value === formValues[field.id]);
-            console.debug('%c◉ selectedGroup ', 'color:#00ff7b', selectedGroup, field.writeEnabled);
           }
-          console.debug('%c◉ field.values ', 'color:#00ff7b',field.values);
           return (
             <FormControl
               key={field.id}
               fullWidth
               margin="normal"
-              error={!!formErrors[field.id]}
+              error={!!error}
               required={field.required}
-              disabled={permissions.has_write_priv === false}>
+              disabled={permissions.has_write_priv === false}
+              sx={errorStyle}>
               <FormLabel>{field.label}</FormLabel>
               {!field.writeEnabled && (
                 <Typography variant="body2" color="textSecondary" sx={{ marginBottom: "10px", marginTop: "5px", color: "rgba(0, 0, 0, 0.3)" }}>
-                {selectedGroup ? selectedGroup.label : formValues[field.id]}  
+                  {selectedGroup ? selectedGroup.label : formValues[field.id]}  
                 </Typography>
               )}
               {field.writeEnabled && (
@@ -108,12 +112,14 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
                   ))}
                 </Select>
               )}
-              <FormHelperText>{formErrors[field.id] || field.helperText}</FormHelperText>
+              <FormHelperText>{error ? error : field.helperText}</FormHelperText>
             </FormControl>
           );
-        
+      
+        }
         return null;
-      })}
+      }
+      )}
     </Box>
   );
 };
