@@ -39,7 +39,7 @@ export function BulkSelector({
   initialSelectedString = "",
   initialSourcesData = [],
   onBulkSelectionChange,
-	searchFilters,
+  searchFilters,
   readOnly,
   preLoad,
 }) {
@@ -81,25 +81,36 @@ export function BulkSelector({
     setStringIDs(selected_string);
   }, [selected_string]);
 
+  // Check URL for source_list param on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlSourceList = params.get('source_list');
+    if (urlSourceList && urlSourceList.length > 0) {
+      // Only run if not already loaded
+      setStringIDs(urlSourceList);
+      // Directly trigger handleInputUUIDs with the url value
+      handleInputUUIDs(undefined, urlSourceList);
+    }
+    // eslint-disable-next-line
+  }, []);
+
   // Validation helpers
   function preValidateSources(results, originalStringArr) {
     let errorArray = [];
     let warnArray = [];
     let goodArray = [];
     let typeArray = [];
+    // Always use the original string array as provided, or split selected_string
     let originalString = originalStringArr || selected_string.split(",").map(s => s.trim());
 
-    // Warnings: duplicated strings
-    let seen = new Set();
-    let duplicates = new Set();
+    // Detect duplicates: count occurrences
+    let idCounts = {};
     for (let id of originalString) {
-      if (seen.has(id)) {
-        duplicates.add(id);
-      } else {
-        seen.add(id);
-      }
+      if (!id) continue;
+      idCounts[id] = (idCounts[id] || 0) + 1;
     }
-    duplicates = Array.from(duplicates);
+    // Duplicates are those with count > 1
+    let duplicates = Object.keys(idCounts).filter(id => idCounts[id] > 1);
 
     // Entities requested by both UUID and HuBMAP ID
     const entitiesWithBoth = results.filter(
@@ -123,12 +134,24 @@ export function BulkSelector({
       errorArray.push([`The following Entit${missingIds.length > 1 ? 'ies' : 'y'} ${missingIds.length > 1 ? 'were' : 'was'} not found, either because ${missingIds.length > 1 ? 'they do' : 'it does'} not exist or ${missingIds.length > 1 ? 'their' : 'its'} ${missingIds.length > 1 ? 'IDs are' : 'ID is'} not formatted correctly:`, missingIds]);
     }
 
-    // Type check
+    // Type check and only add unique entities to goodArray
+    let addedIds = new Set();
     for (let entity of results) {
-      if (entity.entity_type !== "Dataset") {
+      // Only add the first occurrence of each entity (by uuid or hubmap_id)
+      let entityId = entity.hubmap_id || entity.uuid;
+      if (addedIds.has(entityId)) continue;
+      if (
+        (searchFilters.blacklist && searchFilters.blacklist.includes(entity.entity_type)) ||
+        (searchFilters.whitelist && !searchFilters.whitelist.includes(entity.entity_type)) ||
+        (searchFilters.restrictions && !searchFilters.restrictions.includes(entity.entity_type))
+      ) {
         typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
-      } else { goodArray.push(entity); }
+      } else {
+        goodArray.push(entity);
+        addedIds.add(entityId);
+      }
     }
+
     if (typeArray.length > 0) {
       errorArray.push([`The following ${typeArray.length} ID${typeArray.length > 1 ? 's' : ''} ${typeArray.length > 1 ? 'are' : 'is'} of the wrong Type:`, typeArray]);
     }
@@ -154,58 +177,74 @@ export function BulkSelector({
   }
 
   // Handle bulk input dialog update
-  const handleInputUUIDs = useCallback((e) => {
+  // Modified handleInputUUIDs to accept an optional overrideString (e.g. from URL)
+  const handleInputUUIDs = useCallback((e, overrideString) => {
     if (e) e.preventDefault();
     setSourceTableError(false);
-    if (!showHIDList) {
-      setShowHIDList(true);
-      setStringIDs(selected_HIDs.join(", "));
-      setSourceBulkStatus("Waiting for Input...");
-    } else {
-      setShowHIDList(false);
-      setSourceBulkStatus("loading");
-      let cleanList = Array.from(new Set(
-        stringIDs
-          .split(",")
-          .map(s => s.trim())
-          .filter(s => s.length > 0)
-      ));
-      if (stringIDs.length <= 0) {
-        setSourcesData([]);
-        setSelectedHIDs([]);
-        setSelectedString("");
-        setBulkError([]);
-        setBulkWarning([]);
-        setSourceBulkStatus("complete");
-        setSelectedUUIDs([]);
-        setLoadingState(false);
-      } else {
-        let cols = ["hubmap_id", "uuid", "entity_type", "subtype", "group_name", "status", "dataset_type", "display_subtype"];
-        search_api_es_query_ids(cleanList, ['datasets'], cols)
-          .then((response) => {
-            if (response.status >= 300) {
-              setSourceBulkStatus("error");
-              setBulkError([["Search error", [response.statusText || "Unknown error"]]]);
-              return;
-            } else if (response.results.length <= 0) {
-              setBulkError([["No Datasets Found for the provided IDs", []]]);
-            } else {
-              let validatedSources = preValidateSources(response.results, cleanList);
-              let entityHIDs = validatedSources.map(obj => obj.hubmap_id);
-              let entityUUIDs = validatedSources.map(obj => obj.uuid);
-              setSourcesData(validatedSources);
-              setSelectedHIDs(entityHIDs);
-              setSelectedUUIDs(entityUUIDs);
-              setSelectedString(entityHIDs.join(", "));
-              setShowHIDList(false);
-              setSourceBulkStatus("complete");
-            }
-          })
-          .catch((error) => {
-            setBulkError([["Error", [error?.message || "Unknown error"]]]);
-            setSourceBulkStatus("error");
-          });
+    // If triggered by URL, treat as if showHIDList is false (i.e. go straight to else branch)
+    const triggeredByUrl = typeof overrideString === 'string';
+    if (!showHIDList || triggeredByUrl) {
+      if (!triggeredByUrl) {
+        setShowHIDList(true);
+        setStringIDs(selected_HIDs.join(", "));
+        setSourceBulkStatus("Waiting for Input...");
+        return;
       }
+      // else, fall through to process the overrideString
+    }
+    setShowHIDList(false);
+    setSourceBulkStatus("loading");
+    let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
+    // Split and trim, but do NOT dedupe here; pass all for duplicate detection
+    let allIds = idsToProcess
+      .split(",")
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+    // For search, only use unique IDs (first occurrence)
+    let seen = new Set();
+    let cleanList = [];
+    for (let id of allIds) {
+      if (!seen.has(id)) {
+        cleanList.push(id);
+        seen.add(id);
+      }
+    }
+    if (allIds.length <= 0) {
+      setSourcesData([]);
+      setSelectedHIDs([]);
+      setSelectedString("");
+      setBulkError([]);
+      setBulkWarning([]);
+      setSourceBulkStatus("complete");
+      setSelectedUUIDs([]);
+      setLoadingState(false);
+    } else {
+      let cols = ["hubmap_id", "uuid", "entity_type", "subtype", "group_name", "status", "dataset_type", "display_subtype"];
+      search_api_es_query_ids(cleanList, ['datasets'], cols)
+        .then((response) => {
+          if (response.status >= 300) {
+            setSourceBulkStatus("error");
+            setBulkError([["Search error", [response.statusText || "Unknown error"]]]);
+            return;
+          } else if (response.results.length <= 0) {
+            setBulkError([["No Datasets Found for the provided IDs", []]]);
+          } else {
+            // Pass allIds (with possible duplicates) to preValidateSources for warning
+            let validatedSources = preValidateSources(response.results, allIds);
+            let entityHIDs = validatedSources.map(obj => obj.hubmap_id);
+            let entityUUIDs = validatedSources.map(obj => obj.uuid);
+            setSourcesData(validatedSources);
+            setSelectedHIDs(entityHIDs);
+            setSelectedUUIDs(entityUUIDs);
+            setSelectedString(entityHIDs.join(", "));
+            setShowHIDList(false);
+            setSourceBulkStatus("complete");
+          }
+        })
+        .catch((error) => {
+          setBulkError([["Error", [error?.message || "Unknown error"]]]);
+          setSourceBulkStatus("error");
+        });
     }
     // eslint-disable-next-line
   }, [showHIDList, stringIDs, selected_HIDs]);
@@ -345,6 +384,7 @@ export function BulkSelector({
   }
   let totalRejected = totalWarnings + totalErrors;
 
+  console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
   return (<>
     {/* Search Dialog */}
     <Dialog
