@@ -19,7 +19,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBell, faHeadset, faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
-import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -34,7 +33,6 @@ import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
-import { entity_api_get_entity } from "../../service/entity_api";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -286,9 +284,6 @@ export function GroupModal ({
     );
 }
 
-
-
-
 // Styalized snackbar component rendering Error Notes for FeedbackDialog
 function errorNote(){
   return (<>
@@ -347,7 +342,7 @@ function topHeader(entityData){
     return (
       <React.Fragment>
         <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)}{entityData.entity_type} Information</h3>
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)} {entityData.entity_type} Information</h3>
         </Grid>
         <Grid item xs={6} className="" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
