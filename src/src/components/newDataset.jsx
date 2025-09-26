@@ -6,20 +6,17 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
-import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
-import NativeSelect from '@mui/material/NativeSelect';
 import Snackbar from '@mui/material/Snackbar';
 import { useNavigate, useParams } from "react-router-dom";
 import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenuPatch,TaskAssignment } from "./ui/formParts";
+import { FormHeader, TaskAssignment } from "./ui/formParts";
 import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
 import {RevertFeature} from "../utils/revertModal";
 import { humanize } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
 import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
-import { handleSourceListFromParams } from "./ui/formParts";
 import { prefillFormValuesFromUrl } from "./ui/formParts";
 
 export const DatasetForm = (props) => {
@@ -59,8 +56,7 @@ export const DatasetForm = (props) => {
   });
   const allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
   const { uuid } = useParams();
-  const formFields = useMemo(() => [
-    {
+  const formFields = useMemo(() => [{
       id: "lab_dataset_id",
       label: "Lab Name or ID",
       helperText: "Lab Name or ID",
@@ -166,17 +162,7 @@ export const DatasetForm = (props) => {
         });
     } else {
       // Pre-fill form values from URL parameters
-      const params = prefillFormValuesFromUrl(setForm, setSnackbarController);
-      // Handle source_list from URL params
-      handleSourceListFromParams(params, {
-        setPreLoadingBulk: (v) => setLoading(l => ({ ...l, bulk: v })),
-        setSnackbarController,
-        setSelectedBulkUUIDs: (uuids) => setBulkSelection(sel => ({ ...sel, uuids })),
-        setSelectedBulkData: (data) => setBulkSelection(sel => ({ ...sel, data })),
-        handleBulkSelectionChange: (uuids, hids, string, data) => setBulkSelection({ uuids, data }),
-        setFormValues: setForm,
-        setPageErrors
-      });
+      prefillFormValuesFromUrl(setForm, setSnackbarController);
       setPermissions({ has_write_priv: true });
     }
     setLoading(l => ({ ...l, page: false }));
@@ -365,7 +351,7 @@ export const DatasetForm = (props) => {
               searchFilters={{
                 custom_title: "Search for a Source ID for your Dataset",
                 custom_subtitle: "Collections may not be selected for Dataset sources",
-                blacklist: ['collection']
+                blacklist: ['Collection']
               }}
               readOnly={readOnlySources}
               preLoad={loading.bulk}
