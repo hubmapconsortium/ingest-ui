@@ -373,6 +373,7 @@ function topHeader(entityData){
             <Typography variant="caption" sx={{display: "inline-block"}}><strong>Priority Projects:</strong> {buildPriorityProjectList(entityData.priority_project_list)} </Typography>             
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
           {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
             <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
           )}
