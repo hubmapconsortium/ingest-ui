@@ -52,6 +52,8 @@ import {SampleForm} from "./components/newSample";
 import {PublicationForm} from "./components/newPublication";
 import {DatasetForm} from "./components/newDataset";
 
+import NotFound from "./components/404";
+
 export function App(props){
   let navigate = useNavigate();
   // @todo: trim how many need to actually be hooks / work with the state
@@ -545,13 +547,15 @@ export function App(props){
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/dataset/:uuid" element={<DatasetForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    {/* <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} /> */}
+                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
+
                     <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
                     <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                    
                     <Route path="/metadata">
                       <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
                       <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
@@ -559,8 +563,8 @@ export function App(props){
                       <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
                     </Route>
 
-                    {/* In Develpment here */}
-                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
+                    {/* 404 */}
+                    <Route path="/notFound" element={ <NotFound /> } />
 
                   </Routes>
  

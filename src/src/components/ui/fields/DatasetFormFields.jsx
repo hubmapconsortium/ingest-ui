@@ -56,11 +56,12 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               <RadioGroup
                 row
                 name={field.id}
-                value={formValues[field.id] === true ? "yes" : formValues[field.id] === false ? "no" : formValues[field.id] || ""}
+                // value={formValues[field.id] === true ? "yes" : formValues[field.id] === false ? "no" : formValues[field.id] || ""}
+                value={formValues[field.id]}
                 onChange={handleInputChange}
               >
-                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="no" control={<Radio />} label="No" />
+                <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} control={<Radio />} label="No" />
               </RadioGroup>
               <FormHelperText>{error ? error : field.helperText}</FormHelperText>
             </FormControl>

@@ -16,20 +16,27 @@ import {RevertFeature} from "../utils/revertModal";
 import { humanize } from "../utils/string_helper";
 import { validateRequired } from "../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
-import { ingest_api_allowable_edit_states, ingest_api_create_dataset } from "../service/ingest_api";
-import { prefillFormValuesFromUrl } from "./ui/formParts";
+import { 
+  ingest_api_allowable_edit_states, 
+  ingest_api_create_dataset, 
+  ingest_api_validate_entity,
+  ingest_api_pipeline_test_submit,
+  ingest_api_dataset_submit,
+  ingest_api_notify_slack} from "../service/ingest_api";
+import { prefillFormValuesFromUrl, EntityValidationMessage } from "./ui/formParts";
+import {LensTwoTone} from "@mui/icons-material";
 
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
-  const [entityData, setEntityData] = useState();
-  const [loading, setLoading] = useState({
+  let [entityData, setEntityData] = useState();
+  let [loading, setLoading] = useState({
     page: true,
     processing: false,
     bulk: false,
-    button: { process: false, save: false, submit: false }
+    button: { process: false, save: false, submit: false, validate: false }
   });
-  const [form, setForm] = useState({
+  let [form, setForm] = useState({
     lab_dataset_id: "",
     description: "",
     dataset_info: "",
@@ -38,18 +45,22 @@ export const DatasetForm = (props) => {
     direct_ancestor_uuids: [],
     group_uuid: ""
   });
-  const [formErrors, setFormErrors] = useState({});
-  const [errorMessages, setErrorMessages] = useState([]);
-  const [pageErrors, setPageErrors] = useState(null);
-  const [readOnlySources, setReadOnlySources] = useState(false);
-  const [permissions, setPermissions] = useState({
+  let [formErrors, setFormErrors] = useState({});
+  let [errorMessages, setErrorMessages] = useState([]);
+  let [pageErrors, setPageErrors] = useState(null);
+  let [readOnlySources, setReadOnlySources] = useState(false);
+  let [entityValidation, setEntityValidation] = useState({
+    open: false,
+    message: null
+  });
+  let [permissions, setPermissions] = useState({
     has_admin_priv: false,
     has_publish_priv: false,
     has_submit_priv: false,
     has_write_priv: false
   });
-  const [bulkSelection, setBulkSelection] = useState({ uuids: [], data: [] });
-  const [snackbarController, setSnackbarController] = useState({
+  let [bulkSelection, setBulkSelection] = useState({ uuids: [], data: [] });
+  let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "",
     status: "info"
@@ -112,6 +123,11 @@ export const DatasetForm = (props) => {
     if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
+          console.debug('%c◉ RESP ', 'color:#00ff7b', response);
+          if(response.status === 404 || response.status === 400){
+            console.debug('%c◉ ERRRRR ', 'background:#2200FF, color:#fff', );
+            navigate("/notFound?entityID="+uuid);
+          }
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Dataset") {
@@ -158,6 +174,10 @@ export const DatasetForm = (props) => {
           }
         })
         .catch((error) => {
+          console.debug('%c◉ ERRRRR ', 'background:#2200FF, color:#fff', );
+          if(error.status === 404){
+            navigate("/notFound?entityID="+uuid);
+          }
           setPageErrors(error);
         });
     } else {
@@ -165,7 +185,7 @@ export const DatasetForm = (props) => {
       prefillFormValuesFromUrl(setForm, setSnackbarController);
       setPermissions({ has_write_priv: true });
     }
-    setLoading(l => ({ ...l, page: false }));
+    setLoading(prevVals => ({ ...prevVals, page: false }));
   }, [uuid]);
 
   const handleInputChange = useCallback((e) => {
@@ -217,10 +237,10 @@ export const DatasetForm = (props) => {
     return errors === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      setLoading(l => ({ ...l, processing: true }));
+      setLoading(prevVals => ({ ...prevVals, processing: true }));
       let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
       let cleanForm = {
         lab_dataset_id: form.lab_dataset_id,
@@ -234,19 +254,20 @@ export const DatasetForm = (props) => {
       console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
         let target = e.target.name;
-        setLoading(l => ({ ...l, button: { ...l.button, [target]: true } }));
+        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: true } }));
+        console.log("handleSave", target);
         entity_api_update_entity(uuid, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
               props.onUpdated(response.results);
             } else {
               setPageErrors(response);
-              setLoading(l => ({ ...l, button: { ...l.button, [target]: false } }));
+              setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: false } }));
             }
           })
           .catch((error) => {
             setPageErrors(error);
-            setLoading(l => ({ ...l, button: { ...l.button, [target]: false } }));
+            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: false } }));
           });
       } else {
         // If group_uuid is not set, default to first user group
@@ -264,13 +285,142 @@ export const DatasetForm = (props) => {
           })
           .catch((error) => {
             setPageErrors(error);
-            setLoading(l => ({ ...l, button: { process: false, save: false, submit: false }, processing: false }));
+            setLoading(prevVals => ({ ...prevVals, button: { process: false, save: false, submit: false }, processing: false }));
           });
       }
     } else {
-      setLoading(l => ({ ...l, button: { process: false, save: false, submit: false }, processing: false }));
+      setLoading(prevVals => ({ ...prevVals, button: { process: false, save: false, submit: false }, processing: false }));
     }
   };
+
+  const handleValidateEntity = (e) => {
+    e.preventDefault();
+    ingest_api_validate_entity(uuid, "datasets")
+      .then((response) => {
+        console.debug('%c◉ res ', 'color:#00ff7b', response);
+        setEntityValidation({
+          open: true,
+          message: response
+        });
+      })
+      .catch((error) => {
+        console.debug('%c◉ error ', 'color:#ff007b', error);
+        setEntityValidation({
+          open: true,
+          message: error
+        });
+      });
+  };
+
+  const handleSubmitForTesting = () => {
+    console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
+    ingest_api_pipeline_test_submit({"uuid": uuid})
+      .then((response) => {
+        console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
+        let results = "";
+        let title = "";
+        if(response.status === 200){
+          title = "Submitted for Testing";
+          results = "Dataset submitted for test processing";
+        }else if(response.status === 500){
+          title = "Error";
+          results = "Unexpected error occurred, please ask an admin to check the ingest-api logs.";
+        }else{
+          title = "Submission Response: "+response.status;
+          results = response.results;
+        }
+        setSnackbarController({
+          open: true,
+          message: title+" - "+results,
+          status: "success"
+        });
+      })
+      .catch((error) => {
+        setSnackbarController({
+          open: true,
+          message: "SubmitForTesting Error - "+error.toString(),
+          status: "error"
+        });
+      })
+  }
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    var dataSubmit = {"status":"Submitted"}
+    entity_api_update_entity(uuid, JSON.stringify(dataSubmit))
+      .then((response) => {
+        console.debug("entity_api_update_entity response", response);
+        var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
+        var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
+        ingest_api_notify_slack(slackMessage)
+          .then((slackRes) => {
+            console.debug("slackRes", slackRes);
+            if (response.status < 300) {
+              props.onUpdated(response.results);
+            } else {
+              setSnackbarController({
+                open: true,
+                message: "Slack Notification Error - "+response.toString(),
+                status: "error"
+              });
+            }
+          })
+          .catch((error) => {
+            setSnackbarController({
+              open: true,
+              message: "Submit Error - "+error.toString(),
+              status: "error"
+            });
+          });
+      })
+      .catch((error) => {
+        setSnackbarController({
+          open: true,
+          message: "Submit Error - "+error.toString(),
+          status: "error"
+        });
+      });
+  }
+
+  const handleProcess = (e) => {
+    e.preventDefault();
+    ingest_api_dataset_submit(uuid, JSON.stringify(entityData))
+      .then((response) => {
+          if (response.status < 300) {
+            props.onUpdated(response.results);
+          } else { 
+            // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
+            var statusText = "";
+            console.debug("err", response, response.error);
+            if(response.err){
+              statusText = response.err.response.status+" "+response.err.response.statusText;
+            }else if(response.error){
+              statusText = response.error.response.status+" "+response.error.response.statusText;
+            }
+            var submitErrorResponse="Uncaptured Error";
+            if(response.err && response.err.response.data ){
+              submitErrorResponse = response.err.response.data 
+            }
+            if(response.error && response.error.response.data ){
+              submitErrorResponse = response.error.response.data 
+            }
+            setSnackbarController({
+              open: true,
+              message: "Process Error - "+statusText+" "+submitErrorResponse,
+              status: "error"
+            });
+            console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+          }
+        })
+        .catch((error) => {
+          setSnackbarController({
+            open: true,
+            message: "Process Error - "+error.toString(),
+            status: "error"
+          });
+        });
+            
+  }
 
   const buttonEngine = () => {
     return (<>
@@ -286,47 +436,56 @@ export const DatasetForm = (props) => {
           onClick={() => navigate("/")}>
           Cancel
         </LoadingButton>
+        {/* NEW, INVALID, REOPENED, ERROR, SUBMITTED */}
         {!uuid && (
           <LoadingButton
             variant="contained"
             name="generate"
             loading={loading.processing}
             className="m-2"
-            onClick={(e) => handleSubmit(e)}
+            onClick={(e) => handleSave(e)}
             type="submit">
             Save
           </LoadingButton>
         )}
-        
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (
+        {/* NEW, SUBMITTED */}
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (
           <LoadingButton
             loading={loading.button.process}
             name="process"
-            onClick={(e) => handleSubmit(e)}
+            onClick={(e) => handleProcess(e)}
             variant="contained"
             className="m-2">
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "new" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status === "new" && (
           <LoadingButton
             loading={loading.button.submit}
-            onClick={(e) => handleSubmit(e)}
+            onClick={(e) => handleSubmitForTesting(e)}
             name="submit"
             variant="contained"
-            className="m-2"
-          >
-            Submit
+            className="m-2">
+            Submit for Testing
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "published" && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published", "processing"].includes(entityData.status.toLowerCase())) && (
+          <LoadingButton
+            loading={loading.button.validate}
+            onClick={(e) => handleValidateEntity(e)}
+            name="validate"
+            variant="contained"
+            className="m-2">
+            Validate
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && ((permissions.has_write_priv && entityData.status !== "published") || (permissions.has_admin_priv && entityData.status === "QA")) && (
           <LoadingButton
             loading={!!loading.button.save}
             name="save"
-            onClick={(e) => handleSubmit(e)}
+            onClick={(e) => handleSave(e)}
             variant="contained"
-            className="m-2"
-          >
+            className="m-2">
             Save
           </LoadingButton>
         )}
@@ -413,6 +572,13 @@ export const DatasetForm = (props) => {
             {snackbarController.message}
           </Alert>
         </Snackbar>
+        {entityValidation?.message && (
+          <EntityValidationMessage
+            response={entityValidation.message}
+            eValopen={entityValidation.open}
+            setEValopen={(open) => setEntityValidation(prev => ({ ...prev, open }))}
+          />
+        )}
       </Box>
     );
   }
