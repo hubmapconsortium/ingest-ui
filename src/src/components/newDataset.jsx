@@ -43,7 +43,9 @@ export const DatasetForm = (props) => {
     contains_human_genetic_sequences: "",
     dt_select: "",
     direct_ancestor_uuids: [],
-    group_uuid: ""
+    group_uuid: "",
+    ingest_task: "",
+    assigned_to_group_name: ""
   });
   let [formErrors, setFormErrors] = useState({});
   let [errorMessages, setErrorMessages] = useState([]);
@@ -144,7 +146,9 @@ export const DatasetForm = (props) => {
                 contains_human_genetic_sequences: entityData.contains_human_genetic_sequences,
                 dt_select: entityData.dataset_type,
                 group_uuid: entityData.group_uuid,
-                direct_ancestor_uuids: entityData.direct_ancestors.map(obj => obj.uuid)
+                direct_ancestor_uuids: entityData.direct_ancestors.map(obj => obj.uuid),
+                ingest_task: entityData.ingest_task || "",
+                assigned_to_group_name: entityData.assigned_to_group_name || ""
               });
               setBulkSelection({
                 uuids: entityData.direct_ancestors.map(obj => obj.uuid),
@@ -248,8 +252,8 @@ export const DatasetForm = (props) => {
         description: form.description,
         dataset_info: form.dataset_info,
         direct_ancestor_uuids: selectedUUIDs,
-        dataset_type: form.dt_select,
-        group_uuid: form.group_uuid
+        ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
+        ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task})
       };
       console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
@@ -273,7 +277,9 @@ export const DatasetForm = (props) => {
         // If group_uuid is not set, default to first user group
         let group_uuid = form.group_uuid || (localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups"))[0].uuid : "");
         cleanForm.group_uuid = group_uuid;
-        console.log(form, form.contains_human_genetic_sequences);
+        cleanForm.dataset_type = form.dt_select
+        cleanForm.group_uuid = form.group_uuid
+        // console.log(form, form.contains_human_genetic_sequences);
         console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
@@ -424,11 +430,6 @@ export const DatasetForm = (props) => {
 
   const buttonEngine = () => {
     return (<>
-      <Box sx={{ textAlign: "left" }}>
-        {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
-          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
-        )}
-      </Box>
       <Box sx={{ textAlign: "right" }}>
         <LoadingButton
           variant="contained"
@@ -447,6 +448,9 @@ export const DatasetForm = (props) => {
             type="submit">
             Save
           </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
+          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/* NEW, SUBMITTED */}
         {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (
@@ -479,7 +483,7 @@ export const DatasetForm = (props) => {
             Validate
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && ((permissions.has_write_priv && entityData.status !== "published") || (permissions.has_admin_priv && entityData.status === "QA")) && (
+        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "QA"].includes(entityData.status))) || (permissions.has_admin_priv && entityData.status === "QA")) && (
           <LoadingButton
             loading={!!loading.button.save}
             name="save"
@@ -504,6 +508,8 @@ export const DatasetForm = (props) => {
         <form onSubmit={(e) => handleSubmit(e)}>
             <BulkSelector
               permissions={permissions}
+              dialogTitle={"Associated Entities"}
+              dialogSubtitle={"Entities associated with this Dataset"}
               initialSelectedUUIDs={bulkSelection.uuids}
               initialSourcesData={bulkSelection.data}
               onBulkSelectionChange={handleBulkSelectionChange}

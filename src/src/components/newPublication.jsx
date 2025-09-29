@@ -525,6 +525,8 @@ export const PublicationForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector
+            dialogTitle="Associated Dataset IDs"
+            dialogSubtitle="Datasets that are associated with this Publication"
             permissions={permissions}
             initialSelectedUUIDs={selectedBulkUUIDs}
             initialSourcesData={selectedBulkData}

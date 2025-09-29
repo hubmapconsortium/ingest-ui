@@ -31,8 +31,8 @@ import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
 
 export function BulkSelector({
-  dialogTitle = "Associated Dataset IDs",
-  dialogSubtitle = "Datasets that are associated with this Publication",
+  dialogTitle,
+  dialogSubtitle,
   permissions,
   initialSelectedHIDs = [],
   initialSelectedUUIDs = [],
@@ -52,11 +52,12 @@ export function BulkSelector({
   const [showBulkWarning, setShowBulkWarning] = useState(false);
   const [sourceBulkStatus, setSourceBulkStatus] = useState("idle");
   const [sourceTableError, setSourceTableError] = useState(false);
-
   const [selected_HIDs, setSelectedHIDs] = useState(initialSelectedHIDs);
   const [selected_UUIDs, setSelectedUUIDs] = useState(initialSelectedUUIDs);
   const [selected_string, setSelectedString] = useState(initialSelectedString);
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
+  const title = dialogTitle || "Associated Dataset IDs";
+  const subtitle = dialogSubtitle || "Datasets that are associated with this Publication"; 
   
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
@@ -289,7 +290,7 @@ export function BulkSelector({
           color: "white", padding: "2px 10px",
           marginBottom: "10px"
         }}>
-          <FontAwesomeIcon icon={faFolderTree} sx={{ marginRight: "10px" }} /> Providing {dialogTitle}
+          <FontAwesomeIcon icon={faFolderTree} sx={{ marginRight: "10px" }} /> {title}
         </DialogTitle>
         <DialogContent>
           <FormControl sx={{ width: "100%", }} >
@@ -425,7 +426,7 @@ export function BulkSelector({
     }}>
       <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
         <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {dialogTitle}</Typography>
-        <Typography variant="caption">{dialogSubtitle}</Typography>
+        <Typography variant="caption">{subtitle}</Typography>
       </Box>
       <Box className="sourceShade" sx={{
         opacity: sourceBulkStatus === "loading" ? 1 : 0,
