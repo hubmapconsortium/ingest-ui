@@ -516,7 +516,7 @@ export const DatasetForm = (props) => {
               searchFilters={{
                 custom_title: "Search for a Source ID for your Dataset",
                 custom_subtitle: "Collections may not be selected for Dataset sources",
-                blacklist: ['Collection']
+                blacklist: ['collection']
               }}
               readOnly={readOnlySources}
               preLoad={loading.bulk}
