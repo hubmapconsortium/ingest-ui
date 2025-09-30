@@ -104,7 +104,7 @@ export function CollectionForm (props){
   // Props
   var [isNew] = useState(props.newForm);
   var [dataGroups] = useState(props.dataGroups);
-  var [datatypeList] = useState(props.dtl_all);
+  // var [datatypeList] = useState(props.dtl_all);
   var [editingCollection] = useState(props.editingCollection);
 
   

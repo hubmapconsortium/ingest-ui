@@ -28,7 +28,7 @@ import Forms from "./components/uuid/forms";
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
-import SpeedDialTooltipOpen from './components/ui/formParts';
+import {SpeedDialTooltipOpen} from './components/ui/formParts';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
@@ -50,6 +50,9 @@ import {DonorForm} from "./components/newDonor";
 import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
 import {PublicationForm} from "./components/newPublication";
+import {DatasetForm} from "./components/newDataset";
+
+import NotFound from "./components/404";
 
 export function App(props){
   let navigate = useNavigate();
@@ -67,8 +70,8 @@ export function App(props){
   var[timerStatus, setTimerStatus] = useState(true);
 
   // Data to fill in UI Elements
-  var[dataTypeList, setDataTypeList] = useState({}); //@TODO: Remove & use Local in forms
-  var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
+  // var[dataTypeList, setDataTypeList] = useState({}); //@TODO: Remove & use Local in forms
+  // var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
   var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
   // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
   
@@ -131,8 +134,8 @@ export function App(props){
           if(res !== undefined){
             localStorage.setItem("datasetTypes",JSON.stringify(res));
             // TODO: Eventually remove these & use localstorage
-            setDataTypeList(res);
-            setDataTypeListAll(res);
+            // setDataTypeList(res);
+            // setDataTypeListAll(res);
           }else{
             setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
             reportError(res)
@@ -527,10 +530,10 @@ export function App(props){
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
-                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeList} newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
-                      <Route path='datasetAdmin' element={<Forms reportError={reportError} formType='dataset' dataTypeList={dataTypeList} dtl_all={dataTypeList} dtl_primary={dataTypeList}new='true' onReturn={onClose} handleCancel={handleCancel} /> }/> 
+                      <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
                     </Route>
@@ -543,14 +546,16 @@ export function App(props){
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    <Route path="/dataset/:uuid" element={<RenderDataset reportError={reportError} dataTypeList={dataTypeList} handleCancel={handleCancel} allGroups={allGroups} status="view"/>} />
-                    {/* <Route path="/upload/:uuid" element={<RenderUpload reportError={reportError} handleCancel={handleCancel} status="view" allGroups={allGroups}/>} /> */}
+                    <Route path="/dataset/:uuid" element={<DatasetForm onUpdated={(response) => updateSuccess(response)}/>} />
+                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
+
                     <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
-                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} dtl_all={dataTypeListAll} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
                     <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                    
                     <Route path="/metadata">
                       <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
                       <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
@@ -558,8 +563,8 @@ export function App(props){
                       <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
                     </Route>
 
-                    {/* In Develpment here */}
-                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
+                    {/* 404 */}
+                    <Route path="/notFound" element={ <NotFound /> } />
 
                   </Routes>
  

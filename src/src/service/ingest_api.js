@@ -527,10 +527,9 @@ export function ingest_api_pipeline_test_privs(auth) {
  *  Pipeline Testing Submit
  *
  */
-export function ingest_api_pipeline_test_submit(auth, data) { 
-  const options = {headers: {Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
+export function ingest_api_pipeline_test_submit(data) { 
+  // const options = {headers: {Authorization: "Bearer " + globalTokauthen,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`;
-  console.debug('%c◉ url ', 'color:#00ff7b', url);
   return axios 
     .post(url, {}, options)
     .then(res => {
