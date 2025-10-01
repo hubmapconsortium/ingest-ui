@@ -72,14 +72,14 @@ export const DatasetForm = (props) => {
   const formFields = useMemo(() => [{
       id: "lab_dataset_id",
       label: "Lab Name or ID",
-      helperText: "Lab Name or ID",
+      helperText: "An identifier used locally by the data provider.",
       required: true,
       type: "text"
     },
     {
       id: "description",
       label: "Description",
-      helperText: "Description Tips",
+      helperText: "",
       required: true,
       type: "textarea"
     },
