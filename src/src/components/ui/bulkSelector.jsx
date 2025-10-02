@@ -141,10 +141,14 @@ export function BulkSelector({
       // Only add the first occurrence of each entity (by uuid or hubmap_id)
       let entityId = entity.hubmap_id || entity.uuid;
       if (addedIds.has(entityId)) continue;
+      let restrictCheck = false;
+      if(searchFilters?.restrictions?.entityType && entity.entity_type.toLowerCase() !== searchFilters.restrictions.entityType.toLowerCase()){
+        restrictCheck = true;
+      }
       if (
-        (searchFilters.blacklist && searchFilters.blacklist.includes(entity.entity_type)) ||
-        (searchFilters.whitelist && !searchFilters.whitelist.includes(entity.entity_type)) ||
-        (searchFilters.restrictions && !searchFilters.restrictions.includes(entity.entity_type))
+        (searchFilters.blacklist && searchFilters.blacklist.includes(entity.entity_type.toLowerCase())) ||
+        (searchFilters.whitelist && !searchFilters.whitelist.includes(entity.entity_type.toLowerCase())) ||
+        (restrictCheck === true) 
       ) {
         typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
       } else {

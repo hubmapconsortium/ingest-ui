@@ -23,6 +23,7 @@ import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
 import Snackbar from '@mui/material/Snackbar';
+import Tooltip from '@mui/material/Tooltip';
 import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
@@ -347,8 +348,19 @@ function topHeader(entityData){
         <Grid item xs={6} className="" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           {entityData.status && (
-            <Typography><strong>Status:</strong> {entityData.status ? statusBadge(entityData.status) : ""} </Typography>             
-          )}
+              <Typography><strong>Status:</strong> 
+                <Tooltip
+                  placement="bottom-start" 
+                  title={
+                    <Box>
+                      <Typography variant="caption">
+                      {entityData?.pipeline_message || "" }
+                      </Typography><br />
+                    </Box>}>
+                  {entityData.status ? statusBadge(entityData.status) : ""}
+                  </Tooltip> 
+                </Typography>   
+            )}
           {entityData.priority_project_list	 && (
               <Typography variant="caption" sx={{display: "inline-block"}}>
                 <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1

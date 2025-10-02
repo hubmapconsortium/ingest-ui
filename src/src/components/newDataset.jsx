@@ -72,14 +72,14 @@ export const DatasetForm = (props) => {
   const formFields = useMemo(() => [{
       id: "lab_dataset_id",
       label: "Lab Name or ID",
-      helperText: "Lab Name or ID",
+      helperText: "An identifier used locally by the data provider.",
       required: true,
       type: "text"
     },
     {
       id: "description",
       label: "Description",
-      helperText: "Description Tips",
+      helperText: "",
       required: true,
       type: "textarea"
     },
@@ -516,7 +516,7 @@ export const DatasetForm = (props) => {
               searchFilters={{
                 custom_title: "Search for a Source ID for your Dataset",
                 custom_subtitle: "Collections may not be selected for Dataset sources",
-                blacklist: ['Collection']
+                blacklist: ['collection']
               }}
               readOnly={readOnlySources}
               preLoad={loading.bulk}
