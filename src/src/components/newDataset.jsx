@@ -320,7 +320,7 @@ export const DatasetForm = (props) => {
 
   const handleValidateEntity = (e) => {
     e.preventDefault();
-    ingest_api_validate_entity(uuid, "datasets")
+    ingest_api_validate_entity(entityData.uuid, "datasets")
       .then((response) => {
         console.debug('%c◉ res ', 'color:#00ff7b', response);
         setEntityValidation({
@@ -340,7 +340,7 @@ export const DatasetForm = (props) => {
   const handleSubmitForTesting = () => {
     console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
     // NOTE: CannotBe Derived! @TODO? 
-    ingest_api_pipeline_test_submit({"uuid": uuid})
+    ingest_api_pipeline_test_submit({"uuid": entityData.uuid})
       .then((response) => {
         console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
         let results = "";
@@ -373,7 +373,7 @@ export const DatasetForm = (props) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     var dataSubmit = {"status":"Submitted"}
-    entity_api_update_entity(uuid, JSON.stringify(dataSubmit))
+    entity_api_update_entity(entityData.uuid, JSON.stringify(dataSubmit))
       .then((response) => {
         console.debug("entity_api_update_entity response", response);
         // @TODO: Move slackness call into entity_api_update_entity
@@ -413,7 +413,7 @@ export const DatasetForm = (props) => {
     e.preventDefault();
     setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: true } }));
     let data = buildCleanForm();
-    ingest_api_dataset_submit(uuid, JSON.stringify(data))
+    ingest_api_dataset_submit(entityData.uuid, JSON.stringify(data))
       .then((response) => {
           if (response.status < 300) {
             props.onUpdated(response.results);
