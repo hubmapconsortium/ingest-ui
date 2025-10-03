@@ -24,8 +24,6 @@ import {
   ingest_api_dataset_submit,
   ingest_api_notify_slack} from "../service/ingest_api";
 import { prefillFormValuesFromUrl, EntityValidationMessage } from "./ui/formParts";
-import {LensTwoTone} from "@mui/icons-material";
-
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
@@ -127,7 +125,7 @@ export const DatasetForm = (props) => {
         .then((response) => {
           console.debug('%c◉ RESP ', 'color:#00ff7b', response);
           if(response.status === 404 || response.status === 400){
-            console.debug('%c◉ ERRRRR ', 'background:#2200FF, color:#fff', );
+            console.debug('%c◉ ERRRRR ', 'color:#FFFFFF;background: #2200FF;padding:200' , );
             navigate("/notFound?entityID="+uuid);
           }
           if (response.status === 200) {
@@ -158,7 +156,8 @@ export const DatasetForm = (props) => {
               if (entityData.creation_action === "Multi-Assay Split" || entityData.creation_action === "Central Process"){
                 setReadOnlySources(true);
               }
-              ingest_api_allowable_edit_states(uuid)
+
+              ingest_api_allowable_edit_states(entityData.uuid)
                 .then((response) => {
                   if (entityData.data_access_level === "public") {
                     setReadOnlySources(true);
@@ -170,6 +169,8 @@ export const DatasetForm = (props) => {
                   setPermissions(response.results);
                 })
                 .catch((error) => {
+                  console.error(error);
+
                   setPageErrors(error);
                 });
             }
@@ -178,7 +179,7 @@ export const DatasetForm = (props) => {
           }
         })
         .catch((error) => {
-          console.debug('%c◉ ERRRRR ', 'background:#2200FF, color:#fff', );
+            console.debug('%c◉ ingest_api_allowable_edit_states ERR Catch ', 'color:#FFFFFF;background: #2200FF;padding:200' ,error );
           if(error.status === 404){
             navigate("/notFound?entityID="+uuid);
           }
@@ -240,6 +241,24 @@ export const DatasetForm = (props) => {
     setErrorMessages(errors > 0 ? e_messages : []);
     return errors === 0;
   };
+
+  function buildCleanForm() {
+    let selectedUUIDs = bulkSelection.data.map(obj => obj.uuid);
+    let cleanForm = {
+      lab_dataset_id: form.lab_dataset_id,
+      contains_human_genetic_sequences: form.contains_human_genetic_sequences === "yes",
+      description: form.description,
+      dataset_info: form.dataset_info,
+      direct_ancestor_uuids: selectedUUIDs,
+      ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData?.assigned_to_group_name) && permissions.has_admin_priv) && { assigned_to_group_name: form.assigned_to_group_name }),
+      ...(((form.ingest_task && form.ingest_task !== entityData?.ingest_task) && permissions.has_admin_priv) && { ingest_task: form.ingest_task })
+    };
+    if (!uuid) {
+      cleanForm.group_uuid = form.group_uuid || (localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups"))[0].uuid : "");
+      cleanForm.dataset_type = form.dt_select;
+    }
+    return cleanForm;
+  }
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -320,6 +339,7 @@ export const DatasetForm = (props) => {
 
   const handleSubmitForTesting = () => {
     console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
+    // NOTE: CannotBe Derived! @TODO? 
     ingest_api_pipeline_test_submit({"uuid": uuid})
       .then((response) => {
         console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
@@ -356,6 +376,7 @@ export const DatasetForm = (props) => {
     entity_api_update_entity(uuid, JSON.stringify(dataSubmit))
       .then((response) => {
         console.debug("entity_api_update_entity response", response);
+        // @TODO: Move slackness call into entity_api_update_entity
         var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
         var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
         ingest_api_notify_slack(slackMessage)
@@ -390,7 +411,9 @@ export const DatasetForm = (props) => {
 
   const handleProcess = (e) => {
     e.preventDefault();
-    ingest_api_dataset_submit(uuid, JSON.stringify(entityData))
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: true } }));
+    let data = buildCleanForm();
+    ingest_api_dataset_submit(uuid, JSON.stringify(data))
       .then((response) => {
           if (response.status < 300) {
             props.onUpdated(response.results);
