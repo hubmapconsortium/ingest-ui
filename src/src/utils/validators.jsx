@@ -1,6 +1,6 @@
 export function validateRequired(value){
-  // console.debug(typeof value);
-  // console.debug("VALUE",value);
+  console.debug(typeof value);
+  console.debug("VALUE",value);
   if(typeof value === "string"){
     // console.debug("trim", (value.trim()!==""));
     return value.trim() !== "";
@@ -16,6 +16,13 @@ export function validateRequired(value){
     }else if(value.name){
       // console.debug(value.name);
       return value.name.trim() !== "";
+    }
+  }else if(typeof value === "boolean"){
+    // console.debug("value length: ",value.length);
+    if(value === true || value === false){
+      return true;
+    }else{
+      return false;
     }
   }
 }

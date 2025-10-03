@@ -56,7 +56,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
-  const [eValopen, setEValopen] = useState(true);
+  const [eValOpen, setEValOpen] = useState(true);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "",
@@ -83,7 +83,7 @@ export const UploadForm = (props) => {
   });
   let[formErrors, setFormErrors] = useState({});
   let[valErrorMessages, setValErrorMessages] = useState([]); //form validation
-  let[valMessage, setValMessage] = useState([]); //Entity Validation
+  // let[valMessage, setValMessage] = useState([]); //Entity Validation
   let[permissions,setPermissions] = useState({ 
     has_admin_priv: false,
     has_publish_priv: false,
@@ -97,6 +97,10 @@ export const UploadForm = (props) => {
   let[globusPath, setGlobusPath] = useState(null);
   let[datasetMenu, setDatasetMenu] = useState();
   let[expandVMessage, setExpandVMessage] = useState(false);
+  let [entityValidation, setEntityValidation] = useState({
+      open:false,
+      message:null
+    });
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   let saveStatuses = ["submitted", "valid", "invalid", "error", "new"]
   // let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
@@ -421,15 +425,18 @@ export const UploadForm = (props) => {
           ingest_api_validate_entity(uuid, "uploads")
             .then((response) => {
               console.debug("Response from validate", response);
-              setValMessage(response);
-              setEValopen(true)
+              setEntityValidation({
+                open:true,
+                message:response
+              })
               setProcessingButton(false);
             })
             .catch((error) => {
-              console.debug('%c◉  error', 'color:#ff005d', error );
-              console.debug('%c◉  error long', 'color:#ff005d', error?.data?.error );
-                setValMessage(error?.data?.error || error);
-                setProcessingButton(false);
+              setEntityValidation({
+                open:true,
+                message: error?.data?.error || error?.toString() || "An unknown error occurred during validation."
+              })
+              setProcessingButton(false);
               
             });
           break;
@@ -911,14 +918,13 @@ export const UploadForm = (props) => {
 
         {renderSubmitDialog()}
         
-        {valMessage?.status && (
+        {entityValidation?.message && (
           <EntityValidationMessage
-            response={valMessage}
-            eValopen={eValopen}
-            setEValopen={setEValopen}
+            response={entityValidation.message}
+            eValopen={entityValidation.open}
+            setEValopen={(open) => setEntityValidation(prev => ({ ...prev, open }))}
           />
         )}
-
         {pageErrors && (
           <>{RenderPageError(pageErrors)}</>
         )}

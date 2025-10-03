@@ -37,12 +37,14 @@ export function entity_api_get_entity(uuid){
  *
  */
 export function entity_api_update_entity(uuid, data){ 
+  // https://github.com/hubmapconsortium/entity-api/blob/08f2ab3b9ba258c1c08bf42138c042f23e8a4d87/src/app.py#L1335
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;       
   return axios 
     .put(url, data, options)
     .then(res => {
       // console.debug("entity_api_update_entity", res);
       let results = res.data;
+      // TODO: Move Slack Messaging handling out from UI to direct service calls here?
       return{status: res.status, results: results}
     } )
     .catch(error => {

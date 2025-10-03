@@ -107,7 +107,7 @@ export const RenderEPICollection = (props) => {
             editingCollection={entity_data} 
             // writeable={true}
             dataGroups={dataGroups}
-            dtl_all={props.dtl_all}
+            dtl_all={localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")) : []}
             newForm={ isNew ? true : null}
             />
         </div>
