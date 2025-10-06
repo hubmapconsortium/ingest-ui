@@ -185,10 +185,8 @@ export function ingest_api_create_publication(data) {
  *
  */
 export function ingest_api_dataset_submit(uuid, data) { 
-  // console.debug("ingest_api_dataset_submit", data);
-  
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;
-        
+  // https://github.com/hubmapconsortium/ingest-api/blob/b0c472d14fe9b0c89cfc2c843a6bc58072bbb1a6/src/app.py#L1547
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${uuid}/submit`;  
   return axios 
      .put(url, data, options)
       .then(res => {
@@ -527,10 +525,9 @@ export function ingest_api_pipeline_test_privs(auth) {
  *  Pipeline Testing Submit
  *
  */
-export function ingest_api_pipeline_test_submit(auth, data) { 
-  const options = {headers: {Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
+export function ingest_api_pipeline_test_submit(data) { 
+  // https://github.com/hubmapconsortium/ingest-api/blob/b0c472d14fe9b0c89cfc2c843a6bc58072bbb1a6/src/app.py#L2384
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets/${data['uuid']}/submit-for-pipeline-testing`;
-  console.debug('%c◉ url ', 'color:#00ff7b', url);
   return axios 
     .post(url, {}, options)
     .then(res => {

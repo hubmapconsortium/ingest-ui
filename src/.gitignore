@@ -31,7 +31,7 @@ src/ingest-ui/.pnp.js
 # testing
 src/react-app/coverage
 thunder-tests/
-cypress/screenshots
+cypress/*
 
 # env files
 src/.env.*
