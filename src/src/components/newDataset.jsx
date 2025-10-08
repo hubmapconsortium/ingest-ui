@@ -472,7 +472,7 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/* NEW, SUBMITTED */}
