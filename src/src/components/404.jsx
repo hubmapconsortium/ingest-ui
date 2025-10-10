@@ -37,9 +37,7 @@ export default function NotFound() {
           color:"#ff005d",
           borderRight: { sm: "2px solid #ff005d", xs: "none" },
           mb: { xs: 3, sm: 0 }}}>
-        <Typography variant="h3" sx={{ fontWeight: "bold", mb: 1}}>
-          <HealingIcon sx={{ fontSize: 64, mb: 2 }} /> 404
-        </Typography>
+        
         <Typography variant="h5" sx={{ mb: 2 }}>
           Entity Not Found
         </Typography>
@@ -54,7 +52,7 @@ export default function NotFound() {
           pl: { sm: 4, xs: 0 },
         }}>
         <Typography variant="body1" sx={{ mb: 3 }}>
-          Sorry, the Entity you are looking for  {entityID ? (<Typography variant="caption" component="span" sx={{background:"#ff005d", color:"#fff", padding:"5px", borderRadius:"1em",fontWeight:"bold"}}>({entityID})</Typography>) : ""}  was not found in neo4j. Please check the ID value again, return to the homepage, or try searching for it.
+          Sorry, the Entity you are looking for  {entityID ? (<Typography variant="caption" component="span" sx={{background:"#ff005d", color:"#fff", padding:"5px", borderRadius:"1em",fontWeight:"bold"}}>({entityID})</Typography>) : ""}  was not found in HuBMAP. Please check the ID value again, return to the homepage, or try searching for it.
         </Typography>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button

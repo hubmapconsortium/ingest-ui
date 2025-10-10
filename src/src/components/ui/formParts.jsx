@@ -348,7 +348,7 @@ function topHeader(entityData){
         <Grid item xs={6} className="" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           {entityData.status && (
-              <Typography><strong>Status:</strong> 
+              <Typography><strong>Status: </strong> 
                 <Tooltip
                   placement="bottom-start" 
                   title={
