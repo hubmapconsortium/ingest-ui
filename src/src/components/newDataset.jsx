@@ -535,6 +535,7 @@ export const DatasetForm = (props) => {
               dialogSubtitle={"Entities associated with this Dataset"}
               initialSelectedUUIDs={bulkSelection.uuids}
               initialSourcesData={bulkSelection.data}
+              initialSelectedString={bulkSelection.data.map(obj => obj.hubmap_id).join(", ")}
               onBulkSelectionChange={handleBulkSelectionChange}
               searchFilters={{
                 custom_title: "Search for a Source ID for your Dataset",

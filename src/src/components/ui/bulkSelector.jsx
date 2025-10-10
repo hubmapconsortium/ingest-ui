@@ -310,7 +310,8 @@ export function BulkSelector({
               variant="standard"
               size="small"
               onChange={(event) => setStringIDs(event.target.value)}
-              value={stringIDs} />
+              value={initialSelectedString ? initialSelectedString : selected_string} />
+              {/* // value={stringIDs} /> */}
             <FormHelperText id="component-helper-text" sx={{ width: "100%", marginLeft: "0px" }}>
               {"List of Dataset HuBMAP IDs or UUIDs, Comma Separated "}
             </FormHelperText>
