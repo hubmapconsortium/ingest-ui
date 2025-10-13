@@ -15,7 +15,7 @@ const options = {
  */
 export function entity_api_get_entity(uuid){ 
   // console.debug("entity_api_get_entity");
-  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}`;
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}${process.env.REACT_APP_DATASET_QUERY_PARAM}`;
   return axios 
     .get(url,options)
     .then(res => {
