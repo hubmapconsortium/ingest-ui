@@ -472,7 +472,7 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/* NEW, SUBMITTED */}
@@ -535,6 +535,7 @@ export const DatasetForm = (props) => {
               dialogSubtitle={"Entities associated with this Dataset"}
               initialSelectedUUIDs={bulkSelection.uuids}
               initialSourcesData={bulkSelection.data}
+              initialSelectedString={bulkSelection.data.map(obj => obj.hubmap_id).join(", ")}
               onBulkSelectionChange={handleBulkSelectionChange}
               searchFilters={{
                 custom_title: "Search for a Source ID for your Dataset",

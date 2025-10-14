@@ -56,8 +56,10 @@ export function BulkSelector({
   const [selected_UUIDs, setSelectedUUIDs] = useState(initialSelectedUUIDs);
   const [selected_string, setSelectedString] = useState(initialSelectedString);
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
+  const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
   const title = dialogTitle || "Associated Dataset IDs";
   const subtitle = dialogSubtitle || "Datasets that are associated with this Publication"; 
+
   
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
@@ -66,6 +68,7 @@ export function BulkSelector({
   useEffect(() => {
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
+    setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
   }, [initialSourcesData]);
 
 	console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
@@ -94,6 +97,11 @@ export function BulkSelector({
     }
     // eslint-disable-next-line
   }, []);
+
+  function stringFieldHandler(value){
+    setTextFieldSourceString(value);
+    console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
+  }
 
   // Validation helpers
   function preValidateSources(results, originalStringArr) {
@@ -197,9 +205,20 @@ export function BulkSelector({
       }
       // else, fall through to process the overrideString
     }
+    // console.log(textFieldSourceString)
     setShowHIDList(false);
     setSourceBulkStatus("loading");
+    console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
+    console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
+    console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
     let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
+    let fieldVal = document.getElementById("dataset_uuids_string").value;
+    if(idsToProcess !== fieldVal){
+      idsToProcess = fieldVal;
+    }
+    
+    console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
+    
     // Split and trim, but do NOT dedupe here; pass all for duplicate detection
     let allIds = idsToProcess
       .split(",")
@@ -309,8 +328,8 @@ export function BulkSelector({
               placeholder="HBM123.ABC.456, HBM789.DEF.789, ..."
               variant="standard"
               size="small"
-              onChange={(event) => setStringIDs(event.target.value)}
-              value={stringIDs} />
+              onChange={(event) => stringFieldHandler(event.target.value)}
+              value={textFieldSourceString} />
             <FormHelperText id="component-helper-text" sx={{ width: "100%", marginLeft: "0px" }}>
               {"List of Dataset HuBMAP IDs or UUIDs, Comma Separated "}
             </FormHelperText>
@@ -334,7 +353,7 @@ export function BulkSelector({
           </Button>
           <Button
             size="small"
-            onClick={handleInputUUIDs}
+            onClick={(e) => handleInputUUIDs(e)}
             variant="contained"
             endIcon={<PublishIcon />}
             color="primary">
@@ -623,7 +642,7 @@ export function BulkSelector({
             disabled={!permissions.has_write_priv}
             size="small"
             className='mx-2'
-            onClick={handleInputUUIDs}>
+            onClick={(e) => handleInputUUIDs(e)}>
             {!showHIDList && (<>Bulk</>)}
             {showHIDList && (<>UPDATE</>)}
             <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare} />
