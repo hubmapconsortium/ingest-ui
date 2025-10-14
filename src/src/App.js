@@ -31,7 +31,7 @@ import Result from "./components/ui/result";
 import {SpeedDialTooltipOpen} from './components/ui/formParts';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
-import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set} from "./service/ubkg_api";
+import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set, ubkg_api_get_organs_full} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import {ValidateDTList} from './utils/validators';
 
@@ -125,6 +125,17 @@ export function App(props){
     }else{
       // we already have organs
       loadCount()
+    }
+
+    // The Full RUI details for Organs
+    if(!localStorage.getItem("organRUIMap")){
+      ubkg_api_get_organs_full()
+        .then((data) => {
+          localStorage.setItem("organRUIMap", JSON.stringify(data.results));
+        })
+        .catch((error) => {
+          console.debug("RUI_ORGAN_MAP", error, error.response);
+        });
     }
 
     if(!localStorage.getItem("datatypes")){
@@ -303,6 +314,7 @@ export function App(props){
   function purgeStorage(){
     localStorage.removeItem('info');
     localStorage.removeItem('organs');
+    localStorage.removeItem('organRUIMap');
     localStorage.removeItem('datatypes');
     localStorage.removeItem('allGroups');
     localStorage.removeItem('userGroups');

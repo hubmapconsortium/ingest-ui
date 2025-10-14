@@ -127,6 +127,7 @@ export const TISSUE_TYPES = {
     other: "Other" }]
 };
 
+// Deprecating
 export const ORGAN_TYPES = {
   AO: "Aorta",
   BL: "Bladder",
@@ -164,6 +165,7 @@ export const ORGAN_TYPES = {
   OT: "Other"
 };
 
+// Deprecating
 // Direct mapping from HuBMAP Organ Code to appropriate RUI Reference Organ IRIs
 // Note: Always use http, https will not work
 export const RUI_ORGAN_MAPPING = {
@@ -205,7 +207,13 @@ export const RUI_ORGAN_MAPPING = {
   // OT: "" // No CCF Reference Organ for 'Other' ever
 };
 
-export const RUI_ORGAN_TYPES = Object.keys(RUI_ORGAN_MAPPING);
+// export const RUI_ORGAN_TYPES = Object.keys(RUI_ORGAN_MAPPING);
+
+export const RUI_ORGAN_TYPES = Object.values(JSON.parse(localStorage.getItem("organRUIMap")))
+  .filter(org => org.ruiSupported)
+  .map(org => org.ruiCode);
+// console.debug('%c◉ RUI_ORGAN_TYPES ', 'color:#00ff7b',RUI_ORGAN_TYPES );
+
 
 export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "5777527e-ec11-11e8-ab41-0af86edb4424"];
 
