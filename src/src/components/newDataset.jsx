@@ -486,7 +486,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status === "new" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
           <LoadingButton
             loading={loading.button.submit}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -506,9 +506,9 @@ export const DatasetForm = (props) => {
             Validate
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "QA"].includes(entityData.status))) || (permissions.has_admin_priv && entityData.status === "QA")) && (
+        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "QA"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && entityData.status === "QA")) && (
           <LoadingButton
-            loading={!!loading.button.save}
+            loading={loading.button.save}
             name="save"
             onClick={(e) => handleSave(e)}
             variant="contained"
