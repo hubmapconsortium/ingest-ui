@@ -467,7 +467,7 @@ export const PublicationForm = (props) => {
             Save
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && entityData.status.toLowerCase() !== "published" && (
           <LoadingButton
             loading={buttonLoading['process']}
             name="process"
@@ -477,7 +477,7 @@ export const PublicationForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "new" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() !== "new" && (
           <LoadingButton
             loading={buttonLoading['submit']}
             onClick={(e) => handleSubmit(e)}
@@ -487,7 +487,7 @@ export const PublicationForm = (props) => {
             Submit
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status !== "published" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() !== "published" && (
           <LoadingButton
             loading={buttonLoading['save'] === true ? true : false}
             name="save"
