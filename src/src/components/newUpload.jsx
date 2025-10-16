@@ -499,7 +499,12 @@ export const UploadForm = (props) => {
             rows={compiledCollection}
             columns={COLUMN_DEF_DATASET_MINI}
             disableColumnMenu={true}
-            hideFooterPagination={true}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10, page: 0 },
+              },
+            }}
+            pageSizeOptions={[5, 10, 25]}
             hideFooterSelectedRowCount
             onCellClick={(e)=> openDataset(e)} 
             autoHeight
