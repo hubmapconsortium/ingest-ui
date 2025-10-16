@@ -41,7 +41,7 @@ import {RenderEPICollection} from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderMetadata} from "./components/metadata";
 import {RenderPublication} from "./components/publications";
-import {RenderSample} from "./components/samples";
+// import {RenderSample} from "./components/samples";
 import {RenderUpload} from "./components/uploads";
 import {RenderBulk} from "./components/bulk";
 
@@ -128,10 +128,15 @@ export function App(props){
     }
 
     // The Full RUI details for Organs
-    if(!localStorage.getItem("organRUIMap")){
+    if(!localStorage.getItem("organs_full")){
       ubkg_api_get_organs_full()
         .then((data) => {
-          localStorage.setItem("organRUIMap", JSON.stringify(data.results));
+          localStorage.setItem("organs_full", JSON.stringify(data));
+          let RUIOrgans = data  
+            .filter(org => org.rui_supported)
+            .map(org => org.rui_code);
+          localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
+
         })
         .catch((error) => {
           console.debug("RUI_ORGAN_MAP", error, error.response);
@@ -314,7 +319,8 @@ export function App(props){
   function purgeStorage(){
     localStorage.removeItem('info');
     localStorage.removeItem('organs');
-    localStorage.removeItem('organRUIMap');
+    localStorage.removeItem('organs_full');
+    localStorage.removeItem('RUIOrgans');
     localStorage.removeItem('datatypes');
     localStorage.removeItem('allGroups');
     localStorage.removeItem('userGroups');

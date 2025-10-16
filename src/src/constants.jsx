@@ -207,13 +207,8 @@ export const RUI_ORGAN_MAPPING = {
   // OT: "" // No CCF Reference Organ for 'Other' ever
 };
 
-// export const RUI_ORGAN_TYPES = Object.keys(RUI_ORGAN_MAPPING);
-
-export const RUI_ORGAN_TYPES = Object.values(JSON.parse(localStorage.getItem("organRUIMap")))
-  .filter(org => org.ruiSupported)
-  .map(org => org.ruiCode);
-// console.debug('%c◉ RUI_ORGAN_TYPES ', 'color:#00ff7b',RUI_ORGAN_TYPES );
-
+// Deprecated but the old Tissue form still yerns for it till I Purge the Old Forms/Files
+export const RUI_ORGAN_TYPES = JSON.parse(localStorage.getItem("RUIOrgans"));
 
 export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "5777527e-ec11-11e8-ab41-0af86edb4424"];
 

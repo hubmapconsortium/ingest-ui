@@ -44,7 +44,7 @@ class RUIIntegration extends Component {
         });
         console.debug('%c◉ organMap ', 'color:#9000FF', organMap);
         this.setState({ ruiOrganMap: organMap });
-        localStorage.setItem("organRUIMap",JSON.stringify(organMap));
+        localStorage.setItem("organs_full",JSON.stringify(organMap));
       }
       ).catch((error) => {
         console.debug("RUI_ORGAN_MAP", error, error.response);

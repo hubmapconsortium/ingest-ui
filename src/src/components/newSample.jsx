@@ -42,7 +42,7 @@ import {OrganIcons} from "./ui/icons";
 import RUIIntegration from "./ui/ruiIntegration";
 import SearchComponent from "./search/SearchComponent";
 import {toTitleCase} from "../utils/string_helper";
-import {RUI_ORGAN_TYPES} from "../constants";
+// import {RUI_ORGAN_TYPES} from "../constants";
 // import {ValidateLocalhost} from "../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
@@ -120,6 +120,18 @@ export const SampleForm = (props) => {
       debugTooltip:false
     }
   });
+
+  const RUI_ORGAN_TYPES = (() => {
+    const RuiTypes = JSON.parse(localStorage.getItem("RUIOrgans"));
+    if (!RuiTypes){ 
+      return Object.values(JSON.parse(localStorage.getItem("organs_full")))
+        .filter(org => org.rui_supported)
+        .map(org => org.rui_code);
+    }else{
+      return RuiTypes;
+    }
+
+  })();
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
