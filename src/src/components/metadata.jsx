@@ -179,7 +179,7 @@ const introText = () =>{
   return(
     <>
     <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
-      To bulk register  {props.type.toLowerCase()} metadata, upload your tsv file here. Please reffer to the format specified in this <Button href={exampleFile} size='small' download target="_blank " >{<FontAwesomeIcon icon={faFileDownload} className="m-1" />}Example.tsv </Button> file  For further details, please see the Metadata Upload Documentation for {props.type}s. 
+      To bulk register  {props.type.toLowerCase()} metadata, upload your tsv file here. Please refer to the format specified in this <Button href={exampleFile} size='small' download target="_blank " >{<FontAwesomeIcon icon={faFileDownload} className="m-1" />}Example.tsv </Button> file  For further details, please see the Metadata Upload Documentation for {props.type}s. 
     </Typography> 
     
     {/* Gimmie the file */}
