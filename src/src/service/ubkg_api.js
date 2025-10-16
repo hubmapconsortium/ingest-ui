@@ -69,6 +69,26 @@ export function ubkg_api_get_organ_type_set(format) {
       });
 };
 
+
+/*
+ * UBKG GET extensive, RUI inclusive Organ Data
+ *
+ */
+export function ubkg_api_get_organs_full() {
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs?application_context=HUBMAP`; 
+  return axios
+    .get(url)
+      .then(res => {
+        let data = res.data;
+        return data;
+      })
+      .catch(error => {
+        console.debug("ubkg_api_get_organs_full", error, error.response);
+        captureError(error);
+      });
+};
+
+
 /*
  * UBKG GET dataset types method
  *

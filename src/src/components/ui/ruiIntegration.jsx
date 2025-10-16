@@ -1,7 +1,9 @@
 import React, { Component } from "react";
-import { RUI_ORGAN_MAPPING } from "../../constants.jsx";
+import { RUI_ORGAN_MAPPING, ubkgRUIMap} from "../../constants.jsx";
+import { ubkg_api_get_organs_full } from "../../service/ubkg_api.js";
 import "../../App.css";
 
+ 
 // NOTE: This will be superseeding the ruiIntegration.jsx in /uuid/tissue_form_components/
 class RUIIntegration extends Component {
 
@@ -17,9 +19,36 @@ class RUIIntegration extends Component {
       width: 1820,
       height: 1012,
       mounted: false,
+      ruiOrganMap: {},
     };
 
     this.ruiRef = React.createRef();
+    
+  }
+
+  setRUIOrganMap() {
+    ubkg_api_get_organs_full()
+      .then((data) => {
+        console.debug('%c◉ ubkg_api_get_organs_full ', 'color:#0800FF', data);
+        let organMap = {};
+        data.forEach((organ) => {
+          organMap[organ.term] = {
+            organ: organ.term,
+            ruiCode: organ.rui_code,
+            uberon: organ.organ_uberon,
+            ruiSupported: organ.rui_supported,
+          } 
+          if(organ.laterality){
+            organMap[organ.term]['laterality'] = organ.laterality;
+          }
+        });
+        console.debug('%c◉ organMap ', 'color:#9000FF', organMap);
+        this.setState({ ruiOrganMap: organMap });
+        localStorage.setItem("organs_full",JSON.stringify(organMap));
+      }
+      ).catch((error) => {
+        console.debug("RUI_ORGAN_MAP", error, error.response);
+      });
   }
 
   /**
@@ -41,6 +70,7 @@ class RUIIntegration extends Component {
 
   componentDidMount() {
     console.log('RUI...', this.props)
+    this.setRUIOrganMap();
     this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
         console.log(this.state.organ_types);
       }, () => {
@@ -74,7 +104,8 @@ class RUIIntegration extends Component {
   updateRUIConfig() {
     // console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b',this.props.organ, this.props.organList,this.props.organList[this.props.organ] );
     console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b', this.props );
-    const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
+
+    // const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
     const organ_info = this.props.organList[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();
@@ -100,7 +131,7 @@ class RUIIntegration extends Component {
       lastName: user_name.split(" ")[1]
     };
     rui.organ = {
-      ontologyId: organ_id,
+      // ontologyId: organ_id,
       name: organ_name,
       sex: sex || "female",
       side: organ_side
