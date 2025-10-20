@@ -917,13 +917,20 @@ svg.invalid {
   color: white!important;
   font-size:1.1em;
 }
+.associationTable .MuiDataGrid-columnHeaders, 
 .associationTable .MuiDataGrid-footerContainer{
-  display:none;
-}
-.associationTable .MuiDataGrid-columnHeaders{
   background-color: #444a65;
   border-color: #454d55;
   color:#fff;
+}
+.associationTable .MuiDataGrid-footerContainer p,
+.associationTable .MuiDataGrid-footerContainer button,
+.associationTable .MuiDataGrid-footerContainer svg,
+.associationTable .MuiDataGrid-footerContainer div{
+  color: #fff;
+}
+.associationTable .MuiDataGrid-footerContainer p{
+  margin: 0%;
 }
 #revert_tooltip{
   background-color: #fff!important;
