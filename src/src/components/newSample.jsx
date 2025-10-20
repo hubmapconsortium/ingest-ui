@@ -42,7 +42,7 @@ import {OrganIcons} from "./ui/icons";
 import RUIIntegration from "./ui/ruiIntegration";
 import SearchComponent from "./search/SearchComponent";
 import {toTitleCase} from "../utils/string_helper";
-import {RUI_ORGAN_TYPES} from "../constants";
+// import {RUI_ORGAN_TYPES} from "../constants";
 // import {ValidateLocalhost} from "../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
@@ -120,6 +120,18 @@ export const SampleForm = (props) => {
       debugTooltip:false
     }
   });
+
+  const RUI_ORGAN_TYPES = (() => {
+    const RuiTypes = JSON.parse(localStorage.getItem("RUIOrgans"));
+    if (!RuiTypes){ 
+      return Object.values(JSON.parse(localStorage.getItem("organs_full")))
+        .filter(org => org.rui_supported)
+        .map(org => org.rui_code);
+    }else{
+      return RuiTypes;
+    }
+
+  })();
 
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
@@ -410,7 +422,7 @@ export const SampleForm = (props) => {
       if(donorDetails.metadata){
         let donorMeta = donorDetails.metadata.organ_donor_data || donorDetails.metadata.living_donor_data;
         const donorSexDetails = donorMeta.find((m) => m.grouping_code === "57312000");
-        return donorSexDetails.preferred_term
+        return (donorSexDetails && donorSexDetails.preferred_term) ? donorSexDetails.preferred_term : null
       }else{
         return null
       }
@@ -529,7 +541,7 @@ export const SampleForm = (props) => {
       interface: {...prevValues.interface, openReg: false}}))
   }
   function shouldShowRUIInterface(){
-    console.debug('%c◉ shouldShowRUIInterface', 'color:#E7EEFF;background: #0F87FF;padding:200', RUIManagerObject.details.organ && RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ,formValues.sample_category === "block");
+    // console.debug('%c◉ shouldShowRUIInterface', 'color:#E7EEFF;background: #0F87FF;padding:200', RUIManagerObject.details.organ && RUI_ORGAN_TYPES.includes(RUIManagerObject.details.organ) ,formValues.sample_category === "block");
     if(sourceEntity && sourceEntity.entity_type === "Donor"){
       return false
     }
