@@ -490,7 +490,7 @@ export const UploadForm = (props) => {
         });
       }
       return (
-        <div style={{ width: "100%", }}>
+        <div className={"associationTableWrap"} style={{ width: "100%", }}>
           <DataGrid
             columnVisibilityModel={{
               uuid: false,
@@ -511,6 +511,7 @@ export const UploadForm = (props) => {
             rowCount={compiledCollection.length}
             loading={!compiledCollection.length > 0 && uuid}
             sx={{
+              border: "none",
               '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY: 'scroll!important',maxHeight: '350px'},
               background: "rgba(0, 0, 0, 0.04)",
               cursor: "cell!important",
