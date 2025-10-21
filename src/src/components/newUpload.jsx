@@ -274,6 +274,12 @@ export const UploadForm = (props) => {
       e_messages.push("Anticipated Dataset Count must be a number");
       errors++;
     }
+    // Count is Positive
+    if(formValues.anticipated_dataset_count && (formValues.anticipated_dataset_count <=0 )){
+      newFormErrors['anticipated_dataset_count'] = true;
+      e_messages.push("Anticipated Dataset Count must be a Positive number");
+      errors++;
+    }
 
     // They Could have Typed the Date... is it within range?
     if(formValues.anticipated_complete_upload_month && formValues.anticipated_complete_upload_month !== ""){
