@@ -36,7 +36,7 @@ import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_ap
 import {ValidateDTList} from './utils/validators';
 
 // The legacy form loaders
-import {RenderCollection} from "./components/collections";
+// import {CollectionForm} from "./components/collections";
 import {RenderEPICollection} from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderMetadata} from "./components/metadata";
@@ -51,6 +51,7 @@ import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
 import {PublicationForm} from "./components/newPublication";
 import {DatasetForm} from "./components/newDataset";
+import {CollectionForm} from "./components/newCollection";
 
 import NotFound from "./components/404";
 
@@ -548,7 +549,7 @@ export function App(props){
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
@@ -568,7 +569,7 @@ export function App(props){
                     <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                     <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
