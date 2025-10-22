@@ -212,8 +212,9 @@ export function BulkSelector({
     console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
     console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
     let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
-    let fieldVal = document.getElementById("dataset_uuids_string").value;
-    if(idsToProcess !== fieldVal){
+    let fieldVal = document.getElementById("dataset_uuids_string");
+    fieldVal = fieldVal ? fieldVal.value : null;
+    if(idsToProcess !== fieldVal && fieldVal && fieldVal.length > 0){
       idsToProcess = fieldVal;
     }
     
@@ -495,7 +496,7 @@ export function BulkSelector({
                 <TableCell component="th">Subtype</TableCell>
                 <TableCell component="th" sx={{ maxWidth: "200px" }}>Group Name</TableCell>
                 <TableCell component="th">Status</TableCell>
-                {permissions.has_write_priv && (
+                {permissions.has_write_priv && !readOnlyState && (
                   <TableCell component="th" align="right">
                     Action
                   </TableCell>
