@@ -41,7 +41,7 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
+  // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
@@ -53,8 +53,8 @@ export const FormHeader = (props) => {
 
 // Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
-  console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
+  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
+  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -83,7 +83,7 @@ export function badgeClass(status){
   var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
-    console.log("No Status Value for this unit ");
+    // console.log("No Status Value for this unit ");
   }else{
 	switch (status.toUpperCase()){
     case "NEW":
@@ -312,7 +312,7 @@ function statusBadge(status){
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
 function newBadge(type){
-  console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
+  // console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
   let newBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
@@ -468,7 +468,7 @@ function getHubmapIDsFromBulkTable() {
   if (!table) return [];
   // Select all first-column <a> elements in table rows
   const idLinks = table.querySelectorAll('tbody tr td:first-child a');
-  console.log("idLinks",idLinks);
+  // console.log("idLinks",idLinks);
   return Array.from(idLinks).map(a => a.textContent.trim());
 }
 
@@ -498,7 +498,7 @@ export function UserGroupSelectMenu(formValues){
 // Checks if the entityType in the URL matches the type of entity requested
 // if it's not, redirects you on over to the proper form
 export function FormCheckRedirect(uuid,entityType,form){
-  console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
+  // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
     window.location.replace(
@@ -532,15 +532,15 @@ export function combineTypeOptionsComplete(){
       organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
     } );
     combinedList.push(organs.sort());
-    console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
+    // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
     return combinedList;
   } catch (error){
-    console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
+    // console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
     var errStringMSG = "";
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
       : (errStringMSG = error);
-    console.debug('%c◉ ERROR  ', 'color:#ff005d', error,errStringMSG);
+    // console.debug('%c◉ ERROR  ', 'color:#ff005d', error,errStringMSG);
   }
 };
 
@@ -565,9 +565,9 @@ export function handleSortOrgans(organList){
 export function HandleCopyFormUrl(e) {
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
-  console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
+  // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
   Object.entries(formValues).forEach(([key, value]) => {
-    console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
+    // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
     if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
       url.searchParams.set(value.id, value.value);
     }

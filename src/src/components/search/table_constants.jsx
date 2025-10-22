@@ -322,7 +322,7 @@ function getStatusAccess(params: ValueGetterParams) {
 }
 
 // function renderActionButton(params: ValueFormatterParams) {
-//   console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
+//   // console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
 //   return(
     
 //   )
@@ -352,7 +352,7 @@ function doiLink(doi_url,registered_doi) {
       </Link>
     );
   } catch(error) {
-    console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
+    // console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
   }
   return "";
 }

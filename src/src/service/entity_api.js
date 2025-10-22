@@ -23,7 +23,7 @@ export function entity_api_get_entity(uuid){
       return{status: res.status, results: results}
     } )
     .catch(error => {
-      console.debug("entity_api_get_entity", error, error.response);
+      // console.debug("entity_api_get_entity", error, error.response);
       if(error.response){
         return error.response
       }else{
@@ -49,7 +49,7 @@ export function entity_api_update_entity(uuid, data){
     } )
     .catch(error => {
       if(error.response){
-        console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
+        // console.debug("entity_api_update_entity Error", error.response.status, error.response.data);
         return{status: error.response.status, results: error.response.data}
       }else{
         return{error: error.response}
@@ -71,7 +71,7 @@ export function entity_api_create_entity(entitytype, data){
       return{status: res.status, results: results}
     } )
     .catch((error) => {
-      console.debug("entity_api_create_entity error", error, error.response);
+      // console.debug("entity_api_create_entity error", error, error.response);
       if(error.response && error.response.data){
         return{error: error.response.data}
       }else{
@@ -194,17 +194,17 @@ export function entity_api_get_globus_url(uuid){
 
 // @TODO  DEPRECATING replaced with newer ingest API call
 export function entity_api_attach_bulk_metadata(uuid,item){ 
-  console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item);
+  // console.debug('%c⭗', 'color:#ff005d', "entity_api_upload_bulk_metadata", item);
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/`+uuid
   return axios 
     .put(url,item,options)
     .then(res => {
-      console.debug("ingest_api_attach_bulk_metadata",res);
+      // console.debug("ingest_api_attach_bulk_metadata",res);
       let results = res.data;
       return{status: res.status, results: results}
     } )
     .catch(error => {
-      console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error);
+      // console.debug('%c⭗  ingest_api_attach_bulk_metadata', 'color:#ff005d',error);
       // throw new Error(error);
       return{error}
     } );

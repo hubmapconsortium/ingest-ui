@@ -100,7 +100,7 @@ export function BulkSelector({
 
   function stringFieldHandler(value){
     setTextFieldSourceString(value);
-    console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
+    // console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
   }
 
   // Validation helpers
@@ -180,7 +180,7 @@ export function BulkSelector({
     var dst = "";
     sources.forEach(function(row, index) {
       dst = ubkg_api_generate_display_subtype(row);
-      console.debug("dst", dst);
+      // console.debug("dst", dst);
       if (row.entity_type !== "Dataset") {
         dst = toTitleCase(dst);
       }
@@ -208,9 +208,9 @@ export function BulkSelector({
     // console.log(textFieldSourceString)
     setShowHIDList(false);
     setSourceBulkStatus("loading");
-    console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
-    console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
-    console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
+    // console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
+    // console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
+    // console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
     let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
     let fieldVal = document.getElementById("dataset_uuids_string");
     fieldVal = fieldVal ? fieldVal.value : null;
@@ -218,7 +218,7 @@ export function BulkSelector({
       idsToProcess = fieldVal;
     }
     
-    console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
+    // console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
     
     // Split and trim, but do NOT dedupe here; pass all for duplicate detection
     let allIds = idsToProcess
@@ -389,7 +389,7 @@ export function BulkSelector({
 
 
   function handleOpenPage(e,row) {
-    console.log("row",row)
+    // console.log("row",row)
     e.preventDefault()    
     let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`
     window.open(url, "_blank");
@@ -409,7 +409,7 @@ export function BulkSelector({
   }
   let totalRejected = totalWarnings + totalErrors;
 
-  console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
+  // console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
   return (<>
     {/* Search Dialog */}
     <Dialog

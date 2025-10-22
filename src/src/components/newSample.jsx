@@ -139,7 +139,7 @@ export const SampleForm = (props) => {
     if(uuid && uuid !== ""){
       entity_api_get_entity(uuid)
         .then((response) => {
-          console.debug('%c◉ response ', 'color:#00ff7b',response.results.direct_ancestor, response.results);
+          // console.debug('%c◉ response ', 'color:#00ff7b',response.results.direct_ancestor, response.results);
           if(response.status === 200){
             const entityType = response.results.entity_type;
             FormCheckRedirect(uuid,entityType,"Sample");
@@ -156,7 +156,7 @@ export const SampleForm = (props) => {
             // Permissions
             ingest_api_allowable_edit_states(uuid)
               .then((response) => {
-                console.debug('%c◉ ingest_api_allowable_edit_states RESPONSE ', 'color:#00ff7b', response);
+                // console.debug('%c◉ ingest_api_allowable_edit_states RESPONSE ', 'color:#00ff7b', response);
                 const updatedPermissions = {
                   ...response.results,
                   ...(entityInfo.data_access_level === "public" && {has_write_priv: false})
@@ -166,26 +166,26 @@ export const SampleForm = (props) => {
                   .then((response) => {
                       let related = response.results;
                       setRelatedEntities(related)
-                      console.debug('%c◉ related.length ', 'color:#00ff7b', related.length);
-                      console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', related, related.length);
+                      // console.debug('%c◉ related.length ', 'color:#00ff7b', related.length);
+                      // console.debug('%c◉  ingest_api_get_associated_ids', 'color:#00ff7b', related, related.length);
                     // Is there a RUI enabled organ up the chain?
 
                     })
                     .catch((error) => {
-                      console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
+                      // console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
                     });
               })
               .catch((error) => {
-                console.error("i0ngest_api_allowable_edit_states ERROR", error);
+                // console.error("i0ngest_api_allowable_edit_states ERROR", error);
                 setPageErrors(error);
               });            
           }else{
-            console.error("entity_api_get_entity RESP NOT 200",response.status,response);
+            // console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
         })
         .catch((error) => {
-          console.debug("entity_api_get_entity ERROR", error);
+          // console.debug("entity_api_get_entity ERROR", error);
           // setPageErrors(error); its counting no ancestors of ancestors as an error, shush
         });
     }else{
@@ -195,7 +195,7 @@ export const SampleForm = (props) => {
       // We should check if we're being passed a sourceEntity through the URL
       let params = Object.fromEntries(url.searchParams.entries());
       if(Object.keys(params).length > 0){
-        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
+        // console.debug('%c◉ URL params ', 'color:#00ff7b', params);
         setFormValues((prevValues) => ({
           ...prevValues,
           ...params
@@ -213,9 +213,9 @@ export const SampleForm = (props) => {
           .then((response) => {
             let error = response?.data?.error ?? false;
             if(!error && (response?.results?.entity_type === "Donor" || response.results.entity_type === "Sample")){
-              console.debug('%c◉ error ', 'color:#00ff7b', error);
+              // console.debug('%c◉ error ', 'color:#00ff7b', error);
               let passSource = {row: response?.results ? response.results : null};
-              console.log("passSource",passSource)
+              // console.log("passSource",passSource)
               handleSelectSource(passSource)
             }
             else if(!error && response?.results?.entity_type !== "Donor" && response.results.entity_type !== "Sample"){
@@ -235,7 +235,7 @@ export const SampleForm = (props) => {
             }
           })
           .catch((error) => {
-            console.debug("entity_api_get_entity ERROR", error);
+            // console.debug("entity_api_get_entity ERROR", error);
             setPageErrors(error);
           });
       }
@@ -245,7 +245,7 @@ export const SampleForm = (props) => {
 
   function handleInputChange(e){
     const{id, value, checked} = e.target;
-    console.debug('%c◉ handleInputChange ', 'color:#00ff7b', id, value, checked);
+    // console.debug('%c◉ handleInputChange ', 'color:#00ff7b', id, value, checked);
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: (id ==="generate_ids_for_multiple_samples") ? checked : value
@@ -264,7 +264,7 @@ export const SampleForm = (props) => {
     }
 
     if(id === "sample_category" && value === "block"){
-      console.debug('%c◉ Block! ', 'color:#005EFF');
+      // console.debug('%c◉ Block! ', 'color:#005EFF');
       setRUIManagerObject((prevValues) => ({...prevValues,
         interface: {...prevValues.interface, loading: true}}))
     }else if(id === "sample_category" && value !== "block"){
@@ -285,7 +285,7 @@ export const SampleForm = (props) => {
     }
 
     //  Validate The Multiples Generation 
-    console.debug('%c◉ checked check ', 'color:#00ff7b', checked, formValues.generate_number);
+    // console.debug('%c◉ checked check ', 'color:#00ff7b', checked, formValues.generate_number);
     if(checked){
       // Validate generate_number
       if(!formValues.generate_number || parseInt(formValues.generate_number) <= 0 || isNaN(parseInt(formValues.generate_number))){
@@ -301,7 +301,7 @@ export const SampleForm = (props) => {
   }
 
   function badValError(error){
-    console.debug('%c◉badValError error ', 'color:#00ff7b', error);
+    // console.debug('%c◉badValError error ', 'color:#00ff7b', error);
     if(error.response){
       // setValidationError(error.response);
       setValidationError(error.response.data.error ? error.response.data.error : error);
@@ -321,7 +321,7 @@ export const SampleForm = (props) => {
       lab_tissue_sample_id: formValues.lab_tissue_sample_id,
       ...(formValues.rui_location ? {rui_location: formValues.rui_location} : {}),
     }
-    console.debug('%c◉ handleSubmit:  ', 'color:#E7EEFF;background: #9359FF;padding:200',sampleFormData,formValues,);
+    // console.debug('%c◉ handleSubmit:  ', 'color:#E7EEFF;background: #9359FF;padding:200',sampleFormData,formValues,);
     if(validateForm()){
       if(uuid){
         // We're in Edit mode
@@ -345,7 +345,7 @@ export const SampleForm = (props) => {
         }
         // Are we making multiples?
         if(checked){
-          console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,sampleFormData,JSON.stringify(sampleFormData));
+          // console.debug('%c◉ checked, ', 'color:#00ff7b', formValues.generate_number,sampleFormData,JSON.stringify(sampleFormData));
           entity_api_create_multiple_entities(formValues.generate_number,JSON.stringify(sampleFormData))
           .then((response) => {
             if(response.status === 200){
@@ -355,13 +355,13 @@ export const SampleForm = (props) => {
             }
           })
           .catch((error) => {
-            console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
+            // console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
             wrapUpPageErrors(error)
           });
         // Nope Just One  
         }else{
-          console.log("sampleFormData", typeof sampleFormData, sampleFormData)
-          console.log("RUIManagerObject.details.json", typeof RUIManagerObject.details.json, RUIManagerObject.details.json)
+          // console.log("sampleFormData", typeof sampleFormData, sampleFormData)
+          // console.log("RUIManagerObject.details.json", typeof RUIManagerObject.details.json, RUIManagerObject.details.json)
           entity_api_create_entity("sample",JSON.stringify(sampleFormData))
           .then((response) => {
             if(response.status === 200){
@@ -378,19 +378,19 @@ export const SampleForm = (props) => {
       }
     }else{
       setIsProcessing(false);
-      console.debug("%c◉ Invalid ", "color:#00ff7b");
+      // console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
   
   function setSourceRUIDetails(sourceUUID,source){
-    console.debug('%c◉ setSourceRUIDetails UUID:', 'color:#E7EEFF;background: #9359FF;padding:200',sourceUUID, "source:", source);
+    // console.debug('%c◉ setSourceRUIDetails UUID:', 'color:#E7EEFF;background: #9359FF;padding:200',sourceUUID, "source:", source);
     if(!sourceUUID){
       return null;
     }else{
       entity_api_get_entity_ancestor_list(sourceUUID)
         .then((response) => {  
           let sex = getDonorSexDetail(response);
-          console.debug('%c◉ sex, ', 'color:#00ff7b', sex);
+          // console.debug('%c◉ sex, ', 'color:#00ff7b', sex);
           setRUIManagerObject((prevValues) => ({...prevValues,
             details: {...prevValues.details, 
               donorSex: sex,
@@ -407,14 +407,14 @@ export const SampleForm = (props) => {
           }   
         })
         .catch((error) => { 
-          console.debug('%c◉ ERROR fetchAncestors', 'color:#ff005d', error);
+          // console.debug('%c◉ ERROR fetchAncestors', 'color:#ff005d', error);
           wrapUpPageErrors(error)
         });
     }      
   }
         
   function getDonorSexDetail(ancestors){
-    console.debug('%c◉ getDonorSexDetail ancestors ', 'color:#00ff7b', ancestors);
+    // console.debug('%c◉ getDonorSexDetail ancestors ', 'color:#00ff7b', ancestors);
     if(!ancestors.results || ancestors.results.length === 0){
       return null;
     }else{
@@ -429,7 +429,7 @@ export const SampleForm = (props) => {
     }
   }      
   function getSourceOrganDetail(ancestors){
-    console.debug('%c◉ fetchAncestors response', 'color:#E7EEFF;background: #9359FF;padding:200',ancestors, ancestors.results);
+    // console.debug('%c◉ fetchAncestors response', 'color:#E7EEFF;background: #9359FF;padding:200',ancestors, ancestors.results);
     if(sourceEntity && sourceEntity.organ){ // if we can just grab it from the source
       return RUI_ORGAN_TYPES.includes(sourceEntity.organ) ? sourceEntity.organ : null
     }else{
@@ -440,7 +440,7 @@ export const SampleForm = (props) => {
         organObject = ancestors.results;
       }
       let organ = (organObject && organObject.organ) ? organObject.organ : null
-      console.debug('%c◉ organ ', 'color:#00ff7b', organ);
+      // console.debug('%c◉ organ ', 'color:#00ff7b', organ);
       setSourceEntity((prevValues) => ({...prevValues,
         organ: organ
       }))
@@ -452,7 +452,7 @@ export const SampleForm = (props) => {
     if(!e){
       return null;
     }
-    console.debug('%c◉ handleSelectSource ', 'color:#00ff7b', e.row);
+    // console.debug('%c◉ handleSelectSource ', 'color:#00ff7b', e.row);
     setOpenSearch(false);
     handleClose(e);
     setSourceEntity(e.row);
@@ -488,7 +488,7 @@ export const SampleForm = (props) => {
 
   function wrapUpPageErrors(error){
     let errors = pageErrors;
-    console.debug('%c◉ wrapUpPageErrors Err pageErrors ', 'color:#00ff7b', errors);
+    // console.debug('%c◉ wrapUpPageErrors Err pageErrors ', 'color:#00ff7b', errors);
     setPageErrors(error);
     setIsProcessing(false);
   }
@@ -528,7 +528,7 @@ export const SampleForm = (props) => {
 
   // RUI
   function handleRUIJson(dataFromChild){
-    console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',typeof dataFromChild, dataFromChild);
+    // console.debug('%c◉Form  handleRUIJson ', 'color:#00ff7b',typeof dataFromChild, dataFromChild);
     setFormValues((prevValues) => ({
       ...prevValues,
       rui_location: JSON.parse(dataFromChild)
@@ -554,9 +554,9 @@ export const SampleForm = (props) => {
     }
   }
   function shouldIShowRUIDebugger(e,toggle){
-    console.log("shouldIShowRUIDebugger", e)
-    console.log("e.shiftKey", e.shiftKey)
-    console.log("e.nativeEvent", e.nativeEvent, e.nativeEvent.type)
+    // console.log("shouldIShowRUIDebugger", e)
+    // console.log("e.shiftKey", e.shiftKey)
+    // console.log("e.nativeEvent", e.nativeEvent, e.nativeEvent.type)
     if(toggle && e.shiftKey){
       setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, debugTooltip:true}}))
     }else{
@@ -568,7 +568,7 @@ export const SampleForm = (props) => {
   }
   
   function preloadRUI(values){
-    console.debug('%c◉ preloadRUI ', 'color:#00ff7b',values);
+    // console.debug('%c◉ preloadRUI ', 'color:#00ff7b',values);
     // console.debug(RUIManagerObject);
      setRUIManagerObject((prevValues) => ({
     ...prevValues,
