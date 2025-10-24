@@ -4,6 +4,7 @@ import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import LoadingButton from '@mui/lab/LoadingButton';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -471,6 +472,39 @@ function getHubmapIDsFromBulkTable() {
   console.log("idLinks",idLinks);
   return Array.from(idLinks).map(a => a.textContent.trim());
 }
+
+export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submitting, handleSubmitAction}){
+      return (
+          <Dialog
+            sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+            maxWidth="xs" 
+            aria-labelledby="submit-dialog" 
+            open={showSubmitModal}>
+            <DialogContent>
+              <h4>Preparing to Submit</h4>
+              <div>  Has all data for this dataset been <br/>
+                1	&#41; validated locally, and  <br/>
+                2	&#41; uploaded to the globus folder?</div>
+           </DialogContent>
+             <DialogActions>
+             <LoadingButton 
+                loading={submitting} 
+                sx={{width:"150px"}} 
+                loadingIndicator="Submitting..." 
+                variant="outlined" 
+                onClick={ (e) => handleSubmitAction(e)}>
+              Submit
+             </LoadingButton>
+            <Button
+              className="btn btn-secondary"
+              onClick={() => setIsSubmitModalOpen(false)}>
+              Cancel
+            </Button>          
+            </DialogActions>
+          </Dialog>
+      
+      );
+    }
 
 // Returns a select menu of the User's dataprovider groups
 // Possibly Deprecating with move of GroupsSelector into modal or Field managers

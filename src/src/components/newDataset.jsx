@@ -23,7 +23,7 @@ import {
   ingest_api_pipeline_test_submit,
   ingest_api_dataset_submit,
   ingest_api_notify_slack} from "../service/ingest_api";
-import { prefillFormValuesFromUrl, EntityValidationMessage } from "./ui/formParts";
+import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "./ui/formParts";
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
@@ -32,7 +32,7 @@ export const DatasetForm = (props) => {
     page: true,
     processing: false,
     bulk: false,
-    button: { process: false, save: false, submit: false, validate: false }
+    button: { process: false, save: false, submit: false, submitFT: false, validate: false }
   });
   let [form, setForm] = useState({
     lab_dataset_id: "",
@@ -49,6 +49,7 @@ export const DatasetForm = (props) => {
   let [errorMessages, setErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
   let [readOnlySources, setReadOnlySources] = useState(false);
+  let [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   let [entityValidation, setEntityValidation] = useState({
     open: false,
     message: null
@@ -339,6 +340,7 @@ export const DatasetForm = (props) => {
 
   const handleSubmitForTesting = () => {
     console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, submitFT: true } }));
     // NOTE: CannotBe Derived! @TODO? 
     ingest_api_pipeline_test_submit({"uuid": entityData.uuid})
       .then((response) => {
@@ -369,15 +371,21 @@ export const DatasetForm = (props) => {
         });
       })
   }
+
+  const handleLaunchSubmitModal = () => {
+    setIsSubmitModalOpen(true);
+  }
   
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, submit: true } }));
     var dataSubmit = {"status":"Submitted"}
+    setIsSubmitModalOpen(false);
     entity_api_update_entity(entityData.uuid, JSON.stringify(dataSubmit))
       .then((response) => {
         console.debug("entity_api_update_entity response", response);
         // @TODO: Move slackness call into entity_api_update_entity
-        var ingestURL= process.env.REACT_APP_URL+"/dataset/"+this.props.editingDataset.uuid
+        var ingestURL= process.env.REACT_APP_URL+"/dataset/"+uuid
         var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
         ingest_api_notify_slack(slackMessage)
           .then((slackRes) => {
@@ -401,6 +409,7 @@ export const DatasetForm = (props) => {
           });
       })
       .catch((error) => {
+        console.error("handleSubmit error", error);
         setSnackbarController({
           open: true,
           message: "Submit Error - "+error.toString(),
@@ -488,12 +497,22 @@ export const DatasetForm = (props) => {
         )}
         {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
           <LoadingButton
-            loading={loading.button.submit}
+            loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
             name="submit"
             variant="contained"
             className="m-2">
             Submit for Testing
+          </LoadingButton>
+        )}
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
+          <LoadingButton
+            loading={loading.button.submit}
+            onClick={(e) => handleLaunchSubmitModal(e)}
+            name="submit"
+            variant="contained"
+            className="m-2">
+            Submit
           </LoadingButton>
         )}
         {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published", "processing"].includes(entityData.status.toLowerCase())) && (
@@ -528,7 +547,7 @@ export const DatasetForm = (props) => {
         <Grid container className='mb-2'>
           {memoizedFormHeader}
         </Grid>
-        <form onSubmit={(e) => handleSubmit(e)}>
+        <form>
             <BulkSelector
               permissions={permissions}
               dialogTitle={"Associated Entities"}
@@ -608,6 +627,13 @@ export const DatasetForm = (props) => {
             eValopen={entityValidation.open}
             setEValopen={(open) => setEntityValidation(prev => ({ ...prev, open }))}
           />
+        )}
+        {uuid && entityData.status.toLowerCase() === "new" && (
+          <RenderSubmitModal
+            showSubmitModal={isSubmitModalOpen}
+            setIsSubmitModalOpen={setIsSubmitModalOpen}
+            submitting={loading.button.submit}
+            handleSubmitAction={handleSubmit}/>
         )}
       </Box>
     );
