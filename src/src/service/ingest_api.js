@@ -546,24 +546,25 @@ export function ingest_api_pipeline_test_submit(data) {
  * Contibutor TSV Validation
  *
  */
-export function ingest_api_validate_contributors(auth,dataFile) { 
+export function ingest_api_validate_contributors(dataFile) { 
   const options = {headers: {Authorization: "Bearer " + globalToken,"Content-Type":"multipart/form-data"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/validate?ensure-latest-cedar-version=true`;
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'text/tab-separated-values' }),dataFile.name);
   formData.append('entity_type', "contributors")
-
+  console.debug('%c◉ formData ', 'color:#00ff7b', formData);
   return axios 
     .post(url, formData, options)
     .then(res => {
-      // console.debug("ingest_api_validate_contributors",res);
+      console.debug("ingest_api_validate_contributors",res);
         let results = res.data;
         return {status: res.status, results: results}
       })
-      .catch(error => {
+      .catch(res => {
+        console.debug('%c◉ response ', 'color:#00ff7b', res);
         // console.debug('%c⭗  ingest_api_validate_contributors', 'color:#ff005d',error );
         // throw new Error(error);
-        return {error}
+        return {res}
       });
 };
 

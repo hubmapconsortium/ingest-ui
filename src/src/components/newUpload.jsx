@@ -103,7 +103,6 @@ export const UploadForm = (props) => {
     });
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   let saveStatuses = ["submitted", "valid", "invalid", "incomplete", "error", "new"]
-  // let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let validateRestrictions = ["reorganized", "processing"]
   let[validationError, setValidationError] = useState(null);
   const{uuid} = useParams();
@@ -114,8 +113,7 @@ export const UploadForm = (props) => {
     {name: "SWAT (Integration Paper)",description: "For questions about the SWAT effort, email Ajay"},
     {name: "MOSDAP",description: "For questions about the MOSDAP effort, email Gloria Pryhuber"},
   ]
-
- 
+   
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
   const organMenu = useMemo(() => {
@@ -230,7 +228,7 @@ export const UploadForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function handleInputChange(e, test){
+  function handleInputChange(e){
     // console.debug('%c◉ e', 'color:#00ff7b', e);
 
     if(e && e.target){

@@ -59,19 +59,19 @@ export function BulkSelector({
   const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
   const title = dialogTitle || "Associated Dataset IDs";
   const subtitle = dialogSubtitle || "Datasets that are associated with this Publication"; 
-
   
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
 
   // Sync sourcesData with prop changes
   useEffect(() => {
+    console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
     setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
   }, [initialSourcesData]);
 
-	console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
+	// console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
   // Keep parent in sync
   useEffect(() => {
     if (onBulkSelectionChange) {
@@ -387,7 +387,6 @@ export function BulkSelector({
     </>);
   }
 
-
   function handleOpenPage(e,row) {
     // console.log("row",row)
     e.preventDefault()    
@@ -471,7 +470,7 @@ export function BulkSelector({
         <GridLoader size="2px" color="white" width="30px" /> Loading ...
       </Box>
 
-      <Box id="bulkTableWrapper" sx={{ borderRadius: "4px", border: "4px solid #444a65" }}>
+      <Box className={"associationTableWrap"} id="bulkTableWrapper" sx={{ borderRadius: "4px", border: "4px solid #444a65" }}>
         <TableContainer
           style={{ border: sourceTableError ? "2px solid red" : "" }}
           sx={{
@@ -522,7 +521,7 @@ export function BulkSelector({
                   key={row.hubmap_id + "" + index}
                   className="row-selection">
                   <TableCell className="clicky-cell" sx={{ width: "166px" }} scope="row">
-                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor:"pointer"}} >
+                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor: "pointer"}} >
                       {row.hubmap_id}
                       </a>
                   </TableCell>

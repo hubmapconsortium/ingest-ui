@@ -32,6 +32,30 @@ export function entity_api_get_entity(uuid){
     } );
 };
 
+/*
+ * Get Entity With Exclusions
+ * 
+ * return:  { status, results}
+ * */
+export function entity_api_get_filtered_entity(uuid, exclusions){ 
+  console.debug("Request > ");
+  let filterString = exclusions ? `?exclude=${exclusions.join(',')}` : '';
+  let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}${filterString}`
+  return axios 
+    .get(url,options)
+    .then(res => {
+      let results = res.data;
+      return{status: res.status, results: results}
+    } )
+    .catch(error => {
+      if(error.response){
+        return error.response
+      }else{
+        return{error}
+      }
+    } );
+};
+
 /* 
  * update_entity - updates data of an existing entity
  *

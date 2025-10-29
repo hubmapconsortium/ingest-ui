@@ -229,6 +229,18 @@ export const COLUMN_DEF_EPICOLLECTIONS = [
   }, 
 ];
 
+// CONTRIBUTORS COLUMNS
+export const COLUMN_DEF_CONTRIBUTORS = [
+  { field: "display_name", headerName:"Name", flex:1.1},
+  { field: "affiliation", headerName:"Affiliation", flex:1},
+  { field: "orcid", headerName:"Orcid", flex:1},
+  { field: "email", headerName:"Email", flex:1},
+  { field: "is_contact", headerName:"Contact", flex:0.4},
+  { field: "is_principal_investigator", headerName:"Principal Investigator", flex:0.4},
+  { field: "is_operator", headerName:"Operator",  flex:0.4},
+  { field: "metadata_schema_id", headerName:"Metadata", flex:1}
+];
+
 // MIXED TYPE COLUMNS
 export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},

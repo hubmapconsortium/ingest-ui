@@ -2,14 +2,11 @@ import React, { useState } from "react";
 import { useLocation } from 'react-router-dom'
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-import Item from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -21,8 +18,6 @@ export const HIPPA = (props) => {
   function toggleHippa(){
     setShow(!show);
   }
-  const location = useLocation();
-  // console.log(location.pathname);
 
   return (
     <React.Fragment>
@@ -123,5 +118,4 @@ export const HIPPA = (props) => {
     </React.Fragment>
   );
 }
-// })
 export default HIPPA;

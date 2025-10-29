@@ -18,7 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -271,12 +271,12 @@ export function GroupModal ({
            <DialogActions>
             <Button
             className="btn btn-primary mr-1"
-            onClick={(e) => submitWithGroup()}>
+            onClick={() => submitWithGroup()}>
             Submit
           </Button>
           <Button
            variant="outlined"
-            onClick={(e) => closeGroupModal()}>
+            onClick={() => closeGroupModal()}>
             Cancel
           </Button>          
           </DialogActions>
@@ -329,13 +329,6 @@ function newBadge(type){
 }
 
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
-function buildPriorityProjectList(list){
-  if(list.length>1){
-    return list.join(", ");
-  }else{
-    return list[0]
-  }
-}	
 
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData){
@@ -400,6 +393,7 @@ function topHeader(entityData){
 
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
+  let HIPPATypes = ["donor","sample","upload"];
   return (
     <Grid item xs={6} className="" >
       {globusURL&& (
@@ -419,7 +413,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv && entityData.entity_type !== "publication" &&(
+      {permissions.has_write_priv && HIPPATypes.includes(entityData.entity_type) &&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
@@ -437,6 +431,11 @@ function infoPanels(entityData,permissions,globusURL){
       )}
       {entityData && (entityData.upload) &&(
         renderUploadLink(entityData)
+      )}
+      {entityData && (entityData.doi_url || entityData.registered_doi) &&(
+        <Typography>
+          <a href={entityData.doi_url} target='_blank' rel="noreferrer" >{entityData.doi_url || entityData.registered_doi} </a><FontAwesomeIcon style={{color: "rgb(10, 109, 255)", fontSize: "0.8em", marginLeft: "5px"}} icon={faUpRightFromSquare}/>
+        </Typography>
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
@@ -540,7 +539,7 @@ export function combineTypeOptionsComplete(){
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
       : (errStringMSG = error);
-    // console.debug('%c◉ ERROR  ', 'color:#ff005d', error,errStringMSG);
+    console.debug('%c◉ ERROR  ', 'color:#ff005d', error,errStringMSG);
   }
 };
 
@@ -555,7 +554,7 @@ export function handleSortOrgans(organList){
     sortedDataArray.push(value);
   }
   sortedDataArray = sortedDataArray.sort();
-  for (const [index, element] of sortedDataArray.entries()){
+  for (const [, element] of sortedDataArray.entries()){
     sortedMap.set(element, sortedDataProp[element]);
   }
   return sortedMap;
@@ -563,10 +562,11 @@ export function handleSortOrgans(organList){
 
 // Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL
 export function HandleCopyFormUrl(e) {
+  e.preventDefault();
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
   // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
-  Object.entries(formValues).forEach(([key, value]) => {
+  Object.entries(formValues).forEach(([, value]) => {
     // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
     if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
       url.searchParams.set(value.id, value.value);
@@ -595,11 +595,8 @@ export function SpeedDialTooltipOpen() {
   let navigate = useNavigate();
   const actions = [
     { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
-    { icon: <TableChartIcon />, name: 'Create Dataset', action: (e) => navigate(`/new/datasetAdmin`) },
+    { icon: <TableChartIcon />, name: 'Create Dataset', action: () => navigate(`/new/datasetAdmin`) },
   ];
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   return (
     <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
       <SpeedDial
@@ -638,7 +635,6 @@ export function FeedbackDialog( {
   let messageColor = color ? color : "#444A65";
   let altColorLight = LightenHex(messageColor, 20);
   let altColorDark = DarkenHex(messageColor, 20);
-  let defaultNote = ""
   let defaultSummary = "";
   if (!message || message.length <= 0){
     defaultSummary = "No Known Problems or Messages";
@@ -708,7 +704,7 @@ export function FeedbackDialog( {
         padding: "6px 10px", 
         display: "flex", 
         border: `1px solid ${messageColor}`, 
-        borderTop:"none",
+        borderTop: "none",
         borderBottomLeftRadius: "4px",
         borderBottomRightRadius: "4px"}}>
         {note && (
