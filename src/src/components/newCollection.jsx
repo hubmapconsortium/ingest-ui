@@ -321,7 +321,7 @@ export const CollectionForm = (props) => {
           <BulkSelector 
             dialogTitle="Associated Dataset IDs"
             dialogSubtitle="Datasets that are associated with this Collection"
-            permissions={{ has_write_priv: (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
             initialSelectedUUIDs={selectedBulkUUIDs}
             initialSourcesData={entityData?.datasets}
             onBulkSelectionChange={handleBulkSelectionChange}
@@ -335,13 +335,13 @@ export const CollectionForm = (props) => {
             formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}
-            permissions={{ has_write_priv: (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
             handleInputChange={handleInputChange}
           />
           <ContributorsTable
             contributors={formValues.contributors}
             onContributorsChange={(contributorRows) => handleContributorsChange(contributorRows)}
-            permissions={{ has_write_priv: (entityData.doi_url || entityData.registered_doi) ? false : true}}/>
+            permissions={{has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}/>
           <Box className="my-3">
             <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
               Group
