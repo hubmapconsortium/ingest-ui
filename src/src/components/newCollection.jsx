@@ -153,9 +153,12 @@ export const CollectionForm = (props) => {
     setDeliniatedContacts({contacts: contacts, contributors: contributors})
   }
 
-  // Callback for BulkSelector
+  // // Callback for BulkSelector
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
-    setFormValues((prev) => ({ ...prev, dataset_uuids: uuids }));
+    setFormValues(prev => ({
+      ...prev,
+      dataset_uuids: uuids
+    }));
     setSelectedBulkUUIDs(uuids);
     setSelectedBulkData(data);
   };
@@ -323,7 +326,7 @@ export const CollectionForm = (props) => {
             dialogSubtitle="Datasets that are associated with this Collection"
             permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
             initialSelectedUUIDs={selectedBulkUUIDs}
-            initialSourcesData={entityData?.datasets}
+            initialSourcesData={selectedBulkData}
             onBulkSelectionChange={handleBulkSelectionChange}
             searchFilters={{
               custom_title: "Search for an Associated Dataset for your Collection",

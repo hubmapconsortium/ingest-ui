@@ -144,12 +144,12 @@ export function App(props){
         });
     }
 
-    if(!localStorage.getItem("datatypes")){
+    if(!localStorage.getItem("dataset_types")){
       ubkg_api_get_dataset_type_set()
         .then((res) => {
-          loadCount() // the DatasetTypes step
+          loadCount() // the dataset_types step
           if(res !== undefined){
-            localStorage.setItem("datasetTypes",JSON.stringify(res));
+            localStorage.setItem("dataset_types",JSON.stringify(res));
             // TODO: Eventually remove these & use localstorage
             // setDataTypeList(res);
             // setDataTypeListAll(res);
@@ -163,7 +163,7 @@ export function App(props){
           setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try again later, or contact help@hubmapconsortium.org ',err)
           reportError(err)
         })
-      loadCount() // the DatasetTypes step
+      loadCount() // the dataset_types step
     }else{
       // we already have Dataset Types
       // but are they good
@@ -278,7 +278,7 @@ export function App(props){
             }
           })
           .catch((err) => {
-            // console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
+            console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
             reportError(err) 
           })
   
@@ -399,18 +399,18 @@ export function App(props){
   var[errorDetail, setErrorDetail] = useState({});
 
   function reportError(error, details){
-    // console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
+    console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
     if(details){
       setErrorDetail(details);
     }
     typeof error === "string" ? setErrorInfo(error) : setErrorInfo(JSON.stringify(error));
     var errString = JSON.stringify(BuildError(error), Object.getOwnPropertyNames(BuildError(error)))
-    if(error.results){
+    if(error && error.results){
       errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
     }
     setErrorInfo(errString);
     setErrorShow(true);
-    throw(error)
+    throw(error || "Unknown Error?");
   }
 
   return(

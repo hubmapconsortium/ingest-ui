@@ -5,7 +5,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 // Creates a new error object with the given message
 export const BuildError = (message) => {
     var newError;
-    if(message.message){
+    if(message?.message){
         // If it IS aleady an error object, just return it
         newError = message;
     }else{}
