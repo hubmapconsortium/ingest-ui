@@ -27,7 +27,7 @@ import {
   validateSingleProtocolIODOI
 } from "../utils/validators";
 import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenu } from "./ui/formParts";
+import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback} from "./ui/formParts";
 import { PublicationFormFields } from "./ui/fields/PublicationFormFields";
 
 export const PublicationForm = (props) => {
@@ -69,6 +69,11 @@ export const PublicationForm = (props) => {
   // Only track selected UUIDs from BulkSelector
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
+  let [snackbarController, setSnackbarController] = useState({
+    open: false,
+    message: "", 
+    status: "info"
+  });
 
   const formFields = React.useMemo(() => [
     {
@@ -208,6 +213,7 @@ export const PublicationForm = (props) => {
           setPageErrors(error);
         });
     } else {
+      prefillFormValuesFromUrl(setFormValues, setSnackbarController);
       setPermissions({
         has_write_priv: true,
       });
@@ -587,6 +593,7 @@ export const PublicationForm = (props) => {
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
+        <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
       </div>
     );
   }
