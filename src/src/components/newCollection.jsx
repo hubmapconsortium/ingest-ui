@@ -11,7 +11,7 @@ import NativeSelect from "@mui/material/NativeSelect";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { BulkSelector } from "./ui/bulkSelector";
 import { ContributorsTable } from "./ui/contributorsTable";
-import { FormHeader, UserGroupSelectMenu } from "./ui/formParts";
+import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
 import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
 import { ingest_api_users_groups,ingest_api_user_admin } from "../service/ingest_api";
@@ -37,7 +37,11 @@ export const CollectionForm = (props) => {
   const [deliniatedContacts, setDeliniatedContacts] = useState([]);
   const [formErrors, setFormErrors] = useState({ ...formValues });
   let [bulkSelection, setBulkSelection] = useState({ uuids: [], data: [] });
-
+  let [snackbarController, setSnackbarController] = useState({
+    open: false,
+    message: "",
+    status: "info"
+  });
   const formFields = React.useMemo(() => [
     {
       id: "title",
@@ -117,6 +121,7 @@ export const CollectionForm = (props) => {
           setPageErrors(error);
         });
     } else {
+      prefillFormValuesFromUrl(setFormValues, setSnackbarController);
       setPermissions({ has_write_priv: true });
     }
     setLoading(false);
@@ -377,6 +382,7 @@ export const CollectionForm = (props) => {
             <strong>Error:</strong> {pageErrors.toString()}
           </Alert>
         )}
+        <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
       </div>
     );
   }
