@@ -36,8 +36,7 @@ export const CollectionForm = (props) => {
   });
   const [deliniatedContacts, setDeliniatedContacts] = useState([]);
   const [formErrors, setFormErrors] = useState({ ...formValues });
-  const [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
-  const [selectedBulkData, setSelectedBulkData] = useState([]);
+  let [bulkSelection, setBulkSelection] = useState({ uuids: [], data: [] });
 
   const formFields = React.useMemo(() => [
     {
@@ -85,8 +84,10 @@ export const CollectionForm = (props) => {
                 group_uuid: entityData.group_uuid || "",
               });
               console.debug('%c◉ entityData.dataset_uuids ', 'color:#00ff7b', entityData.dataset_uuids);
-              setSelectedBulkUUIDs(entityData.dataset_uuids || []);
-              setSelectedBulkData(entityData.associations || []);
+              setBulkSelection({
+                uuids: entityData.datasets.map(obj => obj.uuid),
+                data: entityData.datasets
+              });
               // processContacts(response.results);
               ingest_api_users_groups()
                 .then((response) => {
@@ -159,8 +160,7 @@ export const CollectionForm = (props) => {
       ...prev,
       dataset_uuids: uuids
     }));
-    setSelectedBulkUUIDs(uuids);
-    setSelectedBulkData(data);
+    setBulkSelection({ uuids, data });
   };
 
   const validateForm = () => {
@@ -179,15 +179,15 @@ export const CollectionForm = (props) => {
       }
     }
 
-    console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], selectedBulkUUIDs);
-    let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : selectedBulkUUIDs;
-    if( (!selectedBulkData || selectedBulkData.length <= 0) && 
+    console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], bulkSelection.uuids);
+    let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : bulkSelection.uuids;
+    if( (!bulkSelection.data || bulkSelection.data.length <= 0) && 
         (!datasetUUIDs || datasetUUIDs.length <= 0) ){
         e_messages.push("Please select at least one Associated Dataset");
         errors++;
       setFormErrors((prevValues) => ({ ...prevValues, ["dataset_uuids"]: "Required" }));
-    } else if (selectedBulkData.length > 0 && formValues["dataset_uuids"].length <= 0) {
-      setFormValues((prevValues) => ({ ...prevValues, dataset_uuids: selectedBulkData.map(obj => obj.uuid) }));
+    } else if (bulkSelection.data.length > 0 && formValues["dataset_uuids"].length <= 0) {
+      setFormValues((prevValues) => ({ ...prevValues, dataset_uuids: bulkSelection.data.map(obj => obj.uuid) }));
     }
 
     // ALso Invalid if The Contirbutors section has errors
@@ -226,7 +226,7 @@ export const CollectionForm = (props) => {
         let newForm = {
         title: formValues.title,
         description: formValues.description,
-        dataset_uuids: selectedBulkUUIDs,
+        dataset_uuids: bulkSelection.uuids,
         group_uuid: formValues.group_uuid,
       };
         let selectedGroup = document.getElementById("group_uuid");
@@ -258,7 +258,7 @@ export const CollectionForm = (props) => {
 
   const handlePublish = (e) => {
     e.preventDefault();
-    let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
+    let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
     let cleanForm = {
           title: formValues.title,
           description: formValues.description,
@@ -325,8 +325,8 @@ export const CollectionForm = (props) => {
             dialogTitle="Associated Dataset IDs"
             dialogSubtitle="Datasets that are associated with this Collection"
             permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
-            initialSelectedUUIDs={selectedBulkUUIDs}
-            initialSourcesData={selectedBulkData}
+            initialSelectedUUIDs={bulkSelection.uuids}
+            initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
             searchFilters={{
               custom_title: "Search for an Associated Dataset for your Collection",
@@ -357,8 +357,7 @@ export const CollectionForm = (props) => {
               className="p-2"
               sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
               disabled={uuid ? true : false}
-              value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}
-            >
+              value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
               {memoizedUserGroupSelectMenu}
             </NativeSelect>
           </Box>
@@ -375,7 +374,7 @@ export const CollectionForm = (props) => {
         </form>
         {pageErrors && (
           <Alert variant="filled" severity="error">
-            <strong>Error:</strong> {JSON.stringify(pageErrors)}
+            <strong>Error:</strong> {pageErrors.toString()}
           </Alert>
         )}
       </div>
