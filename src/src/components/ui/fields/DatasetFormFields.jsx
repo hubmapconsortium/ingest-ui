@@ -73,10 +73,10 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
             let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
             let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
             let found = dtvalues.some(item => item.label === formValues[field.id]);
-            console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
+            // console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
             if(!found && formValues[field.id] && formValues[field.id] !== ""){
               field.values.push({label: formValues[field.id], value: formValues[field.id]});
-              console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
+              // console.debug('%c◉  updated field.values', 'color:#00ff7b',field.values );
             }
           }
           let selectedGroup = null;

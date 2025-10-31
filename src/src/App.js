@@ -36,7 +36,7 @@ import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_ap
 import {ValidateDTList} from './utils/validators';
 
 // The legacy form loaders
-import {RenderCollection} from "./components/collections";
+// import {CollectionForm} from "./components/collections";
 import {RenderEPICollection} from "./components/epicollections";
 import {RenderDataset} from "./components/datasets";
 import {RenderMetadata} from "./components/metadata";
@@ -51,6 +51,7 @@ import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
 import {PublicationForm} from "./components/newPublication";
 import {DatasetForm} from "./components/newDataset";
+import {CollectionForm} from "./components/newCollection";
 
 import NotFound from "./components/404";
 
@@ -89,7 +90,7 @@ export function App(props){
     Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
   });
   window.onstorage = () => {
-    console.log("onstorage Storage Event");
+    // console.log("onstorage Storage Event");
   };
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export function App(props){
 
         })
         .catch((error) => {
-          console.debug("RUI_ORGAN_MAP", error, error.response);
+          // console.debug("RUI_ORGAN_MAP", error, error.response);
         });
     }
 
@@ -176,11 +177,11 @@ export function App(props){
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
         // let info = JSON.parse(localStorage.getItem("info"));
-        console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
+        // console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
         // Validate our Token
         api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
           .then((results) => {
-            console.debug('%c◉ results  ', 'color:#b300ff', results);
+            // console.debug('%c◉ results  ', 'color:#b300ff', results);
             loadCount() // the API token step
             if(results.error?.response && results.error.response.status){
               setExpiredKey(true);
@@ -203,14 +204,14 @@ export function App(props){
                 setLoginError("API Key Error");
               }
             }else if(!results.error){
-              console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
+              // console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
               setAuthStatus(true);
               adminStatusValidation()
                 .then((adminCheck) => {
                   setAdminStatus(adminCheck);
                 })
                 .catch((err) => {
-                  console.debug('%c◉ setAdminStatus Error ', 'color:#ff005d', err);
+                  // console.debug('%c◉ setAdminStatus Error ', 'color:#ff005d', err);
                 })
 
               try{
@@ -218,17 +219,17 @@ export function App(props){
                   ingest_api_users_groups()
                     .then((res) => {
                       if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
-                        console.log("User is not a member of group HuBMAP-read");
+                        // console.log("User is not a member of group HuBMAP-read");
                         setAuthStatus(true);
                         setUnregStatus(true);
                       }else if(res.results === "Non-active login" || res.status === 401){ // 401 Capture for non-active login
                         // The API Token Validation seems to provide a 200 response even when the token is expired?
                         // Added status check if/when we begin getting 401s directly
-                        console.log("Non-active login");
+                        // console.log("Non-active login");
                         setExpiredKey(true);
                         loadFailed(res);
                       }else if(res.status === 200){
-                        console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
+                        // console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
                       }else{
                         setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
@@ -277,13 +278,13 @@ export function App(props){
             }
           })
           .catch((err) => {
-            console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
+            // console.debug('%c⭗', 'color:#ff005d', "API Key Validity ERR", err );
             reportError(err) 
           })
   
       }else{
         // No Info, No Auth, provide login screen nothing else to load
-        console.debug('%c◉ No INFO found ', 'color:#ff005d');
+        // console.debug('%c◉ No INFO found ', 'color:#ff005d');
         setIsLoading(false)
       }   
     } 
@@ -302,15 +303,15 @@ export function App(props){
 
     function loadCount(){
       loadCounter++;
-      console.debug('%c⊙', 'color:#00ff7b', "APP loadCounter", loadCounter );
+      // console.debug('%c⊙', 'color:#00ff7b', "APP loadCounter", loadCounter );
       if(loadCounter>=5){
         setIsLoading(false)
-        console.log("Loading Complete")
+        // console.log("Loading Complete")
       }
     }
   
     function loadFailed(error){
-      console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
+      // console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
       reportError(error);
     }
   
@@ -349,7 +350,7 @@ export function App(props){
   }
   
   function urlChange(event, target, details){
-    console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target, details );
+    // console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target, details );
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
       if(event.ctrlKey || event.metaKey){
@@ -362,12 +363,12 @@ export function App(props){
 
   // Success Modal Response
   function creationSuccess(results){
-    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", results );
+    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", results );
     setNewEntity(results)
     setSuccessDialogRender(true);
   }
   function onCreateNext(source){
-    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", source );
+    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", source );
     window.location.replace(
       `${process.env.REACT_APP_URL}/new/sample/?source=${JSON.stringify(source)}`
     )
@@ -375,13 +376,13 @@ export function App(props){
 
   // Success SNack Response
   function updateSuccess(entity){
-    console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
+    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
     setSnackMessage("Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
   }
 
-  console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
+  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
   const{search} = useLocation();
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
@@ -398,7 +399,7 @@ export function App(props){
   var[errorDetail, setErrorDetail] = useState({});
 
   function reportError(error, details){
-    console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
+    // console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
     if(details){
       setErrorDetail(details);
     }
@@ -433,9 +434,9 @@ export function App(props){
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
             onError={(error, errorInfo) => {
-              console.log("Error caught!");  
-              console.error(error);
-              console.error(errorInfo);
+              // console.log("Error caught!");  
+              // console.error(error);
+              // console.error(errorInfo);
             }}>
             <Drawer 
               sx={{
@@ -548,7 +549,7 @@ export function App(props){
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='collection' element={<RenderCollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
@@ -568,7 +569,7 @@ export function App(props){
                     <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
 
                     <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/collection/:uuid" element={<RenderCollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />

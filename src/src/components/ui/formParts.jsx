@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCircleExclamation} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -42,7 +42,7 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
+  // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   return (
     <React.Fragment>
@@ -54,8 +54,8 @@ export const FormHeader = (props) => {
 
 // Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
-  console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
+  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
+  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -84,7 +84,7 @@ export function badgeClass(status){
   var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
-    console.log("No Status Value for this unit ");
+    // console.log("No Status Value for this unit ");
   }else{
 	switch (status.toUpperCase()){
     case "NEW":
@@ -272,12 +272,12 @@ export function GroupModal ({
            <DialogActions>
             <Button
             className="btn btn-primary mr-1"
-            onClick={(e) => submitWithGroup()}>
+            onClick={() => submitWithGroup()}>
             Submit
           </Button>
           <Button
            variant="outlined"
-            onClick={(e) => closeGroupModal()}>
+            onClick={() => closeGroupModal()}>
             Cancel
           </Button>          
           </DialogActions>
@@ -313,7 +313,7 @@ function statusBadge(status){
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
 function newBadge(type){
-  console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
+  // console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
   let newBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
@@ -330,13 +330,6 @@ function newBadge(type){
 }
 
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
-function buildPriorityProjectList(list){
-  if(list.length>1){
-    return list.join(", ");
-  }else{
-    return list[0]
-  }
-}	
 
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData){
@@ -401,6 +394,7 @@ function topHeader(entityData){
 
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
+  let HIPPATypes = ["donor","sample","upload"];
   return (
     <Grid item xs={6} className="" >
       {globusURL&& (
@@ -420,7 +414,7 @@ function infoPanels(entityData,permissions,globusURL){
           </big></strong>
         </Typography>
       )}
-      {permissions.has_write_priv && entityData.entity_type !== "publication" &&(
+      {permissions.has_write_priv && HIPPATypes.includes(entityData.entity_type) &&(
         <HIPPA />
       )}
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
@@ -438,6 +432,11 @@ function infoPanels(entityData,permissions,globusURL){
       )}
       {entityData && (entityData.upload) &&(
         renderUploadLink(entityData)
+      )}
+      {entityData && (entityData.doi_url || entityData.registered_doi) &&(
+        <Typography>
+          <a href={entityData.doi_url} target='_blank' rel="noreferrer" >{entityData.doi_url || entityData.registered_doi} </a><FontAwesomeIcon style={{color: "rgb(10, 109, 255)", fontSize: "0.8em", marginLeft: "5px"}} icon={faUpRightFromSquare}/>
+        </Typography>
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         <Alert  
@@ -469,7 +468,7 @@ function getHubmapIDsFromBulkTable() {
   if (!table) return [];
   // Select all first-column <a> elements in table rows
   const idLinks = table.querySelectorAll('tbody tr td:first-child a');
-  console.log("idLinks",idLinks);
+  // console.log("idLinks",idLinks);
   return Array.from(idLinks).map(a => a.textContent.trim());
 }
 
@@ -532,7 +531,7 @@ export function UserGroupSelectMenu(formValues){
 // Checks if the entityType in the URL matches the type of entity requested
 // if it's not, redirects you on over to the proper form
 export function FormCheckRedirect(uuid,entityType,form){
-  console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
+  // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
     window.location.replace(
@@ -566,10 +565,10 @@ export function combineTypeOptionsComplete(){
       organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
     } );
     combinedList.push(organs.sort());
-    console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
+    // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
     return combinedList;
   } catch (error){
-    console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
+    // console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
     var errStringMSG = "";
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
@@ -589,7 +588,7 @@ export function handleSortOrgans(organList){
     sortedDataArray.push(value);
   }
   sortedDataArray = sortedDataArray.sort();
-  for (const [index, element] of sortedDataArray.entries()){
+  for (const [, element] of sortedDataArray.entries()){
     sortedMap.set(element, sortedDataProp[element]);
   }
   return sortedMap;
@@ -597,11 +596,12 @@ export function handleSortOrgans(organList){
 
 // Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL
 export function HandleCopyFormUrl(e) {
+  e.preventDefault();
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
-  console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
-  Object.entries(formValues).forEach(([key, value]) => {
-    console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
+  // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
+  Object.entries(formValues).forEach(([, value]) => {
+    // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
     if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
       url.searchParams.set(value.id, value.value);
     }
@@ -629,11 +629,8 @@ export function SpeedDialTooltipOpen() {
   let navigate = useNavigate();
   const actions = [
     { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
-    { icon: <TableChartIcon />, name: 'Create Dataset', action: (e) => navigate(`/new/datasetAdmin`) },
+    { icon: <TableChartIcon />, name: 'Create Dataset', action: () => navigate(`/new/datasetAdmin`) },
   ];
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   return (
     <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
       <SpeedDial
@@ -672,7 +669,6 @@ export function FeedbackDialog( {
   let messageColor = color ? color : "#444A65";
   let altColorLight = LightenHex(messageColor, 20);
   let altColorDark = DarkenHex(messageColor, 20);
-  let defaultNote = ""
   let defaultSummary = "";
   if (!message || message.length <= 0){
     defaultSummary = "No Known Problems or Messages";
@@ -742,7 +738,7 @@ export function FeedbackDialog( {
         padding: "6px 10px", 
         display: "flex", 
         border: `1px solid ${messageColor}`, 
-        borderTop:"none",
+        borderTop: "none",
         borderBottomLeftRadius: "4px",
         borderBottomRightRadius: "4px"}}>
         {note && (

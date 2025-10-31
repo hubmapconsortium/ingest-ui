@@ -179,7 +179,7 @@ export const PublicationForm = (props) => {
               });
               entity_api_get_globus_url(entityData.uuid)
                 .then((res) => {
-                  console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
+                  // console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
                   if(res && res.status === 200){
                     setGlobusPath(res.results);
                   }
@@ -416,7 +416,7 @@ export const PublicationForm = (props) => {
             if (response.status === 200) {
               entity_api_get_globus_url(response.results.uuid)
                 .then((res) => {
-                  console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
+                  // console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
                   let fullResult = { ...response.results, globus_path: res.results };
                   props.onCreated(fullResult);
                 })
