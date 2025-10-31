@@ -92,17 +92,17 @@ export const DonorForm = (props) => {
                   setPermissions(response.results);
                 })
                 .catch((error) => {
-                  console.error("ingest_api_allowable_edit_states ERROR", error);
+                  // console.error("ingest_api_allowable_edit_states ERROR", error);
                   setPageErrors(error);
                 });
             }
           }else{
-            console.error("entity_api_get_entity RESP NOT 200",response.status,response);
+            // console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
         })
         .catch((error) => {
-          console.debug("entity_api_get_entity ERROR", error);
+          // console.debug("entity_api_get_entity ERROR", error);
           setPageErrors(error);
         });
     }else{
@@ -205,7 +205,7 @@ export const DonorForm = (props) => {
       }
     }else{
       setIsProcessing(false);
-      console.debug("%c◉ Invalid ", "color:#00ff7b");
+      // console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
 

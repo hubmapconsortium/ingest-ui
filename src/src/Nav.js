@@ -26,7 +26,7 @@ export const Navigation = (props) => {
   const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
   useEffect(() => {
-    console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
+    // console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
     try{
       let userGroups = JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null
       if(!userGroups || userGroups === null){

@@ -99,10 +99,10 @@ class SearchComponent extends Component {
         });
       })
       .catch((err) => {
-        console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
+        // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
       })
     } catch (error) {
-      console.debug("%c⭗", "color:#ff005d",error);
+      // console.debug("%c⭗", "color:#ff005d",error);
     }
 
     var organList = {};
@@ -123,12 +123,12 @@ class SearchComponent extends Component {
           });
         })
         .catch((err) => {
-          console.debug(
-            "%c⭗",
-            "color:#ff005d",
-            "ubkg_api_get_organ_type_set ERR",
-            err
-          );
+          // console.debug(
+          //   "%c⭗",
+          //   "color:#ff005d",
+          //   "ubkg_api_get_organ_type_set ERR",
+          //   err
+          // );
         });
     }
 
@@ -142,7 +142,7 @@ class SearchComponent extends Component {
     }
 
     if (this.props.packagedQuery) {
-      console.debug('%c◉ packagedQuery ', 'color:#00ff7b', this.props.packagedQuery);
+      // console.debug('%c◉ packagedQuery ', 'color:#00ff7b', this.props.packagedQuery);
       this.setState({
           entityType: this.props.packagedQuery.entityType,
           keywords: this.props.packagedQuery.keywords,
@@ -164,7 +164,7 @@ class SearchComponent extends Component {
       custom_subtitle: this.props.custom_subtitle || this.state.custom_subtitle,
       fieldSet: resultFieldSet(),
     },() => {
-      console.debug('%c◉ Set Titles ', 'color:#00ff7b', );
+      // console.debug('%c◉ Set Titles ', 'color:#00ff7b', );
     }
   );
   }
@@ -359,7 +359,7 @@ class SearchComponent extends Component {
           filteredEntities[key] = value;
         }
       }
-      console.debug('%c◉ filteredEntities ', 'color:#00ff7b', filteredEntities);
+      // console.debug('%c◉ filteredEntities ', 'color:#00ff7b', filteredEntities);
       // If we have a blacklist, push the filtered version, otherwise full
       combinedList.push(filteredEntities);
 
@@ -379,7 +379,7 @@ class SearchComponent extends Component {
         // And Wrap it up & send back
         return combinedList;
       } catch (error) {
-        console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
+        // console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
         var errStringMSG = "";
         typeof error.type === "string"
           ? (errStringMSG = "Error on Organ Assembly")
@@ -439,7 +439,7 @@ class SearchComponent extends Component {
   };
 
   handleTableCellClick = (params, event ) => {
-    console.debug('%c◉ handleTableCellClick SC', 'color:#00ff7b', event, params);  
+    // console.debug('%c◉ handleTableCellClick SC', 'color:#00ff7b', event, params);  
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();

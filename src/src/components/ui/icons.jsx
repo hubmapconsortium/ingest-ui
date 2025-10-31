@@ -1,6 +1,3 @@
-
-
-
 import ClearIcon from "@mui/icons-material/Clear";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
@@ -13,8 +10,8 @@ import TableChartIcon from '@mui/icons-material/TableChart';
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
 export function EntityIcons(entity_type, status){  
-  console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
+  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
+  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -38,7 +35,7 @@ export function EntityIcons(entity_type, status){
   }
 }
 export function OrganIcons(organ){  
-  console.debug('%c◉ status ', 'color:#00ff7b', organ);
+  // console.debug('%c◉ status ', 'color:#00ff7b', organ);
   let prependURL = "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-"
   let iconMap={
     "BD": "blood",

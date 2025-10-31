@@ -103,7 +103,6 @@ export const UploadForm = (props) => {
     });
   const allGroups = JSON.parse(localStorage.getItem("allGroups"));
   let saveStatuses = ["submitted", "valid", "invalid", "incomplete", "error", "new"]
-  // let validateStatuses = ["valid", "invalid", "error", "new", "incomplete"]
   let validateRestrictions = ["reorganized", "processing"]
   let[validationError, setValidationError] = useState(null);
   const{uuid} = useParams();
@@ -114,8 +113,7 @@ export const UploadForm = (props) => {
     {name: "SWAT (Integration Paper)",description: "For questions about the SWAT effort, email Ajay"},
     {name: "MOSDAP",description: "For questions about the MOSDAP effort, email Gloria Pryhuber"},
   ]
-
- 
+   
   // Organ Menu Build
   const organ_types = JSON.parse(localStorage.getItem("organs"));
   const organMenu = useMemo(() => {
@@ -147,9 +145,9 @@ export const UploadForm = (props) => {
               );
             }else{
               const entityData = response.results;
-              console.group("Entity Info");
-              console.table(entityData);
-              console.groupEnd();
+              // console.group("Entity Info");
+              // console.table(entityData);
+              // console.groupEnd();
               setEntityData(entityData)
               setFormValues({
                 title: entityData.title,
@@ -194,7 +192,7 @@ export const UploadForm = (props) => {
       let url = new URL(window.location.href);
       let params = Object.fromEntries(url.searchParams.entries());
       if(Object.keys(params).length > 0){
-        console.debug('%c◉ URL params ', 'color:#00ff7b', params);
+        // console.debug('%c◉ URL params ', 'color:#00ff7b', params);
         setFormValues((prevValues) => ({
           ...prevValues,
           ...params
@@ -230,7 +228,7 @@ export const UploadForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function handleInputChange(e, test){
+  function handleInputChange(e){
     // console.debug('%c◉ e', 'color:#00ff7b', e);
 
     if(e && e.target){
@@ -252,8 +250,8 @@ export const UploadForm = (props) => {
     setValidationError(null);
     setValErrorMessages(null);
     let errors = 0;
-    console.debug('%c◉  Form Values:', 'color:#00ff7b' );
-    console.table(formValues );
+    // console.debug('%c◉  Form Values:', 'color:#00ff7b' );
+    // console.table(formValues );
 
     // Requireds
     let requiredFields = ["title", "description", "intended_organ", "intended_dataset_type"]; 
@@ -295,13 +293,13 @@ export const UploadForm = (props) => {
     // Final Judgement
     setFormErrors(newFormErrors);
     setValErrorMessages(e_messages);
-    console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
+    // console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
      setValidationError("Please Review the following fields and try again.");
     }else{
       setValidationError(null);
     }    
-    console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
+    // console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
     // return false;
     return errors === 0;
   }
@@ -316,7 +314,7 @@ export const UploadForm = (props) => {
   }
 
   function processResults(response){
-    console.debug('%c◉ ✅ Processing Results: ', 'color:#00ff7b', response);
+    // console.debug('%c◉ ✅ Processing Results: ', 'color:#00ff7b', response);
     if (response.status === 200) {
       props.onUpdated(response.results);
     } else {
@@ -325,8 +323,8 @@ export const UploadForm = (props) => {
   }
 
   function wrapUp(error){
-    console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
-    console.error(error.error.response.data);
+    // console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
+    // console.error(error.error.response.data);
     setPageErrors(error?.error?.response?.data ? error.error.response.data : error);
     setIsProcessing(false);
     setProcessingButton(false);
@@ -358,13 +356,13 @@ export const UploadForm = (props) => {
         ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
         ...((!uuid) && {group_uuid: selectedGroupUUID	}),
       }
-      console.group("Form valid, sending following info:");
-      console.table(cleanForm);
-      console.groupEnd();
+      // console.group("Form valid, sending following info:");
+      // console.table(cleanForm);
+      // console.groupEnd();
 
       switch(target){
         case "Create":
-          console.debug('%c◉ Create ', 'color:#00ff7b');
+          // console.debug('%c◉ Create ', 'color:#00ff7b');
           ingest_api_create_upload(JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
@@ -379,7 +377,7 @@ export const UploadForm = (props) => {
           break;
 
         case "Save":
-          console.debug('%c◉ Save ', 'color:#00ff7b');
+          // console.debug('%c◉ Save ', 'color:#00ff7b');
           entity_api_update_entity(uuid,JSON.stringify(cleanForm))
             .then((response) => {
               processResults(response);
@@ -390,7 +388,7 @@ export const UploadForm = (props) => {
           break;
 
         case "Submit":
-          console.debug('%c◉ Submit ', 'color:#00ff7b');
+          // console.debug('%c◉ Submit ', 'color:#00ff7b');
           // We open that follow up Modal first now,
           // then from THERE, continue submitting
           setSubmitProcessModal(false);
@@ -405,7 +403,7 @@ export const UploadForm = (props) => {
                 }else if (cleanForm.priority_project_list.length === 1){
                   slackMessage.message += `\nThis data will be used for the ${cleanForm.priority_project_list[0]} project.`
                 }
-                console.debug('%c◉ slackMessage ', 'color:#00ff7b', slackMessage);
+                // console.debug('%c◉ slackMessage ', 'color:#00ff7b', slackMessage);
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     if (slackRes.status === 200) {
@@ -427,10 +425,10 @@ export const UploadForm = (props) => {
           break;
          
         case "Validate":
-          console.debug('%c◉ Validate ', 'color:#2158FF');
+          // console.debug('%c◉ Validate ', 'color:#2158FF');
           ingest_api_validate_entity(uuid, "uploads")
             .then((response) => {
-              console.debug("Response from validate", response);
+              // console.debug("Response from validate", response);
               setEntityValidation({
                 open:true,
                 message:response
@@ -448,7 +446,7 @@ export const UploadForm = (props) => {
           break;
 
         case "Reorganize":
-          console.debug('%c◉ Reorganize ', 'color:#00ff7b');
+          // console.debug('%c◉ Reorganize ', 'color:#00ff7b');
           ingest_api_reorganize_upload(uuid)
             .then((response) => {
               processResults(response)
@@ -459,14 +457,14 @@ export const UploadForm = (props) => {
           break;
 
         default:
-          console.debug('%c◉ Default ', 'color:#00ff7b');
+          // console.debug('%c◉ Default ', 'color:#00ff7b');
           break;
       }
 
     }else{
       setIsProcessing(false);
       setProcessingButton(false);
-      console.debug('%c◉ Invalid ', 'color:#ff005d');
+      // console.debug('%c◉ Invalid ', 'color:#ff005d');
     }
     
   }

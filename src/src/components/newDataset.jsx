@@ -124,9 +124,9 @@ export const DatasetForm = (props) => {
     if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
-          console.debug('%c◉ RESP ', 'color:#00ff7b', response);
+          // console.debug('%c◉ RESP ', 'color:#00ff7b', response);
           if(response.status === 404 || response.status === 400){
-            console.debug('%c◉ ERRRRR ', 'color:#FFFFFF;background: #2200FF;padding:200' , );
+            // console.debug('%c◉ ERRRRR ', 'color:#FFFFFF;background: #2200FF;padding:200' , );
             navigate("/notFound?entityID="+uuid);
           }
           if (response.status === 200) {
@@ -170,7 +170,7 @@ export const DatasetForm = (props) => {
                   setPermissions(response.results);
                 })
                 .catch((error) => {
-                  console.error(error);
+                  // console.error(error);
 
                   setPageErrors(error);
                 });
@@ -180,7 +180,7 @@ export const DatasetForm = (props) => {
           }
         })
         .catch((error) => {
-            console.debug('%c◉ ingest_api_allowable_edit_states ERR Catch ', 'color:#FFFFFF;background: #2200FF;padding:200' ,error );
+            // console.debug('%c◉ ingest_api_allowable_edit_states ERR Catch ', 'color:#FFFFFF;background: #2200FF;padding:200' ,error );
           if(error.status === 404){
             navigate("/notFound?entityID="+uuid);
           }
@@ -200,7 +200,7 @@ export const DatasetForm = (props) => {
       if (prev[name] === value) return prev;
       return { ...prev, [name]: value };
     });
-    console.debug('%c◉  handleInputChange', 'color:#00ff7b', name, value);
+    // console.debug('%c◉  handleInputChange', 'color:#00ff7b', name, value);
   }, []);
 
   // Callback for BulkSelector
@@ -275,11 +275,11 @@ export const DatasetForm = (props) => {
         ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
         ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task})
       };
-      console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
+      // console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
         let target = e.target.name;
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: true } }));
-        console.log("handleSave", target);
+        // console.log("handleSave", target);
         entity_api_update_entity(uuid, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
@@ -300,7 +300,7 @@ export const DatasetForm = (props) => {
         cleanForm.dataset_type = form.dt_select
         cleanForm.group_uuid = form.group_uuid
         // console.log(form, form.contains_human_genetic_sequences);
-        console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
+        // console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {
@@ -323,14 +323,14 @@ export const DatasetForm = (props) => {
     e.preventDefault();
     ingest_api_validate_entity(entityData.uuid, "datasets")
       .then((response) => {
-        console.debug('%c◉ res ', 'color:#00ff7b', response);
+        // console.debug('%c◉ res ', 'color:#00ff7b', response);
         setEntityValidation({
           open: true,
           message: response
         });
       })
       .catch((error) => {
-        console.debug('%c◉ error ', 'color:#ff007b', error);
+        // console.debug('%c◉ error ', 'color:#ff007b', error);
         setEntityValidation({
           open: true,
           message: error
@@ -339,12 +339,11 @@ export const DatasetForm = (props) => {
   };
 
   const handleSubmitForTesting = () => {
-    console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
-    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, submitFT: true } }));
+    // console.debug('%c◉ Submitting for Testing ', 'color:#00ff7b', );
     // NOTE: CannotBe Derived! @TODO? 
     ingest_api_pipeline_test_submit({"uuid": entityData.uuid})
       .then((response) => {
-        console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
+        // console.debug('%c◉  SUBMITTED', 'color:#00ff7b', response);
         let results = "";
         let title = "";
         if(response.status === 200){
@@ -383,13 +382,13 @@ export const DatasetForm = (props) => {
     setIsSubmitModalOpen(false);
     entity_api_update_entity(entityData.uuid, JSON.stringify(dataSubmit))
       .then((response) => {
-        console.debug("entity_api_update_entity response", response);
+        // console.debug("entity_api_update_entity response", response);
         // @TODO: Move slackness call into entity_api_update_entity
         var ingestURL= process.env.REACT_APP_URL+"/dataset/"+uuid
         var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
         ingest_api_notify_slack(slackMessage)
           .then((slackRes) => {
-            console.debug("slackRes", slackRes);
+            // console.debug("slackRes", slackRes);
             if (response.status < 300) {
               props.onUpdated(response.results);
             } else {
@@ -429,7 +428,7 @@ export const DatasetForm = (props) => {
           } else { 
             // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
             var statusText = "";
-            console.debug("err", response, response.error);
+            // console.debug("err", response, response.error);
             if(response.err){
               statusText = response.err.response.status+" "+response.err.response.statusText;
             }else if(response.error){
@@ -447,7 +446,7 @@ export const DatasetForm = (props) => {
               message: "Process Error - "+statusText+" "+submitErrorResponse,
               status: "error"
             });
-            console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
+            // console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
           }
         })
         .catch((error) => {

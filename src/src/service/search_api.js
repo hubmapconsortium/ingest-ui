@@ -205,7 +205,7 @@ export function search_api_filter_es_query_builder(
  *
  */
 export function search_api_es_query_ids(IDs,types,colFields){
-  console.debug('%c◉ search_api_es_query_ids', 'color:#00ff7b', IDs, IDs.length, types, colFields);
+  // console.debug('%c◉ search_api_es_query_ids', 'color:#00ff7b', IDs, IDs.length, types, colFields);
   const idsearch = esb.boolQuery()
     .should([
         esb.termsQuery('uuid.keyword', IDs.filter(id => !id.includes('.'))),
@@ -223,12 +223,12 @@ export function search_api_es_query_ids(IDs,types,colFields){
         "excludes": ["*.NO_SUCH_THING"]
       } )
 
-  console.debug('%c◉ requestBody ', 'color:#00ff7b', requestBody.toJSON());
+  // console.debug('%c◉ requestBody ', 'color:#00ff7b', requestBody.toJSON());
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), options)
     .then((res) => {
       // console.debug("API api_search2 res", res);
-      console.debug('%c◉ res ', 'color:#00ff7b', res);
+      // console.debug('%c◉ res ', 'color:#00ff7b', res);
       let hits = res.data.hits.hits;
       let entities = [];
       hits.forEach((s) => {
@@ -259,12 +259,12 @@ export function search_api_search_group_list(){
       return groups;
     } )
     .catch((err) => {
-      console.debug(
-        "%c⭗",
-        "color:#ff005d",
-        "search_api_search_group_list error",
-        err
-      );
+      // console.debug(
+      //   "%c⭗",
+      //   "color:#ff005d",
+      //   "search_api_search_group_list error",
+      //   err
+      // );
       return err;
     } );
 }
@@ -281,7 +281,7 @@ export function search_api_get_assay_type(assay){
         }
       } );
 
-      console.debug(found_dt);
+      // console.debug(found_dt);
       return {status: res.status, results: found_dt};
     } )
     .catch((error) => {
@@ -311,11 +311,11 @@ export function search_api_get_assay_set(scope){
         let mapCheck = data.result.map((value) => {
           return value;
         } );
-        console.debug("API get_processed_assays data", data, mapCheck);
+        // console.debug("API get_processed_assays data", data, mapCheck);
         return {data};
       } )
       .catch((error) => {
-        console.debug("search_api_get_assay_set", error, error.response);
+        // console.debug("search_api_get_assay_set", error, error.response);
         if (error.response){
           return {
             status: error.response.status,

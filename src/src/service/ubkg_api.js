@@ -64,7 +64,7 @@ export function ubkg_api_get_organ_type_set(format) {
         }
       })
       .catch(error => {
-        console.debug("ubkg_api_get_organ_type_set", error, error.response);
+        // console.debug("ubkg_api_get_organ_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -83,7 +83,7 @@ export function ubkg_api_get_organs_full() {
         return data;
       })
       .catch(error => {
-        console.debug("ubkg_api_get_organs_full", error, error.response);
+        // console.debug("ubkg_api_get_organs_full", error, error.response);
         captureError(error);
       });
 };
@@ -103,7 +103,7 @@ export function ubkg_api_get_dataset_type_set() {
         return data;
       })
       .catch(error => {
-        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        // console.debug("ubkg_api_get_dataset_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -121,7 +121,7 @@ export function ubkg_api_get_upload_dataset_types() {
         return data;
       })
       .catch(error => {
-        console.debug("ubkg_api_get_dataset_type_set", error, error.response);
+        // console.debug("ubkg_api_get_dataset_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -139,7 +139,7 @@ export function ubkg_api_generate_display_subtype(entity) {
         var organCode = entity['organ'];
         ubkg_api_get_organ_type_set()
           .then((res) => {
-            console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
+            // console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
             display_subtype=(res[organCode])
             // return (res[organCode])
           })
@@ -172,7 +172,7 @@ export function ubkg_api_generate_display_subtype(entity) {
 
 function captureError (error){
 
-  console.debug("Error Format CHeck", error);
+  // console.debug("Error Format CHeck", error);
 
   if(error.response ){
     if(error.response.data ){

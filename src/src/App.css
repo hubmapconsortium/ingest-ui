@@ -1,5 +1,5 @@
 body {
-  font-family: 'Inter',"Helvetica", "sans-serif";
+  font-family: 'Inter Variable',"Helvetica", "sans-serif";
 }
 #header {
   margin-bottom: 20px;
@@ -16,14 +16,14 @@ body {
 
 body {
   background-color: #ebebeb;
-  font-family: 'Inter', sans-serif!important;
+  font-family: 'Inter Variable', sans-serif!important;
 }
 
 
-/* Inter Font override */
+/* Inter Variable Font override */
 /* Avoids having to muck about ThemeProvider nonsense */
 #root{
-  font-family: 'Inter', sans-serif!important;
+  font-family: 'Inter Variable', sans-serif!important;
 }
 .MuiPaper-root,
 .MuiTypography-root,
@@ -34,7 +34,7 @@ body {
 .MuiInputLabel-root,
 .MuiButtonBase-root,
 .MuiDataGrid-main {
-  font-family: 'Inter', sans-serif!important;
+  font-family: 'Inter Variable', sans-serif!important;
 }
 
 .tooltip {
@@ -502,13 +502,13 @@ a:not([href]).ttip {
 
 .portal-jss116 {
   font-size: 0.95rem;
-  font-family: "Inter", Helvetica, Arial, sans-serif;
+  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.5;
 }
 .portal-alert-text {
   font-size: 0.7rem;
-  font-family: "Inter", Helvetica, Arial, sans-serif;
+  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
   color: red;
@@ -516,14 +516,14 @@ a:not([href]).ttip {
 
 .portal-label {
   font-size: 1.2rem;
-  font-family: "Inter", Helvetica, Arial, sans-serif;
+  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
 }
 
 .portal-jss120 {
   font-size: 2.3rem;
-  font-family: "Inter", Helvetica, Arial, sans-serif;
+  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.2;
 }
@@ -925,22 +925,41 @@ svg.invalid {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
 }
+.associationTable .MuiDataGrid-row:hover {backgroundColor: "inherit",} 
 .associationTable .MuiDataGrid-columnHeaders, 
 .associationTable .MuiDataGrid-footerContainer{
   background-color: #444a65;
   border-color: #454d55;
   color:#fff;
 }
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator{
+.associationTable .MuiDataGrid-footerContainer{
+  min-height: 35px;
+  max-height: 35px;
+  cursor:initial;
+} 
+.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator,
+.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator svg{
   display: none;
 }
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader{
+.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader,
+.associationTableWrap .MuiTableRow-head th.MuiTableCell-head{
   border-right:1px solid #ffffff35;
+}
+.associationTable .MuiDataGrid-row[data-error],
+.associationTable .MuiDataGrid-row[data-error]:hover,
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover{
+  background: #FF000019;
+}
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover{
+  border: 1px solid #FF000019;
 }
 .associationTable .MuiDataGrid-row .MuiDataGrid-cell{
   border-right: 1px solid #444a6507;
 }
-.associationTable .MuiDataGrid-row .MuiDataGrid-cell,
+.associationTable .MuiDataGrid-row .MuiDataGrid-cell:last-child,
+.associationTableWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
 .associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader:last-child{
   border-right:0px;
 }
@@ -953,6 +972,10 @@ svg.invalid {
 }
 .associationTable .MuiDataGrid-footerContainer p{
   margin: 0%;
+}
+
+.associatedContributorsTable .MuiDataGrid-cellContent{
+  font-size: 0.8em;
 }
 
 #revert_tooltip{
@@ -999,8 +1022,8 @@ svg.invalid {
   text-overflow:ellipsis;
 } 
 
-/* Brute Force Inter Fix / Death To Roboto */
-/* all of the manual overrides to force Inter over Roboto */
+/* Brute Force Inter Variable Fix / Death To Roboto */
+/* all of the manual overrides to force Inter Variable over Roboto */
 .bulk-table,
 .bulk-table tr td{
   font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
