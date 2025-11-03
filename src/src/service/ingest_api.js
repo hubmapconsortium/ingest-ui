@@ -481,7 +481,7 @@ export function ingest_api_upload_bulk_metadata(type, dataFile) {
  *  Notify
  *
  */
-export function ingest_api_publish_collection(auth, data) { 
+export function ingest_api_publish_collection(data) { 
   const options = {headers: {Authorization: `Bearer ${globalToken}`,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`;
   // console.debug('%c◉ publish ', 'color:#00ff7b', url,options);

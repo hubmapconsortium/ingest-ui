@@ -377,7 +377,7 @@ export function App(props){
   // Success SNack Response
   function updateSuccess(entity){
     // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
-    setSnackMessage("Entity Updated Successfully!");
+    setSnackMessage(entity.message ? entity.message : "Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
   }
