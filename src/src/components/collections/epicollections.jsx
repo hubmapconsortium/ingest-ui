@@ -499,7 +499,7 @@ export function EPICollectionForm (props){
 
   const handlePublish = () => {
     setPublishing(true)
-    ingest_api_publish_collection(props.authToken,editingCollection.uuid)
+    ingest_api_publish_collection(editingCollection.uuid)
       .then((response) => {
         console.debug('%c◉ PUBLISHED ', 'color:#00ff7b', );
         // props.onProcessed(response);

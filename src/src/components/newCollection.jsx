@@ -14,15 +14,18 @@ import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
 import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
-import { ingest_api_users_groups,ingest_api_user_admin } from "../service/ingest_api";
+import { ingest_api_users_groups,ingest_api_user_admin,ingest_api_publish_collection } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
 
 export const CollectionForm = (props) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
   const [entityData, setEntityData] = useState();
-  const [isLoading, setLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
+  // const [isLoading, setLoading] = useState(true);
+  let [loading, setLoading] = useState({
+    page: true,
+    button: {save: false, publish: false, }
+  });
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
   const [permissions, setPermissions] = useState({ has_write_priv: true, has_admin_priv: false, });
@@ -66,6 +69,7 @@ export const CollectionForm = (props) => {
   );
 
   useEffect(() => {
+    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     if (uuid && uuid !== "") {
       entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
         .then((response) => {
@@ -124,7 +128,8 @@ export const CollectionForm = (props) => {
       prefillFormValuesFromUrl(setFormValues, setSnackbarController);
       setPermissions({ has_write_priv: true });
     }
-    setLoading(false);
+    // setLoading(false);
+    setLoading(prevVals => ({ ...prevVals, page: false }));
   }, [uuid]);
 
   const handleInputChange = useCallback((e) => {
@@ -206,9 +211,10 @@ export const CollectionForm = (props) => {
   };
 
   const handleSubmit = (e) => {
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: true } }));
     e.preventDefault();
     if (validateForm()) {
-      setIsProcessing(true);
+      // setIsProcessing(true);
       if (uuid) {
         entity_api_update_entity(uuid, JSON.stringify({
           title: formValues.title,
@@ -217,6 +223,7 @@ export const CollectionForm = (props) => {
           contacts: deliniatedContacts.contacts,
         }))
           .then((response) => {
+            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status < 300) {
               props.onUpdated(response.results);
             } else {
@@ -224,6 +231,7 @@ export const CollectionForm = (props) => {
             }
           })
           .catch((error) => {
+            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             props.reportError(error);
             setPageErrors(error);
           });
@@ -247,6 +255,7 @@ export const CollectionForm = (props) => {
 
         entity_api_create_entity("collection", JSON.stringify(newForm))
           .then((response) => {
+            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status === 200) {
               props.onCreated(response.results);
             } else {
@@ -254,6 +263,7 @@ export const CollectionForm = (props) => {
             }
           })
           .catch((error) => {
+            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             setPageErrors(error);
           });
       }
@@ -263,24 +273,24 @@ export const CollectionForm = (props) => {
 
   const handlePublish = (e) => {
     e.preventDefault();
-    let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
-    let cleanForm = {
-          title: formValues.title,
-          description: formValues.description,
-          dataset_uuids: selectedUUIDs,
-          contributors: formValues.contributors,
-          group_uuid: formValues.group_uuid,
-        }
-    
-    entity_api_update_entity(uuid, JSON.stringify(cleanForm))
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: true } }));
+    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
+    ingest_api_publish_collection(uuid)
       .then((response) => {
+        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
         if (response.status < 300) {
-          props.onUpdated(response.results);
+          let fullResponse = response;
+          fullResponse.message = "Collection Published Successfully";
+          props.onUpdated(fullResponse);
         } else {
-          setPageErrors(response);
+          console.debug('%c◉ Publish Error ', 'color:#2158FF', response );
+          let error = response.results.error ? response.results.error : response;
+          setPageErrors(error);
         }
       })
       .catch((error) => {
+        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
+        console.debug('%c◉ Page error ', 'color:#2158FF', );
         props.reportError(error);
         setPageErrors(error);
       });
@@ -297,7 +307,7 @@ export const CollectionForm = (props) => {
       <LoadingButton
         variant="contained"
         name="save"
-        loading={isProcessing}
+        loading={loading.button.save}
         className="m-2"
         onClick={(e) => handleSubmit(e)}
         type="submit">
@@ -307,7 +317,7 @@ export const CollectionForm = (props) => {
         <LoadingButton
           variant="contained"
           name="save"
-          loading={isProcessing}
+          loading={loading.button.publish}
           className="m-2"
           onClick={(e) => handlePublish(e)}
           type="submit">
@@ -317,7 +327,7 @@ export const CollectionForm = (props) => {
     </Box>
   );
 
-  if (isLoading || ((!entityData || !formValues) && uuid)) {
+  if (loading.page || ((!entityData || !formValues) && uuid)) {
     return <LinearProgress />;
   } else {
     return (
