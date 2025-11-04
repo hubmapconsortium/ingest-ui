@@ -561,7 +561,7 @@ export function BulkSelector({
         </TableContainer>
       </Box>
       <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontSize: "0.8rem", float: "left" }}>Total Selected: {sourcesData.length}
+        <Typography sx={{ fontSize: "0.8rem", float: "left" }}>Total{(permissions.has_write_priv)? "Selected " : ""}: {sourcesData.length}
           {(permissions.has_write_priv && totalRejected > 0) && (
             <Tooltip arrow title={
               <React.Fragment>
@@ -572,50 +572,52 @@ export function BulkSelector({
             </Tooltip>
           )}
         </Typography>
-        <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
-          <Tooltip arrow title={
-            <React.Fragment>
-              <Typography color="inherit">{totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}</Typography>
-              {"Click to view Details"}
-            </React.Fragment>
-          }>
-            <span
-              onClick={() => setShowBulkWarning(true)}
-              style={
-                bulkWarning && bulkWarning.length > 0 ? {
-                  textDecoration: "underline #D3C52F",
-                  marginLeft: "10px",
-                  cursor: "pointer"
-                } : { marginLeft: "10px" }
-              }>
-              <FontAwesomeIcon
-                icon={faTriangleExclamation}
-                color={bulkWarning && bulkWarning.length > 0 ? "#D3C52F " : "rgb(68, 74, 101)"} />
-              &nbsp;{totalWarnings}
-            </span>
-          </Tooltip>
-          &nbsp;
-          <Tooltip arrow title={
-            <React.Fragment>
-              <Typography color="inherit">{totalErrors} Error{bulkError.length > 1 ? "s" : ""}</Typography>
-              {"Click to view Details"}
-            </React.Fragment>}>
-            <span
-              onClick={() => setShowBulkError(true)}
-              style={
-                bulkError && bulkError.length > 0 ? {
-                  textDecoration: "underline #ff3028",
-                  marginLeft: "15px",
-                  cursor: "pointer"
-                } : { marginLeft: "10px" }}>
-              <FontAwesomeIcon
-                sx={{ paddingLeft: "1.2em" }}
-                icon={faCircleExclamation}
-                color={bulkError && bulkError.length > 0 ? "red " : "rgb(68, 74, 101)"} />
-              &nbsp;{totalErrors}
-            </span>
-          </Tooltip>
-        </Typography>
+        {(permissions.has_write_priv) &&(
+          <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
+            <Tooltip arrow title={
+              <React.Fragment>
+                <Typography color="inherit">{totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}</Typography>
+                {"Click to view Details"}
+              </React.Fragment>
+            }>
+              <span
+                onClick={() => setShowBulkWarning(true)}
+                style={
+                  bulkWarning && bulkWarning.length > 0 ? {
+                    textDecoration: "underline #D3C52F",
+                    marginLeft: "10px",
+                    cursor: "pointer"
+                  } : { marginLeft: "10px" }
+                }>
+                <FontAwesomeIcon
+                  icon={faTriangleExclamation}
+                  color={bulkWarning && bulkWarning.length > 0 ? "#D3C52F " : "rgb(68, 74, 101)"} />
+                &nbsp;{totalWarnings}
+              </span>
+            </Tooltip>
+            &nbsp;
+            <Tooltip arrow title={
+              <React.Fragment>
+                <Typography color="inherit">{totalErrors} Error{bulkError.length > 1 ? "s" : ""}</Typography>
+                {"Click to view Details"}
+              </React.Fragment>}>
+              <span
+                onClick={() => setShowBulkError(true)}
+                style={
+                  bulkError && bulkError.length > 0 ? {
+                    textDecoration: "underline #ff3028",
+                    marginLeft: "15px",
+                    cursor: "pointer"
+                  } : { marginLeft: "10px" }}>
+                <FontAwesomeIcon
+                  sx={{ paddingLeft: "1.2em" }}
+                  icon={faCircleExclamation}
+                  color={bulkError && bulkError.length > 0 ? "red " : "rgb(68, 74, 101)"} />
+                &nbsp;{totalErrors}
+              </span>
+            </Tooltip>
+          </Typography>
+        )}
       </Box>
     </Box>
 
