@@ -311,7 +311,7 @@ export const CollectionForm = (props) => {
         className="m-2"
         onClick={(e) => handleSubmit(e)}
         type="submit">
-        Save
+        Submit
       </LoadingButton>
       {permissions.has_admin_priv && uuid && (
         <LoadingButton
