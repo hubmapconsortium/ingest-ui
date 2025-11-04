@@ -59,19 +59,19 @@ export function BulkSelector({
   const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
   const title = dialogTitle || "Associated Dataset IDs";
   const subtitle = dialogSubtitle || "Datasets that are associated with this Publication"; 
-
   
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
 
   // Sync sourcesData with prop changes
   useEffect(() => {
+    console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
     setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
   }, [initialSourcesData]);
 
-	console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
+	// console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
   // Keep parent in sync
   useEffect(() => {
     if (onBulkSelectionChange) {
@@ -100,7 +100,7 @@ export function BulkSelector({
 
   function stringFieldHandler(value){
     setTextFieldSourceString(value);
-    console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
+    // console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
   }
 
   // Validation helpers
@@ -180,7 +180,7 @@ export function BulkSelector({
     var dst = "";
     sources.forEach(function(row, index) {
       dst = ubkg_api_generate_display_subtype(row);
-      console.debug("dst", dst);
+      // console.debug("dst", dst);
       if (row.entity_type !== "Dataset") {
         dst = toTitleCase(dst);
       }
@@ -208,9 +208,9 @@ export function BulkSelector({
     // console.log(textFieldSourceString)
     setShowHIDList(false);
     setSourceBulkStatus("loading");
-    console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
-    console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
-    console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
+    // console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
+    // console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
+    // console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
     let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
     let fieldVal = document.getElementById("dataset_uuids_string");
     fieldVal = fieldVal ? fieldVal.value : null;
@@ -218,7 +218,7 @@ export function BulkSelector({
       idsToProcess = fieldVal;
     }
     
-    console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
+    // console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
     
     // Split and trim, but do NOT dedupe here; pass all for duplicate detection
     let allIds = idsToProcess
@@ -387,9 +387,8 @@ export function BulkSelector({
     </>);
   }
 
-
   function handleOpenPage(e,row) {
-    console.log("row",row)
+    // console.log("row",row)
     e.preventDefault()    
     let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`
     window.open(url, "_blank");
@@ -409,7 +408,7 @@ export function BulkSelector({
   }
   let totalRejected = totalWarnings + totalErrors;
 
-  console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
+  // console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
   return (<>
     {/* Search Dialog */}
     <Dialog
@@ -471,7 +470,7 @@ export function BulkSelector({
         <GridLoader size="2px" color="white" width="30px" /> Loading ...
       </Box>
 
-      <Box id="bulkTableWrapper" sx={{ borderRadius: "4px", border: "4px solid #444a65" }}>
+      <Box className={"associationTableWrap"} id="bulkTableWrapper" sx={{ borderRadius: "4px", border: "4px solid #444a65" }}>
         <TableContainer
           style={{ border: sourceTableError ? "2px solid red" : "" }}
           sx={{
@@ -522,7 +521,7 @@ export function BulkSelector({
                   key={row.hubmap_id + "" + index}
                   className="row-selection">
                   <TableCell className="clicky-cell" sx={{ width: "166px" }} scope="row">
-                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor:"pointer"}} >
+                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor: "pointer"}} >
                       {row.hubmap_id}
                       </a>
                   </TableCell>
@@ -562,7 +561,7 @@ export function BulkSelector({
         </TableContainer>
       </Box>
       <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontSize: "0.8rem", float: "left" }}>Total Selected: {sourcesData.length}
+        <Typography sx={{ fontSize: "0.8rem", float: "left" }}>Total{(permissions.has_write_priv)? "Selected " : ""}: {sourcesData.length}
           {(permissions.has_write_priv && totalRejected > 0) && (
             <Tooltip arrow title={
               <React.Fragment>
@@ -573,50 +572,52 @@ export function BulkSelector({
             </Tooltip>
           )}
         </Typography>
-        <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
-          <Tooltip arrow title={
-            <React.Fragment>
-              <Typography color="inherit">{totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}</Typography>
-              {"Click to view Details"}
-            </React.Fragment>
-          }>
-            <span
-              onClick={() => setShowBulkWarning(true)}
-              style={
-                bulkWarning && bulkWarning.length > 0 ? {
-                  textDecoration: "underline #D3C52F",
-                  marginLeft: "10px",
-                  cursor: "pointer"
-                } : { marginLeft: "10px" }
-              }>
-              <FontAwesomeIcon
-                icon={faTriangleExclamation}
-                color={bulkWarning && bulkWarning.length > 0 ? "#D3C52F " : "rgb(68, 74, 101)"} />
-              &nbsp;{totalWarnings}
-            </span>
-          </Tooltip>
-          &nbsp;
-          <Tooltip arrow title={
-            <React.Fragment>
-              <Typography color="inherit">{totalErrors} Error{bulkError.length > 1 ? "s" : ""}</Typography>
-              {"Click to view Details"}
-            </React.Fragment>}>
-            <span
-              onClick={() => setShowBulkError(true)}
-              style={
-                bulkError && bulkError.length > 0 ? {
-                  textDecoration: "underline #ff3028",
-                  marginLeft: "15px",
-                  cursor: "pointer"
-                } : { marginLeft: "10px" }}>
-              <FontAwesomeIcon
-                sx={{ paddingLeft: "1.2em" }}
-                icon={faCircleExclamation}
-                color={bulkError && bulkError.length > 0 ? "red " : "rgb(68, 74, 101)"} />
-              &nbsp;{totalErrors}
-            </span>
-          </Tooltip>
-        </Typography>
+        {(permissions.has_write_priv) &&(
+          <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
+            <Tooltip arrow title={
+              <React.Fragment>
+                <Typography color="inherit">{totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}</Typography>
+                {"Click to view Details"}
+              </React.Fragment>
+            }>
+              <span
+                onClick={() => setShowBulkWarning(true)}
+                style={
+                  bulkWarning && bulkWarning.length > 0 ? {
+                    textDecoration: "underline #D3C52F",
+                    marginLeft: "10px",
+                    cursor: "pointer"
+                  } : { marginLeft: "10px" }
+                }>
+                <FontAwesomeIcon
+                  icon={faTriangleExclamation}
+                  color={bulkWarning && bulkWarning.length > 0 ? "#D3C52F " : "rgb(68, 74, 101)"} />
+                &nbsp;{totalWarnings}
+              </span>
+            </Tooltip>
+            &nbsp;
+            <Tooltip arrow title={
+              <React.Fragment>
+                <Typography color="inherit">{totalErrors} Error{bulkError.length > 1 ? "s" : ""}</Typography>
+                {"Click to view Details"}
+              </React.Fragment>}>
+              <span
+                onClick={() => setShowBulkError(true)}
+                style={
+                  bulkError && bulkError.length > 0 ? {
+                    textDecoration: "underline #ff3028",
+                    marginLeft: "15px",
+                    cursor: "pointer"
+                  } : { marginLeft: "10px" }}>
+                <FontAwesomeIcon
+                  sx={{ paddingLeft: "1.2em" }}
+                  icon={faCircleExclamation}
+                  color={bulkError && bulkError.length > 0 ? "red " : "rgb(68, 74, 101)"} />
+                &nbsp;{totalErrors}
+              </span>
+            </Tooltip>
+          </Typography>
+        )}
       </Box>
     </Box>
 

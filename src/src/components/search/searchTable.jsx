@@ -66,9 +66,9 @@ export const RenderSearchTable = (props) => {
   const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
   useEffect(() => {
-    console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
+    // console.debug('%c⊙ CURRENT QUERY PARAMS:', 'color:#00ff7b', queryParams );
     var formQueries = {};
-    console.debug('%c◉ props.modecheck ', 'color:#000;background:#00ff7b', props.modecheck);
+    // console.debug('%c◉ props.modecheck ', 'color:#000;background:#00ff7b', props.modecheck);
     if(props.modecheck === "Source") {
       // We dont want it to start with a search on Samples, 
       // No search till the user clicks, ensures Restrictions aren't 
@@ -77,7 +77,7 @@ export const RenderSearchTable = (props) => {
     }else{
       // If we're Modeless, we also want to ditch any restrictions
       // and make sure, till we can revisit all this, that the Fresh search Starts Fresh
-      console.debug('%c◉ MODELESS ', 'color:#00ff7b', );
+      // console.debug('%c◉ MODELESS ', 'color:#00ff7b', );
       // setEntityTypeList(combineTypeOptionsComplete());
       document.title = ("HuBMAP Ingest Portal ");
       if(queryParams){
@@ -97,12 +97,12 @@ export const RenderSearchTable = (props) => {
         if(formQueries.length>0){
           document.title = "HuBMAP Ingest Portal | Search: "+queryTitle + ""
         }
-        console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
+        // console.debug('%c⊙ useEffect formQueries', 'color:#FF004C', queryParams.entity_type,formQueries );
         var queryLength = Object.keys(formQueries).length
-        console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
+        // console.debug('%c⊙', 'color:#00ff7b', "FORM QUERY USEFFECT", formQueries,queryLength );
         setFormFilters(formQueries);
         if(queryLength>0){
-          console.debug("Setting search Filters from URL",formQueries);
+          // console.debug("Setting search Filters from URL",formQueries);
           setSearchFilters(formQueries);
           // handleSearchClick();
         }// setSearchFilters(searchQueries);
@@ -114,7 +114,7 @@ export const RenderSearchTable = (props) => {
     // I think because we're the child of a Class Component  
     let url = new URL(window.location.href);
     if(url.pathname === "/"){
-      console.debug('%c◉ HOMEPAGE ', 'color:#FFBF00');
+      // console.debug('%c◉ HOMEPAGE ', 'color:#FFBF00');
       // setEntityTypeList(combineTypeOptionsComplete());
     }
   }, [queryParams,props.modecheck]);
@@ -133,14 +133,14 @@ export const RenderSearchTable = (props) => {
     return unique;
   }
   function errorReporting(error){
-    console.debug('%c⭗errorReporting', 'color:#ff005d', error );
+    // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
 
   useEffect(() => {
     var searchFilterParams = searchFilters;
     setTableLoading(true);
-    console.debug("useEffect loadTable");
-    console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
+    // console.debug("useEffect loadTable");
+    // console.debug('%c⊙ searchFilters: ', 'color:#00ff7b', searchFilterParams );
     // Lets just reset this dang thing then set again with proper filters later
     // setEntityTypeList(combineTypeOptionsComplete());
 
@@ -190,12 +190,12 @@ export const RenderSearchTable = (props) => {
     )
       .then((response) => {
         if(response.error){
-          console.debug('%c◉ Error on Search ', 'color:#ff005d', response.error);
+          // console.debug('%c◉ Error on Search ', 'color:#ff005d', response.error);
           errorReporting(response.error)
         }
-        console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
+        // console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
 
-        console.debug('%c⊙useEffect Search', 'color:#008CFF', response.total, response.results );
+        // console.debug('%c⊙useEffect Search', 'color:#008CFF', response.total, response.results );
         if (response.total > 0 && response.status === 200) {
           
           // console.debug('%c◉ searchFilterParams.entity_type ', 'color:#008CFF', searchFilterParams.entity_type);
@@ -207,7 +207,7 @@ export const RenderSearchTable = (props) => {
           }else{
             colDefs = COLUMN_DEF_SAMPLE
           }
-          console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
+          // console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
           setResults({
             dataRows: response.results,
             rowCount: response.total,
@@ -236,7 +236,7 @@ export const RenderSearchTable = (props) => {
         setTableLoading(false);
         // errorReport(error)
         //props.reportError(error);
-        console.debug("%c⭗ ERROR", "color:#ff005d", error);
+        // console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
   }, [page, pageSize, searchFilters, restrictions]);
 
@@ -247,7 +247,7 @@ export const RenderSearchTable = (props) => {
   }
   
   function columnDefType(et) {
-    console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
+    // console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -272,7 +272,7 @@ export const RenderSearchTable = (props) => {
   function handleInputChange(e) {
     // Values for filtering the table data are set here
     const {name, value } = e.target;
-    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
+    // console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
@@ -284,13 +284,13 @@ export const RenderSearchTable = (props) => {
         }
         break;
       case "entity_type":
-        console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
+        // console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
         if (value !== "---") {
-          console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
+          // console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
           setFormFilters((prevValues) => ({...prevValues,
             entity_type: value}));
           } else {
-            console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
+            // console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
             setFormFilters((prevValues) => ({...prevValues,
             entity_type: "",}));
         }
@@ -305,7 +305,7 @@ export const RenderSearchTable = (props) => {
   }
   
   function handleTableCellClick(params) {
-    console.log("Inner Search Table handleTableCellClick", params)
+    // console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
@@ -335,7 +335,7 @@ export const RenderSearchTable = (props) => {
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
-    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
     var entityType;
     if(formFilters.entity_type){
@@ -384,25 +384,25 @@ export const RenderSearchTable = (props) => {
       // Here's where we sort out if the query's getting either:
       //  an entity type, sample category, or an organ
       // Doing this IN search now to avoid miscasting from URL
-      console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
+      // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
       if (entityType && entityType !== "----") {
-        console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
+        // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
         params["entity_type"] = entityType;
         url.searchParams.set("entity_type", entityType);
       } else {
-        console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
+        // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
         url.searchParams.delete("entity_type");
       } 
       
       // If we're not in a special mode, push URL to window
       if (!props.modecheck) {
-        console.debug("%c⊙SETTING URL: ", "color:#FFf07b", url, params);
+        // console.debug("%c⊙SETTING URL: ", "color:#FFf07b", url, params);
         window.history.pushState({}, "", url);
         document.title = "HuBMAP Ingest Portal Search"
       }
     // Since useEffect is watching searchFilters, 
     // maybe we can just set it here and it'll search on its own?
-    console.debug('%c⊙ searchFilters', 'color:#00ff7b', params);
+    // console.debug('%c⊙ searchFilters', 'color:#00ff7b', params);
     // We should apply restrictions here instead
     setSearchFilters(params);
   };
