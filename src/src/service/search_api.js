@@ -125,7 +125,7 @@ export function search_api_filter_es_query_builder(
         // if its a collection, we wanna search the datasets of it, not it itself
         if (fields["entity_type"] === "Collection"){
           boolQuery.must(
-            esb.matchQuery("datasets.group_uuid.keyword", fields["group_uuid"])
+            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
           );
         } else {
           boolQuery.must(
