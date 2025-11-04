@@ -15,7 +15,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
   let [contributorValidationErrors, setContributorValidationErrors] = useState([]);
   let [contributorRows, setContributorRows] = useState([]);
   let [formErrors, setFormErrors] = useState({});
-  console.debug('%c◉ permissions ', 'color:#00ff7b', permissions);
+  // console.debug('%c◉ permissions ', 'color:#00ff7b', permissions);
 
   // Sync localContributors with prop changes
   useEffect(() => {
@@ -31,7 +31,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
 
   // Handle file upload and parse contributors
   function handleFileGrab(e, type) {
-    console.debug('%c◉ FILEGRAb ', 'color:#00ff7b', );
+    // console.debug('%c◉ FILEGRAb ', 'color:#00ff7b', );
     setContributorValidationErrors([])
     setContributorRows([])
     setValidatingContributorsUpload(true)

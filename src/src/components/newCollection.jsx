@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 import { useNavigate, useParams } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
+import Alert from "@mui/material/Alert"; 
 import AlertTitle from "@mui/material/AlertTitle";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
@@ -14,7 +14,7 @@ import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
 import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
-import { ingest_api_users_groups,ingest_api_user_admin,ingest_api_publish_collection } from "../service/ingest_api";
+import { ingest_api_users_groups,ingest_api_user_admin,ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
 
 export const CollectionForm = (props) => {
@@ -97,24 +97,14 @@ export const CollectionForm = (props) => {
                 data: entityData.datasets
               });
               // processContacts(response.results);
-              ingest_api_users_groups()
+              ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  console.debug('%c◉ response ', 'color:#00ff7b', response);
-                  // setPermissions(response.results);
+                  console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+                  setPermissions(response.results);
                 })
                 .catch((error) => {
-                  console.debug('%c◉ error ', 'color:#00ff7b', error);
                   setPageErrors(error);
-                });
-              ingest_api_user_admin()
-                .then((response) => {
-                  console.debug('%c◉ response ', 'color:#00ff7b', response);
-                  setPermissions(prev => ({...prev, has_admin_priv: response }));
-                })
-                .catch((error) => {
-                  console.debug('%c◉ error ', 'color:#00ff7b', error);
-                  setPageErrors(error);
-                });
+                }); 
               
             }
           } else {
@@ -339,7 +329,7 @@ export const CollectionForm = (props) => {
           <BulkSelector 
             dialogTitle="Associated Dataset IDs"
             dialogSubtitle="Datasets that are associated with this Collection"
-            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
@@ -353,13 +343,13 @@ export const CollectionForm = (props) => {
             formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}
-            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={permissions}
             handleInputChange={handleInputChange}
           />
           <ContributorsTable
             contributors={formValues.contributors}
             onContributorsChange={(contributorRows) => handleContributorsChange(contributorRows)}
-            permissions={{has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}/>
+            permissions={permissions}/>
           <Box className="my-3">
             <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
               Group
