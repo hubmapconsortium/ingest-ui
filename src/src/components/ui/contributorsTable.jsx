@@ -24,7 +24,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
 
   useEffect(() => {
     if (onContributorsChange) {
-      console.debug('%c◉ if onContributorsChange ', 'color:#00ff7b',contributorRows );
+      //console.debug('%c◉ if onContributorsChange ', 'color:#00ff7b',contributorRows );
       onContributorsChange({data: contributorRows, errors: contributorValidationErrors});
     }
   }, [contributorRows, contributorValidationErrors]);
@@ -39,7 +39,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile = new File([grabbedFile], newName);
     if (newFile && newFile.name.length > 0) {
-      console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
+      //console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
       setFormErrors((prevValues) => ({
         ...prevValues,
         'contributors': "",
@@ -82,7 +82,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                 setValidatingContributorsUpload(false)
               }catch(error){
                 setValidatingContributorsUpload(false)
-                console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
+                //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
               }
             }else{
               //  IVT Row by Row Error Handling
@@ -107,17 +107,17 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
           setValidatingContributorsUpload(false)
         })
         .catch((error) => {
-          console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
+          //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
         });
         
     } else {
-      console.debug("No Data??");
+      //console.debug("No Data??");
     }
   }
 
   function highlightTableErrors(errorSet){
 
-    console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
+    //console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0){
       for (const error of errorSet) {
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
@@ -178,7 +178,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
   }
   // Renders contributor errors as HTML list
   function renderContributorErrors() {
-    console.debug('%c◉  contributorValidationErrors', 'color:#00e5ff', contributorValidationErrors);
+    //console.debug('%c◉  contributorValidationErrors', 'color:#00e5ff', contributorValidationErrors);
     // const result = errorString
 
     return (

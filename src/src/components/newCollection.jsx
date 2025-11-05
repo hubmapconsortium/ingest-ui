@@ -70,7 +70,7 @@ export const CollectionForm = (props) => {
   );
 
   useEffect(() => {
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
+    // console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     if (uuid && uuid !== "") {
       entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
         .then((response) => {
@@ -92,7 +92,7 @@ export const CollectionForm = (props) => {
                 contacts: entityData.contacts || [],
                 group_uuid: entityData.group_uuid || "",
               });
-              console.debug('%c◉ entityData.dataset_uuids ', 'color:#00ff7b', entityData.dataset_uuids);
+              // console.debug('%c◉ entityData.dataset_uuids ', 'color:#00ff7b', entityData.dataset_uuids);
               setBulkSelection({
                 uuids: entityData.datasets.map(obj => obj.uuid),
                 data: entityData.datasets
@@ -100,8 +100,12 @@ export const CollectionForm = (props) => {
               // processContacts(response.results);
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
-                  setPermissions(response.results);
+                  // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+                  let permissionSet = response.results;
+                  if(entityData.doi_url || entityData.registered_doi){
+                    permissionSet.has_write_priv = false;
+                  }
+                  setPermissions(permissionSet);
                 })
                 .catch((error) => {
                   setPageErrors(error);
@@ -129,7 +133,7 @@ export const CollectionForm = (props) => {
   }, []);
 
   function handleContributorsChange(newContributors) {
-    console.debug('%c◉  handleContributorsChange ', 'color:#00ff7b', newContributors);
+    // console.debug('%c◉  handleContributorsChange ', 'color:#00ff7b', newContributors);
     processContacts(newContributors.data);
     if(newContributors.errors && newContributors.errors.length>0){
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
@@ -138,7 +142,7 @@ export const CollectionForm = (props) => {
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
     }else if(!newContributors.errors || newContributors.errors.length===0){
       setFormErrors(prev => ({...prev, contributors: ""}))
-      console.debug('%c◉ frmErroros ', 'color:#E7EEFF;background: #9359FF;padding:200', formErrors);
+      // console.debug('%c◉ frmErroros ', 'color:#E7EEFF;background: #9359FF;padding:200', formErrors);
     }
   }
 
@@ -151,7 +155,7 @@ export const CollectionForm = (props) => {
         contacts.push(row)
       } 
     }
-    console.debug('%c◉ contacts ', 'color:#00ff7b', contacts);
+    // console.debug('%c◉ contacts ', 'color:#00ff7b', contacts);
     setDeliniatedContacts({contacts: contacts, contributors: contributors})
   }
 
@@ -180,7 +184,7 @@ export const CollectionForm = (props) => {
       }
     }
 
-    console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], bulkSelection.uuids);
+    // console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], bulkSelection.uuids);
     let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : bulkSelection.uuids;
     if( (!bulkSelection.data || bulkSelection.data.length <= 0) && 
         (!datasetUUIDs || datasetUUIDs.length <= 0) ){
@@ -265,7 +269,7 @@ export const CollectionForm = (props) => {
   const handlePublish = (e) => {
     e.preventDefault();
     setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: true } }));
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
+    // console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     ingest_api_publish_collection(uuid)
       .then((response) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
@@ -274,14 +278,14 @@ export const CollectionForm = (props) => {
           fullResponse.message = "Collection Published Successfully";
           props.onUpdated(fullResponse);
         } else {
-          console.debug('%c◉ Publish Error ', 'color:#2158FF', response );
+          console.error('%c◉ Publish Error ', 'color:#2158FF', response );
           let error = response.results.error ? response.results.error : response;
           setPageErrors(error);
         }
       })
       .catch((error) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
-        console.debug('%c◉ Page error ', 'color:#2158FF', );
+        console.error('%c◉ Page error ', 'color:#2158FF', );
         props.reportError(error);
         setPageErrors(error);
       });
@@ -309,6 +313,7 @@ export const CollectionForm = (props) => {
         <LoadingButton
           variant="contained"
           name="save"
+          disabled={entityData && (entityData.doi_url || entityData.registered_doi) ? true : false}
           loading={loading.button.publish}
           className="m-2"
           onClick={(e) => handlePublish(e)}
