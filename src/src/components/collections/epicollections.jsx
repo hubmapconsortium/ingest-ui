@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-// import {useNavigate} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import "../../App.css";
 import SearchComponent from "../search/SearchComponent";
 import {COLUMN_DEF_MIXED,COLUMN_DEF_MIXED_SM,COLUMN_DEF_COLLECTION} from "../search/table_constants";
 import { entity_api_get_entity,entity_api_create_entity, entity_api_update_entity} from '../../service/entity_api';
-import {ingest_api_publish_collection,ingest_api_user_admin,ingest_api_validate_contributors} from '../../service/ingest_api';
+import {ingest_api_publish_collection,ingest_api_user_admin,ingest_api_validate_contributors,ingest_api_allowable_edit_states} from '../../service/ingest_api';
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { generateDisplaySubtypeSimple_UBKG } from "../../utils/display_subtypes";
 import Papa from 'papaparse';
@@ -46,6 +46,7 @@ const StyledTextField = styled(TextField)`
 export function EPICollectionForm (props){
   // let navigate = useNavigate();
   // var [selectedGroup, setSlectedGroup] = useState(props.dataGroups[0]).uuid;
+  const { uuid } = useParams();
   var [associatedEntities, setassociatedEntities] = useState([]);
   var [associatedEntitiesInitial, setassociatedEntitiesInitial] = useState([]);
   var [buttonState, setButtonState] = useState('');
@@ -65,7 +66,7 @@ export function EPICollectionForm (props){
   var [selectedSource, setSelectedSource] = useState(null);
   var [selectedSources, setSelectedSources] = useState([]);
   var [successDialogRender, setSuccessDialogRender] = useState(false);
-  var [userAdmin, setUserAdmin] = useState(false);
+  var [permissions, setPermissions] = useState(false);
   var [validatingSubmitForm, setValidatingSubmitForm] = useState(false);
   var [warningOpen, setWarningOpen] = React.useState(false);
 
@@ -108,17 +109,22 @@ export function EPICollectionForm (props){
   var [datatypeList] = useState(props.dtl_all);
   var [editingCollection] = useState(props.editingCollection);
 
-
   useEffect(() => {
-    ingest_api_user_admin(JSON.parse(localStorage.getItem("info")).groups_token)
-        .then((results) => {
-          console.debug('%c◉ ADMINCHECK ', 'color:#3F007b', results);
-          setUserAdmin(results)
+    if(uuid){
+      ingest_api_allowable_edit_states(uuid)
+        .then((response) => {
+          // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+          setPermissions(response.results);
+          if(response.results.has_write_priv === false && response.results.has_admin_priv === false){
+            setLocked(true);
+          }
         })
-        .catch((err) => {
-          console.debug('%c⭗', 'color:#1f005d', "ingest_api_user_admin ERR", err );
-        })
-  }, []);
+        .catch((error) => {
+          setPageError(error);
+        }); 
+    }
+        
+  }, [uuid]);
   
   useEffect(() => {
     if (editingCollection) {  
@@ -866,7 +872,6 @@ export function EPICollectionForm (props){
           <LinearProgress />
         )}
         
-      
         {!loadingDatasets && (<>
         
         {renderAssociationTable()}
@@ -889,93 +894,92 @@ export function EPICollectionForm (props){
             </Collapse>
             
           )}
-
           <Box className="mt-2 w-100" width="100%" display="flex">
-            <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
-              <Button
-                variant="contained"
-                type='button'
-                size="small"
-                className='btn btn-neutral'
-                onClick={() => setLookupShow(true)}
-              >
-                Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
-                  "Another"
-                )} Member
-                <FontAwesomeIcon
-                  className='fa button-icon m-2'
-                  icon={faPlus}
-                />
-              </Button>
+            {!locked &&( <>
+              <Box p={1} className="m-0  text-right" flexShrink={0} flexDirection="row"  >
               
-              <Button
-                variant="text"
-                type='link'
-                size="small"
-                className='mx-2'
-                onClick={(event) => handleInputUUIDs(event)}
-              >
-                {hideUUIDList && (<>Bulk</>)}
-                {!hideUUIDList && (<>Add</>)}
-                <FontAwesomeIcon
-                  className='fa button-icon m-2'
-                  icon={faPenToSquare}
-                />
-              </Button>
-            </Box>
-            
-            <Box>
-              <Collapse
-                in={!hideUUIDList}
-                orientation="horizontal"
-                sx={{
-                  overflow: 'hidden',
-                  display: 'inline-box',
-                }}>
-                {loadUUIDList && (
-                  <LinearProgress> </LinearProgress>
-                )}
-                {!loadUUIDList && (
-                  <FormControl
-                    // className='mb-0'
-                    sx={{
-                      verticalAlign: 'bottom',
-                      minWidth: "400px",
-                      overflow: 'hidden',
-                      //   display: 'flex',
-                      //   flexDirection: 'row', 
-                    }}>
-                    <StyledTextField
-                      name="dataset_uuids"
-                      id="dataset_uuids"
-                      error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
-                      disabled={locked}
-                      multiline
-                      rows={2}
-                      inputProps={{ 'aria-label': 'description' }}
-                      placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated "}
-                      variant="standard"
-                      size="small"
-                      fullWidth={true}
-                      onChange={(event) => handleInputChange(event)}
-                      value={formValues.dataset_uuids}
-                      sx={{
-                        marginTop: '10px',
-                        width: '100%',
-                        verticalAlign: 'bottom',
-                      }}
+                  <Button
+                    variant="contained"
+                    type='button'
+                    size="small"
+                    className='btn btn-neutral'
+                    onClick={() => setLookupShow(true)}>
+                    Add {formValues.dataset_uuids && formValues.dataset_uuids.length >= 1 && (
+                      "Another"
+                    )} Member
+                    <FontAwesomeIcon
+                      className='fa button-icon m-2'
+                      icon={faPlus}
                     />
-                  </FormControl>
-                )}
-              </Collapse>
-            </Box>
-
-            {!hideUUIDList && (
-              <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
-                <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => {setHideUUIDList(true)}}><CancelPresentationIcon/></IconButton>
+                  </Button>
+                  <Button
+                    variant="text"
+                    type='link'
+                    size="small"
+                    className='mx-2'
+                    onClick={(event) => handleInputUUIDs(event)}>
+                    {hideUUIDList && (<>Bulk</>)}
+                    {!hideUUIDList && (<>Add</>)}
+                    <FontAwesomeIcon
+                      className='fa button-icon m-2'
+                      icon={faPenToSquare}
+                    />
+                  </Button>
               </Box>
-            )}
-          
+            
+              <Box>
+                <Collapse
+                  in={!hideUUIDList}
+                  orientation="horizontal"
+                  sx={{
+                    overflow: 'hidden',
+                    display: 'inline-box',
+                  }}>
+                  {loadUUIDList && (
+                    <LinearProgress> </LinearProgress>
+                  )}
+                  {!loadUUIDList && (
+                    <FormControl
+                      // className='mb-0'
+                      sx={{
+                        verticalAlign: 'bottom',
+                        minWidth: "400px",
+                        overflow: 'hidden',
+                        //   display: 'flex',
+                        //   flexDirection: 'row', 
+                      }}>
+                      <StyledTextField
+                        name="dataset_uuids"
+                        id="dataset_uuids"
+                        error={formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 ? true : false}
+                        disabled={locked}
+                        multiline
+                        rows={2}
+                        inputProps={{ 'aria-label': 'description' }}
+                        placeholder={"List of Dataset HuBMAP IDs or UUIDs, Comma Seperated "}
+                        variant="standard"
+                        size="small"
+                        fullWidth={true}
+                        onChange={(event) => handleInputChange(event)}
+                        value={formValues.dataset_uuids}
+                        sx={{
+                          marginTop: '10px',
+                          width: '100%',
+                          verticalAlign: 'bottom',
+                        }}
+                      />
+                    </FormControl>
+                  )}
+                </Collapse>
+              </Box>
+
+              {!hideUUIDList && (
+                <Box p={1} className="m-0  text-left" flexShrink={0} flexDirection="row"  >
+                  <IconButton aria-label="cancel" size="small" sx={{verticalAlign:"middle!important"}} onClick={() => {setHideUUIDList(true)}}><CancelPresentationIcon/></IconButton>
+                </Box>
+              )}
+
+            </>)}
           </Box>
           {formErrors.dataset_uuids && formErrors.dataset_uuids.length > 0 && (
             <Box
@@ -991,7 +995,6 @@ export function EPICollectionForm (props){
       
         </>)}
 
-      
         <Dialog
           fullWidth={true}
           maxWidth="lg"
@@ -1026,7 +1029,7 @@ export function EPICollectionForm (props){
           name="title"
           id="title"
           error={formErrors.title && formErrors.title.length > 0 ? true : false}
-          disabled={false}
+          disabled={(permissions.has_write_priv || permissions.has_admin_priv) === true ? false : true}
           helperText={formErrors.title && formErrors.title.length > 0 ? "The title of the Collection is Required" : "The title of the Collection" }
           variant="standard"
           onChange={handleInputChange}
@@ -1041,7 +1044,7 @@ export function EPICollectionForm (props){
           multiline
           rows={4}
           error={formErrors.description && formErrors.description.length > 0 ? true : false}
-          disabled={false}
+          disabled={(permissions.has_write_priv || permissions.has_admin_priv) === true ? false : true}
           helperText={formErrors.title && formErrors.title.length > 0 ? "A description of the Collection is Required" : "A description of the Collection" }
           variant="standard"
           onChange={handleInputChange}
@@ -1057,20 +1060,22 @@ export function EPICollectionForm (props){
           <>{renderContribTable()} </>
         )}
 
-        <div className="text-right">
-          <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a> </Typography>
-        </div>
-        <div className="text-left">
-          <label>
-            <input
-              accept=".tsv, .csv"
-              type="file"
-              id="FileUploadContriubtors"
-              name="Contributors"
-              onChange={(e) => handleFileGrab(e, "contributors")}
-            />
-          </label>
-        </div>
+        {!locked &&( <>
+          <div className="text-right">
+            <Typography variant='caption'>Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a> </Typography>
+          </div>
+          <div className="text-left">
+            <label>
+              <input
+                accept=".tsv, .csv"
+                type="file"
+                id="FileUploadContriubtors"
+                name="Contributors"
+                onChange={(e) => handleFileGrab(e, "contributors")}
+              />
+            </label>
+          </div>
+        </>)}
       </FormControl>
 
       {pageError.length > 0 && (
@@ -1083,7 +1088,7 @@ export function EPICollectionForm (props){
 
       <div className="row">
         <div className="buttonWrapRight">
-          {userAdmin === true && (editingCollection && !editingCollection.doi_url) && (          
+          {permissions.has_admin_priv === true && (editingCollection && !editingCollection.doi_url) && (          
             <LoadingButton 
               loading={publishing}
               onClick={() => handlePublish()}
