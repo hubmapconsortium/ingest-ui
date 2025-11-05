@@ -20,6 +20,7 @@ import { validateRequired } from "../utils/validators";
 export const CollectionForm = (props) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
+  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const [entityData, setEntityData] = useState();
   // const [isLoading, setLoading] = useState(true);
   let [loading, setLoading] = useState({
@@ -297,6 +298,7 @@ export const CollectionForm = (props) => {
       <LoadingButton
         variant="contained"
         name="save"
+        disabled={(!entityData && userGroups.length === 0) || (entityData && (entityData.doi_url || entityData.registered_doi)) ? true : false}
         loading={loading.button.save}
         className="m-2"
         onClick={(e) => handleSubmit(e)}
