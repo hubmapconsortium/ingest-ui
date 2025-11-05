@@ -34,7 +34,6 @@ import {
 import {Box} from "@mui/system";
 import {Link} from "@material-ui/core";
 
-
 class bulkCreation extends Component {
 
   constructor(props) {
@@ -79,14 +78,12 @@ class bulkCreation extends Component {
     
   }
 
-
   componentDidMount() {
     // If we just return from the group getting function and set state here,
     // State setting tries to happen before the groupset data can populate
     console.debug("BULK MOUNTED");
     var userGroups = this.getUserGroups();
   }
-
 
   getUserGroups(){
     var GT = localStorage.getItem("info");
@@ -178,11 +175,9 @@ class bulkCreation extends Component {
     window.location.reload();
   };
 
-
   handleGroupSelect = (evt) => {
     this.setState({group_uuid:evt.target.value});
   }
-
 
   handleFileMake = e => {
     var headers = [];
@@ -288,7 +283,6 @@ handleUpload= () =>{
     this.setState({loading:false,});
   }
 }
-
 
 handleRegister = () =>{
   this.setState({loading:    true,
@@ -400,7 +394,6 @@ handleRegister = () =>{
   }
 }
 
-
 parseRegErrorFrame = (errResp) => {
   var parsedError;
   
@@ -444,7 +437,6 @@ parseRegErrorFrame = (errResp) => {
   this.setState({loading:false,}, () => {   
   });
 }
-
 
 parseUpload = () =>{
   var config = {
@@ -505,7 +497,6 @@ renderGroupSelect(){
   )
 }  
 
-
 getStepContent = (step) =>{
   switch (step) {
     case 0:
@@ -518,7 +509,6 @@ getStepContent = (step) =>{
       return 'Unknown step';
   }
 }
-
 
 showUploadedStuff(){
   this.setState({showTable:true})
@@ -542,8 +532,6 @@ renderErrorNuance = () =>{
     return(<strong className="text-dange">Some</strong>);
   }
 }
-
-
 
 renderFileGrabber = () =>{
     return (
@@ -644,7 +632,6 @@ renderFileGrabber = () =>{
     )
   }
 
-
   renderRegisterSlide = () =>{
     return(
       <div>
@@ -662,7 +649,7 @@ renderFileGrabber = () =>{
               {this.renderMixedSuccess()}
             </div>
             <div>
-              <Typography variant="h5" gutterBottom>The following rows were registered successfully!</Typography>
+              <Typography variant="h5" gutterBottom>The following rows were {this.state.complete === false ? "uploaded" : "registered"} successfully!</Typography>
               {this.renderPreviewTable()}
               {this.state.complete && (
                 <>{this.handleFileMake() }</>
@@ -672,7 +659,7 @@ renderFileGrabber = () =>{
         )}
         {!this.state.error_status && !this.state.mixed_status && (
           <div>
-            <Typography variant="h5" gutterBottom>The following rows were registered successfully!</Typography>
+            <Typography variant="h5" gutterBottom>The following rows were {this.state.complete === false ? "uploaded" : "registered"} successfully!</Typography>
               {this.renderPreviewTable()}
               {this.state.complete && (
                 <>{this.handleFileMake() }</>
@@ -769,7 +756,6 @@ renderFileGrabber = () =>{
     )
   }
 
-
   renderTableBody = () =>{
     // console.debug("typeof", this.state.uploadedSources, typeof this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
@@ -808,7 +794,6 @@ renderFileGrabber = () =>{
     }
     
   }
-
 
   renderPreviewTable = () =>{
     var headCells = [];
@@ -859,15 +844,12 @@ renderFileGrabber = () =>{
               </TableCell>
               ))}
             </TableRow>
-          </TableHead>
-         {this.renderTableBody()}
-      </Table>
-    </TableContainer>
-  )
-}
-
-  
-
+            </TableHead>
+          {this.renderTableBody()}
+        </Table>
+      </TableContainer>
+    )
+  }
 
   renderInvalidTable = () =>{
     return(
@@ -949,7 +931,6 @@ renderFileGrabber = () =>{
     );
   }
 
-
   renderTrimDescription = (desc) =>{
     console.log("desc", desc);
       var description = desc;
@@ -965,7 +946,6 @@ renderFileGrabber = () =>{
     }
     
   }
-  
 
   renderLoadingSpinner(spin) {
     //@TODO: Duped for the sake of getting it done, 
@@ -1037,10 +1017,6 @@ renderFileGrabber = () =>{
           </div>
       );
   }
-  
-  
-
-
 
   renderStepper = () =>{
     return (
@@ -1060,8 +1036,6 @@ renderFileGrabber = () =>{
       </div>
     );
   }
-  
-
   render = () =>{
     //@NOTE: File download will only work once the file makes it to the main branch
     var targetBranch ="main";
