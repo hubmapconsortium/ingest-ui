@@ -52,6 +52,7 @@ import {SampleForm} from "./components/newSample";
 import {PublicationForm} from "./components/newPublication";
 import {DatasetForm} from "./components/newDataset";
 import {CollectionForm} from "./components/newCollection";
+import {EPICollectionForm} from "./components/newEpicollection";
 
 import NotFound from "./components/404";
 
@@ -550,7 +551,7 @@ export function App(props){
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='epicollection' element={<RenderEPICollection dataGroups={JSON.parse(localStorage.getItem("userGroups"))}  newForm={true} reportError={reportError} groupsToken={groupsToken} onCreated={(response) => creationSuccess(response)} onReturn={() => onClose()} handleCancel={() => handleCancel()} /> }/>
+                      <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
@@ -570,7 +571,7 @@ export function App(props){
 
                     <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/epicollection/:uuid" element={<RenderEPICollection groupsToken={groupsToken} dataGroups={JSON.parse(localStorage.getItem("userGroups"))} onUpdated={(response) => updateSuccess(response)} reportError={reportError} handleCancel={handleCancel} status="view" />} />
+                    <Route path="/epicollection/:uuid" element={<EPICollectionForm onUpdated={(response) => updateSuccess(response)} />} />
 
                     <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
                     <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
