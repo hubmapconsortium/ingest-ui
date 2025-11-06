@@ -102,6 +102,9 @@ export const CollectionForm = (props) => {
                 .then((response) => {
                   // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
+                  console.debug('%c◉ permissionSet ', 'color:#00ff7b', permissionSet);
+                  console.debug('%c◉ entityData.doi_url ', 'color:#00ff7b', entityData.doi_url);
+                  console.debug('%c◉ entityData.registered_doi ', 'color:#00ff7b', entityData.registered_doi);
                   if(entityData.doi_url || entityData.registered_doi){
                     permissionSet.has_write_priv = false;
                   }
@@ -302,7 +305,7 @@ export const CollectionForm = (props) => {
       <LoadingButton
         variant="contained"
         name="save"
-        disabled={(!entityData && userGroups.length === 0) || (entityData && (entityData.doi_url || entityData.registered_doi)) ? true : false}
+        disabled={(!entityData && userGroups.length === 0) || (entityData && (entityData.doi_url || entityData.registered_doi) || (entityData && permissions.has_write_priv === false)) ? true : false}
         loading={loading.button.save}
         className="m-2"
         onClick={(e) => handleSubmit(e)}
@@ -320,6 +323,7 @@ export const CollectionForm = (props) => {
           type="submit">
           Publish
         </LoadingButton>
+      
       )}
     </Box>
   );

@@ -115,7 +115,7 @@ export function EPICollectionForm (props){
         .then((response) => {
           // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
           setPermissions(response.results);
-          if(response.results.has_write_priv === false && response.results.has_admin_priv === false){
+          if((response.results.has_write_priv === false && response.results.has_admin_priv === false) || entityInfo?.doi_url || entityInfo?.registered_doi){
             setLocked(true);
           }
         })
