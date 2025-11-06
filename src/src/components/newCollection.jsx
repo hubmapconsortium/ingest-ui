@@ -319,6 +319,7 @@ export const CollectionForm = (props) => {
         <LoadingButton
           variant="contained"
           name="save"
+          disabled={(entityData && (entityData.doi_url || entityData.registered_doi)) ? true : false}
           loading={loading.button.publish}
           className="m-2"
           onClick={(e) => handlePublish(e)}
