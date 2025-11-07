@@ -162,8 +162,6 @@ export function ingest_api_create_dataset(data) {
  *
  */
 export function ingest_api_create_publication(data) { 
-  
-
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/publications`;
   return axios 
      .post(url, data, options)

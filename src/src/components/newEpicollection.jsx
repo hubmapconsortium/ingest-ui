@@ -12,14 +12,15 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { BulkSelector } from "./ui/bulkSelector";
 import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
-import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
+import { EPICollectionFormFields } from "./ui/fields/EPICollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
 import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
 
-export const CollectionForm = (props) => {
+export const EPICollectionForm = (props) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
+  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const [entityData, setEntityData] = useState();
   let [loading, setLoading] = useState({
     page: true,
@@ -47,14 +48,14 @@ export const CollectionForm = (props) => {
     {
       id: "title",
       label: "Title",
-      helperText: "The title of the collection",
+      helperText: "The title of the EPICollection",
       required: true,
       type: "text",
     },
     {
       id: "description",
       label: "Description",
-      helperText: "A description of the collection",
+      helperText: "A description of the EPICollection",
       required: true,
       type: "text",
       multiline: true,
@@ -72,7 +73,7 @@ export const CollectionForm = (props) => {
         .then((response) => {
           if (response.status === 200) {
             const entityType = response.results.entity_type;
-            if (entityType !== "Collection") {
+            if (entityType.toLowerCase() !== "epicollection") {
               window.location.replace(
                 `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
               );
@@ -96,7 +97,9 @@ export const CollectionForm = (props) => {
                 .then((response) => {
                   console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
-                  permissionSet.has_write_priv = !(entityData?.doi_url || entityData?.registered_doi);
+                  if(entityData.doi_url || entityData.registered_doi){
+                    permissionSet.has_write_priv = false;
+                  }
                   setPermissions(permissionSet);
                 })
                 .catch((error) => {
@@ -235,7 +238,7 @@ export const CollectionForm = (props) => {
           newForm = { ...newForm, contributors: deliniatedContacts.contributors };
         }
 
-        entity_api_create_entity("collection", JSON.stringify(newForm))
+        entity_api_create_entity("epicollection", JSON.stringify(newForm))
           .then((response) => {
             setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status === 200) {
@@ -261,7 +264,7 @@ export const CollectionForm = (props) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
         if (response.status < 300) {
           let fullResponse = response;
-          fullResponse.message = "Collection Published Successfully";
+          fullResponse.message = "EPICollection Published Successfully";
           props.onUpdated(fullResponse);
         } else {
           console.error('%c◉ Publish Error ', 'color:#2158FF', response );
@@ -316,23 +319,23 @@ export const CollectionForm = (props) => {
     return (
       <div className={formErrors}>
         <Grid container className="" sx={{ marginBottom: "10px" }}>
-          <FormHeader entityData={uuid ? entityData : ["new", "Collection"]} permissions={permissions} />
+          <FormHeader entityData={uuid ? entityData : ["new", "EPICollection"]} permissions={permissions} />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector 
             dialogTitle="Associated Dataset IDs"
-            dialogSubtitle="Datasets that are associated with this Collection"
+            dialogSubtitle="Datasets that are associated with this EPICollection"
             permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
             searchFilters={{
-              custom_title: "Search for an Associated Dataset for your Collection",
-              custom_subtitle: "Only Datasets may be selected for Collection sources",
+              custom_title: "Search for an Associated Dataset for your EPICollection",
+              custom_subtitle: "Only Datasets may be selected for EPICollection sources",
               restrictions: { entityType: "dataset" },
             }}
           />
-          <CollectionFormFields
+          <EPICollectionFormFields
             formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}

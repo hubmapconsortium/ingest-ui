@@ -333,11 +333,15 @@ function newBadge(type){
 
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData){
+  let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
+  if (entityType === "Epicollection"){
+    entityType = "EPICollection"
+  }
   if(entityData[0] !== "new"){
     return (
       <React.Fragment>
         <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityData.entity_type)} {entityData.entity_type} Information</h3>
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
         </Grid>
         <Grid item xs={6} className="" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
@@ -374,9 +378,9 @@ function topHeader(entityData){
   }else{
     return (
       <React.Fragment>
-        <Grid item xs={entityData[1] === "Upload" ? 12 : 6} className="" >  
+        <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
           {newBadge(entityData[1],"new")}
-          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityData[1]}</h3>
+          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityType}</h3>
         </Grid>
         
         {entityData[1] === "Upload" && (
@@ -395,8 +399,12 @@ function topHeader(entityData){
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
   let HIPPATypes = ["donor","sample","upload"];
+  const type = entityData?.entity_type ?? entityData?.[1];
+  const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
+
   return (
-    <Grid item xs={6} className="" >
+    
+    <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
