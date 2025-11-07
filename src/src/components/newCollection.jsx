@@ -3,7 +3,7 @@ import Grid from "@mui/material/Grid";
 import { useNavigate, useParams } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert"; 
+import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
@@ -14,15 +14,13 @@ import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
 import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
-import { ingest_api_users_groups,ingest_api_user_admin,ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
+import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
 
 export const CollectionForm = (props) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
-  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const [entityData, setEntityData] = useState();
-  // const [isLoading, setLoading] = useState(true);
   let [loading, setLoading] = useState({
     page: true,
     button: {save: false, publish: false, }
@@ -30,7 +28,6 @@ export const CollectionForm = (props) => {
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
   const [permissions, setPermissions] = useState({ has_write_priv: true, has_admin_priv: false, });
-  // Removed unused buttonLoading
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -70,7 +67,6 @@ export const CollectionForm = (props) => {
   );
 
   useEffect(() => {
-    // console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     if (uuid && uuid !== "") {
       entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
         .then((response) => {
@@ -92,22 +88,15 @@ export const CollectionForm = (props) => {
                 contacts: entityData.contacts || [],
                 group_uuid: entityData.group_uuid || "",
               });
-              // console.debug('%c◉ entityData.dataset_uuids ', 'color:#00ff7b', entityData.dataset_uuids);
               setBulkSelection({
                 uuids: entityData.datasets.map(obj => obj.uuid),
                 data: entityData.datasets
               });
-              // processContacts(response.results);
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+                  console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
-                  console.debug('%c◉ permissionSet ', 'color:#00ff7b', permissionSet);
-                  console.debug('%c◉ entityData.doi_url ', 'color:#00ff7b', entityData.doi_url);
-                  console.debug('%c◉ entityData.registered_doi ', 'color:#00ff7b', entityData.registered_doi);
-                  if(entityData.doi_url || entityData.registered_doi){
-                    permissionSet.has_write_priv = false;
-                  }
+                  permissionSet.has_write_priv = !(entityData?.doi_url || entityData?.registered_doi);
                   setPermissions(permissionSet);
                 })
                 .catch((error) => {
@@ -136,7 +125,6 @@ export const CollectionForm = (props) => {
   }, []);
 
   function handleContributorsChange(newContributors) {
-    // console.debug('%c◉  handleContributorsChange ', 'color:#00ff7b', newContributors);
     processContacts(newContributors.data);
     if(newContributors.errors && newContributors.errors.length>0){
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
@@ -145,7 +133,6 @@ export const CollectionForm = (props) => {
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
     }else if(!newContributors.errors || newContributors.errors.length===0){
       setFormErrors(prev => ({...prev, contributors: ""}))
-      // console.debug('%c◉ frmErroros ', 'color:#E7EEFF;background: #9359FF;padding:200', formErrors);
     }
   }
 
@@ -158,11 +145,9 @@ export const CollectionForm = (props) => {
         contacts.push(row)
       } 
     }
-    // console.debug('%c◉ contacts ', 'color:#00ff7b', contacts);
     setDeliniatedContacts({contacts: contacts, contributors: contributors})
   }
 
-  // // Callback for BulkSelector
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
     setFormValues(prev => ({
       ...prev,
@@ -187,7 +172,6 @@ export const CollectionForm = (props) => {
       }
     }
 
-    // console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], bulkSelection.uuids);
     let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : bulkSelection.uuids;
     if( (!bulkSelection.data || bulkSelection.data.length <= 0) && 
         (!datasetUUIDs || datasetUUIDs.length <= 0) ){
@@ -272,7 +256,6 @@ export const CollectionForm = (props) => {
   const handlePublish = (e) => {
     e.preventDefault();
     setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: true } }));
-    // console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     ingest_api_publish_collection(uuid)
       .then((response) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
@@ -305,7 +288,7 @@ export const CollectionForm = (props) => {
       <LoadingButton
         variant="contained"
         name="save"
-        disabled={(!entityData && userGroups.length === 0) || (entityData && (entityData.doi_url || entityData.registered_doi) || (entityData && permissions.has_write_priv === false)) ? true : false}
+        disabled={permissions.has_write_priv ? false : true}
         loading={loading.button.save}
         className="m-2"
         onClick={(e) => handleSubmit(e)}
@@ -323,7 +306,6 @@ export const CollectionForm = (props) => {
           type="submit">
           Publish
         </LoadingButton>
-      
       )}
     </Box>
   );
@@ -333,7 +315,7 @@ export const CollectionForm = (props) => {
   } else {
     return (
       <div className={formErrors}>
-        <Grid container className="">
+        <Grid container className="" sx={{ marginBottom: "10px" }}>
           <FormHeader entityData={uuid ? entityData : ["new", "Collection"]} permissions={permissions} />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
@@ -361,23 +343,24 @@ export const CollectionForm = (props) => {
             contributors={formValues.contributors}
             onContributorsChange={(contributorRows) => handleContributorsChange(contributorRows)}
             permissions={permissions}/>
-          <Box className="my-3">
-            <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={handleInputChange}
-              fullWidth
-              className="p-2"
-              sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
-              disabled={uuid ? true : false}
-              value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
-              {memoizedUserGroupSelectMenu}
-            </NativeSelect>
-          </Box>
-
+          {!uuid &&(
+            <Box className="my-3">
+              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={handleInputChange}
+                fullWidth
+                className="p-2"
+                sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
+                disabled={uuid ? true : false}
+                value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
+                {memoizedUserGroupSelectMenu}
+              </NativeSelect>
+            </Box>
+          )}
           {valErrorMessages && valErrorMessages.length > 0 && (
             <Alert severity="error">
               <AlertTitle>Please Review the following problems:</AlertTitle>

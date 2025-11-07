@@ -14,7 +14,7 @@ import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
 import { EPICollectionFormFields } from "./ui/fields/EPICollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
-import { ingest_api_users_groups,ingest_api_user_admin,ingest_api_publish_collection } from "../service/ingest_api";
+import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
 
 export const EPICollectionForm = (props) => {
@@ -22,7 +22,6 @@ export const EPICollectionForm = (props) => {
   const { uuid } = useParams();
   const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const [entityData, setEntityData] = useState();
-  // const [isLoading, setLoading] = useState(true);
   let [loading, setLoading] = useState({
     page: true,
     button: {save: false, publish: false, }
@@ -30,7 +29,6 @@ export const EPICollectionForm = (props) => {
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
   const [permissions, setPermissions] = useState({ has_write_priv: true, has_admin_priv: false, });
-  // Removed unused buttonLoading
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -70,7 +68,6 @@ export const EPICollectionForm = (props) => {
   );
 
   useEffect(() => {
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     if (uuid && uuid !== "") {
       entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
         .then((response) => {
@@ -92,30 +89,22 @@ export const EPICollectionForm = (props) => {
                 contacts: entityData.contacts || [],
                 group_uuid: entityData.group_uuid || "",
               });
-              console.debug('%c◉ entityData.dataset_uuids ', 'color:#00ff7b', entityData.dataset_uuids);
               setBulkSelection({
                 uuids: entityData.datasets.map(obj => obj.uuid),
                 data: entityData.datasets
               });
-              // processContacts(response.results);
-              ingest_api_users_groups()
+              ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  console.debug('%c◉ response ', 'color:#00ff7b', response);
-                  // setPermissions(response.results);
+                  console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+                  let permissionSet = response.results;
+                  if(entityData.doi_url || entityData.registered_doi){
+                    permissionSet.has_write_priv = false;
+                  }
+                  setPermissions(permissionSet);
                 })
                 .catch((error) => {
-                  console.debug('%c◉ error ', 'color:#00ff7b', error);
                   setPageErrors(error);
-                });
-              ingest_api_user_admin()
-                .then((response) => {
-                  console.debug('%c◉ response ', 'color:#00ff7b', response);
-                  setPermissions(prev => ({...prev, has_admin_priv: response }));
-                })
-                .catch((error) => {
-                  console.debug('%c◉ error ', 'color:#00ff7b', error);
-                  setPageErrors(error);
-                });
+                }); 
               
             }
           } else {
@@ -139,7 +128,6 @@ export const EPICollectionForm = (props) => {
   }, []);
 
   function handleContributorsChange(newContributors) {
-    console.debug('%c◉  handleContributorsChange ', 'color:#00ff7b', newContributors);
     processContacts(newContributors.data);
     if(newContributors.errors && newContributors.errors.length>0){
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
@@ -148,7 +136,6 @@ export const EPICollectionForm = (props) => {
       setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
     }else if(!newContributors.errors || newContributors.errors.length===0){
       setFormErrors(prev => ({...prev, contributors: ""}))
-      console.debug('%c◉ frmErroros ', 'color:#E7EEFF;background: #9359FF;padding:200', formErrors);
     }
   }
 
@@ -161,11 +148,9 @@ export const EPICollectionForm = (props) => {
         contacts.push(row)
       } 
     }
-    console.debug('%c◉ contacts ', 'color:#00ff7b', contacts);
     setDeliniatedContacts({contacts: contacts, contributors: contributors})
   }
 
-  // // Callback for BulkSelector
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
     setFormValues(prev => ({
       ...prev,
@@ -190,7 +175,6 @@ export const EPICollectionForm = (props) => {
       }
     }
 
-    console.debug('%c◉ formValues ', 'color:#00ff7b', formValues, formValues["dataset_uuids"], bulkSelection.uuids);
     let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : bulkSelection.uuids;
     if( (!bulkSelection.data || bulkSelection.data.length <= 0) && 
         (!datasetUUIDs || datasetUUIDs.length <= 0) ){
@@ -275,7 +259,6 @@ export const EPICollectionForm = (props) => {
   const handlePublish = (e) => {
     e.preventDefault();
     setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: true } }));
-    console.debug('%c◉ uuid ', 'color:#00ff7b', uuid);
     ingest_api_publish_collection(uuid)
       .then((response) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
@@ -284,14 +267,14 @@ export const EPICollectionForm = (props) => {
           fullResponse.message = "EPICollection Published Successfully";
           props.onUpdated(fullResponse);
         } else {
-          console.debug('%c◉ Publish Error ', 'color:#2158FF', response );
+          console.error('%c◉ Publish Error ', 'color:#2158FF', response );
           let error = response.results.error ? response.results.error : response;
           setPageErrors(error);
         }
       })
       .catch((error) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
-        console.debug('%c◉ Page error ', 'color:#2158FF', );
+        console.error('%c◉ Page error ', 'color:#2158FF', );
         props.reportError(error);
         setPageErrors(error);
       });
@@ -308,7 +291,7 @@ export const EPICollectionForm = (props) => {
       <LoadingButton
         variant="contained"
         name="save"
-        disabled={(!entityData && userGroups.length === 0) || (entityData && (entityData.doi_url || entityData.registered_doi)) ? true : false}
+        disabled={permissions.has_write_priv ? false : true}
         loading={loading.button.save}
         className="m-2"
         onClick={(e) => handleSubmit(e)}
@@ -319,6 +302,7 @@ export const EPICollectionForm = (props) => {
         <LoadingButton
           variant="contained"
           name="save"
+          disabled={entityData && (entityData.doi_url || entityData.registered_doi) ? true : false}
           loading={loading.button.publish}
           className="m-2"
           onClick={(e) => handlePublish(e)}
@@ -334,14 +318,14 @@ export const EPICollectionForm = (props) => {
   } else {
     return (
       <div className={formErrors}>
-        <Grid container className="">
+        <Grid container className="" sx={{ marginBottom: "10px" }}>
           <FormHeader entityData={uuid ? entityData : ["new", "EPICollection"]} permissions={permissions} />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector 
             dialogTitle="Associated Dataset IDs"
             dialogSubtitle="Datasets that are associated with this EPICollection"
-            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
@@ -355,30 +339,31 @@ export const EPICollectionForm = (props) => {
             formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}
-            permissions={{ has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}
+            permissions={permissions}
             handleInputChange={handleInputChange}
           />
           <ContributorsTable
             contributors={formValues.contributors}
             onContributorsChange={(contributorRows) => handleContributorsChange(contributorRows)}
-            permissions={{has_write_priv: entityData && (entityData.doi_url || entityData.registered_doi) ? false : true}}/>
-          <Box className="my-3">
-            <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
-              Group
-            </InputLabel>
-            <NativeSelect
-              id="group_uuid"
-              label="Group"
-              onChange={handleInputChange}
-              fullWidth
-              className="p-2"
-              sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
-              disabled={uuid ? true : false}
-              value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
-              {memoizedUserGroupSelectMenu}
-            </NativeSelect>
-          </Box>
-
+            permissions={permissions}/>
+          {!uuid &&(
+            <Box className="my-3">
+              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <NativeSelect
+                id="group_uuid"
+                label="Group"
+                onChange={handleInputChange}
+                fullWidth
+                className="p-2"
+                sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
+                disabled={uuid ? true : false}
+                value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
+                {memoizedUserGroupSelectMenu}
+              </NativeSelect>
+            </Box>
+          )}
           {valErrorMessages && valErrorMessages.length > 0 && (
             <Alert severity="error">
               <AlertTitle>Please Review the following problems:</AlertTitle>
