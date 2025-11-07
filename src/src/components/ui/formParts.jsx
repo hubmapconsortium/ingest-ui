@@ -404,7 +404,7 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     
-    <Grid item xs={isEPICollection ? 3 : 6} className="">
+    <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
