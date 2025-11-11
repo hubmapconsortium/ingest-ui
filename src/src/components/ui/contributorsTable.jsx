@@ -6,6 +6,7 @@ import Papa from 'papaparse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import {ingest_api_validate_contributors} from '../../service/ingest_api';
+import {ParsePreflightString} from '../ui/formParts.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 
@@ -71,13 +72,54 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
             // console.debug('%c◉ res.data ', 'color:#00ff7b', res.data);
           }else if(res?.res?.response?.data){
             let errorSet = res.res.response.data.description
-            if(!errorSet[0].row){
+            // console.debug('%c◉ typeof res?.res?.response?.data?.description ', 'color:#00ff7b',typeof res?.res?.response?.data?.description );
+            if(res?.res?.response?.data?.code === 406 && typeof res?.res?.response?.data?.description?.description === 'string'){
+              let parsedPreflight = ParsePreflightString(decodeURI(errorSet?.description));
+              // console.debug('%c◉ parsedPreflight ', 'color:#00ff7b',parsedPreflight );
+              let errString;
+              let name = res?.res?.response?.data?.description?.name ? res?.res?.response?.data?.description?.name : null;
+              for (let i = 0; i < parsedPreflight.length; i++) {
+                // console.debug('%c◉ parsedPreflight[i] ', 'color:#00ff7b', parsedPreflight[i]);
+                const item = parsedPreflight[i];
+                const itemStr = (item && typeof item === 'object') ? JSON.stringify(item) : String(item);
+                errString = itemStr;
+                // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
+                if (item && typeof item === 'object') {
+                  // console.debug('%c◉ item ', 'color:#00ff7b', item);
+                  for (const [key, value] of Object.entries(item)) {
+                    // name = key;
+                    // console.debug('%c◉ key,value ', 'color:#00ff7b', key, value);
+                    // console.debug('%c◉ val ', 'color:#00ff7b', value);
+                    if (item && typeof item === 'object') {
+                      for (const [k, v] of Object.entries(value)) {
+                          // console.debug('%c◉ kv ', 'color:#00ff7b', k,v);
+                          errString = `${key}: \n ${k} |  ${v}`;
+                      }
+                      // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
+                    }else{
+                      errString = `${key}: ${value}`;
+                    }
+                  }
+                }
+              }
+              try{
+                setContributorValidationErrors([{
+                  // "column": "N/A",
+                  "error": errString,
+                  "name": name ? name : "",
+                }])
+                setValidatingContributorsUpload(false)
+              }catch(error){
+                setValidatingContributorsUpload(false)
+                //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
+              }
+            }else if(!errorSet[0].row){
               // Non Row based Response
               try{
                 setContributorValidationErrors([{
-                  "column": "N/A",
+                  "column": "",
                   "error": errorSet.toString(),
-                  "row": "N/A"
+                  "row": ""
                 }])
                 setValidatingContributorsUpload(false)
               }catch(error){
@@ -184,6 +226,14 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
     return (
       <Box>
           {Array.isArray(contributorValidationErrors) && contributorValidationErrors.map((item, i) => {
+            let rowStart 
+            if(item?.row){
+              rowStart = (<strong>Row: {(item?.row)-1} &nbsp;{item?.column?.toString()}</strong>)
+            }else if(item?.name){
+              rowStart = (<strong>{item?.name.toString()}</strong> )
+            }else{
+
+            }
             return (
               <Typography
                 key={i}
@@ -195,7 +245,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                   width: "100%",
                   wordBreak: "break-word",
                   borderBottom: "1px solid #444a6520"}}>
-                    <strong>Row: {(item?.row)-1}&nbsp;{item?.column.toString()}</strong> :&nbsp; <span style={{float: "right"}}> {item?.error.toString().replace(/^.*value "([^"]+)"/, 'value "$1"')}</span>
+                    {rowStart} &nbsp; <span style={{float: "right"}}> {item?.error.toString().replace(/^.*value "([^"]+)"/, 'value "$1"')}</span>
               </Typography>
             );
           } )}

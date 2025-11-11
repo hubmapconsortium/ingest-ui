@@ -839,6 +839,45 @@ export function SnackbarFeedback(props){
   );
 }
 
+
+// @TODO: Maybe move to a utils file?
+// Sanitize a Python-ish dict string and return the desired array/object structure
+export function ParsePreflightString(s) {
+  if (!s || typeof s !== 'string') return [];
+  // replace literal or escaped tabs with " | "
+  s = s.replace(/\\t/g, ' | ').replace(/\t/g, ' | ');
+  // convert \xNN to \u00NN (JSON requires \u escapes)
+  s = s.replace(/\\x([0-9A-Fa-f]{2})/g, '\\u00$1');
+  // convert Python-like single-quoted keys/values into JSON double-quoted ones
+  // escape any double-quotes inside captured value/key
+  s = s.replace(/'([^']+)'\s*:\s*'([^']*)'/g, (m, key, val) => {
+    const k = key.replace(/"/g, '\\"');
+    const v = val.replace(/"/g, '\\"');
+    return `"${k}":"${v}"`;
+  });
+  // now should be valid JSON object text like {"Preflight":"Decode Error: ..."}
+  let obj;
+  try {
+    obj = JSON.parse(s);
+  } catch (err) {
+    // fallback: try to recover minimal structure if JSON.parse still fails
+    // create a best-effort object by extracting the Preflight value substring
+    const m = s.match(/["']?Preflight["']?\s*[:=]\s*["']?(.+)["']?\s*}$/);
+    const val = m ? m[1].trim() : s;
+    obj = { Preflight: val };
+  }
+  // If Preflight is a string like "Decode Error: blah : ...", split at first ": "
+  if (typeof obj.Preflight === 'string') {
+    const idx = obj.Preflight.indexOf(':');
+    if (idx !== -1) {
+      const key = obj.Preflight.slice(0, idx).trim();
+      const value = obj.Preflight.slice(idx + 1).trim();
+      obj.Preflight = { [key]: value };
+    }
+  }
+  return [obj];
+}
+
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){
   hex = hex.replace(/^#/, '');

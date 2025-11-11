@@ -52,7 +52,7 @@ export const COLUMN_DEF_DATASET = [
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
   {
- field: 'status', headerName: 'Submission Status', width: 200,
+    field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
       <span
         className={"badge " + getPublishStatusColor(params.value,"NA")}
@@ -60,9 +60,8 @@ export const COLUMN_DEF_DATASET = [
         {params.value}
       </span>
       )
-  },
-  {
- field: 'uuid', headerName: 'Data', width: 100,
+  },{
+    field: 'uuid', headerName: 'Data', width: 100,
     renderCell: (params: ValueFormatterParams) => (
       <React.Fragment>
         <button
@@ -72,7 +71,8 @@ export const COLUMN_DEF_DATASET = [
         </button>                         
         </React.Fragment>
       )
-    }
+  },{
+    field: 'dataset_type', hide: true,},
 ];
 
 // DATASET COLUMNS FOR THE UPLOADS VIEW / MINIFIED
