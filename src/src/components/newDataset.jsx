@@ -103,7 +103,7 @@ export const DatasetForm = (props) => {
       required: true,
       type: "select",
       writeEnabled: (uuid?.length<=0 || uuid === undefined || uuid === null) ? true : false,
-      values: localStorage.getItem("dataset_types") ? JSON.parse(localStorage.getItem("dataset_types")).map(dt => ({ value: dt.value, label: dt.label })) : []  
+      values: localStorage.getItem("dataset_types") ? JSON.parse(localStorage.getItem("dataset_types")).map(dt => ({ value: dt.dataset_type, label: dt.dataset_type })) : []  
     },
     {
       id: "group_uuid",
