@@ -851,8 +851,8 @@ export function ParsePreflightString(s) {
   // convert Python-like single-quoted keys/values into JSON double-quoted ones
   // escape any double-quotes inside captured value/key
   s = s.replace(/'([^']+)'\s*:\s*'([^']*)'/g, (key, val) => {
-    const k = key.replace(/"/g, '\\"');
-    const v = val.replace(/"/g, '\\"');
+    const k = key.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const v = val.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     return `"${k}":"${v}"`;
   });
   // now should be valid JSON object text like {"Preflight":"Decode Error: ..."}
