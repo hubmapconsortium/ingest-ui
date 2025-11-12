@@ -850,7 +850,7 @@ export function ParsePreflightString(s) {
   s = s.replace(/\\x([0-9A-Fa-f]{2})/g, '\\u00$1');
   // convert Python-like single-quoted keys/values into JSON double-quoted ones
   // escape any double-quotes inside captured value/key
-  s = s.replace(/'([^']+)'\s*:\s*'([^']*)'/g, (m, key, val) => {
+  s = s.replace(/'([^']+)'\s*:\s*'([^']*)'/g, (key, val) => {
     const k = key.replace(/"/g, '\\"');
     const v = val.replace(/"/g, '\\"');
     return `"${k}":"${v}"`;
