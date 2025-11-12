@@ -94,7 +94,7 @@ export const CollectionForm = (props) => {
               });
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
+                  // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
                   permissionSet.has_write_priv = !(entityData?.doi_url || entityData?.registered_doi);
                   setPermissions(permissionSet);
@@ -149,6 +149,10 @@ export const CollectionForm = (props) => {
   }
 
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
+    console.debug(`%c◉ hBSC uuids:  ${uuids.length}  `,'color:#E7EEFF;background: #C800FF;padding:200', uuids);
+    console.debug(`%c◉ hBSC hids:   ${hids.length}  `,'color:#E7EEFF;background: #9000FF;padding:200', hids);
+    console.debug(`%c◉ hBSC string: ${string.length}  `,'color:#E7EEFF;background: #833EF9;padding:200', string);
+    console.debug(`%c◉ hBSC data:   ${data.length}  `,'color:#E7EEFF;background: #0800FF;padding:200', data );
     setFormValues(prev => ({
       ...prev,
       dataset_uuids: uuids
@@ -198,16 +202,24 @@ export const CollectionForm = (props) => {
     if (validateForm()) {
       // setIsProcessing(true);
       if (uuid) {
-        entity_api_update_entity(uuid, JSON.stringify({
+        let updateForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: entityData.datasets.map(d => d.uuid),    
-          contacts: deliniatedContacts.contacts,
-        }))
+          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
+          ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
+          ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
+        }
+        console.debug('%c◉ updateForm ', 'color:#00ff7b', updateForm);
+        entity_api_update_entity(uuid, JSON.stringify(updateForm))
           .then((response) => {
             setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status < 300) {
-              props.onUpdated(response.results);
+            console.debug('%c◉ response.results ', 'color:#00ff7b', response.results);
+              let respMessage = response.results.message.replace(/\b[0-9a-f]{32}\b/i, entityData.hubmap_id);
+              const out = {
+                message:respMessage
+              }
+              props.onUpdated(out);
             } else {
               setPageErrors(response);
             }
@@ -219,21 +231,23 @@ export const CollectionForm = (props) => {
           });
       } else {
         let newForm = {
-        title: formValues.title,
-        description: formValues.description,
-        dataset_uuids: bulkSelection.uuids,
-        group_uuid: formValues.group_uuid,
-      };
+          title: formValues.title,
+          description: formValues.description,
+          dataset_uuids: bulkSelection.uuids,
+          group_uuid: formValues.group_uuid,
+        };
         let selectedGroup = document.getElementById("group_uuid");
         if (selectedGroup?.value) {
           newForm = { ...newForm, group_uuid: selectedGroup.value };
         }
+        console.debug('%c◉ deliniatedContacts ', 'color:#00ff7b', deliniatedContacts);
         if(deliniatedContacts.contacts && deliniatedContacts.contacts.length>0){
           newForm = { ...newForm, contacts: deliniatedContacts.contacts };
         }
         if(deliniatedContacts.contributors && deliniatedContacts.contributors.length>0){
           newForm = { ...newForm, contributors: deliniatedContacts.contributors };
         }
+        console.debug('%c◉ newForm','color:#E7EEFF;background: #9359FF;padding:200', newForm);
 
         entity_api_create_entity("collection", JSON.stringify(newForm))
           .then((response) => {
