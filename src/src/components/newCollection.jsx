@@ -149,6 +149,10 @@ export const CollectionForm = (props) => {
   }
 
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
+    console.debug(`%c◉ hBSC uuids:  ${uuids.length}  `,'color:#E7EEFF;background: #C800FF;padding:200', uuids);
+    console.debug(`%c◉ hBSC hids:   ${hids.length}  `,'color:#E7EEFF;background: #9000FF;padding:200', hids);
+    console.debug(`%c◉ hBSC string: ${string.length}  `,'color:#E7EEFF;background: #833EF9;padding:200', string);
+    console.debug(`%c◉ hBSC data:   ${data.length}  `,'color:#E7EEFF;background: #0800FF;padding:200', data );
     setFormValues(prev => ({
       ...prev,
       dataset_uuids: uuids
@@ -201,7 +205,7 @@ export const CollectionForm = (props) => {
         let updateForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: entityData.datasets.map(d => d.uuid), 
+          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
           ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
           ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }

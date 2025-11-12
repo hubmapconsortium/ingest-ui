@@ -204,7 +204,7 @@ export const EPICollectionForm = (props) => {
         let updateForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: entityData.datasets.map(d => d.uuid), 
+          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
           ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
           ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }
