@@ -70,8 +70,8 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
         
         if (field.type === "select") {
           if (field.id === "dt_select") {
-            let datasetTypes = localStorage.getItem("datasetTypes") ? JSON.parse(localStorage.getItem("datasetTypes")).map(dt => dt.dataset_type) : [];
-            let dtvalues =  datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
+            let datasetTypes = localStorage.getItem("dataset_types") ? JSON.parse(localStorage.getItem("dataset_types")).map(dt => dt.dataset_type) : [];
+            let dtvalues = datasetTypes ? datasetTypes.map(dt => ({ value: dt, label: dt })) : []
             let found = dtvalues.some(item => item.label === formValues[field.id]);
             // console.debug('%c◉  dtvalues', 'color:#00ff7b',found );
             if(!found && formValues[field.id] && formValues[field.id] !== ""){

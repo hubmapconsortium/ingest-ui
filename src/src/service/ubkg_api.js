@@ -99,11 +99,12 @@ export function ubkg_api_get_dataset_type_set() {
   return axios
     .get(url)
       .then(res => {
-        let data = res.data;
-        return data;
+        const newDataArray = [...new Set(
+          res.data.flatMap(item => item.assaytypes || [])
+        )].map(assay => ({ value: assay, label: assay }));
+        return newDataArray;
       })
       .catch(error => {
-        // console.debug("ubkg_api_get_dataset_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -131,38 +132,29 @@ export function ubkg_api_get_upload_dataset_types() {
  *
  */
 export function ubkg_api_generate_display_subtype(entity) {
+  console.debug('%c◉ ubkg_api_generate_display_subtype entity ', 'color:#00ff7b', entity);
   var display_subtype = ""
-  var entity_type = entity['entity_type']
+  var entity_type = entity.entity_type
   if (entity_type === 'Sample' && 'sample_category' in entity){
-    if (entity['sample_category'].toLowerCase() === 'organ'){
-      if ('organ' in entity) {
-        var organCode = entity['organ'];
-        ubkg_api_get_organ_type_set()
-          .then((res) => {
-            // console.debug('%c⊙ generate_subtype', 'color:#8400FF', res[organCode] );
-            display_subtype=(res[organCode])
-            // return (res[organCode])
-          })
-          .catch((error) => {
-            return (error)
-          });
-          
-      }else{
-        throw new Error("Missing Organ key for  Sample with uuid: {entity['uuid']}")
-      }
+    if (entity.sample_category.toLowerCase() === 'organ'){
+        let organList = JSON.parse(localStorage.getItem('organs'));
+        display_subtype = organList[entity.organ]
     } else {
+      console.debug('%c◉  display_subtype=entity["sample_category"].toString();', 'color:#FFB700', );
       display_subtype=entity['sample_category'].toString();
       // return entity['sample_category'].toString();
     }  
   }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
+    console.debug('%c◉ entity_type === "Dataset && "dataset_type" in entity ', 'color:#FFB700', );
     // Datasets store in ugly format, need to reff pretty style
     display_subtype=entity['dataset_type'].toString()
     // return (entity['dataset_type'].toString())
   }else if (entity_type === 'Upload'){ 
+    console.debug('%c◉  entity_type === "Upload"', 'color:#FFB700', );
     // Uploads just need language fix
     return ("Data Upload")
-    display_subtype="Data Upload"
   }else{ 
+    console.debug('%c◉ All Others ', 'color:#FFB700', );
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
     display_subtype= toTitleCase(entity_type.toString())
     // return ( toTitleCase(entity_type.toString()))
