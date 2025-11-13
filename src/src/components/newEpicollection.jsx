@@ -238,6 +238,10 @@ export const EPICollectionForm = (props) => {
           ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
           ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }
+        let selectedGroup = document.getElementById("group_uuid");
+        if (selectedGroup?.value) {
+          newForm = { ...newForm, group_uuid: selectedGroup.value };
+        }
         console.debug('%c◉ newForm','color:#E7EEFF;background: #9359FF;padding:200', newForm);
         entity_api_create_entity("epicollection", JSON.stringify(newForm))
           .then((response) => {
