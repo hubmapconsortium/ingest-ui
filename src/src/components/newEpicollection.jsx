@@ -219,6 +219,7 @@ export const EPICollectionForm = (props) => {
                 message:respMessage
               }
               props.onUpdated(out);
+              setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             } else {
               setPageErrors(response);
             }
@@ -232,19 +233,10 @@ export const EPICollectionForm = (props) => {
         let newForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: bulkSelection.uuids,
+          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
           group_uuid: formValues.group_uuid,
-        };
-        let selectedGroup = document.getElementById("group_uuid");
-        if (selectedGroup?.value) {
-          newForm = { ...newForm, group_uuid: selectedGroup.value };
-        }
-        console.debug('%c◉ deliniatedContacts ', 'color:#00ff7b', deliniatedContacts);
-        if(deliniatedContacts.contacts && deliniatedContacts.contacts.length>0){
-          newForm = { ...newForm, contacts: deliniatedContacts.contacts };
-        }
-        if(deliniatedContacts.contributors && deliniatedContacts.contributors.length>0){
-          newForm = { ...newForm, contributors: deliniatedContacts.contributors };
+          ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
+          ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }
         console.debug('%c◉ newForm','color:#E7EEFF;background: #9359FF;padding:200', newForm);
         entity_api_create_entity("epicollection", JSON.stringify(newForm))
@@ -254,6 +246,7 @@ export const EPICollectionForm = (props) => {
               props.onCreated(response.results);
             } else {
               setPageErrors(response.error ? response.error : response);
+              setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             }
           })
           .catch((error) => {
@@ -262,6 +255,7 @@ export const EPICollectionForm = (props) => {
           });
       }
     } else {
+        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
     }
   };
 
