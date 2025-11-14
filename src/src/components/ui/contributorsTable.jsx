@@ -156,6 +156,11 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
       //console.debug("No Data??");
     }
   }
+  function handleFileWipe(e) {
+    console.debug('%c◉ FILE WIPE ', 'color:#4000FF', );
+    const { target = {} } = e || {};
+    target.value = "";
+  }
 
   function highlightTableErrors(errorSet){
 
@@ -273,6 +278,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
               id="FileUploadContriubtors"
               name="Contributors"
               disabled={permissions.has_write_priv===false ? true : false}
+              onClick={handleFileWipe}
               onChange={handleFileGrab}
             />
           </label>
