@@ -27,7 +27,7 @@ export const CollectionForm = (props) => {
   });
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
-  const [permissions, setPermissions] = useState({ has_write_priv: true, has_admin_priv: false, });
+  const [permissions, setPermissions] = useState({ has_write_priv: false, has_admin_priv: false, });
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -94,9 +94,10 @@ export const CollectionForm = (props) => {
               });
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
-                  permissionSet.has_write_priv = !(entityData?.doi_url || entityData?.registered_doi);
+                  if (entityData?.doi_url || entityData?.registered_doi){
+                    permissionSet.has_write_priv = false
+                  }
                   setPermissions(permissionSet);
                 })
                 .catch((error) => {
