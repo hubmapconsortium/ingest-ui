@@ -495,7 +495,7 @@ export function BulkSelector({
               padding: "2rem .0rem"
             }}>
               <TableRow className="   ">
-                <TableCell sx={{ width: "166px" }}> Source ID</TableCell>
+                <TableCell sx={{ width: "220px" }}> Source ID</TableCell>
                 <TableCell component="th">Subtype</TableCell>
                 <TableCell component="th" sx={{ maxWidth: "200px" }}>Group Name</TableCell>
                 <TableCell component="th">Status</TableCell>
@@ -524,10 +524,19 @@ export function BulkSelector({
                 <TableRow
                   key={row.hubmap_id + "" + index}
                   className="row-selection">
-                  <TableCell className="clicky-cell" sx={{ width: "166px" }} scope="row">
-                      <a onClick={(e) => handleOpenPage(e,row)} style={{cursor: "pointer"}} >
-                      {row.hubmap_id}
-                      </a>
+                  <TableCell className="clicky-cell" sx={{ width: "220px" }} scope="row">
+                    <Button
+                      sx={{
+                        height: "28px;",
+                        width: "175px;",
+                        margin: "2px 9px !important;",
+                      }}
+                      fullWidth
+                      variant="contained"
+                      className="m-2"
+                      onClick={(e) => handleOpenPage(e,row)}>
+                    {row.hubmap_id}
+                    </Button> 
                   </TableCell>
                   <TableCell className="clicky-cell" scope="row" sx={{ maxWidth: "210px" }}>
                     {row.dataset_type ? row.dataset_type : row.display_subtype}

@@ -264,27 +264,29 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
         Contributors
       </Typography>
       {renderContribTable()}
-      <div className="text-right">
-        <Typography variant='caption'>
-          Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a>
-        </Typography>
-      </div>
       {permissions.has_write_priv!==false && (
-        <div className="text-left">
-          <label>
-            <input
-              accept=".tsv, .csv"
-              type="file"
-              id="FileUploadContriubtors"
-              name="Contributors"
-              disabled={permissions.has_write_priv===false ? true : false}
-              onClick={handleFileWipe}
-              onChange={handleFileGrab}
-            />
-          </label>
-        </div>
+        <>
+          <div className="text-right">
+            <Typography variant='caption'>
+              Please refer to the <a href="https://hubmapconsortium.github.io/ingest-validation-tools/contributors/current/" target='_blank' rel="noreferrer">contributor file schema information</a>, and this <a href='https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/contributors/latest/contributors.tsv' target='_blank' rel="noreferrer">Example TSV File</a>
+            </Typography>
+          </div>
+        
+          <div className="text-left">
+            <label>
+              <input
+                accept=".tsv, .csv"
+                type="file"
+                id="FileUploadContriubtors"
+                name="Contributors"
+                disabled={permissions.has_write_priv===false ? true : false}
+                onClick={handleFileWipe}
+                onChange={handleFileGrab}
+              />
+            </label>
+          </div>
+        </>
       )}
-      
     </FormControl>
   );
 }
