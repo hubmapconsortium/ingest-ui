@@ -95,10 +95,9 @@ export const EPICollectionForm = (props) => {
               });
               ingest_api_allowable_edit_states(uuid)
                 .then((response) => {
-                  // console.debug('%c◉ ingest_api_allowable_edit_states','color:#E7EEFF;background: #9359FF;padding:200', response);
                   let permissionSet = response.results;
-                  if(entityData.doi_url || entityData.registered_doi){
-                    permissionSet.has_write_priv = false;
+                  if (entityData?.doi_url || entityData?.registered_doi){
+                    permissionSet.has_write_priv = false
                   }
                   setPermissions(permissionSet);
                 })
