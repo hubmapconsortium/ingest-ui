@@ -221,6 +221,14 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
           </>)}
         </div>
       );
+    }else{
+      if(permissions.has_write_priv===false){
+        return (
+            <Typography sx={{ color: 'rgba(0, 0, 0.2, 0.6)' }}>
+              No Contributors Data Uploaded
+            </Typography>
+        );
+      }
     }
   }
   // Renders contributor errors as HTML list
