@@ -111,7 +111,7 @@ export function search_api_filter_es_query_builder(
       boolQuery.must(
         esb.matchQuery(
           "entity_type",
-          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
+          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
         )
       );
     } else {
@@ -160,7 +160,7 @@ export function search_api_filter_es_query_builder(
           boolQuery.must(
             esb.matchQuery(
               "entity_type",
-              "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
+              "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
             )
           ); // default everything ; this maybe temp
         }
