@@ -18,11 +18,11 @@ import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
-import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
+import { DonorFormFields } from "./ui/fields/DonorFormFields";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
@@ -55,7 +55,35 @@ export const DonorForm = (props) => {
     description: "",
   });
   const{uuid} = useParams();
-
+  const donorFormFields = [
+    {
+      id: "lab_donor_id",
+      label: "Lab's Donor Non-PHI ID",
+      helperText: "A non-PHI id used by the lab when referring to the donor",
+      required: false,
+      type: "text",
+    },{
+      id: "label",
+      label: "Deidentified Name",
+      helperText: "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)",
+      required: true,
+      type: "text",
+    },{
+      id: "protocol_url",
+      label: "Case Selection Protocol",
+      helperText: "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io",
+      required: true,
+      type: "text",
+    },{
+      id: "description",
+      label: "Description",
+      helperText: "Free text field to enter a description of the donor",
+      required: false,
+      type: "text",
+      multiline: true,
+      rows: 4,
+    }
+  ];
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -251,57 +279,13 @@ export const DonorForm = (props) => {
           <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
-          <TextField //"Lab's Donor Non-PHI ID "
-            id="lab_donor_id"
-            label="Lab's Donor Non-PHI ID "
-            helperText="A non-PHI id used by the lab when referring to the donor"
-            value={formValues ? formValues.lab_donor_id : ""}
-            error={formErrors.lab_donor_id !== ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.lab_donor_id )) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Deidentified Name "
-            id="label"
-            label="Deidentified Name "
-            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label : "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
-            value={formValues ? formValues.label : ""}
-            error={formErrors.label !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.label)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Case Selection Protocol "
-            id="protocol_url"
-            label="Case Selection Protocol "
-            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url : "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
-            value={formValues ? formValues.protocol_url : ""}
-            error={formErrors.protocol_url !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Description "
-            id="description"
-            label="Description "
-            helperText="Free text field to enter a description of the donor"
-            value={formValues ? formValues.description : ""}
-            error={formErrors.description !== ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-            multiline
-            rows={4}
+          <DonorFormFields
+            formFields={donorFormFields}
+            formValues={formValues}
+            formErrors={formErrors}
+            permissions={permissions}
+            handleInputChange={handleInputChange}
+            uuid={uuid}
           />
           
           {/* Group */}

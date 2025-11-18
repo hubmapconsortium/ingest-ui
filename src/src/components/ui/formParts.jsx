@@ -44,18 +44,25 @@ export const FormHeader = (props) => {
   let globusURL = props.globusURL;
   // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
+  let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
+  if (entityType === "Epicollection"){
+    entityType = "EPICollection"
+  }
   return (
-    <React.Fragment>
-      {topHeader(entityData)}
+    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", backgroundColor: "#f5f5f5", borderRadius: "4px"}}>
+      {entityData[0] !== "new" && (
+        <Grid item xs={12} className="topHeader" > 
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
+        </Grid>
+      )}
+      {topHeader(entityData, entityType)}
       {infoPanels(entityData,permissions,globusURL)}
-    </React.Fragment>
+    </Grid>
   )
 }
 
 // Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
-  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -332,18 +339,11 @@ function newBadge(type){
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
 
 // The TopLeftmost part of the Form Header 
-function topHeader(entityData){
-  let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
-  if (entityType === "Epicollection"){
-    entityType = "EPICollection"
-  }
+function topHeader(entityData, entityType){
+  
   if(entityData[0] !== "new"){
     return (
-      <React.Fragment>
-        <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
-        </Grid>
-        <Grid item xs={6} className="" >
+        <Grid item xs={6} className="entityDataHead" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           {entityData.status && (
               <Typography><strong>Status: </strong> 
@@ -373,7 +373,6 @@ function topHeader(entityData){
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
-      </React.Fragment>
     ) 
   }else{
     return (
