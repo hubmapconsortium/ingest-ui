@@ -28,7 +28,7 @@ import {
 } from "../utils/validators";
 import { BulkSelector } from "./ui/bulkSelector";
 import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback} from "./ui/formParts";
-import { PublicationFormFields } from "./ui/fields/PublicationFormFields";
+import { PublicationFormFields, PublicationFieldSet } from "./ui/fields/PublicationFormFields";
 
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
@@ -74,79 +74,6 @@ export const PublicationForm = (props) => {
     message: "", 
     status: "info"
   });
-
-  const formFields = React.useMemo(() => [
-    {
-      id: "title",
-      label: "Title",
-      helperText: "The title of the publication",
-      required: true,
-      type: "text",
-    }, {
-      id: "publication_venue",
-      label: "Publication Venue",
-      helperText: "The venue of the publication, journal, conference, preprint server, etc...",
-      required: true,
-      type: "text",
-    }, {
-      id: "publication_date",
-      label: "Publication Date",
-      helperText: "The date of publication",
-      required: true,
-      type: "date",
-    }, {
-      id: "publication_status",
-      label: "Publication Status ",
-      helperText: "Has this Publication been Published?",
-      required: true,
-      type: "radio",
-      values: ["true", "false"]
-    }, {
-      id: "publication_url",
-      label: "Publication URL",
-      helperText: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
-      required: true,
-      type: "text",
-    }, {
-      id: "publication_doi",
-      label: "Publication DOI",
-      helperText: "The DOI of the publication. (##.####/[alpha-numeric-string])",
-      required: false,
-      type: "text",
-    }, {
-      id: "OMAP_doi",
-      label: "OMAP DOI",
-      helperText: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
-      required: false,
-      type: "text",
-    }, {
-      id: "issue",
-      label: "Issue",
-      helperText: "The issue number of the journal that it was published in.",
-      required: false,
-      type: "text",
-    }, {
-      id: "volume",
-      label: "Volume",
-      helperText: "The volume number of a journal that it was published in.",
-      required: false,
-      type: "text",
-    }, {
-      id: "pages_or_article_num",
-      label: "Pages Or Article Number",
-      helperText: 'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
-      required: false,
-      type: "text",
-    }, {
-      id: "description",
-      label: "Abstract",
-      helperText: "Free text description of the publication",
-      required: true,
-      type: "text",
-      multiline: true,
-      rows: 4,
-    }
-  ], []);
 
   const { uuid } = useParams();
 
@@ -277,7 +204,7 @@ export const PublicationForm = (props) => {
 
     for (let field of requiredFields) {
       if (!validateRequired(formValues[field])) {
-        let fieldName = formFields.find(f => f.id === field)?.label || humanize(field);
+        let fieldName = PublicationFieldSet.find(f => f.id === field)?.label || humanize(field);
         if (field !== "direct_ancestor_uuids") {
           e_messages.push(fieldName + " is a required field");
         }
@@ -507,19 +434,6 @@ export const PublicationForm = (props) => {
     );
   }
 
-  const memoizedFormFields = React.useMemo(
-    () => (
-      <PublicationFormFields
-        formFields={formFields}
-        formValues={formValues}
-        formErrors={formErrors}
-        permissions={permissions}
-        handleInputChange={handleInputChange}
-      />
-    ),
-    [formFields, formValues, formErrors, permissions, handleInputChange]
-  );
-
   // MAIN RENDER
   if (isLoading || ((!entityData || !formValues) && uuid)) {
     return (<LinearProgress />);
@@ -546,7 +460,6 @@ export const PublicationForm = (props) => {
             }}
           />
           <PublicationFormFields
-            formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}
             permissions={permissions}

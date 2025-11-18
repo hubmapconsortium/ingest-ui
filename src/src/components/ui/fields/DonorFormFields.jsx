@@ -1,8 +1,42 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
 
+export const DonorFieldSet = [
+  {
+    id: "lab_donor_id",
+    label: "Lab's Donor Non-PHI ID",
+    helperText: "A non-PHI id used by the lab when referring to the donor",
+    required: false,
+    type: "text",
+  },
+  {
+    id: "label",
+    label: "Deidentified Name",
+    helperText:
+      "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)",
+    required: true,
+    type: "text",
+  },
+  {
+    id: "protocol_url",
+    label: "Case Selection Protocol",
+    helperText:
+      "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io",
+    required: true,
+    type: "text",
+  },
+  {
+    id: "description",
+    label: "Description",
+    helperText: "Free text field to enter a description of the donor",
+    required: false,
+    type: "text",
+    multiline: true,
+    rows: 4,
+  },
+];
+
 export const DonorFormFields = ({
-  formFields,
   formValues,
   formErrors,
   permissions,
@@ -10,7 +44,7 @@ export const DonorFormFields = ({
   uuid
 }) => (
   <>
-    {formFields.map((field, index) => (
+    {DonorFieldSet.map((field, index) => (
       <TextField
         InputLabelProps={{ shrink: !!(uuid || formValues?.[field.id]) }}
         key={field.id + "_" + index}

@@ -536,7 +536,7 @@ export function App(props){
 
             {authStatus && !isLoading && !unregStatus &&(
               <HuBMAPContext.Provider value={{allGroups}}> 
-                <Paper className={"px-5 py-4 admin-"+(adminStatus)}>
+                <Paper className={"px-4 py-3 admin-"+(adminStatus)}>
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       

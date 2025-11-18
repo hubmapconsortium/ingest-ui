@@ -7,15 +7,87 @@ import FormLabel from '@mui/material/FormLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 
+export const PublicationFieldSet = [
+  {
+    id: "title",
+    label: "Title",
+    helperText: "The title of the publication",
+    required: true,
+    type: "text",
+  }, {
+    id: "publication_venue",
+    label: "Publication Venue",
+    helperText: "The venue of the publication, journal, conference, preprint server, etc...",
+    required: true,
+    type: "text",
+  }, {
+    id: "publication_date",
+    label: "Publication Date",
+    helperText: "The date of publication",
+    required: true,
+    type: "date",
+  }, {
+    id: "publication_status",
+    label: "Publication Status ",
+    helperText: "Has this Publication been Published?",
+    required: true,
+    type: "radio",
+    values: ["true", "false"]
+  }, {
+    id: "publication_url",
+    label: "Publication URL",
+    helperText: "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
+    required: true,
+    type: "text",
+  }, {
+    id: "publication_doi",
+    label: "Publication DOI",
+    helperText: "The DOI of the publication. (##.####/[alpha-numeric-string])",
+    required: false,
+    type: "text",
+  }, {
+    id: "OMAP_doi",
+    label: "OMAP DOI",
+    helperText: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
+    required: false,
+    type: "text",
+  }, {
+    id: "issue",
+    label: "Issue",
+    helperText: "The issue number of the journal that it was published in.",
+    required: false,
+    type: "text",
+  }, {
+    id: "volume",
+    label: "Volume",
+    helperText: "The volume number of a journal that it was published in.",
+    required: false,
+    type: "text",
+  }, {
+    id: "pages_or_article_num",
+    label: "Pages Or Article Number",
+    helperText: 'The pages or the article number in the publication journal e.g., "23", "23-49", "e1003424.',
+    required: false,
+    type: "text",
+  }, {
+    id: "description",
+    label: "Abstract",
+    helperText: "Free text description of the publication",
+    required: true,
+    type: "text",
+    multiline: true,
+    rows: 4,
+  }
+];
+
 export const PublicationFormFields = ({
-  formFields,
   formValues,
   formErrors,
   permissions,
   handleInputChange
 }) => (
   <>
-    {formFields.map((field, index) => {
+    {PublicationFieldSet.map((field, index) => {
       if (["text", "date"].includes(field.type)) {
         return (
           <TextField

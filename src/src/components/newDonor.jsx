@@ -55,35 +55,6 @@ export const DonorForm = (props) => {
     description: "",
   });
   const{uuid} = useParams();
-  const donorFormFields = [
-    {
-      id: "lab_donor_id",
-      label: "Lab's Donor Non-PHI ID",
-      helperText: "A non-PHI id used by the lab when referring to the donor",
-      required: false,
-      type: "text",
-    },{
-      id: "label",
-      label: "Deidentified Name",
-      helperText: "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)",
-      required: true,
-      type: "text",
-    },{
-      id: "protocol_url",
-      label: "Case Selection Protocol",
-      helperText: "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io",
-      required: true,
-      type: "text",
-    },{
-      id: "description",
-      label: "Description",
-      helperText: "Free text field to enter a description of the donor",
-      required: false,
-      type: "text",
-      multiline: true,
-      rows: 4,
-    }
-  ];
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -280,7 +251,6 @@ export const DonorForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <DonorFormFields
-            formFields={donorFormFields}
             formValues={formValues}
             formErrors={formErrors}
             permissions={permissions}
