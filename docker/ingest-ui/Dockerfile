@@ -23,7 +23,7 @@ module_hotfixes=true
 EOF
 
 # Reduce the number of layers in image by minimizing the number of separate RUN commands
-# 1 - Install nginx (using the custom yum repo specified earlier)
+# 1 - Install nginx (using the custom dnf/yum repo specified earlier)
 # 2 - Remove the default nginx config file
 # 3 - Overwrite the nginx.conf with ours to run nginx as non-root
 # 4 - Use our nginx config file for ingest-ui
@@ -35,7 +35,7 @@ RUN dnf install -y nginx && \
     mv nginx.conf /etc/nginx/nginx.conf && \
     mv ingest-ui.conf /etc/nginx/conf.d && \
     [ ! -d nginx ] || mv nginx /tmp/nginx_from_WORKDIR && \
-    chmod +x start.sh && \
+    chmod a+x start.sh && \
     dnf clean all && \
     rm -rf /var/cache/dnf \
         /var/log/dnf \
