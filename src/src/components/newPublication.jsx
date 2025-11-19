@@ -114,7 +114,7 @@ export const PublicationForm = (props) => {
       required: false,
       type: "text",
     }, {
-      id: "OMAP_doi",
+      id: "omap_doi",
       label: "OMAP DOI",
       helperText: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
       required: false,
@@ -338,6 +338,7 @@ export const PublicationForm = (props) => {
 
     if (validateForm()) {
       setIsProcessing(true);
+      console.debug('%c◉ formValues.omap_doi ', 'color:#00ff7b', formValues.omap_doi);
       let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
       let cleanForm = {
         title: formValues.title,
