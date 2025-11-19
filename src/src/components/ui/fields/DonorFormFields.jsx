@@ -1,5 +1,6 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
 
 export const DonorFieldSet = [
   {
@@ -39,37 +40,52 @@ export const DonorFieldSet = [
 export const DonorFormFields = ({
   formValues,
   formErrors,
+  formValErrors,
   permissions,
   handleInputChange,
-  uuid
-}) => (
-  <>
-    {DonorFieldSet.map((field, index) => (
-      <TextField
-        InputLabelProps={{ shrink: !!(uuid || formValues?.[field.id]) }}
-        key={field.id + "_" + index}
-        required={field.required}
-        type={field.type}
-        id={field.id}
-        label={field.label}
-        helperText={
-          formErrors[field.id] && formErrors[field.id].length > 0
-            ? formErrors[field.id]
-            : field.helperText
+}) => {
+  console.debug('%c◉ formValErrors ', 'color:#00ff7b', formValErrors);
+  return (
+    <Box>
+      {DonorFieldSet.map((field, index) => {
+        const error = formErrors && formErrors[field.id];
+        if(error){
+          console.debug('%c◉ field error ', 'color:#f44336', field.id, error, formErrors[field.id]);
         }
-        sx={{ width: "100%" }}
-        value={formValues[field.id] ? formValues[field.id] : ""}
-        error={(formErrors[field.id] && formErrors[field.id].length > 0) ? true : false}
-        onChange={handleInputChange}
-        disabled={!permissions?.has_write_priv}
-        fullWidth
-        multiline={field.multiline || false}
-        rows={field.rows || 1}
-        className={
-          "my-3 " +
-          (formErrors[field.id] && formErrors[field.id].length > 0 ? "error" : "")
+        const errorStyle = error ? { borderColor: '#f44336', background: '#fff0f0' } : {};
+        if (field.type === "text" || field.type === "textarea") {
+          return (
+            <TextField
+              disabled={!permissions?.has_write_priv}
+              error={!!error}
+              fullWidth
+              id={field.id}
+              key={field.id + "_" + index}
+              label={field.label}
+              // minRows={field.rows || (field.type === "textarea" ? 4 : undefined)}
+              multiline={field.multiline || false}
+              name={field.id}
+              onChange={handleInputChange}
+              required={field.required}
+              rows={field.rows || 1}
+              // sx={errorStyle}
+              value={formValues[field.id] ? formValues[field.id] : ""}
+              helperText={
+                formErrors[field.id] && formErrors[field.id].length > 0
+                  ? (field.helperText +" " + formErrors[field.id])
+                  : field.helperText
+              }
+              className={
+                "my-3 fieldInput " +
+                (formErrors[field.id] && formErrors[field.id].length > 0 ? "error fieldError" : "noerr")
+              }
+            />
+          );
         }
-      />
-    ))}
-  </>
-);
+
+        return null;
+      }
+      )}
+    </Box>
+  )
+};
