@@ -59,7 +59,7 @@ export const DonorFormFields = ({
         }
         sx={{ width: "100%" }}
         value={formValues[field.id] ? formValues[field.id] : ""}
-        error={formErrors[field.id] && formErrors[field.id].length > 0}
+        error={(formErrors[field.id] && formErrors[field.id].length > 0) ? true : false}
         onChange={handleInputChange}
         disabled={!permissions?.has_write_priv}
         fullWidth

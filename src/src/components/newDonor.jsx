@@ -249,7 +249,7 @@ export const DonorForm = (props) => {
         <Grid container className=''>
           <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
         </Grid>
-        <form onSubmit={(e) => handleSubmit(e)}>
+        <form onSubmit={(e) => handleSubmit(e)} className="entityForm">
           <DonorFormFields
             formValues={formValues}
             formErrors={formErrors}
