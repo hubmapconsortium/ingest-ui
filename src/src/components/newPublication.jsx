@@ -338,7 +338,6 @@ export const PublicationForm = (props) => {
 
     if (validateForm()) {
       setIsProcessing(true);
-      console.debug('%c◉ formValues.omap_doi ', 'color:#00ff7b', formValues.omap_doi);
       let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
       let cleanForm = {
         title: formValues.title,
