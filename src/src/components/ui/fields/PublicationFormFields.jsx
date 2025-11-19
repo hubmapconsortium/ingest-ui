@@ -46,7 +46,7 @@ export const PublicationFieldSet = [
     required: false,
     type: "text",
   }, {
-    id: "OMAP_doi",
+    id: "omap_doi",
     label: "OMAP DOI",
     helperText: "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
     required: false,
