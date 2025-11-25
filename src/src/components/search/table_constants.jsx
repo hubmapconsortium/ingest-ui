@@ -7,6 +7,15 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
+import {EntityIconsBasic} from "../ui/icons";
+
+import ArticleIcon from '@mui/icons-material/Article';
+import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PersonIcon from '@mui/icons-material/Person';
+import TableChartIcon from '@mui/icons-material/TableChart';
 
 // table column definitions
 
@@ -33,7 +42,7 @@ export const COLUMN_DEF_SAMPLE = [
 	    width: 173,
 	    valueGetter: getLabId
   	}, 
-    { field: 'display_subtype', headerName: 'Type', width: 200},
+    { field: 'display_subtype', headerName: 'Type', width: 200, renderCell: renderFieldIcons},
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
@@ -256,7 +265,8 @@ export const COLUMN_DEF_MIXED = [
     headerName: "Type",
     width: 180,
     sortable: false,
-    valueGetter: getTypeValue
+    valueGetter: getTypeValue,
+    renderCell: renderFieldIcons
   }, 
   { field: 'entity_type', headerName: 'Entity Type', width: 200},
   { field: 'group_name', headerName: 'Group Name', width: 200},
@@ -287,6 +297,27 @@ export const COLUMN_DEF_MIXED = [
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
 // Computed column functions
+function entityIconsBasic(entity_type){
+  switch
+  (entity_type && entity_type.toLowerCase()){
+    case "donor":
+      return <PersonIcon/>
+    case "sample":
+      return <BubbleChartIcon/>
+    case "dataset":
+      return <TableChartIcon/>
+    case "upload":
+      return <DriveFolderUploadIcon/>
+    case "publication":
+      return <ArticleIcon/>
+    case "collection":
+      return <CollectionsBookmarkIcon/>
+    case "eppicollection":
+      return <CollectionsBookmarkIcon/>
+    default:
+      return <BubbleChartIcon />
+  }
+}
 
 // function getSampleType(params: ValueGetterParams) {
 // 	if (params.getValue('entity_type') === 'Sample') {
@@ -294,6 +325,27 @@ export const COLUMN_DEF_MIXED_SM = shrinkCols;
 // 	}
 //   return params.getValue('entity_type');
 // }
+
+function renderFieldIcons(params: ValueFormatterParams) {
+  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+  // let entityIcon = EntityIconsBasic(params.row.entity_type)
+  // console.debug('%c◉ entityIcon ', 'color:#00ff7b', entityIcon);
+  console.debug('%c◉ renderFieldIcons params ', 'color:#00ff7b', systemIcons[params.row.organ]);
+  return (
+    <div>
+      {params.row.organ && systemIcons[params.row.organ] && (
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+          <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
+        </svg>
+      )}
+      {!params.row.organ && params.row.entity_type && (
+        entityIconsBasic(params.row.entity_type)
+      )}
+
+      {params.value}
+    </div>
+  )
+}
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
 function shrinkCols(string){

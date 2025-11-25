@@ -96,6 +96,11 @@ export function search_api_filter_es_query_builder(
 ){
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
+  console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
+    console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+    console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+    console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+    console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
   if (fields["keywords"] && fields["keywords"].indexOf("*") > -1){
     // if keywords contain a wildcard
     boolQuery = esb
@@ -122,17 +127,11 @@ export function search_api_filter_es_query_builder(
         );
       } else if (fields["group_uuid"]){
         // this'll be from the dropdown,
-        // if its a collection, we wanna search the datasets of it, not it itself
-        if (fields["entity_type"] === "Collection"){
-          boolQuery.must(
-            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
-          );
-        } else {
-          boolQuery.must(
-            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
-          );
-        }
+        boolQuery.must(
+          esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
+        );
       }
+      // Did we get Data Upload instead of Upload?
       // was specimen types selected
       if (fields["sample_category"]){
         // console.debug("sample_category", fields["sample_category"]);
@@ -148,6 +147,11 @@ export function search_api_filter_es_query_builder(
       } else {
         // was entity types select
         if (fields["entity_type"]){
+
+          if(["Data Upload"].includes(fields["entity_type"])){
+            fields["entity_type"] = "Upload";
+          }
+
           if (fields["entity_type"] === "DonorSample"){
             // hack to deal with no type selected from the UI, this clues from the donor/sample filer
             boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
@@ -197,6 +201,9 @@ export function search_api_filter_es_query_builder(
       .source(colFields)
       .trackTotalHits(true);
   }
+  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  console.groupEnd();
+
   return requestBody.toJSON();
 }
 

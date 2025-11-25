@@ -35,6 +35,8 @@ import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -337,7 +339,6 @@ function newBadge(type){
 }
 
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
-
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType){
   
@@ -599,6 +600,74 @@ export function handleSortOrgans(organList){
     sortedMap.set(element, sortedDataProp[element]);
   }
   return sortedMap;
+};
+
+export function CombineTypeSelect({
+  formFilters,
+  handleInputChange,
+  restrictions,
+  }){
+  // console.debug('%c◉  CombineTypeSelect', 'color:#9359FF', );
+  // let coreList = ["Donor","Sample","Dataset","Data Upload","Publication","Collection"]
+  let coreList = {
+    donor: "Donor" ,
+    sample: "Sample",
+    dataset: "Dataset", 
+    upload: "Data Upload",
+    publication: "Publication",
+    collection: "Collection"
+  }
+  let organs = [];
+  let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
+  // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);
+  try {
+    organList.forEach((value, key) => {
+      organs[value] = key;
+    });
+    // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
+    return (
+      <FormControl sx={{width: "100%", marginTop:"26px", display:"block"}} >
+        <InputLabel htmlFor="entity_type" id="entity_label">Type</InputLabel>
+        <Select 
+          native 
+          fullWidth
+          labelid="entity_label"
+          id="entity_type"
+          name="entity_type"
+          label="Type"
+          value={formFilters.entity_type}
+          onChange={(e) => handleInputChange(e)}
+          disabled={restrictions && restrictions.entityType?true:false}>
+          <option aria-label="None" value="" />
+          <optgroup label="Entity Types">
+          {Object.entries(coreList).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+          </optgroup>
+          <optgroup label="Sample Types">
+            {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
+              <option key={index + 1} value={label}>
+                {label}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="Organs">
+            {Object.entries(organs).map(([label, key], index) => (
+              <option key={index + 1} value={label}>
+                {key}
+              </option>
+            ))}
+          </optgroup>
+        </Select>
+      </FormControl>
+    )
+  }catch(error){
+    let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;
+    console.debug('%c◉ ERROR  ', 'color:#ff005d', msg, error);
+    return (<Typography> ERROR: {error.toString()} </Typography>)
+  }  
 };
 
 // Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL

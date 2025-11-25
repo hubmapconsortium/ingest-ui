@@ -28,6 +28,7 @@ import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
 import {SpeedDialTooltipOpen} from './components/ui/formParts';
+import {OrganDetails} from './components/ui/icons';
 import {ValidateLocalStoreValue} from './utils/validators';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
@@ -40,6 +41,7 @@ import {RenderMetadata} from "./components/metadata";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
+import {NewSearch} from "./components/newSearch";
 import {DonorForm} from "./components/newDonor";
 import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
@@ -72,7 +74,6 @@ export function App(){
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
   var[APIErr, setAPIErr] = useState(false);
-  // var[APIErr, setAPIErr] = useState(false);
 
   var[isLoggingOut, setIsLoggingOut] = useState(false);
   var[isLoading, setIsLoading] = useState(true);
@@ -124,10 +125,13 @@ export function App(){
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("organs")){
+    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons")){
       ubkg_api_get_organ_type_set()
         .then((res) => {
           loadCount() // the Organ step
+          // lets also save the organ-image mapping
+          let organIcons = OrganDetails();
+          localStorage.setItem("organ_icons", JSON.stringify(organIcons));
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
             setOrganList(res); // TODO: Eventually remove & use localstorage
@@ -334,6 +338,7 @@ export function App(){
   function purgeStorage(){
     localStorage.removeItem('info');
     localStorage.removeItem('organs');
+    localStorage.removeItem('organ_icons');
     localStorage.removeItem('organs_full');
     localStorage.removeItem('RUIOrgans');
     localStorage.removeItem('datatypes');
@@ -364,9 +369,17 @@ export function App(){
   }
   
   function urlChange(event, target){
-    // console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target, details );
+    console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target );
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
+      if(event.ctrlKey || event.metaKey){
+        window.open(target,'_blank')
+      }else{
+        navigate(lowerTarget, {replace: true});
+      }
+    }
+    if(event && event==="raw"){
+      var lowerTarget = event.toLowerCase();
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
@@ -562,6 +575,7 @@ export function App(){
                     <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
                     <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
                     <Route path="/login" element={<Login />} />
+                    <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />
