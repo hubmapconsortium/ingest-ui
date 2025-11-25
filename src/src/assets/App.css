@@ -873,6 +873,7 @@ svg.invalid{
 
 .SearchGridWrap .MuiDataGrid-toolbarContainer{
   background: #444a65!important;
+  border-bottom: 1px solid #ffffff35;
 }
 .SearchGridWrap .MuiDataGrid-toolbarContainer button,
 .SearchGridWrap .MuiDataGrid-footerContainer p {

@@ -390,6 +390,7 @@ export function NewSearch({
 
     if (results.colDef !== COLUMN_DEF_MIXED) {
       hiddenFields.push("entity_type",)
+      hiddenFields.push("sample_category",)
     }    
     if (results.colDef === COLUMN_DEF_MIXED && (
       !modecheck || 
@@ -422,6 +423,7 @@ export function NewSearch({
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
           maxWidth: "1266px",
+          pointerEvents: "none",
           height: "48px",
           position: "absolute",
           color: "white",
