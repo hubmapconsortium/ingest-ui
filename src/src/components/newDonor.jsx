@@ -11,18 +11,21 @@ import {
   validateProtocolIODOI,
   validateSingleProtocolIODOI
 } from "../utils/validators";
+import { humanize } from "../utils/string_helper";
 
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";
+import AlertTitle from "@mui/material/AlertTitle";
+import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
-import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
 import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
+import { DonorFormFields,DonorFieldSet } from "./ui/fields/DonorFormFields";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
@@ -42,6 +45,7 @@ export const DonorForm = (props) => {
     has_write_priv: false
   });
   let[pageErrors, setPageErrors] = useState(null);
+  const [valErrorMessages, setValErrorMessages] = useState([]);
   let[formErrors, setFormErrors] = useState({
     lab_donor_id: "",
     label: "",
@@ -55,7 +59,6 @@ export const DonorForm = (props) => {
     description: "",
   });
   const{uuid} = useParams();
-
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
@@ -120,6 +123,7 @@ export const DonorForm = (props) => {
       [id]: value,
     }));
   }
+  
 
   function validateDOI(protocolDOI){
     if (!validateProtocolIODOI(protocolDOI)) {
@@ -127,43 +131,56 @@ export const DonorForm = (props) => {
         ...prevValues,
           'protocol_url': "Please enter a valid protocols.io URL"
         }));
-      return 1
+      return [1,"Please enter a valid protocols.io URL"]
     } else if (!validateSingleProtocolIODOI(protocolDOI)) {
       setFormErrors((prevValues) => ({
         ...prevValues,
           'protocol_url': "Please enter only one valid protocols.io URL"
         }));
-      return 1
+      return [1,"Please enter only one valid protocols.io URL"]
     }else{
       setFormErrors((prevValues) => ({
         ...prevValues,
           'protocol_url': ""
         }));
-      return 0
+      return [0,""]
     }
   }
 
   function validateForm(){
+    console.debug('%c◉ validateForm ', 'color:#00ff7b', );
+    setValErrorMessages(null);
     let errors = 0;
+    let e_messages = [];
+    let newFormErrors = {};
     let requiredFields = ["label", "protocol_url"];
-    for(let field of requiredFields){
-      if(!validateRequired(formValues[field])){
-        setFormErrors((prevValues) => ({
-          ...prevValues,
-          field: "required",
-        }));
+    requiredFields.forEach(field => {
+      if (!formValues[field] || formValues[field] === "") {
+        let fieldName = DonorFieldSet.find(f => f.id === field)?.label || humanize(field);
+        console.debug('%c◉ fieldName ', 'color:#00ff7b', fieldName);
+        newFormErrors[field] = fieldName+" | is a required field"
+        e_messages.push(fieldName+" | is a required field");
         errors++;
       }
-    }
+    });
     // Formatting Validation
-    errors += validateDOI(formValues['protocol_url']);
+    let doiVal = validateDOI(formValues['protocol_url']);
+    errors += doiVal[0];
+    if(doiVal[0]>0){
+      e_messages.push(doiVal[1]);
+      newFormErrors['protocol_url'] = true
+    }
     // End Validation
+    setFormErrors(newFormErrors);
+    setValErrorMessages(errors > 0 ? e_messages : null);
+    console.debug('%c◉ errorcount ', 'color:#00ff7b', errors);
     return errors === 0;
   }
 
   function handleSubmit(e){
     e.preventDefault()    
     setIsProcessing(true);
+
     if(validateForm()){
       let cleanForm ={
         lab_donor_id: formValues.lab_donor_id,
@@ -219,7 +236,7 @@ export const DonorForm = (props) => {
       <Box sx={{textAlign: "right"}}>
         <Button
           variant="contained"
-          className="m-2"
+          className="m-2 cancelButton"
           onClick={() => navigate("/")}>
           Cancel
         </Button>
@@ -228,13 +245,17 @@ export const DonorForm = (props) => {
           <LoadingButton
             variant="contained"
             loading={isProcessing}
-            className="m-2"
-            type="submit">
+            className="m-2 creationButton"
+            onClick={(e) => handleSubmit(e)}>
             Generate ID
           </LoadingButton>
         )}
         {uuid && uuid.length > 0 && permissions.has_write_priv && (
-          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+          <LoadingButton 
+            loading={isProcessing} 
+            variant="contained" 
+            className="m-2 updateButton" 
+            type="submit">
             Update
           </LoadingButton>
         )}
@@ -250,58 +271,13 @@ export const DonorForm = (props) => {
         <Grid container className=''>
           <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
         </Grid>
-        <form onSubmit={(e) => handleSubmit(e)}>
-          <TextField //"Lab's Donor Non-PHI ID "
-            id="lab_donor_id"
-            label="Lab's Donor Non-PHI ID "
-            helperText="A non-PHI id used by the lab when referring to the donor"
-            value={formValues ? formValues.lab_donor_id : ""}
-            error={formErrors.lab_donor_id !== ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.lab_donor_id )) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Deidentified Name "
-            id="label"
-            label="Deidentified Name "
-            helperText={(formErrors.label && formErrors.label.length>0) ? formErrors.label : "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)"}
-            value={formValues ? formValues.label : ""}
-            error={formErrors.label !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.label)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Case Selection Protocol "
-            id="protocol_url"
-            label="Case Selection Protocol "
-            helperText={(formErrors.protocol_url && formErrors.protocol_url.length>0) ? formErrors.protocol_url : "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io"}
-            value={formValues ? formValues.protocol_url : ""}
-            error={formErrors.protocol_url !== ""}
-            required
-            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-          />
-          <TextField //"Description "
-            id="description"
-            label="Description "
-            helperText="Free text field to enter a description of the donor"
-            value={formValues ? formValues.description : ""}
-            error={formErrors.description !== ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
-            onChange={(e) => handleInputChange(e)}
-            fullWidth
-            disabled={!permissions.has_write_priv}
-            className="my-3"
-            multiline
-            rows={4}
+        <form className="entityForm">
+          <DonorFormFields
+            formValues={formValues}
+            formErrors={formErrors}
+            permissions={permissions}
+            handleInputChange={handleInputChange}
+            uuid={uuid}
           />
           
           {/* Group */}
@@ -327,11 +303,20 @@ export const DonorForm = (props) => {
               </NativeSelect>
             </Box>
           )}
+
+          {valErrorMessages && valErrorMessages.length > 0 && (
+            <Alert severity="error">
+              <AlertTitle>Please Review the following problems:</AlertTitle>
+              {valErrorMessages.map((error) => (
+                <Typography key={error}>{error}</Typography>
+              ))}
+            </Alert>
+          )}
           {buttonEngine()}
         </form>
       
         {pageErrors && (
-          <Alert variant="filled" severity="error">
+          <Alert variant="filled" severity="error" className="pageErrors">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}

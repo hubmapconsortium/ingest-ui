@@ -743,10 +743,14 @@ export const SampleForm = (props) => {
 
 
               {isOrganBloodType(sourceEntity.sample_category) && (
-                <Typography>
+                <Typography >
                   <b>Organ Type:</b>
-                  {organ_types[sourceEntity.organ]}
-                  {/* <svg height="25px" viewBox="0 0 10 10" x="200" width="100"><image url={OrganIcons(sourceEntity.organ)} /></svg>  */}
+                  <Typography variant="caption" component="span">
+                    <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+                      <image alt={sourceEntity.organ} href={OrganIcons(sourceEntity.organ)} width="25" height="25" />
+                    </svg>
+                    {organ_types[sourceEntity.organ]}
+                  </Typography>
                 </Typography>
               )}
               {sourceEntity.submission_id && (
