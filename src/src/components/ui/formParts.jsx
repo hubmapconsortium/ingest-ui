@@ -340,8 +340,7 @@ function newBadge(type){
 
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
 // The TopLeftmost part of the Form Header 
-function topHeader(entityData, entityType){
-  
+function topHeader(entityData, entityType){  
   if(entityData[0] !== "new"){
     return (
         <Grid item xs={6} className="entityDataHead" >
@@ -626,42 +625,47 @@ export function CombineTypeSelect({
     });
     // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
-      <FormControl sx={{width: "100%", marginTop:"26px", display:"block"}} >
-        <InputLabel htmlFor="entity_type" id="entity_label">Type</InputLabel>
-        <Select 
-          native 
-          fullWidth
-          labelid="entity_label"
-          id="entity_type"
-          name="entity_type"
-          label="Type"
-          value={formFilters.entity_type}
-          onChange={(e) => handleInputChange(e)}
-          disabled={restrictions && restrictions.entityType?true:false}>
-          <option aria-label="None" value="" />
-          <optgroup label="Entity Types">
-          {Object.entries(coreList).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-          </optgroup>
-          <optgroup label="Sample Types">
-            {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
-              <option key={index + 1} value={label}>
-                {label}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="Organs">
-            {Object.entries(organs).map(([label, key], index) => (
-              <option key={index + 1} value={label}>
-                {key}
-              </option>
-            ))}
-          </optgroup>
-        </Select>
-      </FormControl>
+
+        <FormControl size="small"  sx={{width:"100%"}}>
+          <Box className="searchFieldLabel" id="SearchLabelType" >
+            <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
+          </Box>
+          <Box>
+            <Select 
+              native 
+              fullWidth
+              id="entity_type"
+              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
+              name="entity_type"
+              value={formFilters.entity_type}
+              onChange={(e) => handleInputChange(e)}
+              disabled={restrictions && restrictions.entityType?true:false}>
+              <option aria-label="None" value="" />
+              <optgroup label="Entity Types">
+              {Object.entries(coreList).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+              </optgroup>
+              <optgroup label="Sample Types">
+                {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
+                  <option key={index + 1} value={label}>
+                    {label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Organs">
+                {Object.entries(organs).map(([label, key], index) => (
+                  <option key={index + 1} value={label}>
+                    {key}
+                  </option>
+                ))}
+              </optgroup>
+            </Select>
+          </Box>
+        </FormControl>
     )
   }catch(error){
     let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;

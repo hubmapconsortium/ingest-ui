@@ -862,7 +862,6 @@ svg.invalid {
   background-color: rgb(220, 0, 78)!important;
   color: white!important;
 }
-
 .badge-purple {
   color: #fff!important;
   background-color: #9933cc!important;
@@ -871,6 +870,17 @@ svg.invalid {
   background-color: rgb(255, 193, 7)!important;
   color: rgb(33, 37, 41)!important;
 }
+
+status
+
+
+
+/* Blue: QA, Submitted, REORGANIZED 
+// Green: PUBLISHED, VALID 
+// Red: ERROR, INVALID 
+// Yellow: INCOMPLETE 
+// Black: PROCESSING 
+// Purple: NEW  */
 
 .upload-slide-results {
   padding: 10px;
@@ -929,8 +939,8 @@ svg.invalid {
   border: 3px solid #444a65!important;
   border-bottom-left-radius: 4px!important;
   border-bottom-right-radius: 4px!important;
-  border-top-right-radius: 10px!important;
-  border-top-left-radius: 10px!important;
+  border-top-right-radius: 0px!important;
+  border-top-left-radius: 0px!important;
 }
 
 .MuiDataGrid-panel .MuiButtonBase-root{

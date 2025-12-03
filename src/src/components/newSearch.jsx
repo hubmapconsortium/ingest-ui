@@ -6,15 +6,27 @@ import {SAMPLE_CATEGORIES} from "../constants";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Chip from '@mui/material/Chip';
+import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ClearIcon from '@mui/icons-material/Clear';
 import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import GroupsIcon from '@mui/icons-material/Groups';
+import Collapse from '@mui/material/Collapse';
+import FormHelperText from "@mui/material/FormHelperText";
+import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
 import GridLoader from "react-spinners/GridLoader";
-import {combineTypeOptionsComplete, CombineTypeSelect,CombineTypeSelectIcons} from "./ui/formParts";
+import SearchIcon from '@mui/icons-material/Search';
+import {combineTypeOptionsComplete, CombineTypeSelect,CombineTypeSelectIcons, StatusBadge, badgeClass} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
+import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -47,12 +59,15 @@ export function NewSearch({
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
+  var [chipSelect, setChipSelect] = useState([]);
+  var [pulseMap, setPulseMap] = useState({});
   var [searchFilters, setSearchFilters] = useState();
   var [formFilters, setFormFilters] = useState(
     searchFilters ? 
     searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
+  var [advancedSearch,setAdvancedSearch] = useState(true);
 
   // organ icons are passed to CombineTypeSelectIcons via prop when needed
 
@@ -317,60 +332,187 @@ export function NewSearch({
           which_cols_def = COLUMN_DEF_COLLECTION;
         }
       }
+  }
+
+    let params = {}; // Will become the searchFilters
+    var url = new URL(window.location); // Only used outside in basic / homepage Mode
+
+    if (keywords) {
+      params["keywords"] = keywords.trim();
+      url.searchParams.set("keywords", keywords);
+    } else {
+      url.searchParams.delete("keywords");
     }
-
-      let params = {}; // Will become the searchFilters
-      var url = new URL(window.location); // Only used outside in basic / homepage Mode
-
-      if (keywords) {
-        params["keywords"] = keywords.trim();
-        url.searchParams.set("keywords", keywords);
-      } else {
-        url.searchParams.delete("keywords");
-      }
-      if (group_uuid && group_uuid !== "All Components") {
-        params["group_uuid"] = group_uuid;
-        url.searchParams.set("group_uuid", group_uuid);
-      } else {
-        url.searchParams.delete("group_uuid");
-      }
-      // Here's where we sort out if the query's getting either:
-      //  an entity type, sample category, or an organ
-      // Doing this IN search now to avoid miscasting from URL
-      // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
-      if (entityType && entityType !== "----") {
-        // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
-        params["entity_type"] = entityType;
-        url.searchParams.set("entity_type", entityType);
-      } else {
-        // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
-        url.searchParams.delete("entity_type");
-      } 
-      
-      // If we're not in a special mode, push URL to window
-      if (!
-        modecheck) {
-        // console.debug("%c⊙SETTING URL: ", "color:#FFf07b", url, params);
-        window.history.pushState({}, "", url);
-        document.title = "HuBMAP Ingest Portal Search"
-      }
-    // Since useEffect is watching searchFilters, 
-    // maybe we can just set it here and it'll search on its own?
-    // console.debug('%c⊙ searchFilters', 'color:#00ff7b', params);
-    // We should apply restrictions here instead
+    if (group_uuid && group_uuid !== "All Components") {
+      params["group_uuid"] = group_uuid;
+      url.searchParams.set("group_uuid", group_uuid);
+    } else {
+      url.searchParams.delete("group_uuid");
+    }
+    // Here's where we sort out if the query's getting either:
+    //  an entity type, sample category, or an organ
+    // Doing this IN search now to avoid miscasting from URL
+    // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
+    if (entityType && entityType !== "----") {
+      // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
+      params["entity_type"] = entityType;
+      url.searchParams.set("entity_type", entityType);
+    } else {
+      // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
+      url.searchParams.delete("entity_type");
+    } 
+    if(chipSelect.length > 0){
+      params["status"] = chipSelect;
+    }
+    
+    // If we're not in a special mode, push URL to window
+    if (!
+      modecheck) {
+      window.history.pushState({}, "", url);
+      document.title = "HuBMAP Ingest Portal Search"
+    }
+    console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFilters(params);
   };
 
-  // function renderGridLoader() {
-  //   // So we can keep the 
-  // }
+
+  function statusFilter(e, status){
+    console.debug('%c◉ e ', 'color:#00ff7b', e, status);
+    // Toggle selection using React state so the component re-renders immediately
+    setChipSelect((prev) => {
+      if (!Array.isArray(prev)) return [status];
+      if (prev.includes(status)) {
+        return prev.filter((item) => item !== status);
+      }
+      return [...prev, status];
+    });
+    // trigger one-shot pulse animation
+    setPulseMap((prev) => ({...prev, [status]: true}));
+    // window.setTimeout(() => {
+    //   setPulseMap((prev) => {
+    //     const copy = {...prev};
+    //     delete copy[status];
+    //     return copy;
+    //   });
+    // }, 380);
+  }
+
+
+  function renderStatusControls() {
+    // Blue: QA, Submitted, REORGANIZED 
+    // Green: PUBLISHED, VALID 
+    // Red: ERROR, INVALID 
+    // Yellow: INCOMPLETE 
+    // Black: PROCESSING 
+    // Purple: NEW 
+    let colorMap = {  
+      "QA": '#17a2b8', 
+      "Submitted": '#17a2b8', 
+      "Reorganized": '#17a2b8', 
+      "Published": '#0ecd3a', 
+      "Valid": '#0ecd3a',
+      "Error": '#dc004e', 
+      "Invalid": '#dc004e', 
+      "Processing": '#424242', 
+      "Incomplete": '#ffc107', 
+      "New": '#9933cc', 
+    }
+
+
+    let statusOptions = ["Published", "QA", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
+    
+    return(<> 
+        {statusOptions.map((status, i) => {
+          const isSelected = chipSelect.includes(status);
+          const baseBorder = `1px solid ${colorMap[status]}`;
+          const hoverGlow = (c) => `0 0 8px ${c}55`;
+          const activeGlow = (c) => `0 0 12px ${c}88`;
+          const isPulsing = !!pulseMap && !!pulseMap[status];
+          const sxSelected = {
+            margin: "3px",
+            fontSize: '0.7rem',
+            backgroundColor: colorMap[status],
+            color: 'white',
+            border: baseBorder,
+            transition: 'border-color 10ms ease, box-shadow 20ms ease, background-color 20ms cubic-bezier(.2,.9,.3,1)',
+            boxShadow: hoverGlow(colorMap[status]),
+              '&:hover': {
+                boxShadow: `0 0 4px ${colorMap[status]}44`,
+                filter: 'brightness(0.92)',
+                backgroundColor: `${colorMap[status]}44`,
+              },
+            '&:active': {
+              boxShadow: activeGlow(colorMap[status]),
+            },
+          };
+          if (isPulsing) {
+            sxSelected.animation = 'chipPulse 30ms ease-out';
+            sxSelected['@keyframes chipPulse'] = {
+              '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
+              '60%': { boxShadow: `0 0 12px ${colorMap[status]}88` },
+              '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
+            };
+          }
+
+          const sxUnselected = {
+            // fontWeight: 'bold',
+            fontSize: '0.7rem',
+            margin: "3px",
+            backgroundColor:`${colorMap[status]}11`,
+            color: colorMap[status],
+            border: baseBorder,
+            // slower first part when moving toward color
+            transition: 'border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 30ms cubic-bezier(.2,.8,.2,1), background-color 20ms cubic-bezier(.2,.8,.2,1), color 20ms ease',
+            boxShadow: 'none',
+            '&:hover': {
+              borderColor: colorMap[status],
+              boxShadow: hoverGlow(colorMap[status]),
+                // smooth background transition from white -> tinted color on hover (midway)
+                backgroundColor: `${colorMap[status]}33`,
+                // color: 'white',
+              },
+            '&:active': {
+              // active click: snap to a stronger glow (will be followed by selection state change)
+              boxShadow: activeGlow(colorMap[status]),
+              backgroundColor: `${colorMap[status]}55`,
+              color: `${colorMap[status]}99`,
+            },
+          };
+          if (isPulsing) {
+            sxUnselected.animation = 'chipPulse 12ms ease-out';
+            sxUnselected['@keyframes chipPulse'] = {
+              '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
+              '60%': { boxShadow: `0 0 14px ${colorMap[status]}99`},
+              '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
+            };
+          }
+
+          return (
+            <Chip
+              key={i}
+              variant={isSelected ? 'filled' : 'outlined'}
+              sx={isSelected ? sxSelected : sxUnselected}
+              className={isSelected ? badgeClass(status) : 'statusChipUnselected'}
+              label={status.toUpperCase()}
+              size="small"
+              onClick={(e) => statusFilter(e, status)}
+            />
+          );
+        })}
+    </>)  
+  }
 
   function renderView() {
-    //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
-      <div style={{ width: "100%", textAlign: "center"}}>
+      <div style={{ width: "100%", textAlign: "center"}} sx={{
+          background: "#444a65",
+          background: "linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%)",
+          width: "100%",
+          color: "white",
+          borderBottomRadius: "0.375rem"
+        }}>
         {/* {renderFilterControls()} */}
-        { renderFilterControls()}
+        { renderNewFilterControls()}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
           <div className="text-center">No record found.</div>)}
@@ -416,7 +558,7 @@ export function NewSearch({
     };
 
     return (
-      <div style={{height: 590, width: "100%" }}>
+      <Box style={{height: 590, width: "100%" }}>
         <Box className="sourceShade" sx={{
           opacity: tableLoading ? 1 : 0,
           background: "#444a65",
@@ -479,7 +621,7 @@ export function NewSearch({
             },
           }}
         />
-      </div>
+      </Box>
     );
   }
 
@@ -509,99 +651,166 @@ export function NewSearch({
     );
   }
 
-  function renderFilterControls() {
+  function renderGroupField(){
     return (
-      <div className="m-2">
-        {renderPreamble()}
-        {errorState && <RenderError error={error} />}
-        <form
-          onSubmit={(e) => {
-            handleSearchClick(e);
-          }}>
-        {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
-
-          <Grid
-            container
-            spacing={3}
-            sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
-            <Grid item xs={6}>
-            <FormControl sx={{width: "100%", marginTop:"26px", display:"block"}} >
-              <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
-              <Select
-                native 
-                fullWidth
-                labelid="group_label"
-                id="group_uuid"
-                name="group_uuid"
-                label="Group"
-                value={formFilters.group_uuid?formFilters.group_uuid : ""}
-                onChange={(event) => handleInputChange(event)}>
-                <option value="allcom"></option>
-                {allGroups.map((group, index) => {
-                  return (
-                    <option key={index + 1} value={group.uuid}>
-                      {group.shortName}
-                    </option>
-                  );
-                })}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6}>
-              {/* <CombineTypeSelectIcons
-                formFilters = {formFilters}
-                OrganIcons={OrganIcons}
-                handleInputChange = {(e) => handleInputChange(e)}
-                restrictions = {restrictions}/> */}
-              <CombineTypeSelect
-                formFilters = {formFilters}
-                OrganIcons={OrganIcons}
-                handleInputChange = {(e) => handleInputChange(e)}
-                restrictions = {restrictions}/>
-            </Grid>
-            <Grid item xs={12}>
-            <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
+        <FormControl sx={{width:"100%"}} size="small">
+          <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+            <GroupsIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a group to filter by:</Typography>
+          </Box>
+          <Box>
+            <Select
+              fullWidth
+              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+              name="group_uuid"
+              value={formFilters.group_uuid?formFilters.group_uuid : ""}
+              onChange={(event) => handleInputChange(event)}>
+              <MenuItem key={0} value="allcom"></MenuItem>
+              {allGroups.map((group) => {
+                return (
+                    <MenuItem sx={{fontSize:"0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
+                );
+              })}
+            </Select>
+          </Box>
+        </FormControl>
+    )
+  }
+  
+  function renderKeywordField(){
+    return (
+        <FormControl sx={{width:"100%"}} size="small"  >
+          <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+            <ManageSearchIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
+          </Box>
+          <Box>
             <TextField
               labelid="keywords_label"
               name="keywords"
               id="keywords"
-              helperText="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-              // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
               fullWidth
               value={formFilters.keywords?formFilters.keywords : ""}
               onChange={(e) => handleInputChange(e)}/>
-              
-            </Grid>
-            <Grid item xs={2}></Grid>
-            <Grid item xs={4}>
-              <Button
-                fullWidth
-                color="primary"
-                variant="contained"
-                size="large"
-                onClick={(e) => handleSearchClick(e)}>
-                Search
-              </Button>
-            </Grid>
-            <Grid item xs={4}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="primary"
-                size="large"
-                onClick={(e) => handleClearFilter(e)}>
-                Clear
-              </Button>
-            </Grid>
-
-            <Grid item xs={2}></Grid>
-          </Grid>
-
-          {/* </FormControl> */}
-        </form>
-      </div>
-    );
+          </Box>
+        </FormControl>
+    )
   }
+  
+  function renderNewFilterControls() {
+    return (
+
+      <Box 
+        className="m-0" 
+        sx={{
+          // borderTopRightRadius: "0px!important",
+          // borderTopLeftRadius: "0px!important"
+          // borderBottomRightRadius: "0px!important",
+          // borderBottomLeftRadius: "0px!important"
+        }}>
+        {renderPreamble()}
+        {errorState && <RenderError error={error} />}
+        
+        <form
+          sx={{width: "100%", padding: "0px"}}
+          onSubmit={(e) => {
+            handleSearchClick(e);
+          }}>
+            
+          <Grid
+            container
+            spacing={0}
+            sx={{
+              textAlign: "left",
+              background: "#444a65",
+              background: "linear-gradient(180deg, #585E7A ,  #444A65 )",
+              width: "100%",
+              color: "white",
+              padding: "16px",
+              border:"1px solid #222831",
+              borderBottom:"0px!important",
+              borderTopRightRadius: "0px!important",
+              borderTopLeftRadius: "0px!important",
+              borderBottomRightRadius: "0px!important",
+              borderBottomLeftRadius: "0px!important"
+            }}>
+
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row"}}>
+              <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
+              <Grid item xs={6} sx={{padding:"4px"}} > 
+                <CombineTypeSelect
+                  formFilters = {formFilters}
+                  OrganIcons={OrganIcons}
+                  handleInputChange = {(e) => handleInputChange(e)}
+                  restrictions = {restrictions}/>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px"}}>
+              {renderKeywordField()}
+            </Grid>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", margin:"0px", padding:"0px"}}>
+              <Typography variant="caption" sx={{marginLeft:"auto", marginRight:"auto", cursor:"pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
+              {advancedSearch ? "Close" : "Enable"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
+              </Typography>
+            </Grid>
+            
+            <Collapse in={advancedSearch}>
+              <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px"}}>
+                <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+                  <CloudSyncIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+                  <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a Status to limit your search to</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                listStyle: 'none',
+                p: 0.5,
+                m: 0,
+                boxShadow: "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
+                padding: "8px",
+                backgroundColor:"rgb(255, 255, 255)",
+                borderRadius: "8px",
+                width:"100%"
+
+              }}>
+                {renderStatusControls()}
+            </Grid>
+            </Collapse>
+
+            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", justifyContent: 'right'}}>
+              {/* <Grid item xs={2}> */}
+                <Button
+                  startIcon={<ClearIcon />}
+                  variant="outlined"
+                  color="primary"
+                  sx={{background:"#e0e0e0", borderColor: "rgb(0 6 30)", color: "#ffffff",'&:hover': {backgroundColor: "#e0e0e0",}}}
+                  size="large"
+                  onClick={(e) => handleClearFilter(e)}>
+                  Clear
+                </Button>
+              {/* </Grid>   
+              <Grid item xs={10}> */}
+               <Button
+                  startIcon={<SearchIcon />}
+                  sx={{backgroundColor: "#0056b3", color: "#ffffff", borderColor: "#081344", width:"70%",'&:hover': {backgroundColor: "#007bff",}}}
+                  variant="contained"
+                  // fullWidth
+                  size="large"
+                  onClick={(e) => handleSearchClick(e)}>
+                  Search
+                </Button>
+              {/* </Grid>           */}
+           </Grid>
+          </Grid>
+        </form>
+      </Box>
+    )
+  }
+
 
   return renderView();
 
