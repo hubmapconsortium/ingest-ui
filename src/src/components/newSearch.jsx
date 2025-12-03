@@ -27,6 +27,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {combineTypeOptionsComplete, CombineTypeSelect,CombineTypeSelectIcons, StatusBadge, badgeClass} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
+import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -39,6 +40,7 @@ import {
 } from "./search/table_constants";
 import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
+import {ES_SEARCHABLE_FIELDS} from "../constants";
 
 export function NewSearch({  
   searchTitle,
@@ -67,7 +69,8 @@ export function NewSearch({
     searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
-  var [advancedSearch,setAdvancedSearch] = useState(true);
+  var [advancedSearch,setAdvancedSearch] = useState(false);
+  const [ctrlPressed, setCtrlPressed] = useState(false);
 
   // organ icons are passed to CombineTypeSelectIcons via prop when needed
 
@@ -91,6 +94,14 @@ export function NewSearch({
   // We're gonna want to check what Mode We're in
   // Will likely be either Source mode or Home mode (homepage)
   }, [modecheck]);
+
+  // helper handlers used while hovering the Clear button only
+  const handleClearKeyDown = (e) => {
+    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
+  };
+  const handleClearKeyUp = (e) => {
+    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
+  };
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -272,6 +283,8 @@ export function NewSearch({
           keywords: value,}));
         break;
       default:
+        setFormFilters((prevValues) => ({...prevValues,
+          [name]: value,}));
         break;
     }
   }
@@ -285,7 +298,12 @@ export function NewSearch({
     }
   }
   
-  function handleClearFilter() {
+  function handleClearFilter(e) {
+    // Allow ctrl/meta + click to open a fresh search in a new tab (mirrors table behavior)
+    if (e && (e.ctrlKey || e.metaKey)) {
+      window.open('/newSearch', '_blank');
+      return;
+    }
     setFormFilters({
       group_uuid: "",
       entity_type: "",
@@ -511,11 +529,10 @@ export function NewSearch({
           color: "white",
           borderBottomRadius: "0.375rem"
         }}>
-        {/* {renderFilterControls()} */}
         { renderNewFilterControls()}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
-          <div className="text-center">No record found.</div>)}
+          <div className="text-center">No records were found using the provided criteria.</div>)}
       </div>
     );
   }
@@ -548,14 +565,15 @@ export function NewSearch({
       console.debug('%c◉ obj ', 'color:#00ff7b', obj);
       return obj;
     }
+
     var columnFilters = buildColumnFilter(hiddenFields)
     console.debug('%c◉ columnFilters ', 'color:#00ff7b', results.colDef);
     
-    const getTogglableColumns = (columns: GridColDef[]) => {
-      return columns
-        .filter((column) => !hiddenFields.includes(column.field))
-        .map((column) => column.field);
-    };
+    // const getTogglableColumns = (columns: GridColDef[]) => {
+    //   return columns
+    //     .filter((column) => !hiddenFields.includes(column.field))
+    //     .map((column) => column.field);
+    // };
 
     return (
       <Box style={{height: 590, width: "100%" }}>
@@ -616,9 +634,9 @@ export function NewSearch({
             toolbar: {
               csvOptions: {fileName: "hubmap_ingest_export",}
             },
-            columnsPanel: {
-              getTogglableColumns,
-            },
+            // columnsPanel: {
+            //   getTogglableColumns,
+            // },
           }}
         />
       </Box>
@@ -676,6 +694,61 @@ export function NewSearch({
         </FormControl>
     )
   }
+
+  function renderTargetField(){
+
+    const targetOptions = ES_SEARCHABLE_FIELDS.map((f) => {
+      const clean = f.replace(/\.keyword$/i, "").replace(/[._]/g, " ");
+      return { field: f, title: toTitleCase(clean) };
+    });
+    console.debug('%c◉ targetOptions ', 'color:#00ff7b', targetOptions);
+    return (
+        <FormControl sx={{width:"100%"}} size="small">
+          <Box className="searchFieldLabel" id="SearchLabelGroup" >
+            <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select the field you wish to target:</Typography>
+          </Box>
+          <Box>
+            <Select
+              fullWidth
+              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+              name="target_field_select"
+              value={formFilters.target_field_select?formFilters.target_field_select : ""}
+              onChange={(event) => handleInputChange(event)}>
+              <MenuItem key={0} value="allcom"></MenuItem>
+              {targetOptions.map((field) => {
+                return (
+                    <MenuItem sx={{fontSize:"0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
+                );
+              })}
+            </Select>
+            {/* <Collapse in={(formFilters.target_field_select && formFilters.target_field_select.length > 0 )? true : false}>
+              {renderTargetKeywordField()}
+            </Collapse> */}
+          </Box>
+        </FormControl>
+    )
+  }
+
+
+  // function renderTargetKeywordField(){
+  //   return (
+  //     <FormControl sx={{width:"100%"}} size="small">
+  //       <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+  //         <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+  //         <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Value | </Typography>  <Typography variant="caption" id="TargetKeywords" sx={{color:"#fff"}}>Now Provide your keyword:</Typography>
+  //       </Box>
+  //       <TextField
+  //         labelid="target_keywords_label"
+  //         name="target_keywords"
+  //         id="TargetKeywords"
+  //         sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+  //         fullWidth
+  //         value={formFilters.keywords?formFilters.keywords : ""}
+  //         onChange={(e) => handleInputChange(e)}/>
+  //     </FormControl>
+  //   )
+  // }
   
   function renderKeywordField(){
     return (
@@ -701,17 +774,8 @@ export function NewSearch({
   function renderNewFilterControls() {
     return (
 
-      <Box 
-        className="m-0" 
-        sx={{
-          // borderTopRightRadius: "0px!important",
-          // borderTopLeftRadius: "0px!important"
-          // borderBottomRightRadius: "0px!important",
-          // borderBottomLeftRadius: "0px!important"
-        }}>
-        {renderPreamble()}
+      <Box>
         {errorState && <RenderError error={error} />}
-        
         <form
           sx={{width: "100%", padding: "0px"}}
           onSubmit={(e) => {
@@ -735,8 +799,9 @@ export function NewSearch({
               borderBottomRightRadius: "0px!important",
               borderBottomLeftRadius: "0px!important"
             }}>
-
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row"}}>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3"> {search_title} </Typography></Grid>
+            <Grid item xs={10} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.</Grid>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"15px", }}>
               <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
               <Grid item xs={6} sx={{padding:"4px"}} > 
                 <CombineTypeSelect
@@ -746,7 +811,6 @@ export function NewSearch({
                   restrictions = {restrictions}/>
               </Grid>
             </Grid>
-
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px"}}>
               {renderKeywordField()}
             </Grid>
@@ -755,39 +819,57 @@ export function NewSearch({
               {advancedSearch ? "Close" : "Enable"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
               </Typography>
             </Grid>
-            
             <Collapse in={advancedSearch}>
-              <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px"}}>
-                <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-                  <CloudSyncIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-                  <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a Status to limit your search to</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                listStyle: 'none',
-                p: 0.5,
-                m: 0,
-                boxShadow: "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
-                padding: "8px",
-                backgroundColor:"rgb(255, 255, 255)",
-                borderRadius: "8px",
-                width:"100%"
+              <Grid container xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px"}}>
+                <Grid item xs={6} sx={{padding:"4px"}}>
+                  {renderTargetField()}
+                </Grid>
+                <Grid item xs={6} sx={{padding:"4px"}}>
+                  <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+                    <CloudSyncIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+                    <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color:"#fff"}}>The Status of the Entity</Typography>
+                  </Box>
+                  <Box 
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap',
+                      listStyle: 'none',
+                      p: 0.5,
+                      m: 0,
+                      boxShadow: "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
+                      padding: "8px",
+                      backgroundColor:"rgb(255, 255, 255)",
+                      borderRadius: "8px",
+                      width:"100%"
+                    }}>
+                    {renderStatusControls()}
+                  </Box>
+                </Grid>
 
-              }}>
-                {renderStatusControls()}
-            </Grid>
+              </Grid>
+                
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", }}>
+            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", minHeight:"60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1"
                   startIcon={<ClearIcon />}
-                  sx={{width:"40%", background: "#e0e0e0", borderColor: "rgb(0 6 30)", color: "#AAAAAA",'&:hover': {backgroundColor: "#EAEAEA",}}}
+                    sx={{
+                      width: "40%",
+                      borderWidth: "1px",
+                      background: "#e0e0e0",
+                      border: "1px solid #00061E",
+                      color: "#AAAAAA",
+                      '&:hover': {
+                        backgroundColor: "#EAEAEA",
+                        border: ctrlPressed ? '1px solid #ff0000' : '1px solid rgb(0 6 30)'
+                      }
+                    }}
                   size="large"  
+                  onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
+                  onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
@@ -800,7 +882,6 @@ export function NewSearch({
                 variant="contained">
                 Search
               </Button>
-              {/* </Grid>           */}
            </Grid>
           </Grid>
         </form>

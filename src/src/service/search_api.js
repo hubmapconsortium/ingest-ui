@@ -176,28 +176,35 @@ export function search_api_filter_es_query_builder(
       );
     }
 
-
     // keywords handling: preserve HBM exact-match behavior, otherwise use
     // multiMatch for non-wildcard keywords. Wildcard keywords are handled
     // after this block by adding a queryStringQuery as a MUST so other
     // filters are not dropped.
+    // Determine if the UI has asked to target a single field for keyword searches
+    const targetField = fields["target_field_select"];
+    // default keyword fields (non-wildcard) and wildcard-capable fields
+    const keywordSearchFields = targetField && targetField.length > 0 && targetField !== 'allcom' ? [targetField] : ES_SEARCHABLE_FIELDS;
+    const wildcardSearchFields = targetField && targetField.length > 0 && targetField !== 'allcom' ? [targetField] : ES_SEARCHABLE_WILDCARDS;
+
     if (fields["keywords"]){
       if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+        // exact HubMAP id match stays the same
         boolQuery.must(
           esb.matchQuery("hubmap_id.keyword", fields["keywords"])
         );
       } else if (!hasWildcard) {
+        // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
         boolQuery.filter(
-          esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"])
+          esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
         );
       }
     }
 
     // If we have a wildcard keyword, add it as an additional MUST so it
-    // coexists with other filters rather than replacing them.
+    // coexists with other filters rather than replacing them. Respect target field if provided.
     if (hasWildcard){
       boolQuery.must(
-        esb.queryStringQuery(fields["keywords"]).fields(ES_SEARCHABLE_WILDCARDS)
+        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
       );
     }
   }

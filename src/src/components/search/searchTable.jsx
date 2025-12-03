@@ -40,6 +40,9 @@ export const RenderSearchTable = (props) => {
   var [searchFilters, setSearchFilters] = useState(props.searchFilters ? props.searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
+  // track ctrl/meta key while hovering Clear so we can change hover border
+  // treat Command (Meta) as equivalent to Control for the hover hint
+  const [ctrlPressed, setCtrlPressed] = useState(false);
 
   // TABLE DATA
   var [results, setResults] = React.useState({
@@ -51,6 +54,14 @@ export const RenderSearchTable = (props) => {
   //  LOADERS
   var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
+
+  // handlers for Clear hover behavior: attach key listeners only while hovering
+  const handleClearKeyDown = (e) => {
+    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
+  };
+  const handleClearKeyUp = (e) => {
+    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
+  };
   // var [filtersLoading, setFiltersLoading] = useState(false);
 
   // ERROR THINGS
@@ -317,17 +328,21 @@ export const RenderSearchTable = (props) => {
   //   setMessage(`Movie "${params.row.title}" clicked`);
   // };
   
-  function handleClearFilter() {
-    setFormFilters({
-      group_uuid: "",
-      entity_type: "",
-      keywords: ""
-    })
-    setSearchFilters({
-      group_uuid: "allcom",
-      entity_type: "---",
-      keywords: ""
-    })
+  function handleClearFilter(e) {
+    if(e.ctrlKey || e.metaKey){
+        window.open("/newSearch",'_blank')
+    }else{
+      setFormFilters({
+        group_uuid: "",
+        entity_type: "",
+        keywords: ""
+      })
+      setSearchFilters({
+        group_uuid: "allcom",
+        entity_type: "---",
+        keywords: ""
+      })
+    }
   }
         
   function handleSearchClick(event) {
@@ -623,6 +638,9 @@ export const RenderSearchTable = (props) => {
                 variant="outlined"
                 color="primary"
                 size="large"
+                sx={{ border: "1px solid #aaa", '&:hover': { border: ctrlPressed ? '1px solid #ff0000' : '1px solid #CBC6C6' } }}
+                onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
+                onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
                 onClick={(e) => handleClearFilter(e)}>
                 Clear
               </Button>
