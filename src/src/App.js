@@ -375,7 +375,7 @@ export function App(){
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
-        navigate(lowerTarget, {replace: true});
+        navigate(lowerTarget);
       }
     }
     if(event && event==="raw"){

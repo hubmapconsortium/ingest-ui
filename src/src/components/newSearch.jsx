@@ -417,12 +417,6 @@ export function NewSearch({
 
 
   function renderStatusControls() {
-    // Blue: QA, Submitted, REORGANIZED 
-    // Green: PUBLISHED, VALID 
-    // Red: ERROR, INVALID 
-    // Yellow: INCOMPLETE 
-    // Black: PROCESSING 
-    // Purple: NEW 
     let colorMap = {  
       "QA": '#17a2b8', 
       "Submitted": '#17a2b8', 
@@ -435,88 +429,84 @@ export function NewSearch({
       "Incomplete": '#ffc107', 
       "New": '#9933cc', 
     }
-
-
     let statusOptions = ["Published", "QA", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
-    
     return(<> 
-        {statusOptions.map((status, i) => {
-          const isSelected = chipSelect.includes(status);
-          const baseBorder = `1px solid ${colorMap[status]}`;
-          const hoverGlow = (c) => `0 0 8px ${c}55`;
-          const activeGlow = (c) => `0 0 12px ${c}88`;
-          const isPulsing = !!pulseMap && !!pulseMap[status];
-          const sxSelected = {
-            margin: "3px",
-            fontSize: '0.7rem',
-            backgroundColor: colorMap[status],
-            color: 'white',
-            border: baseBorder,
-            transition: 'border-color 10ms ease, box-shadow 20ms ease, background-color 20ms cubic-bezier(.2,.9,.3,1)',
-            boxShadow: hoverGlow(colorMap[status]),
-              '&:hover': {
-                boxShadow: `0 0 4px ${colorMap[status]}44`,
-                filter: 'brightness(0.92)',
-                backgroundColor: `${colorMap[status]}44`,
-              },
-            '&:active': {
-              boxShadow: activeGlow(colorMap[status]),
-            },
-          };
-          if (isPulsing) {
-            sxSelected.animation = 'chipPulse 30ms ease-out';
-            sxSelected['@keyframes chipPulse'] = {
-              '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
-              '60%': { boxShadow: `0 0 12px ${colorMap[status]}88` },
-              '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
-            };
-          }
-
-          const sxUnselected = {
-            // fontWeight: 'bold',
-            fontSize: '0.7rem',
-            margin: "3px",
-            backgroundColor:`${colorMap[status]}11`,
-            color: colorMap[status],
-            border: baseBorder,
-            // slower first part when moving toward color
-            transition: 'border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 30ms cubic-bezier(.2,.8,.2,1), background-color 20ms cubic-bezier(.2,.8,.2,1), color 20ms ease',
-            boxShadow: 'none',
+      {statusOptions.map((status, i) => {
+        const isSelected = chipSelect.includes(status);
+        const baseBorder = `1px solid ${colorMap[status]}`;
+        const hoverGlow = (c) => `0 0 4px ${c}44`;
+        const activeGlow = (c) => `0 0 4px ${c}99`;
+        const isPulsing = !!pulseMap && !!pulseMap[status];
+        const sxSelected = {
+          // fontWeight: 'bold',
+          margin: "2px",
+          fontSize: '0.7rem',
+          backgroundColor: colorMap[status],
+          color: 'white',
+          border: baseBorder,
+          transition: 'border-color 10ms ease, box-shadow 20ms ease, background-color 20ms cubic-bezier(.2,.9,.3,1)',
+          boxShadow: hoverGlow(colorMap[status]),
             '&:hover': {
-              borderColor: colorMap[status],
-              boxShadow: hoverGlow(colorMap[status]),
-                // smooth background transition from white -> tinted color on hover (midway)
-                backgroundColor: `${colorMap[status]}33`,
-                // color: 'white',
-              },
-            '&:active': {
-              // active click: snap to a stronger glow (will be followed by selection state change)
-              boxShadow: activeGlow(colorMap[status]),
-              backgroundColor: `${colorMap[status]}55`,
-              color: `${colorMap[status]}99`,
+              boxShadow: `0 0 6px ${colorMap[status]}44`,
+              backgroundColor: `${colorMap[status]}44`,
             },
+          '&:active': {
+            boxShadow: activeGlow(colorMap[status]),
+          },
+        };
+        if (isPulsing) {
+          sxSelected.animation = 'chipPulse 30ms ease-out';
+          sxSelected['@keyframes chipPulse'] = {
+            '0%': { boxShadow: `0 0 6 ${colorMap[status]}00`},
+            '60%': { boxShadow: `0 0 6px ${colorMap[status]}88` },
+            '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
           };
-          if (isPulsing) {
-            sxUnselected.animation = 'chipPulse 12ms ease-out';
-            sxUnselected['@keyframes chipPulse'] = {
-              '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
-              '60%': { boxShadow: `0 0 14px ${colorMap[status]}99`},
-              '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
-            };
-          }
+        }
 
-          return (
-            <Chip
-              key={i}
-              variant={isSelected ? 'filled' : 'outlined'}
-              sx={isSelected ? sxSelected : sxUnselected}
-              className={isSelected ? badgeClass(status) : 'statusChipUnselected'}
-              label={status.toUpperCase()}
-              size="small"
-              onClick={(e) => statusFilter(e, status)}
-            />
-          );
-        })}
+        const sxUnselected = {
+          fontSize: '0.7rem',
+          margin: "3px",
+          backgroundColor:`${colorMap[status]}11`,
+          color: colorMap[status],
+          border: baseBorder,
+          // slower first part when moving toward color
+          transition: 'border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 30ms cubic-bezier(.2,.8,.2,1), background-color 20ms cubic-bezier(.2,.8,.2,1), color 20ms ease',
+          boxShadow: `0 0 4px ${colorMap[status]}44`,
+          '&:hover': {
+            borderColor: colorMap[status],
+            boxShadow: hoverGlow(colorMap[status]),
+              // smooth background transition from white -> tinted color on hover (midway)
+              backgroundColor: `${colorMap[status]}33`,
+              // color: 'white',
+            },
+          '&:active': {
+            // active click: snap to a stronger glow (will be followed by selection state change)
+            boxShadow: activeGlow(colorMap[status]),
+            backgroundColor: `${colorMap[status]}55`,
+            color: `${colorMap[status]}99`,
+          },
+        };
+        if (isPulsing) {
+          sxUnselected.animation = 'chipPulse 12ms ease-out';
+          sxUnselected['@keyframes chipPulse'] = {
+            '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
+            '60%': { boxShadow: `0 0 6px ${colorMap[status]}99`},
+            '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
+          };
+        }
+
+        return (
+          <Chip
+            key={i}
+            variant={isSelected ? 'filled' : 'outlined'}
+            sx={isSelected ? sxSelected : sxUnselected}
+            className={isSelected ? badgeClass(status) : 'statusChipUnselected'}
+            label={status.toUpperCase()}
+            size="small"
+            onClick={(e) => statusFilter(e, status)}
+          />
+        );
+      })}
     </>)  
   }
 
@@ -643,31 +633,30 @@ export function NewSearch({
     );
   }
 
-  function renderPreamble() {
-    return (
-      <Box
-        sx={{flexDirection: "column",
-          justifyContent: "center",
-          marginBottom: 2,}}>
+  // function renderPreamble() {
+  //   return (
+  //     <Box
+  //       sx={{flexDirection: "column",
+  //         justifyContent: "center",
+  //         marginBottom: 2,}}>
         
-        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
-          {!search_subtitle &&(
-            <Typography align={"center"} variant="subtitle1" gutterBottom >
-              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
-              If you know a specific ID you can enter it into the keyword field to locate individual entities.
-            </Typography>
-          )}
-          {search_subtitle &&(
-            <Typography align={"center"} variant="caption" gutterBottom>
-              {search_subtitle} <br/>
-              If you know a specific ID you can enter it into the keyword field to locate individual entities.
-
-            </Typography>
-          )}
+  //       <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
+  //         {!search_subtitle &&(
+  //           <Typography align={"center"} variant="subtitle1" gutterBottom >
+  //             Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
+  //             If you know a specific ID you can enter it into the keyword field to locate individual entities.
+  //           </Typography>
+  //         )}
+  //         {search_subtitle &&(
+  //           <Typography align={"center"} variant="caption" gutterBottom>
+  //             {search_subtitle} <br/>
+  //             If you know a specific ID you can enter it into the keyword field to locate individual entities.
+  //           </Typography>
+  //         )}
           
-      </Box>
-    );
-  }
+  //     </Box>
+  //   );
+  // }
 
   function renderGroupField(){
     return (
@@ -701,7 +690,7 @@ export function NewSearch({
       const clean = f.replace(/\.keyword$/i, "").replace(/[._]/g, " ");
       return { field: f, title: toTitleCase(clean) };
     });
-    console.debug('%c◉ targetOptions ', 'color:#00ff7b', targetOptions);
+    // console.debug('%c◉ targetOptions ', 'color:#00ff7b', targetOptions);
     return (
         <FormControl sx={{width:"100%"}} size="small">
           <Box className="searchFieldLabel" id="SearchLabelGroup" >
@@ -712,8 +701,9 @@ export function NewSearch({
             <Select
               fullWidth
               sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
-              name="target_field_select"
-              value={formFilters.target_field_select?formFilters.target_field_select : ""}
+              name="target_field"
+              id="target_field"
+              value={formFilters.target_field?formFilters.target_field : ""}
               onChange={(event) => handleInputChange(event)}>
               <MenuItem key={0} value="allcom"></MenuItem>
               {targetOptions.map((field) => {
@@ -722,34 +712,12 @@ export function NewSearch({
                 );
               })}
             </Select>
-            {/* <Collapse in={(formFilters.target_field_select && formFilters.target_field_select.length > 0 )? true : false}>
-              {renderTargetKeywordField()}
-            </Collapse> */}
           </Box>
         </FormControl>
     )
   }
 
 
-  // function renderTargetKeywordField(){
-  //   return (
-  //     <FormControl sx={{width:"100%"}} size="small">
-  //       <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-  //         <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-  //         <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Value | </Typography>  <Typography variant="caption" id="TargetKeywords" sx={{color:"#fff"}}>Now Provide your keyword:</Typography>
-  //       </Box>
-  //       <TextField
-  //         labelid="target_keywords_label"
-  //         name="target_keywords"
-  //         id="TargetKeywords"
-  //         sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
-  //         fullWidth
-  //         value={formFilters.keywords?formFilters.keywords : ""}
-  //         onChange={(e) => handleInputChange(e)}/>
-  //     </FormControl>
-  //   )
-  // }
-  
   function renderKeywordField(){
     return (
         <FormControl sx={{width:"100%"}} size="small"  >
@@ -800,7 +768,7 @@ export function NewSearch({
               borderBottomLeftRadius: "0px!important"
             }}>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3"> {search_title} </Typography></Grid>
-            <Grid item xs={10} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.</Grid>
+            <Grid item xs={12} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.</Grid>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"15px", }}>
               <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
               <Grid item xs={6} sx={{padding:"4px"}} > 
@@ -816,11 +784,11 @@ export function NewSearch({
             </Grid>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", margin:"0px", padding:"0px"}}>
               <Typography variant="caption" sx={{marginLeft:"auto", marginRight:"auto", cursor:"pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
-              {advancedSearch ? "Close" : "Enable"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
+              {advancedSearch ? "Hide" : "Show"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
               </Typography>
             </Grid>
-            <Collapse in={advancedSearch}>
-              <Grid container xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px"}}>
+            <Collapse in={advancedSearch} sx={{width:"100%"}}>
+              <Grid container xs={12} sx={{display: "flex", marginTop:"16px"}}>
                 <Grid item xs={6} sx={{padding:"4px"}}>
                   {renderTargetField()}
                 </Grid>
@@ -841,8 +809,10 @@ export function NewSearch({
                       padding: "8px",
                       backgroundColor:"rgb(255, 255, 255)",
                       borderRadius: "8px",
+                      border: "thick double solid #ccc",
                       width:"100%"
                     }}>
+
                     {renderStatusControls()}
                   </Box>
                 </Grid>
@@ -851,7 +821,7 @@ export function NewSearch({
                 
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", minHeight:"60px" }}>
+            <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", minHeight:"60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1"

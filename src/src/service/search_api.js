@@ -93,14 +93,14 @@ export function search_api_filter_es_query_builder(
   from,
   size,
   colFields
-){
+) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
   console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
-    console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
-    console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
-    console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
-    console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
+  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+  console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+  console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+  console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
   // Always build a bool query and, if keywords contain a wildcard, add a
   // queryStringQuery as an additional MUST instead of short-circuiting the
   // whole builder. This preserves group/entity/organ filters while still
@@ -118,7 +118,10 @@ export function search_api_filter_es_query_builder(
       )
     );
   } else {
-    // was a group name selected
+
+    // FIELD PROCESSING
+
+    // Group
     if (fields["group_name"]){
       boolQuery.must(
         esb.matchQuery("group_name.keyword", fields["group_name"])
@@ -130,7 +133,7 @@ export function search_api_filter_es_query_builder(
       );
     }
 
-    // was specimen types selected
+    // Specimen Types
     if (fields["sample_category"]){
       // console.debug("sample_category", fields["sample_category"]);
       if (fields["sample_category"] !== "donor"){
@@ -140,74 +143,80 @@ export function search_api_filter_es_query_builder(
       } else {
         boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
       }
-    } else if (fields["organ"]){
+    } 
+    
+    // Organ
+    else if (fields["organ"]){
       boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
-    } else {
-      // was entity types select
-      if (fields["entity_type"]){
+    } 
+    
+    // Entity Type
+    else if (fields["entity_type"]){
 
-        if(["Data Upload"].includes(fields["entity_type"])){
-          fields["entity_type"] = "Upload";
-        }
+      if(["Data Upload"].includes(fields["entity_type"])){
+        fields["entity_type"] = "Upload";
+      }
 
-        if (fields["entity_type"] === "DonorSample"){
-          // hack to deal with no type selected from the UI, this clues from the donor/sample filer
-          boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
-        } else {
-          boolQuery.must(
-            esb.matchQuery("entity_type.keyword", fields["entity_type"])
-          );
-        }
+      if (fields["entity_type"] === "DonorSample"){
+        // hack to deal with no type selected from the UI, this clues from the donor/sample filer
+        boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
       } else {
         boolQuery.must(
-          esb.matchQuery(
-            "entity_type",
-            "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
-          )
-        ); // default everything ; this maybe temp
+          esb.matchQuery("entity_type.keyword", fields["entity_type"])
+        );
       }
     }
-
-
-    if (fields["status"]){
-      let queryString = fields["status"].join(" OR ");
+    
+    // Default all entity types
+    else {
       boolQuery.must(
-        esb.matchQuery("status", queryString)
+        esb.matchQuery(
+          "entity_type",
+          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
+        )
+      ); // default everything ; this maybe temp
+    }
+  }
+
+  // Status
+  if (fields["status"]){
+    let queryString = fields["status"].join(" OR ");
+    boolQuery.must(
+      esb.matchQuery("status", queryString)
+    );
+  }
+
+  // keywords handling: preserve HBM exact-match behavior, otherwise use
+  // multiMatch for non-wildcard keywords. Wildcard keywords are handled
+  // after this block by adding a queryStringQuery as a MUST so other
+  // filters are not dropped.
+  // Determine if the UI has asked to target a single field for keyword searches
+  // default keyword fields (non-wildcard) and wildcard-capable fields
+  const keywordSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_FIELDS;
+  const wildcardSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_WILDCARDS;
+
+  if (fields["keywords"]){
+    if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+      // exact HubMAP id match stays the same
+      boolQuery.must(
+        esb.matchQuery("hubmap_id.keyword", fields["keywords"])
       );
-    }
-
-    // keywords handling: preserve HBM exact-match behavior, otherwise use
-    // multiMatch for non-wildcard keywords. Wildcard keywords are handled
-    // after this block by adding a queryStringQuery as a MUST so other
-    // filters are not dropped.
-    // Determine if the UI has asked to target a single field for keyword searches
-    const targetField = fields["target_field_select"];
-    // default keyword fields (non-wildcard) and wildcard-capable fields
-    const keywordSearchFields = targetField && targetField.length > 0 && targetField !== 'allcom' ? [targetField] : ES_SEARCHABLE_FIELDS;
-    const wildcardSearchFields = targetField && targetField.length > 0 && targetField !== 'allcom' ? [targetField] : ES_SEARCHABLE_WILDCARDS;
-
-    if (fields["keywords"]){
-      if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
-        // exact HubMAP id match stays the same
-        boolQuery.must(
-          esb.matchQuery("hubmap_id.keyword", fields["keywords"])
-        );
-      } else if (!hasWildcard) {
-        // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
-        boolQuery.filter(
-          esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
-        );
-      }
-    }
-
-    // If we have a wildcard keyword, add it as an additional MUST so it
-    // coexists with other filters rather than replacing them. Respect target field if provided.
-    if (hasWildcard){
-      boolQuery.must(
-        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+    } else if (!hasWildcard) {
+      // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
+      boolQuery.filter(
+        esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
       );
     }
   }
+
+  // If we have a wildcard keyword, add it as an additional MUST so it
+  // coexists with other filters rather than replacing them. Respect target field if provided.
+  if (hasWildcard){
+    boolQuery.must(
+      esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+    );
+  }
+
   if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1){
     // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
     requestBody
@@ -226,10 +235,11 @@ export function search_api_filter_es_query_builder(
       .source(colFields)
       .trackTotalHits(true);
   }
+
   console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
   console.groupEnd();
-
   return requestBody.toJSON();
+  
 }
 
 /*

@@ -771,6 +771,19 @@ export const SampleForm = (props) => {
                   {sourceEntity.group_name}
                 </Typography>
               )}
+              {sourceEntity.hubmap_id && (
+                <Typography className="col-sm-12">
+                  <b>Hubmap ID: </b>{" "}
+                  <Button
+                      onClick={() => window.open("/"+sourceEntity.entity_type+"/"+sourceEntity.hubmap_id,'_blank') }
+                      variant="contained"
+                      size="small"
+                      color="primary">
+                      {sourceEntity.hubmap_id}
+                    </Button>
+                    
+                </Typography>
+              )}
             </Box>
           )}
 
