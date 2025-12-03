@@ -730,8 +730,8 @@ export function NewSearch({
               padding: "16px",
               border:"1px solid #222831",
               borderBottom:"0px!important",
-              borderTopRightRadius: "0px!important",
-              borderTopLeftRadius: "0px!important",
+              borderTopRightRadius: "10px!important",
+              borderTopLeftRadius: "10px!important",
               borderBottomRightRadius: "0px!important",
               borderBottomLeftRadius: "0px!important"
             }}>
@@ -781,28 +781,25 @@ export function NewSearch({
             </Grid>
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", justifyContent: 'right'}}>
+            <Grid cotainer rowSpacing={1} columnSpacing={1} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", }}>
               {/* <Grid item xs={2}> */}
                 <Button
+                  className="m-1"
                   startIcon={<ClearIcon />}
-                  variant="outlined"
-                  color="primary"
-                  sx={{background:"#e0e0e0", borderColor: "rgb(0 6 30)", color: "#ffffff",'&:hover': {backgroundColor: "#e0e0e0",}}}
-                  size="large"
+                  sx={{width:"40%", background: "#e0e0e0", borderColor: "rgb(0 6 30)", color: "#AAAAAA",'&:hover': {backgroundColor: "#EAEAEA",}}}
+                  size="large"  
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
-              {/* </Grid>   
-              <Grid item xs={10}> */}
-               <Button
-                  startIcon={<SearchIcon />}
-                  sx={{backgroundColor: "#0056b3", color: "#ffffff", borderColor: "#081344", width:"70%",'&:hover': {backgroundColor: "#007bff",}}}
-                  variant="contained"
-                  // fullWidth
-                  size="large"
-                  onClick={(e) => handleSearchClick(e)}>
-                  Search
-                </Button>
+              <Button 
+                className="m-1"
+                size="large"
+                sx={{width:"70%",}}
+                startIcon={<SearchIcon />}
+                onClick={(e) => handleSearchClick(e)}
+                variant="contained">
+                Search
+              </Button>
               {/* </Grid>           */}
            </Grid>
           </Grid>
