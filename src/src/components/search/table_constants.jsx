@@ -328,10 +328,6 @@ function entityIconsBasic(entity_type){
 
 function renderFieldIcons(params: ValueFormatterParams) {
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  console.debug('%c◉ systemIcons ', 'color:#00ff7b', systemIcons);
-  // let entityIcon = EntityIconsBasic(params.row.entity_type)
-  // console.debug('%c◉ entityIcon ', 'color:#00ff7b', entityIcon);
-  console.debug('%c◉ renderFieldIcons params ', 'color:#00ff7b', systemIcons[params.row.organ], params.row);
   return (
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
@@ -355,7 +351,6 @@ function shrinkCols(string){
 }
 
 function prettyCase(string){
-  // return toTitleCase(string)
   return "YES "+toTitleCase(string)
 }
 

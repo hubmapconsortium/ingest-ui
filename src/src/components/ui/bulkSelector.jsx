@@ -26,6 +26,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faPenToSquare, faFolderTree, faTrash, faCircleExclamation, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
 import SearchComponent from "../search/SearchComponent";
+import {EmbeddedSearch} from "../embedSearch";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
@@ -422,7 +423,7 @@ export function BulkSelector({
       aria-labelledby="source-lookup-dialog"
       open={showSearchDialog === true}>
       <DialogContent>
-        <SearchComponent
+        <EmbeddedSearch
           select={handleSelectClick}
           modecheck="Source"
 					custom_title={searchFilters.custom_title ? searchFilters.custom_title :"Select a Source Entity"}
