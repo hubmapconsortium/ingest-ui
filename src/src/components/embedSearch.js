@@ -247,10 +247,11 @@ export function EmbeddedSearch({
   function handleTableCellClickDefault(params, event) {
     console.debug('%c◉ handleTableCellClickDefault ', 'color:#00ff7b', );
     if (params.field === "uuid") return; // skip this field
-    if (params.hasOwnProperty("row")) {
-      var typeText = params.row.entity_type.toLowerCase();
-      urlChange(event, typeText + "/" + params.row.uuid);
-    }
+  
+    // if (params.hasOwnProperty("row")) {
+    //   var typeText = params.row.entity_type.toLowerCase();
+    //   urlChange(event, typeText + "/" + params.row.uuid);
+    // }
   }
   
   function handleClearFilter() {
