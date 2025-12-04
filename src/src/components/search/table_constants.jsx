@@ -7,13 +7,11 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
-import {EntityIconsBasic} from "../ui/icons";
 
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 
@@ -380,13 +378,6 @@ function getStatusAccess(params: ValueGetterParams) {
     return ["", ""]
   }
 }
-
-// function renderActionButton(params: ValueFormatterParams) {
-//   // console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
-//   return(
-    
-//   )
-// }
 
 function renderStatusAccess(params: ValueFormatterParams) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);

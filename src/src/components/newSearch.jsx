@@ -11,7 +11,6 @@ import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -20,11 +19,9 @@ import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
-import FormHelperText from "@mui/material/FormHelperText";
-import ContentPasteSearchIcon from '@mui/icons-material/ContentPasteSearch';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import {combineTypeOptionsComplete, CombineTypeSelect,CombineTypeSelectIcons, StatusBadge, badgeClass} from "./ui/formParts";
+import {CombineTypeSelect,badgeClass} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
@@ -42,22 +39,13 @@ import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 
-export function NewSearch({  
-  searchTitle,
-  searchSubtitle,
+export function NewSearch({
   searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
   modecheck,
-  reportError,
-  handleTableCellClick,
 }){
-  var [search_title] = useState(
-    searchTitle ? 
-    searchTitle : "Search");
-  var [search_subtitle] = useState(
-    searchSubtitle ? 
-    searchSubtitle : null);
+
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
@@ -192,20 +180,17 @@ export function NewSearch({
       hiddenFields.push("entity_type");
       hiddenFields.push("sample_category");
     }
-    if (searchState.colDef === COLUMN_DEF_MIXED && (
-      !modecheck || 
-      modecheck !== "Source")) {
+    if (searchState.colDef === COLUMN_DEF_MIXED ){
       hiddenFields.push("uuid");
     }
     return buildColumnFilter(hiddenFields);
-  }, [searchState.colDef, modecheck, buildColumnFilter]);
+  }, [searchState.colDef, buildColumnFilter]);
 
   // memoized csv options object for DataGrid toolbar
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
 
   // stable handlers
   const handleTableCellClickDefault = useCallback((params, event) => {
-    // match previous signature - keep stable reference for DataGrid
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
@@ -219,9 +204,8 @@ export function NewSearch({
   }, []);
 
   const onCellClickHandler = useCallback((event, params, details) => {
-    if (handleTableCellClick) return handleTableCellClick(event, params, details);
     return handleTableCellClickDefault(params, event);
-  }, [handleTableCellClick, handleTableCellClickDefault]);
+  }, [handleTableCellClickDefault]);
 
   useEffect(() => {
     // If URL/initial filters were applied, and we don't yet have searchFiltersState, skip the default search
@@ -412,7 +396,6 @@ export function NewSearch({
     setPulseMap((prev) => ({...prev, [status]: true}));
   }
 
-
   function renderStatusControls() {
     let colorMap = {  
       "QA": '#17a2b8', 
@@ -459,7 +442,6 @@ export function NewSearch({
             '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
           };
         }
-
         const sxUnselected = {
           fontSize: '0.7rem',
           margin: "3px",
@@ -510,7 +492,7 @@ export function NewSearch({
   function renderView() {
     return (
       <div style={{ width: "100%", textAlign: "center"}} sx={{
-          background: "#444a65",
+          backgroundColor: "#444a65",
           background: "linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%)",
           width: "100%",
           color: "white",
@@ -532,7 +514,7 @@ export function NewSearch({
       <Box style={{height: 590, width: "100%" , position: "relative"}}>
         <Box className="sourceShade" sx={{
           opacity: searchState.loading ? 1 : 0,
-          background: "#444a65",
+          backgroundColor: "#444a65",
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
           maxWidth: "1266px",
@@ -701,7 +683,7 @@ export function NewSearch({
               borderBottomRightRadius: "0px!important",
               borderBottomLeftRadius: "0px!important"
             }}>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3"> {search_title} </Typography></Grid>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
             <Grid item xs={12} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.</Grid>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"15px", }}>
               <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
@@ -877,11 +859,8 @@ export function NewSearch({
     }
     
     // If we're not in a special mode, push URL to window
-    if (!
-      modecheck) {
-      window.history.pushState({}, "", url);
-      document.title = "HuBMAP Ingest Portal Search"
-    }
+    window.history.pushState({}, "", url);
+    document.title = "HuBMAP Ingest Portal Search"
     console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
   };

@@ -430,6 +430,7 @@ export function BulkSelector({
 					custom_subtitle={searchFilters.custom_subtitle ? searchFilters.custom_subtitle : null}
 					restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}
 					blacklist={searchFilters.blacklist ? searchFilters.blacklist : null}
+          embedded={true}
         />
       </DialogContent>
       <DialogActions>

@@ -600,11 +600,50 @@ export function handleSortOrgans(organList){
   }
   return sortedMap;
 };
-
+export function CombinedTypeOptions(){
+  let coreList = {
+    donor: "Donor" ,
+    sample: "Sample",
+    dataset: "Dataset", 
+    upload: "Data Upload",
+    publication: "Publication",
+    collection: "Collection"
+  }
+  let organs = [];
+  let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
+  organList.forEach((value, key) => {
+    organs[value] = key;
+  });
+  return (<>
+    <option aria-label="None" value="" />
+    <optgroup label="Entity Types">
+    {Object.entries(coreList).map(([key, label]) => (
+      <option key={key} value={key}>
+        {label}
+      </option>
+    ))}
+    </optgroup>
+    <optgroup label="Sample Types">
+      {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
+        <option key={index + 1} value={label}>
+          {label}
+        </option>
+      ))}
+    </optgroup>
+    <optgroup label="Organs">
+      {Object.entries(organs).map(([label, key], index) => (
+        <option key={index + 1} value={label}>
+          {key}
+        </option>
+      ))}
+    </optgroup>
+  </>)
+}
 export function CombineTypeSelect({
   formFilters,
   handleInputChange,
   restrictions,
+  embedded
   }){
   // console.debug('%c◉  CombineTypeSelect', 'color:#9359FF', );
   // let coreList = ["Donor","Sample","Dataset","Data Upload","Publication","Collection"]
@@ -625,46 +664,30 @@ export function CombineTypeSelect({
     });
     // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
-
-        <FormControl size="small"  sx={{width:"100%"}}>
-          <Box className="searchFieldLabel" id="SearchLabelType" >
-            <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
-          </Box>
-          <Box>
+        <FormControl size="small" sx={{width:"100%"}}>
+          {embedded && (
+            <InputLabel htmlFor="entity_type">Type</InputLabel>
+          )}
+          {!embedded && (
+            <Box className="searchFieldLabel" id="SearchLabelType" >
+              <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+              <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
+            </Box>
+          )}
+          
             <Select 
               native 
               fullWidth
+              label="Type"
               id="entity_type"
               sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
               name="entity_type"
               value={formFilters.entity_type}
               onChange={(e) => handleInputChange(e)}
               disabled={restrictions && restrictions.entityType?true:false}>
-              <option aria-label="None" value="" />
-              <optgroup label="Entity Types">
-              {Object.entries(coreList).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-              </optgroup>
-              <optgroup label="Sample Types">
-                {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
-                  <option key={index + 1} value={label}>
-                    {label}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Organs">
-                {Object.entries(organs).map(([label, key], index) => (
-                  <option key={index + 1} value={label}>
-                    {key}
-                  </option>
-                ))}
-              </optgroup>
+              <CombinedTypeOptions />
             </Select>
-          </Box>
+          
         </FormControl>
     )
   }catch(error){

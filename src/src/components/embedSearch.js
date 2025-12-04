@@ -13,7 +13,7 @@ import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import GridLoader from "react-spinners/GridLoader";
-import {CombineTypeSelect} from "./ui/formParts";
+import {CombinedTypeOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {toTitleCase} from "../utils/string_helper";
 import {
@@ -475,7 +475,7 @@ export function EmbeddedSearch({
             spacing={3}
             sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
             <Grid item xs={6}>
-            <FormControl sx={{width: "100%", marginTop:"26px", display:"block"}} >
+            <FormControl sx={{width: "100%", marginTop:"26px", display:"block",}} >
               <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
                 native 
@@ -498,16 +498,19 @@ export function EmbeddedSearch({
               </FormControl>
             </Grid>
             <Grid item xs={6}>
-              {/* <CombineTypeSelectIcons
-                formFilters = {formFilters}
-                OrganIcons={OrganIcons}
-                handleInputChange = {(e) => handleInputChange(e)}
-                restrictions = {restrictions}/> */}
-              <CombineTypeSelect
-                formFilters = {formFilters}
-                OrganIcons={OrganIcons}
-                handleInputChange = {(e) => handleInputChange(e)}
-                restrictions = {restrictions}/>
+              <InputLabel htmlFor="entity_type" id="entity_type_label">Type</InputLabel>
+              <Select
+                native 
+                fullWidth
+                labelid="entity_type_label"
+                name="entity_type"
+                id="entity_type"
+                label="Type"
+                value={formFilters.entity_type}
+                onChange={(e) => handleInputChange(e)}
+                disabled={restrictions && restrictions.entityType?true:false}>
+                <CombinedTypeOptions />
+                </Select>
             </Grid>
             <Grid item xs={12}>
             <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
