@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React,{useEffect,useState,useCallback,useMemo,useReducer} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
@@ -45,7 +45,7 @@ import {ES_SEARCHABLE_FIELDS} from "../constants";
 export function NewSearch({  
   searchTitle,
   searchSubtitle,
-  searchFilters,
+  searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
   modecheck,
@@ -63,27 +63,36 @@ export function NewSearch({
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
   var [chipSelect, setChipSelect] = useState([]);
   var [pulseMap, setPulseMap] = useState({});
-  var [searchFilters, setSearchFilters] = useState();
+  // rename local state to avoid shadowing the incoming prop 'initialSearchFilters'
+  var [searchFiltersState, setSearchFiltersState] = useState(initialSearchFilters);
   var [formFilters, setFormFilters] = useState(
-    searchFilters ? 
-    searchFilters : {});
+    initialSearchFilters ? 
+    initialSearchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
   const [ctrlPressed, setCtrlPressed] = useState(false);
 
-  // organ icons are passed to CombineTypeSelectIcons via prop when needed
-
-  // TABLE DATA
-  var [results, setResults] = React.useState({
+  // TABLE DATA + LOADING: useReducer to update related fields atomically
+  const initialSearchState = {
     dataRows: null,
     rowCount: 0,
     colDef: COLUMN_DEF_SAMPLE,
-  });
+    loading: true,
+  };
 
-  //  LOADERS
-  var [loading, setLoading] = useState(true);
-  var [tableLoading, setTableLoading] = useState(true);
+  function searchReducer(state, action) {
+    switch (action.type) {
+      case "SET":
+        return { ...state, ...action.payload };
+      case "RESET":
+        return initialSearchState;
+      default:
+        return state;
+    }
+  }
+
+  const [searchState, dispatchSearchState] = useReducer(searchReducer, initialSearchState);
 
   // ERROR THINGS
   var [error, setError] = useState();
@@ -119,9 +128,65 @@ export function NewSearch({
   function errorReporting(error){
     // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
+
+  // small stable helper for building columnVisibility model
+  const buildColumnFilter = useCallback((arr) => {
+    let obj = {};
+    arr.forEach(value => {
+        obj[value] = false;
+    });
+    return obj;
+  }, []);
+
+  // memoized visibility model for DataGrid columns so we don't recreate the object each render
+  const columnVisibilityModel = useMemo(() => {
+    const hiddenFields = [
+      "created_by_user_displayname",
+      "lab_tissue_sample_id",
+      "lab_donor_id",
+      "specimen_type",
+      "organ",
+      "registered_doi",
+    ];
+    if (searchState.colDef !== COLUMN_DEF_MIXED) {
+      hiddenFields.push("entity_type");
+      hiddenFields.push("sample_category");
+    }
+    if (searchState.colDef === COLUMN_DEF_MIXED && (
+      !modecheck || 
+      modecheck !== "Source")) {
+      hiddenFields.push("uuid");
+    }
+    return buildColumnFilter(hiddenFields);
+  }, [searchState.colDef, modecheck, buildColumnFilter]);
+
+  // memoized csv options object for DataGrid toolbar
+  const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
+
+  // stable handlers
+  const handleTableCellClickDefault = useCallback((params, event) => {
+    // match previous signature - keep stable reference for DataGrid
+    if (params.field === "uuid") return; // skip this field
+    if (params.hasOwnProperty("row")) {
+      var typeText = params.row.entity_type.toLowerCase();
+      urlChange(event, typeText + "/" + params.row.uuid);
+    }
+  }, [urlChange]);
+
+  const handlePageChange = useCallback((pageInfo) => {
+    setPage(pageInfo.page);
+    setPageSize(pageInfo.pageSize);
+  }, []);
+
+  const onCellClickHandler = useCallback((event, params, details) => {
+    if (handleTableCellClick) return handleTableCellClick(event, params, details);
+    return handleTableCellClickDefault(params, event);
+  }, [handleTableCellClick, handleTableCellClickDefault]);
+
   useEffect(() => {
-    var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
-    setTableLoading(true);
+    var searchFilterParams = searchFiltersState ? searchFiltersState : { entity_type: "DonorSample" };
+    // set loading in reducer so results+loading can be updated together on response
+    dispatchSearchState({ type: "SET", payload: { loading: true } });
 
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
@@ -143,9 +208,9 @@ export function NewSearch({
         console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
-        if(searchFilters && searchFilters.entityType !=="DonorSample"){
+        if(searchFiltersState && searchFiltersState.entityType !=="DonorSample"){
           // Coughs on Restricted Source Selector for EPICollections
-          console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFilters.entityType);
+          console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFiltersState.entityType);
           searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
         }
       }
@@ -191,19 +256,25 @@ export function NewSearch({
             colDefs = COLUMN_DEF_SAMPLE
           }
           // console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
-          setResults({
-            dataRows: response.results,
-            rowCount: response.total,
-            colDef: colDefs,
+          dispatchSearchState({
+            type: "SET",
+            payload: {
+              dataRows: response.results,
+              rowCount: response.total,
+              colDef: colDefs,
+              loading: false,
+            },
           });
-          setTableLoading(false);
         } else if (response.total === 0) {
-          setResults({
-            dataRows: response.results,
-            rowCount: response.total,
-            colDef: COLUMN_DEF_MIXED,
+          dispatchSearchState({
+            type: "SET",
+            payload: {
+              dataRows: response.results,
+              rowCount: response.total,
+              colDef: COLUMN_DEF_MIXED,
+              loading: false,
+            },
           });
-          setTableLoading(false);
         } else {
           var errStringMSG = "";
           var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
@@ -212,23 +283,17 @@ export function NewSearch({
               : (errStringMSG = errString);
             setErrorState(true)
             setError(errStringMSG)
-            setTableLoading(false);
+            dispatchSearchState({ type: "SET", payload: { loading: false } });
           }
       })
       .catch((error) => {
-        setTableLoading(false);
+        dispatchSearchState({ type: "SET", payload: { loading: false } });
         // errorReport(error)
         //props.reportError(error);
         // console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
-  }, [page, pageSize, searchFilters, restrictions]);
+  }, [page, pageSize, searchFiltersState, restrictions]);
 
-  function handlePageChange(pageInfo) {
-    // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
-    setPage(pageInfo.page);
-    setPageSize(pageInfo.pageSize);
-  }
-  
   function columnDefType(et) {
     // console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
     if (et === "Donor") {
@@ -289,111 +354,6 @@ export function NewSearch({
     }
   }
 
-  function handleTableCellClickDefault(params, event) {
-    console.debug('%c◉ handleTableCellClickDefault ', 'color:#00ff7b', );
-    if (params.field === "uuid") return; // skip this field
-    if (params.hasOwnProperty("row")) {
-      var typeText = params.row.entity_type.toLowerCase();
-      urlChange(event, typeText + "/" + params.row.uuid);
-    }
-  }
-  
-  function handleClearFilter(e) {
-    // Allow ctrl/meta + click to open a fresh search in a new tab (mirrors table behavior)
-    if (e && (e.ctrlKey || e.metaKey)) {
-      window.open('/newSearch', '_blank');
-      return;
-    }
-    setFormFilters({
-      group_uuid: "",
-      entity_type: "",
-      keywords: ""
-    })
-    setSearchFilters({
-      group_uuid: "allcom",
-      entity_type: "---",
-      keywords: ""
-    })
-  }
-        
-  function handleSearchClick(event) {
-    // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
-    if(event){event.preventDefault()}
-    setTableLoading(true);
-    setPage(0)
-    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
-    var group_uuid = formFilters.group_uuid;
-    var entityType;
-    if(formFilters.entity_type){
-      entityType = formFilters.entity_type;
-    }else if(formFilters.organ){
-      entityType = formFilters.organ;
-    }else if(formFilters.sample_category){
-      entityType = formFilters.sample_category;
-    }
-    var keywords = formFilters.keywords;
-    let which_cols_def = COLUMN_DEF_SAMPLE; //default
-    if (entityType) {
-      let colSet = entityType.toLowerCase();
-      if (which_cols_def) {
-        if (colSet === "donor") {
-          which_cols_def = COLUMN_DEF_DONOR;
-        } else if (colSet === "sample") {
-          which_cols_def = COLUMN_DEF_SAMPLE;
-        } else if (colSet === "dataset") {
-          which_cols_def = COLUMN_DEF_DATASET;
-        } else if (colSet === "publication") {
-          which_cols_def = COLUMN_DEF_PUBLICATION;
-        } else if (colSet === "upload") {
-          which_cols_def = COLUMN_DEF_UPLOADS;
-        } else if (colSet === "collection") {
-          which_cols_def = COLUMN_DEF_COLLECTION;
-        }
-      }
-  }
-
-    let params = {}; // Will become the searchFilters
-    var url = new URL(window.location); // Only used outside in basic / homepage Mode
-
-    if (keywords) {
-      params["keywords"] = keywords.trim();
-      url.searchParams.set("keywords", keywords);
-    } else {
-      url.searchParams.delete("keywords");
-    }
-    if (group_uuid && group_uuid !== "All Components") {
-      params["group_uuid"] = group_uuid;
-      url.searchParams.set("group_uuid", group_uuid);
-    } else {
-      url.searchParams.delete("group_uuid");
-    }
-    // Here's where we sort out if the query's getting either:
-    //  an entity type, sample category, or an organ
-    // Doing this IN search now to avoid miscasting from URL
-    // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
-    if (entityType && entityType !== "----") {
-      // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
-      params["entity_type"] = entityType;
-      url.searchParams.set("entity_type", entityType);
-    } else {
-      // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
-      url.searchParams.delete("entity_type");
-    } 
-    if(chipSelect.length > 0){
-      params["status"] = chipSelect;
-    }
-    
-    // If we're not in a special mode, push URL to window
-    if (!
-      modecheck) {
-      window.history.pushState({}, "", url);
-      document.title = "HuBMAP Ingest Portal Search"
-    }
-    console.debug('%c◉ params ', 'color:#00ff7b', params);
-    setSearchFilters(params);
-  };
-
-
   function statusFilter(e, status){
     console.debug('%c◉ e ', 'color:#00ff7b', e, status);
     // Toggle selection using React state so the component re-renders immediately
@@ -406,13 +366,6 @@ export function NewSearch({
     });
     // trigger one-shot pulse animation
     setPulseMap((prev) => ({...prev, [status]: true}));
-    // window.setTimeout(() => {
-    //   setPulseMap((prev) => {
-    //     const copy = {...prev};
-    //     delete copy[status];
-    //     return copy;
-    //   });
-    // }, 380);
   }
 
 
@@ -520,55 +473,21 @@ export function NewSearch({
           borderBottomRadius: "0.375rem"
         }}>
         { renderNewFilterControls()}
-        {results.dataRows && results.dataRows.length > 0 && renderTable()}
-        {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
+        {searchState.dataRows && searchState.dataRows.length > 0 && renderTable()}
+        {searchState.dataRows && searchState.dataRows.length === 0 && !searchState.loading && (
           <div className="text-center">No records were found using the provided criteria.</div>)}
       </div>
     );
   }
 
   function renderTable() {
-    var hiddenFields = [
-      "created_by_user_displayname",
-      "lab_tissue_sample_id",
-      "lab_donor_id",
-      "specimen_type",
-      "organ",
-      "registered_doi",
-    ];
-
-    if (results.colDef !== COLUMN_DEF_MIXED) {
-      hiddenFields.push("entity_type",)
-      hiddenFields.push("sample_category",)
-    }    
-    if (results.colDef === COLUMN_DEF_MIXED && (
-      !modecheck || 
-      modecheck !== "Source")) {
-      hiddenFields.push("uuid",)
-    }
-
-    function buildColumnFilter(arr) {
-      let obj = {};
-      arr.forEach(value => {
-          obj[value] = false;
-      });
-      console.debug('%c◉ obj ', 'color:#00ff7b', obj);
-      return obj;
-    }
-
-    var columnFilters = buildColumnFilter(hiddenFields)
-    console.debug('%c◉ columnFilters ', 'color:#00ff7b', results.colDef);
-    
-    // const getTogglableColumns = (columns: GridColDef[]) => {
-    //   return columns
-    //     .filter((column) => !hiddenFields.includes(column.field))
-    //     .map((column) => column.field);
-    // };
+    // inner buildColumnFilter removed - using memoized columnVisibilityModel
+  console.debug('%c◉ columnFilters ', 'color:#00ff7b', searchState.colDef);
 
     return (
-      <Box style={{height: 590, width: "100%" }}>
+      <Box style={{height: 590, width: "100%" , position: "relative"}}>
         <Box className="sourceShade" sx={{
-          opacity: tableLoading ? 1 : 0,
+          opacity: searchState.loading ? 1 : 0,
           background: "#444a65",
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
@@ -604,25 +523,23 @@ export function NewSearch({
           id="SearchDataGrid"
           className="SearchGridWrap associationTable "
           columnBuffer={2}
-          columns={results.colDef}
+          columns={searchState.colDef}
           columnThreshold={2}
-          columnVisibilityModel={columnFilters}
+          columnVisibilityModel={columnVisibilityModel}
           disableColumnMenu={true}
           hideFooterSelectedRowCount
-          loading={tableLoading}
-          onCellClick={
-            handleTableCellClick ? (event, params, details)=> 
-            handleTableCellClick(event, params, details) : (event, params, details) => handleTableCellClickDefault(event, params, details)} // this allows a props handler to override the local handler
-          onPaginationModelChange={(e) => handlePageChange(e)}
+          loading={searchState.loading}
+          onCellClick={onCellClickHandler}
+          onPaginationModelChange={handlePageChange}
           pageSizeOptions={[10, 50, 100]}
           pagination
           paginationMode="server"
-          rowCount={results.rowCount}
-          rows={results.dataRows}
+          rowCount={searchState.rowCount}
+          rows={searchState.dataRows}
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
-              csvOptions: {fileName: "hubmap_ingest_export",}
+              csvOptions
             },
             // columnsPanel: {
             //   getTogglableColumns,
@@ -797,6 +714,7 @@ export function NewSearch({
                     <CloudSyncIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
                     <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color:"#fff"}}>The Status of the Entity</Typography>
                   </Box>
+
                   <Box 
                     sx={{
                       display: 'flex',
@@ -859,6 +777,100 @@ export function NewSearch({
     )
   }
 
+  function handleClearFilter(e) {
+    // Allow ctrl/meta + click to open a fresh search in a new tab (mirrors table behavior)
+    if (e && (e.ctrlKey || e.metaKey)) {
+      window.open('/newSearch', '_blank');
+      return;
+    }
+    setFormFilters({
+      group_uuid: "",
+      entity_type: "",
+      keywords: ""
+    })
+    setSearchFiltersState({
+      group_uuid: "allcom",
+      entity_type: "---",
+      keywords: ""
+    })
+  }
+
+  function handleSearchClick(event) {
+    // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
+    if(event){event.preventDefault()}
+  dispatchSearchState({ type: "SET", payload: { loading: true } });
+    setPage(0)
+    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    var group_uuid = formFilters.group_uuid;
+    var entityType;
+    if(formFilters.entity_type){
+      entityType = formFilters.entity_type;
+    }else if(formFilters.organ){
+      entityType = formFilters.organ;
+    }else if(formFilters.sample_category){
+      entityType = formFilters.sample_category;
+    }
+    var keywords = formFilters.keywords;
+    let which_cols_def = COLUMN_DEF_SAMPLE; //default
+    if (entityType) {
+      let colSet = entityType.toLowerCase();
+      if (which_cols_def) {
+        if (colSet === "donor") {
+          which_cols_def = COLUMN_DEF_DONOR;
+        } else if (colSet === "sample") {
+          which_cols_def = COLUMN_DEF_SAMPLE;
+        } else if (colSet === "dataset") {
+          which_cols_def = COLUMN_DEF_DATASET;
+        } else if (colSet === "publication") {
+          which_cols_def = COLUMN_DEF_PUBLICATION;
+        } else if (colSet === "upload") {
+          which_cols_def = COLUMN_DEF_UPLOADS;
+        } else if (colSet === "collection") {
+          which_cols_def = COLUMN_DEF_COLLECTION;
+        }
+      }
+  }
+
+    let params = {}; // Will become the searchFilters
+    var url = new URL(window.location); // Only used outside in basic / homepage Mode
+
+    if (keywords) {
+      params["keywords"] = keywords.trim();
+      url.searchParams.set("keywords", keywords);
+    } else {
+      url.searchParams.delete("keywords");
+    }
+    if (group_uuid && group_uuid !== "All Components") {
+      params["group_uuid"] = group_uuid;
+      url.searchParams.set("group_uuid", group_uuid);
+    } else {
+      url.searchParams.delete("group_uuid");
+    }
+    // Here's where we sort out if the query's getting either:
+    //  an entity type, sample category, or an organ
+    // Doing this IN search now to avoid miscasting from URL
+    // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
+    if (entityType && entityType !== "----") {
+      // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
+      params["entity_type"] = entityType;
+      url.searchParams.set("entity_type", entityType);
+    } else {
+      // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
+      url.searchParams.delete("entity_type");
+    } 
+    if(chipSelect.length > 0){
+      params["status"] = chipSelect;
+    }
+    
+    // If we're not in a special mode, push URL to window
+    if (!
+      modecheck) {
+      window.history.pushState({}, "", url);
+      document.title = "HuBMAP Ingest Portal Search"
+    }
+    console.debug('%c◉ params ', 'color:#00ff7b', params);
+    setSearchFiltersState(params);
+  };
 
   return renderView();
 
