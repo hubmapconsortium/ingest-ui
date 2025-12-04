@@ -1,4 +1,4 @@
-import React,{useEffect,useState,useCallback,useMemo,useReducer} from "react";
+import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
@@ -72,6 +72,11 @@ export function NewSearch({
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
   const [ctrlPressed, setCtrlPressed] = useState(false);
+  const urlParamsAppliedRef = useRef(false);
+  if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
+    // if parent provided initial filters, treat like URL-driven initial search
+    urlParamsAppliedRef.current = true;
+  }
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -99,11 +104,6 @@ export function NewSearch({
   var [errorState, setErrorState] = useState();
   const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
-  useEffect(() => {
-  // We're gonna want to check what Mode We're in
-  // Will likely be either Source mode or Home mode (homepage)
-  }, [modecheck]);
-
   // helper handlers used while hovering the Clear button only
   const handleClearKeyDown = (e) => {
     if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
@@ -129,6 +129,46 @@ export function NewSearch({
     // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
 
+  // On mount: if URL contains search params, prefill form and trigger a search
+  useEffect(() => {
+    try {
+      // If the component was explicitly given initialSearchFilters, prefer that
+      if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) return;
+      const url = new URL(window.location.href);
+      const entries = Array.from(url.searchParams.entries());
+      if (!entries || entries.length === 0) return;
+      urlParamsAppliedRef.current = true;
+      const paramsObj = Object.fromEntries(entries);
+
+      // Populate form fields from URL (map group_uuid allcom -> empty for the form)
+      const newForm = { ...formFilters };
+      if (paramsObj.keywords) newForm.keywords = paramsObj.keywords;
+      if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
+      if (paramsObj.entity_type) newForm.entity_type = paramsObj.entity_type;
+      if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
+
+      // status may be repeated or comma-separated
+      const statusParams = url.searchParams.getAll('status');
+      if (statusParams && statusParams.length > 0) {
+        const statusList = statusParams
+          .flatMap((s) => s.split(','))
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (statusList.length > 0) {
+          setChipSelect(statusList);
+          paramsObj.status = statusList;
+        }
+      }
+
+      setFormFilters(newForm);
+      // trigger the search effect by setting the searchFiltersState
+      setSearchFiltersState(paramsObj);
+      // reset pagination to first page
+      setPage(0);
+    } catch (err) {
+      // ignore URL parse errors
+    }
+  }, []);
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
@@ -184,6 +224,10 @@ export function NewSearch({
   }, [handleTableCellClick, handleTableCellClickDefault]);
 
   useEffect(() => {
+    // If URL/initial filters were applied, and we don't yet have searchFiltersState, skip the default search
+    if (!searchFiltersState && urlParamsAppliedRef.current) {
+      return;
+    }
     var searchFilterParams = searchFiltersState ? searchFiltersState : { entity_type: "DonorSample" };
     // set loading in reducer so results+loading can be updated together on response
     dispatchSearchState({ type: "SET", payload: { loading: true } });
@@ -550,109 +594,82 @@ export function NewSearch({
     );
   }
 
-  // function renderPreamble() {
-  //   return (
-  //     <Box
-  //       sx={{flexDirection: "column",
-  //         justifyContent: "center",
-  //         marginBottom: 2,}}>
-        
-  //       <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
-  //         {!search_subtitle &&(
-  //           <Typography align={"center"} variant="subtitle1" gutterBottom >
-  //             Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
-  //             If you know a specific ID you can enter it into the keyword field to locate individual entities.
-  //           </Typography>
-  //         )}
-  //         {search_subtitle &&(
-  //           <Typography align={"center"} variant="caption" gutterBottom>
-  //             {search_subtitle} <br/>
-  //             If you know a specific ID you can enter it into the keyword field to locate individual entities.
-  //           </Typography>
-  //         )}
-          
-  //     </Box>
-  //   );
-  // }
-
   function renderGroupField(){
     return (
-        <FormControl sx={{width:"100%"}} size="small">
-          <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-            <GroupsIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a group to filter by:</Typography>
-          </Box>
-          <Box>
-            <Select
-              fullWidth
-              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
-              name="group_uuid"
-              value={formFilters.group_uuid?formFilters.group_uuid : ""}
-              onChange={(event) => handleInputChange(event)}>
-              <MenuItem key={0} value="allcom"></MenuItem>
-              {allGroups.map((group) => {
-                return (
-                    <MenuItem sx={{fontSize:"0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
-                );
-              })}
-            </Select>
-          </Box>
-        </FormControl>
+      <FormControl sx={{width:"100%"}} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+          <GroupsIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a group to filter by:</Typography>
+        </Box>
+        <Box>
+          <Select
+            fullWidth
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            name="group_uuid"
+            value={formFilters.group_uuid?formFilters.group_uuid : ""}
+            onChange={(event) => handleInputChange(event)}>
+            <MenuItem key={0} value="allcom"></MenuItem>
+            {allGroups.map((group) => {
+              return (
+                  <MenuItem sx={{fontSize:"0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
+              );
+            })}
+          </Select>
+        </Box>
+      </FormControl>
     )
   }
 
   function renderTargetField(){
-
     const targetOptions = ES_SEARCHABLE_FIELDS.map((f) => {
       const clean = f.replace(/\.keyword$/i, "").replace(/[._]/g, " ");
       return { field: f, title: toTitleCase(clean) };
     });
-    // console.debug('%c◉ targetOptions ', 'color:#00ff7b', targetOptions);
-    return (
-        <FormControl sx={{width:"100%"}} size="small">
-          <Box className="searchFieldLabel" id="SearchLabelGroup" >
-            <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select the field you wish to target:</Typography>
-          </Box>
-          <Box>
-            <Select
-              fullWidth
-              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
-              name="target_field"
-              id="target_field"
-              value={formFilters.target_field?formFilters.target_field : ""}
-              onChange={(event) => handleInputChange(event)}>
-              <MenuItem key={0} value="allcom"></MenuItem>
-              {targetOptions.map((field) => {
-                return (
-                    <MenuItem sx={{fontSize:"0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
-                );
-              })}
-            </Select>
-          </Box>
-        </FormControl>
+  return (
+      <FormControl sx={{width:"100%"}} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroup" >
+          <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select the field you wish to target:</Typography>
+        </Box>
+        <Box>
+          <Select
+            fullWidth
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            name="target_field"
+            id="target_field"
+            value={formFilters.target_field?formFilters.target_field : ""}
+            onChange={(event) => handleInputChange(event)}>
+            <MenuItem key={0} value="allcom"></MenuItem>
+            {targetOptions.map((field) => {
+              return (
+                  <MenuItem sx={{fontSize:"0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
+              );
+            })}
+          </Select>
+        </Box>
+      </FormControl>
     )
   }
 
 
   function renderKeywordField(){
     return (
-        <FormControl sx={{width:"100%"}} size="small"  >
-          <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-            <ManageSearchIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
-          </Box>
-          <Box>
-            <TextField
-              labelid="keywords_label"
-              name="keywords"
-              id="keywords"
-              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
-              fullWidth
-              value={formFilters.keywords?formFilters.keywords : ""}
-              onChange={(e) => handleInputChange(e)}/>
-          </Box>
-        </FormControl>
+      <FormControl sx={{width:"100%"}} size="small"  >
+        <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+          <ManageSearchIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
+        </Box>
+        <Box>
+          <TextField
+            labelid="keywords_label"
+            name="keywords"
+            id="keywords"
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            fullWidth
+            value={formFilters.keywords?formFilters.keywords : ""}
+            onChange={(e) => handleInputChange(e)}/>
+        </Box>
+      </FormControl>
     )
   }
   
@@ -798,7 +815,7 @@ export function NewSearch({
   function handleSearchClick(event) {
     // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
-  dispatchSearchState({ type: "SET", payload: { loading: true } });
+    dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
     // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
@@ -846,10 +863,7 @@ export function NewSearch({
     } else {
       url.searchParams.delete("group_uuid");
     }
-    // Here's where we sort out if the query's getting either:
-    //  an entity type, sample category, or an organ
-    // Doing this IN search now to avoid miscasting from URL
-    // console.debug('%c◉ entityType ', 'color:#2600FF', entityType);
+    
     if (entityType && entityType !== "----") {
       // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
       params["entity_type"] = entityType;
