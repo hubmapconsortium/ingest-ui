@@ -1,5 +1,6 @@
 import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
+
 // import { DataGrid } from '@material-ui/data-grid';
 
 import {SAMPLE_CATEGORIES} from "../constants";
@@ -38,6 +39,7 @@ import {
 import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
+import { useLocation } from 'react-router-dom';
 
 export function NewSearch({
   searchFilters: initialSearchFilters,
@@ -117,13 +119,16 @@ export function NewSearch({
     // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
 
-  // On mount: if URL contains search params, prefill form and trigger a search
+  // If URL contains search params, prefill form and trigger a search.
+  // Listen to location.search so Back/Forward navigation re-applies URL-driven searches.
+  const location = useLocation();
   useEffect(() => {
     try {
       // If the component was explicitly given initialSearchFilters, prefer that
       if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) return;
-      const url = new URL(window.location.href);
-      const entries = Array.from(url.searchParams.entries());
+      if (!location || !location.search) return;
+      const params = new URLSearchParams(location.search);
+      const entries = Array.from(params.entries());
       if (!entries || entries.length === 0) return;
       urlParamsAppliedRef.current = true;
       const paramsObj = Object.fromEntries(entries);
@@ -136,7 +141,7 @@ export function NewSearch({
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
 
       // status may be repeated or comma-separated
-      const statusParams = url.searchParams.getAll('status');
+      const statusParams = params.getAll('status');
       if (statusParams && statusParams.length > 0) {
         const statusList = statusParams
           .flatMap((s) => s.split(','))
@@ -154,9 +159,9 @@ export function NewSearch({
       // reset pagination to first page
       setPage(0);
     } catch (err) {
-      // ignore URL parse errors
+      // ignore URL parse errors for now
     }
-  }, []);
+  }, [location.search]);
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
@@ -741,19 +746,20 @@ export function NewSearch({
             <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", minHeight:"60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
-                  className="m-1"
+                  className="m-1 HBM_DarkButton"
                   startIcon={<ClearIcon />}
                     sx={{
                       width: "40%",
-                      borderWidth: "1px",
-                      background: "#e0e0e0",
-                      border: "1px solid #00061E",
-                      color: "#AAAAAA",
-                      '&:hover': {
-                        backgroundColor: "#EAEAEA",
-                        border: ctrlPressed ? '1px solid #ff0000' : '1px solid rgb(0 6 30)'
-                      }
+                      // borderWidth: "1px",
+                      // background: "#e0e0e0",
+                      // // border: "1px solid #00061E",
+                      // color: "#AAAAAA",
+                      // '&:hover': {
+                      //   backgroundColor: "#EAEAEA",
+                      //   border: ctrlPressed ? '1px solid #ff0000' : '1px solid rgb(0 6 30)'
+                      // }
                     }}
+                  variant="contained"
                   size="large"  
                   onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
                   onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
@@ -761,7 +767,7 @@ export function NewSearch({
                   Clear
                 </Button>
               <Button 
-                className="m-1"
+                className="m-1 HBM_DarkBlueButton"
                 size="large"
                 sx={{width:"70%",}}
                 startIcon={<SearchIcon />}

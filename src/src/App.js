@@ -413,11 +413,7 @@ export function App(){
   const{search} = useLocation();
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
-  const queryParams = new URLSearchParams(search);
-  const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
-  const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
-  const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  var[bundledParameters] = useState({entity_type: queryEntity, keywords: queryKeyword, group_uuid: queryGroup});
+
 
   // Error Query Bits
   var[errorShow,setErrorShow] = useState(false);
@@ -571,9 +567,9 @@ export function App(){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 

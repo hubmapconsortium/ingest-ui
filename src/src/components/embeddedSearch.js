@@ -1,5 +1,5 @@
-import React,{useEffect,useState} from "react";
-import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
+import React,{useEffect,useState,useMemo} from "react";
+import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import {SAMPLE_CATEGORIES} from "../constants";
@@ -35,7 +35,7 @@ export function EmbeddedSearch({
   restrictions,
   urlChange,
   modecheck,
-  reportError,
+  setBulkError,
   handleTableCellClick,
 }){
   var [search_title] = useState(
@@ -67,6 +67,41 @@ export function EmbeddedSearch({
   var [errorState, setErrorState] = useState();
   const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
+  // Memoized helpers to avoid recreating objects/functions passed into DataGrid
+  const colDefDep = results ? results.colDef : null;
+  const hiddenFields = useMemo(() => {
+    const base = [
+      "created_by_user_displayname",
+      "lab_tissue_sample_id",
+      "lab_donor_id",
+      "specimen_type",
+      "organ",
+      "registered_doi",
+    ];
+    const hf = [...base];
+    if (colDefDep && colDefDep !== COLUMN_DEF_MIXED) {
+      hf.push("entity_type");
+    }
+    if (colDefDep && colDefDep === COLUMN_DEF_MIXED && (!modecheck || modecheck !== "Source")) {
+      hf.push("uuid");
+    }
+    return hf;
+  }, [colDefDep, modecheck]);
+
+  const columnFilters = useMemo(() => {
+    const obj = {};
+    hiddenFields.forEach((value) => {
+      obj[value] = false;
+    });
+    return obj;
+  }, [hiddenFields]);
+
+  const getTogglableColumns = useMemo(() => {
+    return (columns) => columns.filter((column) => !hiddenFields.includes(column.field)).map((column) => column.field);
+  }, [hiddenFields]);
+
+  const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
+
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -94,7 +129,6 @@ export function EmbeddedSearch({
         publication: "Publication",
         collection: "Collection"
       }
-     console.debug('%c◉ SAMPLE_CATEGORIES ', 'color:#00ff7b', SAMPLE_CATEGORIES ,searchFilterParams.entity_type, entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase()));
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
         console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
         searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
@@ -137,8 +171,6 @@ export function EmbeddedSearch({
         setTableLoading(false);
       }
       if (response.total > 0 && response.status === 200) {
-        
-        // console.debug('%c◉ searchFilterParams.entity_type ', 'color:#008CFF', searchFilterParams.entity_type);
         let colDefs;
         if(simpleColumns.includes(searchFilterParams.entity_type) ){
           colDefs = columnDefType(searchFilterParams.entity_type);
@@ -147,7 +179,6 @@ export function EmbeddedSearch({
         }else{
           colDefs = COLUMN_DEF_SAMPLE
         }
-        // console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
         setResults({
           dataRows: response.results,
           rowCount: response.total,
@@ -174,14 +205,10 @@ export function EmbeddedSearch({
     })
     .catch((error) => {
       setTableLoading(false);
-      // errorReport(error)
-      //props.reportError(error);
-      // console.debug("%c⭗ ERROR", "color:#ff005d", error);
     });
   }, [page, pageSize, searchFilters, restrictions]);
 
   function handlePageChange(pageInfo) {
-    // console.debug("%c⭗", "color:#ff005d", "AAAAAAAAAAAAAAAAAAA", pageInfo);
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }
@@ -245,13 +272,12 @@ export function EmbeddedSearch({
   }
 
   function handleTableCellClickDefault(params, event) {
-    console.debug('%c◉ handleTableCellClickDefault ', 'color:#00ff7b', );
+    // console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
-  
-    // if (params.hasOwnProperty("row")) {
-    //   var typeText = params.row.entity_type.toLowerCase();
-    //   urlChange(event, typeText + "/" + params.row.uuid);
-    // }
+    if (params.hasOwnProperty("row")) {
+      var typeText = params.row.entity_type.toLowerCase();
+      urlChange(typeText + "/" + params.row.uuid);
+    }
   }
   
   function handleClearFilter() {
@@ -268,11 +294,9 @@ export function EmbeddedSearch({
   }
         
   function handleSearchClick(event) {
-    // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
     setTableLoading(true);
     setPage(0)
-    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
     var entityType;
     if(formFilters.entity_type){
@@ -304,7 +328,6 @@ export function EmbeddedSearch({
     }
 
     let params = {}; // Will become the searchFilters
-
     if (keywords) {
       params["keywords"] = keywords.trim();
     } 
@@ -314,12 +337,10 @@ export function EmbeddedSearch({
     if (entityType && entityType !== "----") {
       params["entity_type"] = entityType;
     } 
-   // Triggers the useEffect to run the search
    setSearchFilters(params);
   };
 
   function renderView() {
-    //console.debug("%c⊙", "color:#00ff7b", "RENDERVIEW", results.dataRows, results.colDef);
     return (
       <div style={{ width: "100%", textAlign: "center"}}>
         {/* {renderFilterControls()} */}
@@ -350,28 +371,14 @@ export function EmbeddedSearch({
       hiddenFields.push("uuid",)
     }
 
-    function buildColumnFilter(arr) {
-      let obj = {};
-      arr.forEach(value => {
-          obj[value] = false;
-      });
-      console.debug('%c◉ obj ', 'color:#00ff7b', obj);
-      return obj;
-    }
-    var columnFilters = buildColumnFilter(hiddenFields)
+    // use memoized columnFilters and getTogglableColumns defined at component scope
     console.debug('%c◉ columnFilters ', 'color:#00ff7b', results.colDef);
-    
-    const getTogglableColumns = (columns: GridColDef[]) => {
-      return columns
-        .filter((column) => !hiddenFields.includes(column.field))
-        .map((column) => column.field);
-    };
 
     return (
       <div style={{height: 590, width: "100%" }}>
         <Box className="sourceShade" sx={{
           opacity: tableLoading ? 1 : 0,
-          background: "#444a65",
+          backgroundColor: "#444a65",
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
           maxWidth: "1266px",
@@ -423,7 +430,7 @@ export function EmbeddedSearch({
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
-              csvOptions: {fileName: "hubmap_ingest_export",}
+              csvOptions: csvOptions,
             },
             columnsPanel: {
               getTogglableColumns,
@@ -476,7 +483,7 @@ export function EmbeddedSearch({
             spacing={3}
             sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
             <Grid item xs={6}>
-            <FormControl sx={{width: "100%", marginTop:"26px", display:"block",}} >
+            <FormControl sx={{ width: "100%", marginTop: "26px", display: "block" }} >
               <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
                 native 

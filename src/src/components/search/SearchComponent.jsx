@@ -492,7 +492,7 @@ class SearchComponent extends Component {
               <RenderSearchTable 
                 // data={this.state.datarows} 
                 modecheck={this.props.modecheck}
-                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
+                // packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
                 restrictions={this.props.restrictions}
                 allGroups={this.state.allGroups}
                 allTypes={this.state.allTypes}

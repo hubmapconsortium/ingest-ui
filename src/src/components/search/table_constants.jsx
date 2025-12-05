@@ -7,7 +7,7 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
-
+import Skeleton from '@mui/material/Skeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
@@ -16,6 +16,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 
 // table column definitions
+let nullRowBarStyle = {width:"100%", opacity:"0.4"}
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
@@ -256,7 +257,14 @@ export const COLUMN_DEF_MIXED = [
     width: 160,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
-    valueGetter: getLabId
+    valueGetter: getLabId,
+    renderCell: params => {
+      console.debug('%c◉ computed_lab_id_type ', 'color:#00ff7b', params);
+      if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
+        return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }
+      return (params.row.type)
+    }
   }, 
   { field: 'submission_id', headerName: 'Submission ID', width: 100 },
   { field: "type",
@@ -264,7 +272,12 @@ export const COLUMN_DEF_MIXED = [
     width: 180,
     sortable: false,
     valueGetter: getTypeValue,
-    renderCell: renderFieldIcons
+    renderCell: params => {
+      if (!params.row.type || params.row.type === null || params.row.type === "") {
+        return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }
+      return (params.row.type)
+    }
   }, 
   { field: 'entity_type', headerName: 'Entity Type', width: 200},
   { field: 'group_name', headerName: 'Group Name', width: 200},
