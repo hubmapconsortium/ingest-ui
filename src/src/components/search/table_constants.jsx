@@ -273,13 +273,25 @@ export const COLUMN_DEF_MIXED = [
     sortable: false,
     valueGetter: getTypeValue,
     renderCell: params => {
-      if (!params.row.type || params.row.type === null || params.row.type === "") {
+      let typeVal = getTypeValue(params)
+      let entityType = params?.row?.entity_type === "Upload" ? "Data Upload" : params?.row?.entity_type
+      // console.debug('%c◉  typevalcheck', 'color:#00ff7b', entityType, typeVal, entityType === typeVal );
+      if (!typeVal) {
         return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else if(entityType === typeVal ){
+        return <span></span>
       }
-      return (params.row.type)
+      return (renderFieldIcons(params) )
+      
     }
   }, 
-  { field: 'entity_type', headerName: 'Entity Type', width: 200},
+  { field: 'entity_type', 
+    headerName: 'Entity Type', 
+    width: 200,
+    renderCell: params => { 
+      return (toTitleCase(params.row.entity_type))
+    }
+  },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: "statusAccess",
     width: 180,
@@ -309,24 +321,25 @@ export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
 // Computed column functions
 function entityIconsBasic(entity_type){
+  let style = {marginRight: "5px"};
   switch
   (entity_type && entity_type.toLowerCase()){
     case "donor":
-      return <PersonIcon/>
+      return <PersonIcon sx={style}/>;
     case "sample":
-      return <BubbleChartIcon/>
+      return <BubbleChartIcon sx={style}/>
     case "dataset":
-      return <TableChartIcon/>
+      return <TableChartIcon sx={style}/>
     case "upload":
-      return <DriveFolderUploadIcon/>
+      return <DriveFolderUploadIcon sx={style}/>
     case "publication":
-      return <ArticleIcon/>
+      return <ArticleIcon sx={style}/>
     case "collection":
-      return <CollectionsBookmarkIcon/>
+      return <CollectionsBookmarkIcon sx={style}/>
     case "eppicollection":
-      return <CollectionsBookmarkIcon/>
+      return <CollectionsBookmarkIcon sx={style}/>
     default:
-      return <BubbleChartIcon />
+      return <BubbleChartIcon  sx={style}/>
   }
 }
 
@@ -342,7 +355,7 @@ function renderFieldIcons(params: ValueFormatterParams) {
   return (
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "5px"}} >
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
