@@ -35,7 +35,6 @@ export function EmbeddedSearch({
   restrictions,
   urlChange,
   modecheck,
-  setBulkError,
   handleTableCellClick,
 }){
   var [search_title] = useState(
@@ -206,6 +205,7 @@ export function EmbeddedSearch({
     .catch((error) => {
       setTableLoading(false);
     });
+
   }, [page, pageSize, searchFilters, restrictions]);
 
   function handlePageChange(pageInfo) {
