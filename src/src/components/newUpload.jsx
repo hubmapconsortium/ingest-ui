@@ -40,6 +40,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Box from "@mui/material/Box";
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
+import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
@@ -746,31 +747,35 @@ export const UploadForm = (props) => {
           )}
           
           <div className="row mt-3">
-                
+
             {/* Organ */}
             <Box className={` col-6 ${formErrors.intended_organ ? "invalid" : "valid"}`} >           
-              <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="organ">
-                Intended Organ Type *
-              </InputLabel>
-              <NativeSelect
-                  id="intended_organ"
-                  name="Intended Organ"
-                  onChange={(e) => handleInputChange(e)}
-                  fullWidth
-                  required
-                  error={formErrors.intended_organ}
-                  inputProps={{style: {padding: "0.8em"}}}
-                  disabled={!permissions.has_write_priv}
-                  value={formValues.intended_organ ? formValues.intended_organ : ""}>
-                  <option key={"DEFAULT"} value={""}></option>
-                  {organMenu}  
-              </NativeSelect>
-              <FormHelperText id="organIDHelp" className="" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} >Select the organ type that the data in this Upload is intended to be derived from. {formErrors.intended_organ ? formErrors.intended_organ : ""} </FormHelperText>
-              {formValues.intended_organ && !organ_types[formValues.intended_organ] && (
-                <Alert variant="filled" severity="error">
-                  <strong>Error:</strong> {`Invalid organ type stored: ${formValues.intended_organ}`}
-                </Alert>
-              )}
+              <FormControl>
+                <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="organ">
+                  Intended Organ Type *
+                </InputLabel>
+                <NativeSelect
+                    id="intended_organ"
+                    name="Intended Organ"
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    required
+                    error={formErrors.intended_organ}
+                    inputProps={{style: {padding: "0.8em"}}}
+                    disabled={!permissions.has_write_priv}
+                    value={formValues.intended_organ ? formValues.intended_organ : ""}>
+                    <option key={"DEFAULT"} value={""}></option>
+                    {organMenu}  
+                </NativeSelect>
+                
+                <FormHelperText id="organIDHelp" className="" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} >Select the organ type that the data in this Upload is intended to be derived from. {formErrors.intended_organ ? formErrors.intended_organ : ""} </FormHelperText>
+                
+              </FormControl>
+                {formValues.intended_organ && !organ_types[formValues.intended_organ] && (
+                  <Alert variant="filled" severity="error">
+                    <strong>Error:</strong> {`Invalid organ type stored: ${formValues.intended_organ}`}
+                  </Alert>
+                )}
             </Box>
 
             {/* Dataset */}

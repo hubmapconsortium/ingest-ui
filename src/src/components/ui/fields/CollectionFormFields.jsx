@@ -1,16 +1,33 @@
 import React from "react";
 import TextField from "@mui/material/TextField";
-import FormControl from '@mui/material/FormControl';
+
+export const CollectionFieldSet = [
+  {
+    id: "title",
+    label: "Title",
+    helperText: "The title of the collection",
+    required: true,
+    type: "text",
+  },
+  {
+    id: "description",
+    label: "Description",
+    helperText: "A description of the collection",
+    required: true,
+    type: "text",
+    multiline: true,
+    rows: 4,
+  },
+];
 
 export const CollectionFormFields = ({
-  formFields,
   formValues,
   formErrors,
   permissions,
   handleInputChange
 }) => (
   <>
-    {formFields.map((field, index) => (
+    {CollectionFieldSet.map((field, index) => (
       <TextField
         InputLabelProps={{ shrink: true }}
         key={field.id + "_" + index}

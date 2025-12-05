@@ -35,6 +35,8 @@ import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
 import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -44,18 +46,25 @@ export const FormHeader = (props) => {
   let globusURL = props.globusURL;
   // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
+  let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
+  if (entityType === "Epicollection"){
+    entityType = "EPICollection"
+  }
   return (
-    <React.Fragment>
-      {topHeader(entityData)}
+    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", backgroundColor: "#f5f5f5", borderRadius: "4px"}}>
+      {entityData[0] !== "new" && (
+        <Grid item xs={12} className="topHeader" > 
+          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
+        </Grid>
+      )}
+      {topHeader(entityData, entityType)}
       {infoPanels(entityData,permissions,globusURL)}
-    </React.Fragment>
+    </Grid>
   )
 }
 
 // Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
-  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -330,20 +339,11 @@ function newBadge(type){
 }
 
 // SWAT / MOSDAP Helper to build a pretty list of priority projects
-
 // The TopLeftmost part of the Form Header 
-function topHeader(entityData){
-  let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
-  if (entityType === "Epicollection"){
-    entityType = "EPICollection"
-  }
+function topHeader(entityData, entityType){  
   if(entityData[0] !== "new"){
     return (
-      <React.Fragment>
-        <Grid item xs={12} className="" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
-        </Grid>
-        <Grid item xs={6} className="" >
+        <Grid item xs={6} className="entityDataHead" >
           <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
           {entityData.status && (
               <Typography><strong>Status: </strong> 
@@ -373,7 +373,6 @@ function topHeader(entityData){
           )}
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
         </Grid>
-      </React.Fragment>
     ) 
   }else{
     return (
@@ -600,6 +599,102 @@ export function handleSortOrgans(organList){
     sortedMap.set(element, sortedDataProp[element]);
   }
   return sortedMap;
+};
+export function CombinedTypeOptions(){
+  let coreList = {
+    donor: "Donor" ,
+    sample: "Sample",
+    dataset: "Dataset", 
+    upload: "Data Upload",
+    publication: "Publication",
+    collection: "Collection"
+  }
+  let organs = [];
+  let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
+  organList.forEach((value, key) => {
+    organs[value] = key;
+  });
+  return (<>
+    <option aria-label="None" value="" />
+    <optgroup label="Entity Types">
+    {Object.entries(coreList).map(([key, label]) => (
+      <option key={key} value={key}>
+        {label}
+      </option>
+    ))}
+    </optgroup>
+    <optgroup label="Sample Types">
+      {Object.entries(SAMPLE_CATEGORIES).map(([, label], index) => (
+        <option key={index + 1} value={label}>
+          {label}
+        </option>
+      ))}
+    </optgroup>
+    <optgroup label="Organs">
+      {Object.entries(organs).map(([label, key], index) => (
+        <option key={index + 1} value={label}>
+          {key}
+        </option>
+      ))}
+    </optgroup>
+  </>)
+}
+export function CombineTypeSelect({
+  formFilters,
+  handleInputChange,
+  restrictions,
+  embedded
+  }){
+  // console.debug('%c◉  CombineTypeSelect', 'color:#9359FF', );
+  // let coreList = ["Donor","Sample","Dataset","Data Upload","Publication","Collection"]
+  let coreList = {
+    donor: "Donor" ,
+    sample: "Sample",
+    dataset: "Dataset", 
+    upload: "Data Upload",
+    publication: "Publication",
+    collection: "Collection"
+  }
+  let organs = [];
+  let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
+  // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);
+  try {
+    organList.forEach((value, key) => {
+      organs[value] = key;
+    });
+    // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
+    return (
+        <FormControl size="small" sx={{width:"100%"}}>
+          {embedded && (
+            <InputLabel htmlFor="entity_type">Type</InputLabel>
+          )}
+          {!embedded && (
+            <Box className="searchFieldLabel" id="SearchLabelType" >
+              <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+              <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
+            </Box>
+          )}
+          
+            <Select 
+              native 
+              fullWidth
+              label="Type"
+              id="entity_type"
+              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
+              name="entity_type"
+              value={formFilters.entity_type}
+              onChange={(e) => handleInputChange(e)}
+              disabled={restrictions && restrictions.entityType?true:false}>
+              <CombinedTypeOptions />
+            </Select>
+          
+        </FormControl>
+    )
+  }catch(error){
+    let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;
+    console.debug('%c◉ ERROR  ', 'color:#ff005d', msg, error);
+    return (<Typography> ERROR: {error.toString()} </Typography>)
+  }  
 };
 
 // Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL

@@ -12,7 +12,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import { BulkSelector } from "./ui/bulkSelector";
 import { ContributorsTable } from "./ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
-import { CollectionFormFields } from "./ui/fields/CollectionFormFields";
+import { CollectionFormFields, CollectionFieldSet } from "./ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
 import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
 import { validateRequired } from "../utils/validators";
@@ -43,25 +43,6 @@ export const CollectionForm = (props) => {
     message: "",
     status: "info"
   });
-  const formFields = React.useMemo(() => [
-    {
-      id: "title",
-      label: "Title",
-      helperText: "The title of the collection",
-      required: true,
-      type: "text",
-    },
-    {
-      id: "description",
-      label: "Description",
-      helperText: "A description of the collection",
-      required: true,
-      type: "text",
-      multiline: true,
-      rows: 4,
-    },
-  ], []);
-
   const memoizedUserGroupSelectMenu = React.useMemo(
     () => <UserGroupSelectMenu />, []
   );
@@ -168,7 +149,7 @@ export const CollectionForm = (props) => {
     let requiredFields = ["title", "description"];
     for (let field of requiredFields) {
       if (!validateRequired(formValues[field])) {
-        let fieldName = formFields.find(f => f.id === field)?.label || field;
+        let fieldName = CollectionFieldSet.find(f => f.id === field)?.label || field;
         e_messages.push(fieldName + " is a required field");
         setFormErrors((prevValues) => ({ ...prevValues, [field]: " Required" }));
         errors++;
@@ -346,7 +327,6 @@ export const CollectionForm = (props) => {
             }}
           />
           <CollectionFormFields
-            formFields={formFields}
             formValues={formValues}
             formErrors={formErrors}
             permissions={permissions}
@@ -394,3 +374,4 @@ export const CollectionForm = (props) => {
     );
   }
 };
+          
