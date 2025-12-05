@@ -80,132 +80,6 @@ export const SAMPLE_CATEGORIES = { // Use this instead of Types
    suspension: "Suspension",
 }
 
-// These ones show on the Create new Donor/Sample page
-export const TISSUE_TYPES = {
-   Donor: [{ 
-    organ: "Organ"
-  }],
-   Sample: [{
-    biopsy: "Biopsy",
-    cell_lysate: "Cell lysate",
-    ffpe_block: "FFPE block",
-    pfa_fixed_frozen_oct_block: "PFA Fixed frozen OCT block",
-    fixed_tissue_piece: "Fixed tissue piece",
-    flash_frozen_liquid_nitrogen: "Flash frozen, liquid nitrogen",
-    formalin_fixed_oct_block: "Formalin fixed OCT block",
-    fresh_frozen_tissue: "Fresh frozen tissue",
-    fresh_frozen_oct_block: "Fresh frozen oct block",
-    fresh_tissue: "Fresh tissue",
-    frozen_cell_pellet_buffy_coat: "Frozen cell pellet (Buffy coat)",
-    module: "Module",
-    pbmc: "PBMC",
-    plasma: "Plasma",
-    nuclei_rnalater: "Nuclei RNAlater",
-    organ_piece: "Organ Piece",
-    rnalater_treated_and_stored: "RNAlater treated and stored",
-    segment: "Segment",
-    serum: "Serum",
-    single_cell_cryopreserved: "Single cell cryopreserved",
-    tissue_lysate: "Tissue lysate",
-  },{
-    clarity_hydrogel: "CLARITY hydrogel",
-    cryosections_curls_from_fresh_frozen_oct:
-      "Cryosections/curls from fresh frozen OCT",
-    cryosections_curls_rnalater: "Cryosectinos/curls RNAlater",
-    ffpe_slide: "FFPE slide",
-    fixed_frozen_section_slide: "Fixed Frozen section slide",
-    fresh_frozen_section_slide: "Fresh Frozen section slide",
-    fresh_frozen_tissue_section: "Fresh Frozen Tissue Section"
-  },{
-    gdna: "gDNA",
-    nuclei: "Nuclei",
-    protein: "Protein",
-    rna_total: "RNA, total",
-    ran_poly_a_enriched: "RNA, poly-A enriched",
-    sequence_library: "Sequence Library"
-  },{
-    other: "Other" }]
-};
-
-// Deprecating
-export const ORGAN_TYPES = {
-  AO: "Aorta",
-  BL: "Bladder",
-  BD: "Blood",
-  BM: "Bone Marrow",
-  BR: "Brain",
-  LB: "Bronchus (Left)",
-  RB: "Bronchus (Right)",
-  LE: "Eye (Left)",
-  RE: "Eye (Right)",
-  LF: "Fallopian Tube (Left)",
-  RF: "Fallopian Tube (Right)",
-  HT: "Heart",
-  LK: "Kidney (Left)",
-  RK: "Kidney (Right)",
-  LN: "Knee (Left)",
-  RN: "Knee (Right)",
-  LI: "Large Intestine",
-  LV: "Liver",
-  LL: "Lung (Left)",
-  RL: "Lung (Right)",
-  LY: "Lymph Node",
-  LO: "Ovary (Left)",
-  RO: "Ovary (Right)",
-  PA: "Pancreas",
-  PL: "Placenta",
-  SI: "Small Intestine",
-  SK: "Skin",
-  SP: "Spleen",
-  ST: "Sternum",
-  TH: "Thymus",
-  TR: "Trachea",
-  UR: "Ureter",
-  UT: "Uterus",
-  OT: "Other"
-};
-
-// Deprecating
-// Direct mapping from HuBMAP Organ Code to appropriate RUI Reference Organ IRIs
-// Note: Always use http, https will not work
-export const RUI_ORGAN_MAPPING = {
-  AO: "http://purl.obolibrary.org/obo/UBERON_0000948",
-  BL: "http://purl.obolibrary.org/obo/UBERON_0001255",
-  BD: "http://purl.obolibrary.org/obo/UBERON_0001270",
-  BM: "http://purl.obolibrary.org/obo/UBERON_0001270",
-  BR: "http://purl.obolibrary.org/obo/UBERON_0000955",
-  LB: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  RB: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  LE: "http://purl.obolibrary.org/obo/UBERON_0004548",
-  RE: "http://purl.obolibrary.org/obo/UBERON_0004549",
-  LF: "http://purl.obolibrary.org/obo/UBERON_0001303",
-  RF: "http://purl.obolibrary.org/obo/UBERON_0001302",
-  HT: "http://purl.obolibrary.org/obo/UBERON_0000948",
-  LK: "http://purl.obolibrary.org/obo/UBERON_0004538",
-  RK: "http://purl.obolibrary.org/obo/UBERON_0004539",
-  LI: "http://purl.obolibrary.org/obo/UBERON_0000059",
-  LV: "http://purl.obolibrary.org/obo/UBERON_0002107",
-  LL: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  LN: "http://purl.obolibrary.org/obo/FMA_24978",
-  RL: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  RN: "http://purl.obolibrary.org/obo/FMA_24977",
-  LY: "http://purl.obolibrary.org/obo/UBERON_0002509",
-  LO: "http://purl.obolibrary.org/obo/FMA_7214",
-  RO: "http://purl.obolibrary.org/obo/FMA_7213",
-  PA: "http://purl.obolibrary.org/obo/UBERON_0001264",
-  PL: "http://purl.obolibrary.org/obo/UBERON_0001987",
-  SI: "http://purl.obolibrary.org/obo/UBERON_0002108",
-  SK: "http://purl.obolibrary.org/obo/UBERON_0002097",
-  SP: "http://purl.obolibrary.org/obo/UBERON_0002106",
-  RT: "http://purl.org/sig/ont/fma/fma54973",
-  LT: "http://purl.org/sig/ont/fma/fma54974",
-  // ST: "", // No CCF Reference Organ for Sternum yet
-  TH: "http://purl.obolibrary.org/obo/UBERON_0002370",
-  TR: "http://purl.obolibrary.org/obo/UBERON_0001004",
-  UR: "http://purl.obolibrary.org/obo/UBERON_0001223",
-  UT: "http://purl.obolibrary.org/obo/UBERON_0000995",
-  // OT: "" // No CCF Reference Organ for 'Other' ever
-};
 
 // Deprecated but the old Tissue form still yerns for it till I Purge the Old Forms/Files
 export const RUI_ORGAN_TYPES = JSON.parse(localStorage.getItem("RUIOrgans"));
@@ -214,27 +88,63 @@ export const EXCLUDE_USER_GROUPS = ["2cf25858-ed44-11e8-991d-0e368f3075e8", "577
 
 // this is a list of fields for the keyword search.  note: must ID fields need to use .keyword
 export const ES_SEARCHABLE_FIELDS = [
-  "created_by_user_displayname", 
+  "computed_lab_id_type.keyword",
+  "created_by_user_displayname",
   "created_by_user_email",
-  "dataset_info",
+  "data_access_level",
+  "dataset_info.keyword",
+  "dataset_type.keyword",
   "datasets.group_uuid", 
   "description.keyword", 
   "display_doi.keyword", 
   "display_subtype.keyword",
+  "doi_url.keyword",
+  "entity_type",
+  "group_name.keyword",
   "hubmap_id.keyword", 
   "lab_dataset_id.keyword",
   "lab_donor_id.keyword", 
   "lab_name.keyword",
   "lab_tissue_sample_id.keyword",
+  "organ.keyword",
+  "registered_doi.keyword",
+  "sample_category.keyword",
+  "status.keyword",
+  "statusAccess.keyword",
   "submission_id.keyword",
+  "title.keyword",
+  "type",
+  "uuid",
 ];
 
 // this list is for wildcard searchable fields
 export const ES_SEARCHABLE_WILDCARDS = [
-  "submission_id", 
-  "hubmap_id",
-  "lab_donor_id", 
-  "lab_name",
-  "lab_tissue_sample_id",
-  "lab_dataset_id"
+  "computed_lab_id_type.keyword",
+  "created_by_user_displayname",
+  "created_by_user_email",
+  "data_access_level",
+  "dataset_info.keyword",
+  "dataset_type.keyword",
+  "datasets.group_uuid", 
+  "description.keyword", 
+  "display_doi.keyword", 
+  "display_subtype.keyword",
+  "doi_url.keyword",
+  "entity_type",
+  "group_name.keyword",
+  "hubmap_id.keyword", 
+  "lab_dataset_id.keyword",
+  "lab_donor_id.keyword", 
+  "lab_name.keyword",
+  "lab_tissue_sample_id.keyword",
+  "organ.keyword",
+  "registered_doi.keyword",
+  "sample_category.keyword",
+  "status",
+  "statusAccess",
+  "submission_id.keyword",
+  "title.keyword",
+  "type",
+  "uuid",
+
   ];

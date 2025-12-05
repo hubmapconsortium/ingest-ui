@@ -25,7 +25,7 @@ import { toTitleCase } from "../../utils/string_helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faPenToSquare, faFolderTree, faTrash, faCircleExclamation, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
-import SearchComponent from "../search/SearchComponent";
+import {EmbeddedSearch} from "../embeddedSearch"; 
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
@@ -412,7 +412,6 @@ export function BulkSelector({
   }
   let totalRejected = totalWarnings + totalErrors;
 
-  // console.debug('%c◉ searchFilters.restrictions ', 'color:#00ff7b', searchFilters, searchFilters.blacklist);
   return (<>
     {/* Search Dialog */}
     <Dialog
@@ -422,9 +421,10 @@ export function BulkSelector({
       aria-labelledby="source-lookup-dialog"
       open={showSearchDialog === true}>
       <DialogContent>
-        <SearchComponent
-          select={handleSelectClick}
+        <EmbeddedSearch
+          handleTableCellClick={(e) => handleSelectClick(e)}
           modecheck="Source"
+          setBulkError={(e) => setBulkError(e)}
 					custom_title={searchFilters.custom_title ? searchFilters.custom_title :"Select a Source Entity"}
 					custom_subtitle={searchFilters.custom_subtitle ? searchFilters.custom_subtitle : null}
 					restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}

@@ -743,10 +743,14 @@ export const SampleForm = (props) => {
 
 
               {isOrganBloodType(sourceEntity.sample_category) && (
-                <Typography>
+                <Typography >
                   <b>Organ Type:</b>
-                  {organ_types[sourceEntity.organ]}
-                  {/* <svg height="25px" viewBox="0 0 10 10" x="200" width="100"><image url={OrganIcons(sourceEntity.organ)} /></svg>  */}
+                  <Typography variant="caption" component="span">
+                    <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+                      <image alt={sourceEntity.organ} href={OrganIcons(sourceEntity.organ)} width="25" height="25" />
+                    </svg>
+                    {organ_types[sourceEntity.organ]}
+                  </Typography>
                 </Typography>
               )}
               {sourceEntity.submission_id && (
@@ -765,6 +769,19 @@ export const SampleForm = (props) => {
                 <Typography className="col-sm-12">
                   <b>Group Name: </b>{" "}
                   {sourceEntity.group_name}
+                </Typography>
+              )}
+              {sourceEntity.hubmap_id && (
+                <Typography className="col-sm-12">
+                  <b>Hubmap ID: </b>{" "}
+                  <Button
+                      onClick={() => window.open("/"+sourceEntity.entity_type+"/"+sourceEntity.hubmap_id,'_blank') }
+                      variant="contained"
+                      size="small"
+                      color="primary">
+                      {sourceEntity.hubmap_id}
+                    </Button>
+                    
                 </Typography>
               )}
             </Box>

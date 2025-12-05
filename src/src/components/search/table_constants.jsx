@@ -7,8 +7,16 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
+import Skeleton from '@mui/material/Skeleton';
+import ArticleIcon from '@mui/icons-material/Article';
+import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import PersonIcon from '@mui/icons-material/Person';
+import TableChartIcon from '@mui/icons-material/TableChart';
 
 // table column definitions
+let nullRowBarStyle = {width:"100%", opacity:"0.4"}
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
@@ -33,7 +41,7 @@ export const COLUMN_DEF_SAMPLE = [
 	    width: 173,
 	    valueGetter: getLabId
   	}, 
-    { field: 'display_subtype', headerName: 'Type', width: 200},
+    { field: 'display_subtype', headerName: 'Type', width: 200, renderCell: renderFieldIcons},
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
@@ -249,16 +257,41 @@ export const COLUMN_DEF_MIXED = [
     width: 160,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
-    valueGetter: getLabId
+    valueGetter: getLabId,
+    renderCell: params => {
+      console.debug('%c◉ computed_lab_id_type ', 'color:#00ff7b', params);
+      if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
+        return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }
+      return (params.row.type)
+    }
   }, 
   { field: 'submission_id', headerName: 'Submission ID', width: 100 },
   { field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
-    valueGetter: getTypeValue
+    valueGetter: getTypeValue,
+    renderCell: params => {
+      let typeVal = getTypeValue(params)
+      let entityType = params?.row?.entity_type === "Upload" ? "Data Upload" : params?.row?.entity_type
+      // console.debug('%c◉  typevalcheck', 'color:#00ff7b', entityType, typeVal, entityType === typeVal );
+      if (!typeVal) {
+        return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else if(entityType === typeVal ){
+        return <span></span>
+      }
+      return (renderFieldIcons(params) )
+      
+    }
   }, 
-  { field: 'entity_type', headerName: 'Entity Type', width: 200},
+  { field: 'entity_type', 
+    headerName: 'Entity Type', 
+    width: 200,
+    renderCell: params => { 
+      return (toTitleCase(params.row.entity_type))
+    }
+  },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: "statusAccess",
     width: 180,
@@ -287,6 +320,28 @@ export const COLUMN_DEF_MIXED = [
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
 // Computed column functions
+function entityIconsBasic(entity_type){
+  let style = {marginRight: "5px"};
+  switch
+  (entity_type && entity_type.toLowerCase()){
+    case "donor":
+      return <PersonIcon sx={style}/>;
+    case "sample":
+      return <BubbleChartIcon sx={style}/>
+    case "dataset":
+      return <TableChartIcon sx={style}/>
+    case "upload":
+      return <DriveFolderUploadIcon sx={style}/>
+    case "publication":
+      return <ArticleIcon sx={style}/>
+    case "collection":
+      return <CollectionsBookmarkIcon sx={style}/>
+    case "eppicollection":
+      return <CollectionsBookmarkIcon sx={style}/>
+    default:
+      return <BubbleChartIcon  sx={style}/>
+  }
+}
 
 // function getSampleType(params: ValueGetterParams) {
 // 	if (params.getValue('entity_type') === 'Sample') {
@@ -295,6 +350,24 @@ export const COLUMN_DEF_MIXED_SM = shrinkCols;
 //   return params.getValue('entity_type');
 // }
 
+function renderFieldIcons(params: ValueFormatterParams) {
+  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+  return (
+    <div>
+      {params.row.organ && systemIcons[params.row.organ] && (
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "5px"}} >
+          <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
+        </svg>
+      )}
+      {!params.row.organ && params.row.entity_type && (
+        entityIconsBasic(params.row.entity_type)
+      )}
+
+      {params.value}
+    </div>
+  )
+}
+
 // Strips the Submission ID column from COLUMN_DEF_MIXED
 function shrinkCols(string){
   var stripped = COLUMN_DEF_MIXED.delete('submission_id');
@@ -302,7 +375,6 @@ function shrinkCols(string){
 }
 
 function prettyCase(string){
-  // return toTitleCase(string)
   return "YES "+toTitleCase(string)
 }
 
@@ -332,13 +404,6 @@ function getStatusAccess(params: ValueGetterParams) {
     return ["", ""]
   }
 }
-
-// function renderActionButton(params: ValueFormatterParams) {
-//   // console.debug('%c◉ params ', 'color:#00ff7b', params, params.row.uuid);
-//   return(
-    
-//   )
-// }
 
 function renderStatusAccess(params: ValueFormatterParams) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);

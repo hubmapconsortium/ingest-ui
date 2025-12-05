@@ -73,8 +73,8 @@ export function ValidateJSON(str){
   }
 }
 
-export function ValidateDTList(datatypes){
-  return datatypes && !datatypes.includes("[object Object]");
+export function ValidateLocalStoreValue(data){
+  return data && !data.includes("[object Object]");
 }
 
 export function ValidateLocalhost(){

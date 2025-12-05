@@ -93,92 +93,130 @@ export function search_api_filter_es_query_builder(
   from,
   size,
   colFields
-){
+) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
-  if (fields["keywords"] && fields["keywords"].indexOf("*") > -1){
-    // if keywords contain a wildcard
-    boolQuery = esb
-      .queryStringQuery(fields["keywords"])
-      //@NOTE: If there's issues RE Things not coming back in search that should, 
-      // Check here  
-      .fields(ES_SEARCHABLE_WILDCARDS);
+  console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
+  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+  console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+  console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+  console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
+  // Always build a bool query and, if keywords contain a wildcard, add a
+  // queryStringQuery as an additional MUST instead of short-circuiting the
+  // whole builder. This preserves group/entity/organ filters while still
+  // allowing wildcard searches across the wildcard-capable fields.
+  const hasWildcard = fields && fields["keywords"] && fields["keywords"].indexOf("*") > -1;
+  boolQuery = esb.boolQuery();
+
+  // if no field criteria is sent just default to a (keeps prior behavior)
+  if (Object.keys(fields).length === 0 && fields.constructor === Object){
+    // console.debug("full search")
+    boolQuery.must(
+      esb.matchQuery(
+        "entity_type",
+        "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
+      )
+    );
   } else {
-    boolQuery = esb.boolQuery();
-    // if no field criteria is sent just default to a
-    if (Object.keys(fields).length === 0 && fields.constructor === Object){
-      // console.debug("full search")
+
+    // FIELD PROCESSING
+
+    // Group
+    if (fields["group_name"]){
+      boolQuery.must(
+        esb.matchQuery("group_name.keyword", fields["group_name"])
+      );
+    } else if (fields["group_uuid"]){
+      // this'll be from the dropdown,
+      boolQuery.must(
+        esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
+      );
+    }
+
+    // Specimen Types
+    if (fields["sample_category"]){
+      // console.debug("sample_category", fields["sample_category"]);
+      if (fields["sample_category"] !== "donor"){
+        boolQuery.must(
+          esb.matchQuery("sample_category.keyword", fields["sample_category"])
+        );
+      } else {
+        boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
+      }
+    } 
+    
+    // Organ
+    else if (fields["organ"]){
+      boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
+    } 
+    
+    // Entity Type
+    else if (fields["entity_type"]){
+
+      if(["Data Upload"].includes(fields["entity_type"])){
+        fields["entity_type"] = "Upload";
+      }
+
+      if (fields["entity_type"] === "DonorSample"){
+        // hack to deal with no type selected from the UI, this clues from the donor/sample filer
+        boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
+      } else {
+        boolQuery.must(
+          esb.matchQuery("entity_type.keyword", fields["entity_type"])
+        );
+      }
+    }
+    
+    // Default all entity types
+    else {
       boolQuery.must(
         esb.matchQuery(
           "entity_type",
-          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
+          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
         )
-      );
-    } else {
-      // was a group name selected
-      if (fields["group_name"]){
-        boolQuery.must(
-          esb.matchQuery("group_name.keyword", fields["group_name"])
-        );
-      } else if (fields["group_uuid"]){
-        // this'll be from the dropdown,
-        // if its a collection, we wanna search the datasets of it, not it itself
-        if (fields["entity_type"] === "Collection"){
-          boolQuery.must(
-            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
-          );
-        } else {
-          boolQuery.must(
-            esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
-          );
-        }
-      }
-      // was specimen types selected
-      if (fields["sample_category"]){
-        // console.debug("sample_category", fields["sample_category"]);
-        if (fields["sample_category"] !== "donor"){
-          boolQuery.must(
-            esb.matchQuery("sample_category.keyword", fields["sample_category"])
-          );
-        } else {
-          boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
-        }
-      } else if (fields["organ"]){
-        boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
-      } else {
-        // was entity types select
-        if (fields["entity_type"]){
-          if (fields["entity_type"] === "DonorSample"){
-            // hack to deal with no type selected from the UI, this clues from the donor/sample filer
-            boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
-          } else {
-            boolQuery.must(
-              esb.matchQuery("entity_type.keyword", fields["entity_type"])
-            );
-          }
-        } else {
-          boolQuery.must(
-            esb.matchQuery(
-              "entity_type",
-              "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection"
-            )
-          ); // default everything ; this maybe temp
-        }
-      }
-
-      if (fields["keywords"]){
-        if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
-          boolQuery.must(
-            esb.matchQuery("hubmap_id.keyword", fields["keywords"])
-          );
-        } else {
-          boolQuery.filter(
-            esb.multiMatchQuery(ES_SEARCHABLE_FIELDS, fields["keywords"])
-          );
-        }
-      }
+      ); // default everything ; this maybe temp
     }
   }
+
+  // Status
+  if (fields["status"]){
+    let queryString = fields["status"].join(" OR ");
+    boolQuery.must(
+      esb.matchQuery("status", queryString)
+    );
+  }
+
+  // keywords handling: preserve HBM exact-match behavior, otherwise use
+  // multiMatch for non-wildcard keywords. Wildcard keywords are handled
+  // after this block by adding a queryStringQuery as a MUST so other
+  // filters are not dropped.
+  // Determine if the UI has asked to target a single field for keyword searches
+  // default keyword fields (non-wildcard) and wildcard-capable fields
+  const keywordSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_FIELDS;
+  const wildcardSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_WILDCARDS;
+
+  if (fields["keywords"]){
+    if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+      // exact HubMAP id match stays the same
+      boolQuery.must(
+        esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+      );
+    } else if (!hasWildcard) {
+      // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
+      boolQuery.filter(
+        esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
+      );
+    }
+  }
+
+  // If we have a wildcard keyword, add it as an additional MUST so it
+  // coexists with other filters rather than replacing them. Respect target field if provided.
+  if (hasWildcard){
+    boolQuery.must(
+      esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+    );
+  }
+
   if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1){
     // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
     requestBody
@@ -197,7 +235,11 @@ export function search_api_filter_es_query_builder(
       .source(colFields)
       .trackTotalHits(true);
   }
+
+  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  console.groupEnd();
   return requestBody.toJSON();
+  
 }
 
 /*
