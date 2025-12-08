@@ -4,6 +4,7 @@ import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 
 import {SAMPLE_CATEGORIES} from "../constants";
+import {Link} from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -37,7 +38,7 @@ import {
   COLUMN_DEF_MIXED,
 } from "./search/table_constants";
 import {api_search2} from "../service/search_api";
-import {OrganIcons} from "./ui/icons"
+import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation } from 'react-router-dom';
 
@@ -72,9 +73,10 @@ export function NewSearch({
   const initialSearchState = {
     dataRows: null,
     rowCount: 0,
-    colDef: COLUMN_DEF_SAMPLE,
+    colDef: COLUMN_DEF_MIXED,
     loading: true,
   };
+  
 
   function searchReducer(state, action) {
     switch (action.type) {
@@ -195,11 +197,18 @@ export function NewSearch({
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
 
   // stable handlers
-  const handleTableCellClickDefault = useCallback((params, event) => {
-    if (params.field === "uuid") return; // skip this field
-    if (params.hasOwnProperty("row")) {
-      var typeText = params.row.entity_type.toLowerCase();
-      urlChange(event, typeText + "/" + params.row.uuid);
+  const handleTableCellClickDefault = useCallback((params, event, details) => {
+    console.debug('%c◉ handleTableCellClickDefault ', 'color:#00ff7b', params, params?.field);
+    console.debug('%c◉ details ', 'color:#00ff7b', details);
+    console.debug('%c◉ event ', 'color:#00ff7b', event);
+    let row = event.hasOwnProperty("row") ? event.row : params.row;
+    let field = params.hasOwnProperty("row") ? params.field : event.field;
+    if (field === "uuid") return; // skip this field
+    if (row) {
+      var typeText = row.entity_type.toLowerCase();
+      let target = typeText + "/" + row.uuid
+      console.debug('%c◉ target ', 'color:#00ff7b', target);
+      urlChange(event, target);
     }
   }, [urlChange]);
 
@@ -209,7 +218,7 @@ export function NewSearch({
   }, []);
 
   const onCellClickHandler = useCallback((event, params, details) => {
-    return handleTableCellClickDefault(params, event);
+    return handleTableCellClickDefault(params, event, details);
   }, [handleTableCellClickDefault]);
 
   useEffect(() => {
@@ -271,22 +280,16 @@ export function NewSearch({
     )
       .then((response) => {
         if(response.error){
-          // console.debug('%c◉ Error on Search ', 'color:#C800FF', response.error);
           errorReporting(response.error)
         }
-        // console.debug('%c◉ searchFilterParams ', 'color:#00d184', searchFilterParams);
-
-        // console.debug('%c⊙useEffect Search', 'color:#008CFF', response.total, response.results );
         if (response.total > 0 && response.status === 200) {
-          
-          // console.debug('%c◉ searchFilterParams.entity_type ', 'color:#008CFF', searchFilterParams.entity_type);
           let colDefs;
           if(simpleColumns.includes(searchFilterParams.entity_type) ){
             colDefs = columnDefType(searchFilterParams.entity_type);
-          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
+          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"|| searchFilterParams.entity_type === "DonorSample"){
             colDefs = COLUMN_DEF_MIXED
           }else{
-            colDefs = COLUMN_DEF_SAMPLE
+            colDefs = COLUMN_DEF_MIXED
           }
           // console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
           dispatchSearchState({
@@ -659,6 +662,12 @@ export function NewSearch({
       </FormControl>
     )
   }
+
+  function renderEntityIcon(entity_type){
+    let icon = EntityIconsBasic(entity_type,"5px")
+    return icon;
+  }
+
   
   function renderNewFilterControls() {
     return (
@@ -689,7 +698,11 @@ export function NewSearch({
               borderBottomLeftRadius: "0px!important"
             }}>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
-            <Grid item xs={12} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.</Grid>
+            <Grid item xs={12} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> 
+              <Typography variant="" sx={{ color: "#fff"}}>
+                Use the filter controls to search for <Link to={"?entity_type=donor"} className="text-white">Donors</Link>, <Link to={"?entity_type=sample"} className="text-white">Samples</Link>, <Link to={"?entity_type=dataset"} className="text-white">Datasets</Link>, <Link to={"?entity_type=upload"} className="text-white">Data Uploads</Link>, <Link to={"?entity_type=publication"} className="text-white">Publications</Link>, or <Link to={"?entity_type=collection"} className="text-white">Collections</Link>. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.
+                </Typography>
+              </Grid>
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"15px", }}>
               <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
               <Grid item xs={6} sx={{padding:"4px"}} > 
@@ -750,14 +763,6 @@ export function NewSearch({
                   startIcon={<ClearIcon />}
                     sx={{
                       width: "40%",
-                      // borderWidth: "1px",
-                      // background: "#e0e0e0",
-                      // // border: "1px solid #00061E",
-                      // color: "#AAAAAA",
-                      // '&:hover': {
-                      //   backgroundColor: "#EAEAEA",
-                      //   border: ctrlPressed ? '1px solid #ff0000' : '1px solid rgb(0 6 30)'
-                      // }
                     }}
                   variant="contained"
                   size="large"  
@@ -790,14 +795,15 @@ export function NewSearch({
     }
     setFormFilters({
       group_uuid: "",
-      entity_type: "",
+      entity_type: "DonorSample",
       keywords: ""
     })
     setSearchFiltersState({
       group_uuid: "allcom",
-      entity_type: "---",
+      entity_type: "DonorSample",
       keywords: ""
     })
+    handleSearchClick();
   }
 
   function handleSearchClick(event) {
@@ -805,7 +811,7 @@ export function NewSearch({
     if(event){event.preventDefault()}
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
-    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     var group_uuid = formFilters.group_uuid;
     var entityType;
     if(formFilters.entity_type){

@@ -1,9 +1,7 @@
 import React,{useEffect,useState,useMemo} from "react";
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
-
 import {SAMPLE_CATEGORIES} from "../constants";
-
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -29,20 +27,21 @@ import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 
 export function EmbeddedSearch({  
-  searchTitle,
-  searchSubtitle,
+  custom_title,
+  custom_subtitle,
   searchFilters,
   restrictions,
   urlChange,
   modecheck,
   handleTableCellClick,
 }){
-  var [search_title] = useState(
-    searchTitle ? 
-    searchTitle : "Search");
-  var [search_subtitle] = useState(
-    searchSubtitle ? 
-    searchSubtitle : null);
+  console.debug('%c◉ restrictions ', 'color:#00ff7b', restrictions);
+  var [searchTitle] = useState(
+    custom_title ? 
+    custom_title : "Search" );
+  var [searchSubtitle] = useState(
+    custom_subtitle ? 
+    custom_subtitle : null);
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
@@ -56,7 +55,7 @@ export function EmbeddedSearch({
   var [results, setResults] = React.useState({
     dataRows: null,
     rowCount: 0,
-    colDef: COLUMN_DEF_SAMPLE,
+    colDef: COLUMN_DEF_MIXED,
   });
   //  LOADERS
   var [loading, setLoading] = useState(true);
@@ -66,6 +65,17 @@ export function EmbeddedSearch({
   var [errorState, setErrorState] = useState();
   const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
 
+  // track ctrl/meta key while hovering Clear so we can change hover border
+  // treat Command (Meta) as equivalent to Control for the hover hint
+  const [ctrlPressed, setCtrlPressed] = useState(false);
+  // handlers for Clear hover behavior: attach key listeners only while hovering
+  const handleClearKeyDown = (e) => {
+    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
+  };
+  const handleClearKeyUp = (e) => {
+    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
+  };
+  
   // Memoized helpers to avoid recreating objects/functions passed into DataGrid
   const colDefDep = results ? results.colDef : null;
   const hiddenFields = useMemo(() => {
@@ -101,7 +111,6 @@ export function EmbeddedSearch({
 
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
 
-
   function resultFieldSet() {
     var fieldObjects = [];
     var fieldArray = fieldObjects.concat(
@@ -118,6 +127,7 @@ export function EmbeddedSearch({
 
   useEffect(() => {
     var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
+    console.debug('%c◉ searchFilterParams ', 'color:#00ff7b',searchFilterParams );
     setTableLoading(true);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {
@@ -176,13 +186,14 @@ export function EmbeddedSearch({
         }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
           colDefs = COLUMN_DEF_MIXED
         }else{
-          colDefs = COLUMN_DEF_SAMPLE
+          colDefs = COLUMN_DEF_MIXED
         }
         setResults({
           dataRows: response.results,
           rowCount: response.total,
           colDef: colDefs,
         });
+        console.debug('%c◉ colDefs ', 'color:#71BAF9', colDefs);
         setTableLoading(false);
       } else if (response.total === 0) {
         setResults({
@@ -280,19 +291,23 @@ export function EmbeddedSearch({
     }
   }
   
-  function handleClearFilter() {
-    setFormFilters({
-      group_uuid: "",
-      entity_type: "",
-      keywords: ""
-    })
-    setSearchFilters({
-      group_uuid: "allcom",
-      entity_type: "---",
-      keywords: ""
-    })
+  function handleClearFilter(e) {
+    if(e.ctrlKey || e.metaKey){
+        window.open("/newSearch",'_blank')
+    }else{
+      setFormFilters({
+        group_uuid: "",
+        entity_type: "",
+        keywords: ""
+      })
+      setSearchFilters({
+        group_uuid: "allcom",
+        entity_type: "---",
+        keywords: ""
+      })
+    }
   }
-        
+      
   function handleSearchClick(event) {
     if(event){event.preventDefault()}
     setTableLoading(true);
@@ -448,16 +463,16 @@ export function EmbeddedSearch({
           justifyContent: "center",
           marginBottom: 2,}}>
         
-        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{search_title} </span>
-          {!search_subtitle &&(
+        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{searchTitle} </span>
+          {!searchSubtitle &&(
             <Typography align={"center"} variant="subtitle1" gutterBottom >
               Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
             </Typography>
           )}
-          {search_subtitle &&(
+          {searchSubtitle &&(
             <Typography align={"center"} variant="caption" gutterBottom>
-              {search_subtitle} <br/>
+              {searchSubtitle} <br/>
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
 
             </Typography>
@@ -550,6 +565,9 @@ export function EmbeddedSearch({
                 variant="outlined"
                 color="primary"
                 size="large"
+                sx={{ border: "1px solid #aaa", '&:hover': { border: ctrlPressed ? '1px solid #ff0000' : '1px solid #CBC6C6' } }}
+                onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
+                onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
                 onClick={(e) => handleClearFilter(e)}>
                 Clear
               </Button>
