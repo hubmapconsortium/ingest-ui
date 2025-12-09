@@ -7,7 +7,6 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
-import Skeleton from '@mui/material/Skeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
