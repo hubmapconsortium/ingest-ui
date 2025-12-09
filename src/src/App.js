@@ -22,7 +22,6 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import SearchComponent from './components/search/SearchComponent';
 
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
@@ -588,10 +587,6 @@ export function App(){
                     </Route>
                     
                     <Route path="/donors" element={<DonorForm />} ></Route>
-                    <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
                       
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
