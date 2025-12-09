@@ -851,6 +851,13 @@ export function NewSearch({
     } else {
       url.searchParams.delete("keywords");
     }
+    // If the user selected a specific target field for keyword search, include it
+    if (formFilters.target_field) {
+      params["target_field"] = formFilters.target_field;
+      url.searchParams.set("target_field", formFilters.target_field);
+    } else {
+      url.searchParams.delete("target_field");
+    }
     if (group_uuid && group_uuid !== "All Components") {
       params["group_uuid"] = group_uuid;
       url.searchParams.set("group_uuid", group_uuid);
