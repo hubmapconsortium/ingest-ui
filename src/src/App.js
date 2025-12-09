@@ -585,9 +585,7 @@ export function App(){
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
                     </Route>
-                    
-                    <Route path="/donors" element={<DonorForm />} ></Route>
-                      
+                                          
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/dataset/:uuid" element={<DatasetForm onUpdated={(response) => updateSuccess(response)}/>} />
