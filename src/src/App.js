@@ -66,9 +66,7 @@ export function App(){
   var[allGroups, setAllGroups] = useState(null);
 
   // Data to fill in UI Elements
-  // var[dataTypeList, setDataTypeList] = useState({}); //@TODO: Remove & use Local in forms
-  // var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
-  var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
+  // var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
   // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
   
   var[userDev, setUserDev] = useState(true);
@@ -135,7 +133,7 @@ export function App(){
           localStorage.setItem("organ_icons", JSON.stringify(organIcons));
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
-            setOrganList(res); // TODO: Eventually remove & use localstorage
+            // setOrganList(res); // TODO: Eventually remove & use localstorage
           }else{
             // Not cached, we cant really go on
             setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
