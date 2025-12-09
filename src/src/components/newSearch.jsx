@@ -41,12 +41,11 @@ import {api_search2} from "../service/search_api";
 import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
-
+ 
 export function NewSearch({
   searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
-  modecheck,
 }){
 
   // TABLE & FILTER VALUES
