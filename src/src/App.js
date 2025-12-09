@@ -23,29 +23,25 @@ import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import SearchComponent from './components/search/SearchComponent';
-import Forms from "./components/uuid/forms";
 
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
 import {SpeedDialTooltipOpen} from './components/ui/formParts';
+import {OrganDetails} from './components/ui/icons';
+import {ValidateLocalStoreValue} from './utils/validators';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
 import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set, ubkg_api_get_organs_full} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
-import {ValidateDTList} from './utils/validators';
+import { gateway_api_status } from "./service/gateway_service";
 
 // The legacy form loaders
-// import {CollectionForm} from "./components/collections";
-import {RenderEPICollection} from "./components/epicollections";
-import {RenderDataset} from "./components/datasets";
 import {RenderMetadata} from "./components/metadata";
-import {RenderPublication} from "./components/publications";
-// import {RenderSample} from "./components/samples";
-import {RenderUpload} from "./components/uploads";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
+import {NewSearch} from "./components/newSearch";
 import {DonorForm} from "./components/newDonor";
 import {UploadForm} from "./components/newUpload";
 import {SampleForm} from "./components/newSample";
@@ -56,7 +52,7 @@ import {EPICollectionForm} from "./components/newEpicollection";
 
 import NotFound from "./components/404";
 
-export function App(props){
+export function App(){
   let navigate = useNavigate();
   // @todo: trim how many need to actually be hooks / work with the state
   var[expiredKey,setExpiredKey] = useState(false);
@@ -67,9 +63,7 @@ export function App(props){
   var[newEntity, setNewEntity] = useState(null);
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
-  var[groupsToken, setGroupsToken] = useState(null); //@TODO: Remove & use Local in forms
   var[allGroups, setAllGroups] = useState(null);
-  var[timerStatus, setTimerStatus] = useState(true);
 
   // Data to fill in UI Elements
   // var[dataTypeList, setDataTypeList] = useState({}); //@TODO: Remove & use Local in forms
@@ -95,6 +89,31 @@ export function App(props){
   };
 
   useEffect(() => {
+    gateway_api_status()
+    .then((response) => {
+      // If any monitored services are false, surface a friendly APIErr
+      if (response && response.results) {
+        const toTitle = (key) =>key
+          .split('_')
+          .map(w => (w.toUpperCase() === 'API' ? 'API' : w.charAt(0).toUpperCase() + w.slice(1)))
+          .join(' ');
+        const downServices = Object.entries(response.results)
+            .filter(([key, val]) => !val) // treat falsy as "down"
+            .map(([key]) => toTitle(key));
+        if (downServices.length > 0) {
+          setAPIErr([
+            "There is currently a service disruption detected for: ",
+            downServices.join(", "),
+            "If you encounter instability, please try again later, or contact help@hubmapconsortium.org",
+            "Service Instability"
+          ]);
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("gateway_api_status ERROR", error);
+    });
+
     var loadCounter = 0;
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
@@ -106,23 +125,26 @@ export function App(props){
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("organs")){
+    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons")){
       ubkg_api_get_organ_type_set()
         .then((res) => {
           loadCount() // the Organ step
+          // lets also save the organ-image mapping
+          let organIcons = OrganDetails();
+          localStorage.setItem("organ_icons", JSON.stringify(organIcons));
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
             setOrganList(res); // TODO: Eventually remove & use localstorage
           }else{
             // Not cached, we cant really go on
             setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
-            reportError(res)
+            // reportError(res)
           } 
         })
         .catch((err) => {
           // Not cached, we cant really go on
           setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
-          reportError(err)
+          // reportError(err)
         })
     }else{
       // we already have organs
@@ -140,7 +162,7 @@ export function App(props){
           localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
 
         })
-        .catch((error) => {
+        .catch(() => {
           // console.debug("RUI_ORGAN_MAP", error, error.response);
         });
     }
@@ -156,19 +178,16 @@ export function App(props){
             // setDataTypeListAll(res);
           }else{
             setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
-            reportError(res)
           }
         })
         .catch((err) => {
           // Not cached, we cant really go on
           setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try again later, or contact help@hubmapconsortium.org ',err)
-          reportError(err)
         })
       loadCount() // the dataset_types step
     }else{
-      // we already have Dataset Types
-      // but are they good
-      if (!ValidateDTList(localStorage.getItem("datatypes"))) {
+      // we already have Dataset Types but are they good
+      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
         localStorage.removeItem("datatypes");
       }
       loadCount()
@@ -177,8 +196,6 @@ export function App(props){
     // User Loading Bits Now
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
-        // let info = JSON.parse(localStorage.getItem("info"));
-        // console.debug('%c◉ LocalStore Found ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")));
         // Validate our Token
         api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
           .then((results) => {
@@ -211,7 +228,7 @@ export function App(props){
                 .then((adminCheck) => {
                   setAdminStatus(adminCheck);
                 })
-                .catch((err) => {
+                .catch(() => {
                   // console.debug('%c◉ setAdminStatus Error ', 'color:#ff005d', err);
                 })
 
@@ -234,7 +251,7 @@ export function App(props){
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
                       }else{
                         setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
-                        loadFailed(res)
+                        // loadFailed(res)
                       }
                     })
                     .catch((err) => {
@@ -321,6 +338,7 @@ export function App(props){
   function purgeStorage(){
     localStorage.removeItem('info');
     localStorage.removeItem('organs');
+    localStorage.removeItem('organ_icons');
     localStorage.removeItem('organs_full');
     localStorage.removeItem('RUIOrgans');
     localStorage.removeItem('datatypes');
@@ -342,18 +360,26 @@ export function App(props){
   function handleCancel(){
     navigate("/");
   }
-  const onClose = (event, reason) => {
+  const onClose = () => {
     navigate("/");
   }
-  const onCloseSuccess = (event, reason) => {
+  const onCloseSuccess = () => {
     setSuccessDialogRender(false);
     onClose();
   }
   
-  function urlChange(event, target, details){
-    // console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target, details );
+  function urlChange(event, target){
+    console.debug('%c◉ urlChange ', 'color:#00ff7b', event, target );
     if(target && target!==undefined){
       var lowerTarget = target.toLowerCase();
+      if(event.ctrlKey || event.metaKey){
+        window.open(target,'_blank')
+      }else{
+        navigate(lowerTarget);
+      }
+    }
+    if(event && event==="raw"){
+      var lowerTarget = event.toLowerCase();
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
@@ -387,11 +413,7 @@ export function App(props){
   const{search} = useLocation();
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
-  const queryParams = new URLSearchParams(search);
-  const queryEntity = queryParams.has("entity_type")?queryParams.get("entity_type"):null  
-  const queryKeyword = queryParams.has("keywords")?queryParams.get("keywords"):null  
-  const queryGroup = queryParams.has("group_uuid")?queryParams.get("group_uuid"):null  
-  var[bundledParameters] = useState({entity_type: queryEntity, keywords: queryKeyword, group_uuid: queryGroup});
+
 
   // Error Query Bits
   var[errorShow,setErrorShow] = useState(false);
@@ -434,7 +456,7 @@ export function App(props){
         <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
-            onError={(error, errorInfo) => {
+            onError={() => {
               // console.log("Error caught!");  
               // console.error(error);
               // console.error(errorInfo);
@@ -516,9 +538,14 @@ export function App(props){
           
             {APIErr.length > 0 && (
               <Alert variant="filled" severity="error">
-                There was an error populating from datasource {APIErr[0]}  
-                {APIErr[1]}
-                {APIErr[2]}
+                
+                {!APIErr[3] && (
+                  <>There was an error populating from datasource {APIErr[0]}</>
+                )}
+                {APIErr[3] && (
+                  <>{APIErr[3]}: {APIErr[0]}</>
+                )}
+                {APIErr[1]}&nbsp;{APIErr[2]}
               </Alert>
             )}
 
@@ -536,14 +563,15 @@ export function App(props){
 
             {authStatus && !isLoading && !unregStatus &&(
               <HuBMAPContext.Provider value={{allGroups}}> 
-                <Paper className={"px-5 py-4 admin-"+(adminStatus)}>
+                <Paper className={"px-4 py-3 admin-"+(adminStatus)}>
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} packagedQuery={bundledParameters} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
                     <Route path="/login" element={<Login />} />
+                    <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
                       <Route index element={<SearchComponent reportError={reportError} />} />

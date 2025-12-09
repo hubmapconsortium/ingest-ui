@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { RUI_ORGAN_MAPPING } from "../../../constants.jsx";
+// import { RUI_ORGAN_MAPPING } from "../../../constants.jsx";
 import { ubkg_api_get_organ_type_set } from "../../../service/ubkg_api";
 import "../../../App.css";
 
@@ -80,7 +80,8 @@ class RUIIntegration extends Component {
   updateRUIConfig() {
     // console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b',this.props.organ, this.props.organList,this.props.organList[this.props.organ] );
     console.debug('%c◉ thisPROPS RuiInt ', 'color:#00ff7b', this.props );
-    const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
+    // const organ_id = RUI_ORGAN_MAPPING[this.props.organ];
+    const organ_id = "NA"; // File will be deleted soon, this shushes errors
     const organ_info = this.props.organList[this.props.organ].split("(");
     const organ_name = organ_info[0].toLowerCase().trim();
     const organ_side = organ_info[1]?.replace(/\(|\)/g, "").toLowerCase();

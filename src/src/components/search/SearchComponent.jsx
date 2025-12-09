@@ -17,6 +17,7 @@ import {ingest_api_allowable_edit_states,ingest_api_all_groups} from "../../serv
 import {entity_api_get_entity} from "../../service/entity_api";
 import {toTitleCase} from "../../utils/string_helper";
 import {RenderSearchTable} from "./searchTable";
+import {EmbeddedSearch} from "../embeddedSearch"; 
 // Creation donor_form_components
 
 function resultFieldSet() {
@@ -489,22 +490,9 @@ class SearchComponent extends Component {
           !this.state.entityListLoading && (
             // this.renderTable()}
             <div>
-              <RenderSearchTable 
-                // data={this.state.datarows} 
-                modecheck={this.props.modecheck}
-                packagedQuery={this.props.packagedQuery?this.props.packagedQuery:null}
-                restrictions={this.props.restrictions}
-                allGroups={this.state.allGroups}
-                allTypes={this.state.allTypes}
-                columns={this.state.column_def} 
-                searchTitle={this.props.custom_title ? this.props.custom_title : null}
-                searchSubtitle={this.props.custom_subtitle ? this.props.custom_subtitle : null}
-                // handleTableCellClick={(params) => this.handleTableCellClick(params)}
-                // handleSearchButtonClick={() => this.handleSearchButtonClick()}
+              <EmbeddedSearch
                 handleTableCellClick={this.props.select?(event, params, details)=>this.props.select(event, params, details):(event, params, details)=>this.handleTableCellClick(event, params, details)}
-                // select={this.props.select?this.props.select:null}
-                reportError={(error) => this.props.reportError(error)}
-                urlChange={(target) => this.props.urlChange(target) } />
+              />
             </div>
           )}
           {this.state.datarows &&

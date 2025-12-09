@@ -34,57 +34,136 @@ export function EntityIcons(entity_type, status){
       return <BubbleChartIcon style={style} />
   }
 }
+
+export function EntityIconsBasic(entity_type, size){
+  console.debug('%c◉ entity_type ', 'color:#00ff7b', entity_type);
+  let style = {marginRight: "5px"};
+  switch
+  (entity_type && entity_type.toLowerCase()){
+    case "donor":
+      return <PersonIcon size={size?size:"0.5em"} sx={style}/>;
+    case "sample":
+      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
+    case "dataset":
+      return <TableChartIcon size={size?size:"0.5em"} sx={style}/>
+    case "upload":
+      return <DriveFolderUploadIcon size={size?size:"0.5em"} sx={style}/>
+    case "publication":
+      return <ArticleIcon size={size?size:"0.5em"} sx={style}/>
+    case "collection":
+      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+    case "eppicollection":
+      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+    default:
+      return <BubbleChartIcon  size={size?size:"0.5em"} sx={style}/>
+  }
+}
+
+
+export function OrganDetails(){
+  console.debug('%c◉ OrganDetails ', 'color:#00ff7b', );
+  let organs =  JSON.parse(localStorage.getItem("organs"))
+  let organsFull =  JSON.parse(localStorage.getItem("organs_full"))
+  const BASE_ICON_URL = 'https://cdn.humanatlas.io/hra-design-system/icons'
+  let uberonIcons = {
+    'skin': `${BASE_ICON_URL}/organs/organ-icon-skin.svg`,
+    'blood': `${BASE_ICON_URL}/organs/organ-icon-blood.svg`,
+    'bone-marrow': `${BASE_ICON_URL}/organs/organ-icon-bone-marrow.svg`,
+    'brain': `${BASE_ICON_URL}/organs/organ-icon-brain.svg`,
+    'kidney-left': `${BASE_ICON_URL}/organs/organ-icon-kidney-left.svg`,
+    'kidney-right': `${BASE_ICON_URL}/organs/organ-icon-kidney-right.svg`,
+    'large-intestine': `${BASE_ICON_URL}/organs/organ-icon-large-intestine.svg`,
+    'liver': `${BASE_ICON_URL}/organs/organ-icon-liver.svg`,
+    'lung-left': `${BASE_ICON_URL}/organs/organ-icon-lung-left.svg`,
+    'lung-right': `${BASE_ICON_URL}/organs/organ-icon-lung-right.svg`,
+    'lymph-nodes': `${BASE_ICON_URL}/organs/organ-icon-lymph-nodes.svg`,
+    'mammary-gland-left': `${BASE_ICON_URL}/organs/organ-icon-breast.svg`,
+    'mammary-gland-right':`${BASE_ICON_URL}/organs/organ-icon-breast.svg`,
+    'UBERON:0005090': 'https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg',
+    'ovary-left': `${BASE_ICON_URL}/organs/organ-icon-ovary-left.svg`,
+    'ovary-right': `${BASE_ICON_URL}/organs/organ-icon-ovary-right.svg`,
+    'pancreas': `${BASE_ICON_URL}/organs/organ-icon-pancreas.svg`,
+    'placenta': `${BASE_ICON_URL}/organs/organ-icon-placenta.svg`,
+    'spleen': `${BASE_ICON_URL}/organs/organ-icon-spleen.svg`,
+    'spinal-cord': `${BASE_ICON_URL}/organs/organ-icon-spinal-cord.svg`,
+    'skin': `${BASE_ICON_URL}/organs/organ-icon-skin.svg`,
+    'bone-marrow': `${BASE_ICON_URL}/organs/organ-icon-bone-marrow.svg`,
+    'thymus': `${BASE_ICON_URL}/organs/organ-icon-thymus.svg`,
+    'trachea': `${BASE_ICON_URL}/organs/organ-icon-trachea.svg`,
+    'heart': `${BASE_ICON_URL}/organs/organ-icon-heart.svg`,
+    'palatine-tonsil':`${BASE_ICON_URL}/organs/organ-icon-palatine-tonsil.svg`,
+    'palatine-tonsil':`${BASE_ICON_URL}/organs/organ-icon-palatine-tonsil.svg`,
+    'UBERON:0010000': "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg",
+  }
+
+  const iconMap = {};
+  if (Array.isArray(organsFull)) {
+    organsFull.forEach((entry) => {
+      console.debug('%c◉ entry ', 'color:#00ff7b', entry);
+      try {
+        if (entry && entry.rui_code) {
+          iconMap[entry.rui_code] = OrganIcons(entry.rui_code);
+        }
+      } catch (err) {
+        console.debug('%c◉ OrganDetails: skipped entry', 'color:#FF8800', err);
+      }
+    });
+  }
+  console.debug('%c◉ iconMap ', 'color:#00ff7b', iconMap);
+  return iconMap;
+}
+
 export function OrganIcons(organ){  
   // console.debug('%c◉ status ', 'color:#00ff7b', organ);
-  let prependURL = "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-"
+  const BASE_ICON_URL = 'https://cdn.humanatlas.io/hra-design-system/icons/organs/organ-icon-'
+  // let prependURL = `${BASE_ICON_URL}`
   let iconMap={
-    "BD": "blood",
-    "BL": "bladder",
-    "BM": "bone-marrow",
-    "BR": "brain",
-    "BV": "blood",
-    "HT": "heart",
-    "LA": "larynx",
-    "LB": "extrapulmonary bronchus",
-    "LE": "eye",
-    "LF": "fallopian-tube-left",
-    "LI": "large-intestine",
-    "LK": "kidney-left",
-    "LL": "lung-left",
-    "LN": "knee-left",
-    "LO": "ovary-left",
-    "LT": "palatine tonsil",
-    "LU": "ureter-left",
-    "LV": "liver",
-    "LY": "lymph-nodes",
-    "ML": "mammary-gland-left",
-    "MR": "mammary-gland-right",
-    "PA": "pancreas",
-    "PL": "placenta",
-    "PR": "prostate",
-    "PV": "pelvis-f",
-    "RB": "extrapulmonary bronchus",
-    "RE": "eye",
-    "RF": "fallopian-tube-right",
-    "RK": "kidney-right",
-    "RL": "lung-right",
-    "RN": "knee-right",
-    "RO": "ovary-right",
-    "RT": "palatine tonsil",
-    "RU": "ureter-right",
-    "SC": "spinal-cord",
-    "SI": "small intestine",
-    "SK": "skin",
-    "SP": "spleen",
-    "TH": "thymus",
-    "TR": "trachea",
-    "UT": "uterus",
-    "VL": "lymphatic-vasculature",
+    "BD": `${BASE_ICON_URL}blood`,
+    "BL": `${BASE_ICON_URL}bladder`,
+    "BM": `${BASE_ICON_URL}bone-marrow`,
+    "BR": `${BASE_ICON_URL}brain`,
+    "BV": `${BASE_ICON_URL}blood`,
+    "HT": `${BASE_ICON_URL}heart`,
+    "LA": `${BASE_ICON_URL}larynx`,
+    "LB": `${BASE_ICON_URL}extrapulmonary bronchus`,
+    "LE": `${BASE_ICON_URL}eye`,
+    "LF": `${BASE_ICON_URL}fallopian-tube-left`,
+    "LI": `${BASE_ICON_URL}large-intestine`,
+    "LK": `${BASE_ICON_URL}kidney-left`,
+    "LL": `${BASE_ICON_URL}lung-left`,
+    "LN": `${BASE_ICON_URL}knee-left`,
+    "LO": `${BASE_ICON_URL}ovary-left`,
+    "LT": `${BASE_ICON_URL}palatine tonsil`,
+    "LU": `${BASE_ICON_URL}ureter-left`,
+    "LV": `${BASE_ICON_URL}liver`,
+    "LY": `${BASE_ICON_URL}lymph-nodes`,
+    "ML": `${BASE_ICON_URL}mammary-gland-left`,
+    "MR": `${BASE_ICON_URL}mammary-gland-right`,
+    "PA": `${BASE_ICON_URL}pancreas`,
+    "PL": `${BASE_ICON_URL}placenta`,
+    "PR": `${BASE_ICON_URL}prostate`,
+    "PV": `${BASE_ICON_URL}pelvis-f`,
+    "RB": `${BASE_ICON_URL}extrapulmonary bronchus`,
+    "RE": `${BASE_ICON_URL}eye`,
+    "RF": `${BASE_ICON_URL}fallopian-tube-right`,
+    "RK": `${BASE_ICON_URL}kidney-right`,
+    "RL": `${BASE_ICON_URL}lung-right`,
+    "RN": `${BASE_ICON_URL}knee-right`,
+    "RO": `${BASE_ICON_URL}ovary-right`,
+    "RT": `${BASE_ICON_URL}palatine tonsil`,
+    "RU": `${BASE_ICON_URL}ureter-right`,
+    "SC": `${BASE_ICON_URL}spinal-cord`,
+    "SI": `${BASE_ICON_URL}small intestine`,
+    "SK": `${BASE_ICON_URL}skin`,
+    "SP": `${BASE_ICON_URL}spleen`,
+    "TH": `${BASE_ICON_URL}thymus`,
+    "TR": `${BASE_ICON_URL}trachea`,
+    "UT": `${BASE_ICON_URL}uterus`,
+    "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
   }
-  let iconURL = iconMap[organ]? prependURL + iconMap[organ] + ".svg" : null
+  let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg"
   return iconURL
 }
- 
 
 export function RUIIcon(size,color){
   // Scraped from: 
