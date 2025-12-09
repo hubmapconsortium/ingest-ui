@@ -241,17 +241,17 @@ export function NewSearch({
         publication: "Publication",
         collection: "Collection"
       }
-     console.debug('%c◉ SAMPLE_CATEGORIES ', 'color:#00ff7b', SAMPLE_CATEGORIES ,searchFilterParams.entity_type, entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase()));
+    //  console.debug('%c◉ SAMPLE_CATEGORIES ', 'color:#00ff7b', SAMPLE_CATEGORIES ,searchFilterParams.entity_type, entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase()));
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
+        // console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
         searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
       } else if (SAMPLE_CATEGORIES.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
+        // console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
         if(searchFiltersState && searchFiltersState.entityType !=="DonorSample"){
           // Coughs on Restricted Source Selector for EPICollections
-          console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFiltersState.entityType);
+          // console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFiltersState.entityType);
           searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
         }
       }
@@ -514,7 +514,7 @@ export function NewSearch({
 
   function renderTable() {
     // inner buildColumnFilter removed - using memoized columnVisibilityModel
-  console.debug('%c◉ columnFilters ', 'color:#00ff7b', searchState.colDef);
+    // console.debug('%c◉ columnFilters ', 'color:#00ff7b', searchState.colDef);
 
     return (
       <Box style={{height: 590, width: "100%" , position: "relative"}}>
@@ -811,7 +811,7 @@ export function NewSearch({
     if(event){event.preventDefault()}
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
-    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     if(reset){
       entityType = "DonorSample";
       params["entity_type"] = "DonorSample";
@@ -884,7 +884,7 @@ export function NewSearch({
     // If we're not in a special mode, push URL to window
     window.history.pushState({}, "", url);
     document.title = "HuBMAP Ingest Portal Search"
-    console.debug('%c◉ params ', 'color:#00ff7b', params);
+    // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
   };
 

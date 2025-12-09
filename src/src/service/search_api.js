@@ -96,11 +96,11 @@ export function search_api_filter_es_query_builder(
 ) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
-  console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
-  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
-  console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
-  console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
-  console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
+  // console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
+  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+  // console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+  // console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+  // console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
   // Always build a bool query and, if keywords contain a wildcard, add a
   // queryStringQuery as an additional MUST instead of short-circuiting the
   // whole builder. This preserves group/entity/organ filters while still
@@ -260,8 +260,8 @@ export function search_api_filter_es_query_builder(
       .trackTotalHits(true);
   }
 
-  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
-  console.groupEnd();
+  // console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  // console.groupEnd();
   return requestBody.toJSON();
   
 }
