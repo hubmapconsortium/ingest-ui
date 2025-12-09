@@ -49,7 +49,6 @@ export function NewSearch({
   modecheck,
 }){
 
-
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
   var [chipSelect, setChipSelect] = useState([]);
@@ -76,7 +75,6 @@ export function NewSearch({
     colDef: COLUMN_DEF_MIXED,
     loading: true,
   };
-  
 
   function searchReducer(state, action) {
     switch (action.type) {
@@ -453,7 +451,7 @@ export function NewSearch({
         const sxUnselected = {
           fontSize: '0.7rem',
           margin: "3px",
-          backgroundColor:`${colorMap[status]}11`,
+          backgroundColor: `${colorMap[status]}11`,
           color: colorMap[status],
           border: baseBorder,
           // slower first part when moving toward color
@@ -586,22 +584,22 @@ export function NewSearch({
 
   function renderGroupField(){
     return (
-      <FormControl sx={{width:"100%"}} size="small">
+      <FormControl sx={{width: "100%"}} size="small">
         <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-          <GroupsIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a group to filter by:</Typography>
+          <GroupsIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Select a group to filter by:</Typography>
         </Box>
         <Box>
           <Select
             fullWidth
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
             name="group_uuid"
             value={formFilters.group_uuid?formFilters.group_uuid : ""}
             onChange={(event) => handleInputChange(event)}>
             <MenuItem key={0} value="allcom"></MenuItem>
             {allGroups.map((group) => {
               return (
-                  <MenuItem sx={{fontSize:"0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
+                  <MenuItem sx={{fontSize: "0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
               );
             })}
           </Select>
@@ -616,15 +614,15 @@ export function NewSearch({
       return { field: f, title: toTitleCase(clean) };
     });
   return (
-      <FormControl sx={{width:"100%"}} size="small">
+      <FormControl sx={{width: "100%"}} size="small">
         <Box className="searchFieldLabel" id="SearchLabelGroup" >
-          <TroubleshootIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select the field you wish to target:</Typography>
+          <TroubleshootIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Select the field you wish to target:</Typography>
         </Box>
         <Box>
           <Select
             fullWidth
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
             name="target_field"
             id="target_field"
             value={formFilters.target_field?formFilters.target_field : ""}
@@ -632,7 +630,7 @@ export function NewSearch({
             <MenuItem key={0} value="allcom"></MenuItem>
             {targetOptions.map((field) => {
               return (
-                  <MenuItem sx={{fontSize:"0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
+                  <MenuItem sx={{fontSize: "0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
               );
             })}
           </Select>
@@ -641,20 +639,19 @@ export function NewSearch({
     )
   }
 
-
   function renderKeywordField(){
     return (
-      <FormControl sx={{width:"100%"}} size="small"  >
+      <FormControl sx={{width: "100%"}} size="small" >
         <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-          <ManageSearchIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
+          <ManageSearchIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
         </Box>
         <Box>
           <TextField
             labelid="keywords_label"
             name="keywords"
             id="keywords"
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", width:"100%"}}
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
             fullWidth
             value={formFilters.keywords?formFilters.keywords : ""}
             onChange={(e) => handleInputChange(e)}/>
@@ -667,7 +664,6 @@ export function NewSearch({
     let icon = EntityIconsBasic(entity_type,"5px")
     return icon;
   }
-
   
   function renderNewFilterControls() {
     return (
@@ -690,22 +686,22 @@ export function NewSearch({
               width: "100%",
               color: "white",
               padding: "16px",
-              border:"1px solid #222831",
-              borderBottom:"0px!important",
+              border: "1px solid #222831",
+              borderBottom: "0px!important",
               borderTopRightRadius: "10px!important",
               borderTopLeftRadius: "10px!important",
               borderBottomRightRadius: "0px!important",
               borderBottomLeftRadius: "0px!important"
             }}>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft:"10px",borderLeft:"1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
-            <Grid item xs={12} sx={{display: "flex", paddingLeft:"10px", flexFlow: "row", fontSize:"0.9em", borderLeft:"1px solid #fff", alignItems: "end", fontStyle: "italic"}}> 
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft: "10px",borderLeft: "1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
+            <Grid item xs={12} sx={{display: "flex", paddingLeft: "10px", flexFlow: "row", fontSize: "0.9em", borderLeft: "1px solid #fff", alignItems: "end", fontStyle: "italic"}}> 
               <Typography variant="" sx={{ color: "#fff"}}>
                 Use the filter controls to search for <Link to={"?entity_type=donor"} className="text-white">Donors</Link>, <Link to={"?entity_type=sample"} className="text-white">Samples</Link>, <Link to={"?entity_type=dataset"} className="text-white">Datasets</Link>, <Link to={"?entity_type=upload"} className="text-white">Data Uploads</Link>, <Link to={"?entity_type=publication"} className="text-white">Publications</Link>, or <Link to={"?entity_type=collection"} className="text-white">Collections</Link>. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.
                 </Typography>
               </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"15px", }}>
-              <Grid item xs={6} sx={{padding:"4px"}} >{renderGroupField()}</Grid>
-              <Grid item xs={6} sx={{padding:"4px"}} > 
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "15px", }}>
+              <Grid item xs={6} sx={{padding: "4px"}} >{renderGroupField()}</Grid>
+              <Grid item xs={6} sx={{padding: "4px"}} > 
                 <CombineTypeSelect
                   formFilters = {formFilters}
                   OrganIcons={OrganIcons}
@@ -713,23 +709,23 @@ export function NewSearch({
                   restrictions = {restrictions}/>
               </Grid>
             </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px"}}>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px"}}>
               {renderKeywordField()}
             </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", margin:"0px", padding:"0px"}}>
-              <Typography variant="caption" sx={{marginLeft:"auto", marginRight:"auto", cursor:"pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
+            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", margin: "0px", padding: "0px"}}>
+              <Typography variant="caption" sx={{marginLeft: "auto", marginRight: "auto", cursor: "pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
               {advancedSearch ? "Hide" : "Show"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
               </Typography>
             </Grid>
-            <Collapse in={advancedSearch} sx={{width:"100%"}}>
-              <Grid container xs={12} sx={{display: "flex", marginTop:"16px"}}>
-                <Grid item xs={6} sx={{padding:"4px"}}>
+            <Collapse in={advancedSearch} sx={{width: "100%"}}>
+              <Grid container xs={12} sx={{display: "flex", marginTop: "16px"}}>
+                <Grid item xs={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
                 </Grid>
-                <Grid item xs={6} sx={{padding:"4px"}}>
+                <Grid item xs={6} sx={{padding: "4px"}}>
                   <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-                    <CloudSyncIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-                    <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color:"#fff"}}>The Status of the Entity</Typography>
+                    <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+                    <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
                   </Box>
 
                   <Box 
@@ -742,10 +738,10 @@ export function NewSearch({
                       m: 0,
                       boxShadow: "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
                       padding: "8px",
-                      backgroundColor:"rgb(255, 255, 255)",
+                      backgroundColor: "rgb(255, 255, 255)",
                       borderRadius: "8px",
                       border: "thick double solid #ccc",
-                      width:"100%"
+                      width: "100%"
                     }}>
 
                     {renderStatusControls()}
@@ -756,7 +752,7 @@ export function NewSearch({
                 
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop:"16px", padding:"4px", minHeight:"60px" }}>
+            <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
@@ -774,7 +770,7 @@ export function NewSearch({
               <Button 
                 className="m-1 HBM_DarkBlueButton"
                 size="large"
-                sx={{width:"70%",}}
+                sx={{width: "70%",}}
                 startIcon={<SearchIcon />}
                 onClick={(e) => handleSearchClick(e)}
                 variant="contained">

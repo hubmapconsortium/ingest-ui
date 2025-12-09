@@ -81,9 +81,6 @@ export function App(){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
 
-  var[routingMessage] = useState({
-    Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
-  });
   window.onstorage = () => {
     // console.log("onstorage Storage Event");
   };
@@ -120,6 +117,10 @@ export function App(){
     if(info !== null){
       localStorage.setItem("info", info);
       window.location.replace(`${process.env.REACT_APP_URL}`);
+    }
+    // If we're here because we tried making a new Dataset from the old url, show the warning popup 
+    if(url.pathname === "/new/dataset" ){
+         
     }
 
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
@@ -332,6 +333,7 @@ export function App(){
       // console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
       reportError(error);
     }
+    
   
   }, []);
 
@@ -564,23 +566,24 @@ export function App(){
             {authStatus && !isLoading && !unregStatus &&(
               <HuBMAPContext.Provider value={{allGroups}}> 
                 <Paper className={"px-4 py-3 admin-"+(adminStatus)}>
+                  
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path="/" element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
-                      <Route index element={<SearchComponent reportError={reportError} />} />
+                      <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
+                      <Route path="dataset" element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
