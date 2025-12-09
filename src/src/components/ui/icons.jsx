@@ -35,6 +35,31 @@ export function EntityIcons(entity_type, status){
   }
 }
 
+export function EntityIconsBasic(entity_type, size){
+  console.debug('%c◉ entity_type ', 'color:#00ff7b', entity_type);
+  let style = {marginRight: "5px"};
+  switch
+  (entity_type && entity_type.toLowerCase()){
+    case "donor":
+      return <PersonIcon size={size?size:"0.5em"} sx={style}/>;
+    case "sample":
+      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
+    case "dataset":
+      return <TableChartIcon size={size?size:"0.5em"} sx={style}/>
+    case "upload":
+      return <DriveFolderUploadIcon size={size?size:"0.5em"} sx={style}/>
+    case "publication":
+      return <ArticleIcon size={size?size:"0.5em"} sx={style}/>
+    case "collection":
+      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+    case "eppicollection":
+      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+    default:
+      return <BubbleChartIcon  size={size?size:"0.5em"} sx={style}/>
+  }
+}
+
+
 export function OrganDetails(){
   console.debug('%c◉ OrganDetails ', 'color:#00ff7b', );
   let organs =  JSON.parse(localStorage.getItem("organs"))

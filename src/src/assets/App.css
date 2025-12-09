@@ -36,6 +36,56 @@ body {
 .MuiDataGrid-main {
   font-family: 'Inter Variable', sans-serif!important;
 }
+:root {
+  --HBM_Smoke: #F4F4F4;
+  --HBM_SmokeCL: #F4F4F420;
+  --HBM_SmokeCLPlus: #F4F4F450;
+  --HBM_BrightBlue: #97CDF6;
+  --HBM_BrightBlueSB: #97CDF670;
+  --HBM_BrightBlueCL: #97CDF630;
+  --HBM_BrightBlueCLPlus: #97CDF610;
+  --HBM_DarkBlue: #444A65;
+  --HBM_DarkBlueCL: #444A6560;
+  --HBM_Lavender: #9AA0BC;
+  --HBM_LavenderCL: #9AA0BC20;
+  --HBM_Red: #96909A;
+  --HBM_Green: #919491;
+  --HBM_Red: #C51162;
+}
+/* @TODO: https://blog.jim-nielsen.com/2021/css-relative-colors/ */
+.HBM_BlueButton{
+    background: linear-gradient(180deg, var(--HBM_BrightBlueCL) 0%,  var(--HBM_DarkBlueCL) 100%);
+    background-color: var(--HBM_DarkBlueCL)!important;  
+    border: 1px solid var(--HBM_BrightBlue);
+    color: var(--HBM_DarkBlue)!important;
+}
+.HBM_BlueButton:hover{
+    background-color: var(--HBM_BrightBlue)!important;
+    /* color: var(--HBM_DarkBlue)!important; */
+}
+.HBM_DarkBlueButton{
+    background: linear-gradient(180deg, var(--HBM_BrightBlueCL) 0%,  var(--HBM_DarkBlueCL) 100%);
+    background-color: var(--HBM_BrightBlueSB)!important;  
+    border: 1px solid var(--HBM_BrightBlue);
+    color: var(--HBM_Smoke)!important;
+    text-shadow: 0.05em 0.05em 1px var(--HBM_DarkBlueCL)
+}
+.HBM_DarkBlueButton:hover{
+    background-color: var(--HBM_BrightBlue)!important;
+}
+.HBM_DarkButton{
+    background: linear-gradient(180deg, var(--HBM_BrightBlueCL) 0%,  var(--HBM_DarkBlueCL) 100%);
+    background-color: var(--HBM_BrightBlueCLPlus)!important;  
+    color: var(--HBM_DarkBlue)!important;
+    text-shadow: 0.05em 0.05em 1px var(--HBM_SmokeCLPlus)
+}
+.HBM_DarkButton:hover{
+    background: linear-gradient(180deg, var(--HBM_SmokeCL) 0%,  var(--HBM_DarkBlueCL) 100%);
+    background-color: var(--HBM_Lavender)!important;  
+    color: var(--HBM_Smoke)!important;
+}
+
+
 
 .tooltip {
   width: 250px;
@@ -979,7 +1029,7 @@ status
   max-height: 35px;
   cursor:initial;
 }
-.SearchGridWrap .MuiDataGrid-footerContainer{
+.SearchGridWrap  .MuiDataGrid-footerContainer{
   min-height: 54px;
   max-height: 54px;
   cursor:initial;
@@ -1081,3 +1131,4 @@ status
 .bulk-table tr td{
   font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
 } 
+

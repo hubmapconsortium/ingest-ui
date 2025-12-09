@@ -7,15 +7,18 @@ import { getPublishStatusColor } from "../../utils/badgeClasses";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
-
+import Skeleton from '@mui/material/Skeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import {Typography} from "@mui/material";
+// @TODO: Move into TableBuilder (Since these aren't very well constant but dynamically generated) under /ui
 
 // table column definitions
+let nullRowBarStyle = {width:"100%", opacity:"0.4"}
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
@@ -253,20 +256,53 @@ export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: "computed_lab_id_type",
     headerName: "Lab Name/ID",
-    width: 160,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
-    valueGetter: getLabId
+    valueGetter: getLabId,
+    renderCell: params => {
+      // console.debug('%c◉ computed_lab_id_type ', 'color:#00ff7b', params);
+      if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
+        return nullCell();
+      }
+      return (params.row.type)
+    }
   }, 
-  { field: 'submission_id', headerName: 'Submission ID', width: 100 },
+  { field: 'submission_id', 
+    headerName: 'Submission ID', 
+    width: 100,
+    renderCell: params => {
+      if (!params?.row?.submission_id) {
+        return nullCell();
+        // return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else{
+        return <Typography >{params?.row?.submission_id} </Typography>
+      }
+  },
+  },
   { field: "type",
     headerName: "Type",
     width: 180,
     sortable: false,
     valueGetter: getTypeValue,
-    renderCell: renderFieldIcons
+    renderCell: params => {
+      let typeVal = getTypeValue(params)
+      let entityType = params?.row?.entity_type === "Upload" ? "Data Upload" : params?.row?.entity_type
+      // console.debug('%c◉  typevalcheck', 'color:#00ff7b', entityType, typeVal, entityType === typeVal );
+      if (!typeVal) {
+        return nullCell()
+        // return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else if(entityType === typeVal ){
+        let icon = entityIconsBasic(entityType) // The only Dupe we SHOULD have is Donor/Donor
+        return <Typography variant="caption" sx={{color:"#dedede",}}>{icon}{typeVal}</Typography>      }
+      return (renderFieldIcons(params) )
+    }
   }, 
-  { field: 'entity_type', headerName: 'Entity Type', width: 200},
+  { field: 'entity_type', 
+    headerName: 'Entity Type', 
+    renderCell: params => { 
+      return (toTitleCase(params.row.entity_type))
+    }
+  },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: "statusAccess",
     width: 180,
@@ -295,41 +331,40 @@ export const COLUMN_DEF_MIXED = [
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
 // Computed column functions
+
+function nullCell() {
+  return <Typography variant="caption" sx={{color:"#dedede",}}>N/A </Typography>
+}
+
 function entityIconsBasic(entity_type){
+  let style = {marginRight: "5px"};
   switch
   (entity_type && entity_type.toLowerCase()){
     case "donor":
-      return <PersonIcon/>
+      return <PersonIcon sx={style}/>;
     case "sample":
-      return <BubbleChartIcon/>
+      return <BubbleChartIcon sx={style}/>
     case "dataset":
-      return <TableChartIcon/>
+      return <TableChartIcon sx={style}/>
     case "upload":
-      return <DriveFolderUploadIcon/>
+      return <DriveFolderUploadIcon sx={style}/>
     case "publication":
-      return <ArticleIcon/>
+      return <ArticleIcon sx={style}/>
     case "collection":
-      return <CollectionsBookmarkIcon/>
+      return <CollectionsBookmarkIcon sx={style}/>
     case "eppicollection":
-      return <CollectionsBookmarkIcon/>
+      return <CollectionsBookmarkIcon sx={style}/>
     default:
-      return <BubbleChartIcon />
+      return <BubbleChartIcon  sx={style}/>
   }
 }
-
-// function getSampleType(params: ValueGetterParams) {
-// 	if (params.getValue('entity_type') === 'Sample') {
-// 		return flattenSampleType(SAMPLE_TYPES)[params.getValue("specimen_type")];
-// 	}
-//   return params.getValue('entity_type');
-// }
 
 function renderFieldIcons(params: ValueFormatterParams) {
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
   return (
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "5px"}} >
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
@@ -397,11 +432,16 @@ function renderStatusAccess(params: ValueFormatterParams) {
 
 function doiLink(doi_url,registered_doi) {
   try {
-    return (
-      <Link target="_blank" href={doi_url} rel="noreferrer">
-        {registered_doi}
-      </Link>
-    );
+    if(!doi_url && !registered_doi){
+      return <Typography variant="caption" sx={{color:"#dedede",}}>N/A </Typography>
+    }else{
+      return (
+        <Link target="_blank" href={doi_url} rel="noreferrer">
+          {registered_doi}
+        </Link>
+      );
+    }
+    
   } catch(error) {
     // console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
   }
