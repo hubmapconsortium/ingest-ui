@@ -40,7 +40,7 @@ import {
 import {api_search2} from "../service/search_api";
 import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export function NewSearch({
   searchFilters: initialSearchFilters,
@@ -124,6 +124,7 @@ export function NewSearch({
   // If URL contains search params, prefill form and trigger a search.
   // Listen to location.search so Back/Forward navigation re-applies URL-driven searches.
   const location = useLocation();
+  const navigate = useNavigate();
   useEffect(() => {
     try {
       // If the component was explicitly given initialSearchFilters, prefer that
@@ -277,8 +278,7 @@ export function NewSearch({
       pageSize,
       fieldSearchSet,
       "newTable"
-    )
-      .then((response) => {
+    ).then((response) => {
         if(response.error){
           errorReporting(response.error)
         }
@@ -793,25 +793,33 @@ export function NewSearch({
       window.open('/newSearch', '_blank');
       return;
     }
-    setFormFilters({
-      group_uuid: "",
-      entity_type: "DonorSample",
-      keywords: ""
-    })
-    setSearchFiltersState({
-      group_uuid: "allcom",
-      entity_type: "DonorSample",
-      keywords: ""
-    })
-    handleSearchClick();
+    // Reset local form state and push a fresh /newSearch entry so the
+    // navigation is recorded in history (useNavigate from react-router).
+    // Clear all visible fields back to their defaults
+    setFormFilters({ group_uuid: "", entity_type: "DonorSample", keywords: "" });
+
+    // Clear the URL (remove any search params) and record navigation
+    navigate('/newSearch');
+
+    // Ensure URL-driven guard won't block the default search and reset paging
+    urlParamsAppliedRef.current = false;
+    setPage(0);
+
+    // Setting searchFiltersState to null causes the main effect to run the
+    // default search (it treats falsy state as the default {entity_type: 'DonorSample'})
+    setSearchFiltersState(null);
   }
 
-  function handleSearchClick(event) {
+  function handleSearchClick(event,reset) {
     // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    if(reset){
+      entityType = "DonorSample";
+      params["entity_type"] = "DonorSample";
+    }
     var group_uuid = formFilters.group_uuid;
     var entityType;
     if(formFilters.entity_type){
@@ -865,7 +873,7 @@ export function NewSearch({
       url.searchParams.delete("group_uuid");
     }
     
-    if (entityType && entityType !== "----") {
+    if (entityType && entityType !== "----" && entityType !== "DonorSample") {
       // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
       params["entity_type"] = entityType;
       url.searchParams.set("entity_type", entityType);
