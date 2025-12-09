@@ -600,7 +600,7 @@ export function handleSortOrgans(organList){
   }
   return sortedMap;
 };
-export function CombinedTypeOptions(){
+export function CombinedTypeOptions(blackList){
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
@@ -614,6 +614,16 @@ export function CombinedTypeOptions(){
   organList.forEach((value, key) => {
     organs[value] = key;
   });
+
+  if(blackList?.blackList && blackList?.blackList.length > 0){
+    blackList?.blackList.forEach((item) => {
+      delete coreList[item.toLowerCase()];  
+      if(item in organs){
+        delete organs[item];
+      }
+    });
+  }
+  // WhiteList is only theoretical for now; nothing uses that approach yet
   return (<>
     <option aria-label="None" value="" />
     <optgroup label="Entity Types">

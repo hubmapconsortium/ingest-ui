@@ -40,7 +40,8 @@ import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "..
 import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
 import {OrganIcons} from "./ui/icons";
 import RUIIntegration from "./ui/ruiIntegration";
-import SearchComponent from "./search/SearchComponent";
+// import SearchComponent from "./search/SearchComponent";
+import {EmbeddedSearch} from "./embeddedSearch"; 
 import {toTitleCase} from "../utils/string_helper";
 // import {RUI_ORGAN_TYPES} from "../constants";
 // import {ValidateLocalhost} from "../utils/validators";
@@ -633,13 +634,14 @@ export const SampleForm = (props) => {
           aria-labelledby="source-lookup-dialog"
           open={openSearch === true ? true : false}>
           <DialogContent>
-          <SearchComponent
-              select={(e) => handleSelectSource(e)}
+            <EmbeddedSearch
+              handleTableCellClick={(e) => handleSelectSource(e)}
+              modecheck="Source"
               custom_title="Search for a Source ID for your Sample"
               custom_subtitle="Only Donors or Samples may be selected as sources for newly created samples."
-              // filter_type="Publication"
-              modecheck="Source"
-              blacklist={['collection',"dataset","upload","publication"]}/>
+              // restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}
+              blackList={['collection',"dataset","upload","publication"]}
+            />
           </DialogContent>
           <DialogActions>
             <Button

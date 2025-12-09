@@ -15,7 +15,7 @@ import {
   entity_api_get_globus_url
 } from "../service/entity_api";
 import {RevertFeature} from "../utils/revertModal";
-import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
+import {COLUMN_DEF_DATASET_MINI} from './ui/tableBuilder';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
