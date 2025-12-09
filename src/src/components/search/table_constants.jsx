@@ -279,6 +279,12 @@ export const COLUMN_DEF_MIXED = [
       }
   },
   },
+  { field: 'entity_type', 
+    headerName: 'Entity Type', 
+    renderCell: params => { 
+      return (toTitleCase(params.row.entity_type))
+    }
+  },
   { field: "type",
     headerName: "Type",
     width: 180,
@@ -297,12 +303,6 @@ export const COLUMN_DEF_MIXED = [
       return (renderFieldIcons(params) )
     }
   }, 
-  { field: 'entity_type', 
-    headerName: 'Entity Type', 
-    renderCell: params => { 
-      return (toTitleCase(params.row.entity_type))
-    }
-  },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: "statusAccess",
     width: 180,
