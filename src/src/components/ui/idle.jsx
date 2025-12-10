@@ -13,7 +13,6 @@ import DialogContent from '@mui/material/DialogContent';
 // import { SESSION_TIMEOUT_IDLE_TIME } from "../../constants";
 import IdleTimer from "react-idle-timer";
 
-
 class Timer extends Component{
   SESSION_TIMEOUT_IDLE_TIME = 30 * 1000 * 60; // min * minisecond * second
   constructor(props) {
@@ -104,7 +103,6 @@ class Timer extends Component{
         timeout={this.SESSION_TIMEOUT_IDLE_TIME}/>
       <Dialog
         maxWidth='sm'
-        // onClose={() => setSubmitProcessModal(false)}
         aria-labelledby="idle-dialog"
         open={this.state.show}>
           <IconButton

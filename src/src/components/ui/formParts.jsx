@@ -90,7 +90,7 @@ export function IconSelection(entity_type,status){
 
 // Returns the badge class associated with provided status
 export function badgeClass(status){
-  console.debug('%c◉ badgeClass status ', 'color:#00ff7b', status);
+  // console.debug('%c◉ badgeClass status ', 'color:#00ff7b', status);
   var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
@@ -317,7 +317,6 @@ function noteWrap(note){
 // Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
 export function StatusBadge(status){
   if (typeof status !== "string" && status.status){
-    console.debug('%c◉ STringifying ', 'color:#00ff7b', );
     status = status.status.toString() ;
   }
   return (
