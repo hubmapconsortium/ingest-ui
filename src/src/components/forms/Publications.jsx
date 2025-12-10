@@ -13,22 +13,22 @@ import {
   entity_api_get_entity,
   entity_api_get_globus_url,
   entity_api_update_entity
-} from "../service/entity_api";
+} from "../../service/entity_api";
 import {
   ingest_api_allowable_edit_states,
   ingest_api_create_publication,
   ingest_api_dataset_submit,
   ingest_api_notify_slack
-} from "../service/ingest_api";
-import { humanize } from "../utils/string_helper";
+} from "../../service/ingest_api";
+import { humanize } from "../../utils/string_helper";
 import {
   validateProtocolIODOI,
   validateRequired,
   validateSingleProtocolIODOI
-} from "../utils/validators";
-import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback} from "./ui/formParts";
-import { PublicationFormFields, PublicationFieldSet } from "./ui/fields/PublicationFormFields";
+} from "../../utils/validators";
+import { BulkSelector } from "../ui/bulkSelector";
+import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback} from "../ui/formParts";
+import { PublicationFormFields, PublicationFieldSet } from "../ui/fields/PublicationFormFields";
 
 export const PublicationForm = (props) => {
   let navigate = useNavigate();

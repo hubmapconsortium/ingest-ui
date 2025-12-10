@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import MultipleListModal from "../uuid/tissue_form_components/multipleListModal";
+// import MultipleListModal from "../uuid/tissue_form_components/multipleListModal";
 import Tooltip from '@mui/material/Tooltip';
 import { Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -39,12 +39,12 @@ const Result = (props) => {
   }
   return (
     <React.Fragment>
-      {(props.result.entity?.new_samples && props.result.entity.new_samples.length > 1) && (
-        <MultipleListModal
-          ids={props.result.entity.new_samples}
-          handleCancel={handleReturnClick}
-        />
-      )}
+      {/* {(props.result.entity?.new_samples && props.result.entity.new_samples.length > 1) && (
+        // <MultipleListModal
+        //   ids={props.result.entity.new_samples}
+        //   handleCancel={handleReturnClick}
+        // />
+      )} */}
 
       {props.result !== undefined && (
         <>

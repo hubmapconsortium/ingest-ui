@@ -151,7 +151,7 @@ export function BulkSelector({
       let entityId = entity.hubmap_id || entity.uuid;
       if (addedIds.has(entityId)) continue;
       let restrictCheck = false;
-      if(searchFilters?.restrictions?.entityType && entity.entity_type.toLowerCase() !== searchFilters.restrictions.entityType.toLowerCase()){
+      if(searchFilters?.restrictions?.entityType && entity.entity_type. toLowerCase() !== searchFilters.restrictions.entityType.toLowerCase()){
         restrictCheck = true;
       }
       if (

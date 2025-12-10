@@ -96,11 +96,11 @@ export function search_api_filter_es_query_builder(
 ) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
-  console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
-  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
-  console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
-  console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
-  console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
+  // console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
+  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+  // console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+  // console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+  // console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
   // Always build a bool query and, if keywords contain a wildcard, add a
   // queryStringQuery as an additional MUST instead of short-circuiting the
   // whole builder. This preserves group/entity/organ filters while still
@@ -118,9 +118,7 @@ export function search_api_filter_es_query_builder(
       )
     );
   } else {
-
     // FIELD PROCESSING
-
     // Group
     if (fields["group_name"]){
       boolQuery.must(
@@ -132,7 +130,6 @@ export function search_api_filter_es_query_builder(
         esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
       );
     }
-
     // Specimen Types
     if (fields["sample_category"]){
       // console.debug("sample_category", fields["sample_category"]);
@@ -144,19 +141,15 @@ export function search_api_filter_es_query_builder(
         boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
       }
     } 
-    
     // Organ
     else if (fields["organ"]){
       boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
     } 
-    
     // Entity Type
     else if (fields["entity_type"]){
-
       if(["Data Upload"].includes(fields["entity_type"])){
         fields["entity_type"] = "Upload";
       }
-
       if (fields["entity_type"] === "DonorSample"){
         // hack to deal with no type selected from the UI, this clues from the donor/sample filer
         boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
@@ -166,7 +159,6 @@ export function search_api_filter_es_query_builder(
         );
       }
     }
-    
     // Default all entity types
     else {
       boolQuery.must(
@@ -177,9 +169,9 @@ export function search_api_filter_es_query_builder(
       ); // default everything ; this maybe temp
     }
   }
-
   // Status
   if (fields["status"]){
+    console.debug('%c◉ HAVE STATUS ', 'color:#00ff7b', fields["status"]);
     let queryString = fields["status"].join(" OR ");
     boolQuery.must(
       esb.matchQuery("status", queryString)
@@ -192,8 +184,18 @@ export function search_api_filter_es_query_builder(
   // filters are not dropped.
   // Determine if the UI has asked to target a single field for keyword searches
   // default keyword fields (non-wildcard) and wildcard-capable fields
-  const keywordSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_FIELDS;
-  const wildcardSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_WILDCARDS;
+  let keywordSearchFields = ES_SEARCHABLE_FIELDS;
+  let wildcardSearchFields = ES_SEARCHABLE_WILDCARDS;
+  if (fields["target_field"]) {
+    // Allow either a single field (string) or an array of fields
+    if (Array.isArray(fields["target_field"])) {
+      keywordSearchFields = fields["target_field"];
+      wildcardSearchFields = fields["target_field"];
+    } else if (typeof fields["target_field"] === 'string' && fields["target_field"].length > 0) {
+      keywordSearchFields = [fields["target_field"]];
+      wildcardSearchFields = [fields["target_field"]];
+    }
+  }
 
   if (fields["keywords"]){
     if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
@@ -202,10 +204,23 @@ export function search_api_filter_es_query_builder(
         esb.matchQuery("hubmap_id.keyword", fields["keywords"])
       );
     } else if (!hasWildcard) {
-      // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
-      boolQuery.filter(
-        esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
-      );
+      // non-wildcard: if the UI asked to target a specific field, require the
+      // keyword to match that field (or one of the provided fields). Otherwise
+      // fall back to multiMatch across the default searchable fields.
+      if (fields["target_field"]) {
+        // When a target_field is provided, restrict the keyword search to
+        // only those fields. Use a simple_query_string over the provided
+        // fields so the query only searches those fields (no cross-field
+        // multi_match behavior).
+        boolQuery.filter(
+          esb.simpleQueryStringQuery(fields["keywords"]).fields(keywordSearchFields).defaultOperator('and')
+        );
+      } else {
+        // no explicit target_field: keep legacy multiMatch behavior
+        boolQuery.filter(
+          esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
+        );
+      }
     }
   }
 
@@ -236,8 +251,8 @@ export function search_api_filter_es_query_builder(
       .trackTotalHits(true);
   }
 
-  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
-  console.groupEnd();
+  // console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  // console.groupEnd();
   return requestBody.toJSON();
   
 }

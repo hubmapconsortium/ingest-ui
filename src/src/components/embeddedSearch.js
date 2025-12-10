@@ -22,7 +22,7 @@ import {
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
   COLUMN_DEF_MIXED,
-} from "./search/table_constants";
+} from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 
@@ -31,11 +31,13 @@ export function EmbeddedSearch({
   custom_subtitle,
   searchFilters,
   restrictions,
+  blackList,
   urlChange,
   modecheck,
   handleTableCellClick,
 }){
-  console.debug('%c◉ restrictions ', 'color:#00ff7b', restrictions);
+  // console.debug('%c◉ restrictions ', 'color:#00ff7b', restrictions);
+  // console.debug('%c◉ blackList ', 'color:#00ff7b', blackList);
   var [searchTitle] = useState(
     custom_title ? 
     custom_title : "Search" );
@@ -127,7 +129,7 @@ export function EmbeddedSearch({
 
   useEffect(() => {
     var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
-    console.debug('%c◉ searchFilterParams ', 'color:#00ff7b',searchFilterParams );
+    // console.debug('%c◉ searchFilters ', 'color:#1900FF', searchFilterParams);
     setTableLoading(true);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {
@@ -157,12 +159,17 @@ export function EmbeddedSearch({
     // If we have restrictions, we still need to set the dropdowns accordingly
     // Before the user does anything
     if(restrictions && restrictions.entityType){
-
       searchFilterParams.entity_type = toTitleCase(restrictions.entityType);
       setFormFilters((prevValues) => ({
         ...prevValues,
       entity_type: restrictions.entityType,}));
     }
+
+    // If we have a blacklist, we want to remove those elements from the entity_type dropdown
+    if(blackList && blackList.length > 0){
+      console.debug('%c◉ blacklist:  ', 'color:#00ff7b', blackList);
+    }
+
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
@@ -532,7 +539,7 @@ export function EmbeddedSearch({
                 value={formFilters.entity_type}
                 onChange={(e) => handleInputChange(e)}
                 disabled={restrictions && restrictions.entityType?true:false}>
-                <CombinedTypeOptions />
+                <CombinedTypeOptions blackList={blackList ? blackList : []} />
                 </Select>
             </Grid>
             <Grid item xs={12}>

@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
+import {Alert} from '@material-ui/lab';
 import Box from '@mui/material/Box'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
@@ -13,15 +14,18 @@ import LoadingButton from '@mui/lab/LoadingButton'
 import {ingest_api_users_groups} from './service/ingest_api';
 
 export const Navigation = (props) => {
-  const[userDataGroups, setUserDataGroups] = React.useState(JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null)
-  const[anchorEl, setAnchorEl] = React.useState({
+  // let navigate = useNavigate();
+  // If we're here because we tried making a new Dataset from the old url, show the warning popup 
+  let[routingMessage, setRoutingMessage] = React.useState(window.location.pathname === "/new/dataset" ? ["Registering individual datasets is currently disabled.","/new/upload"] : null);
+  let[userDataGroups, setUserDataGroups] = React.useState(JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null)
+  let[anchorEl, setAnchorEl] = React.useState({
     I: null,
     B: null,
     S: null
   })
-  const open_I = Boolean(anchorEl.I)
-  const open_B = Boolean(anchorEl.B)
-  const open_S = Boolean(anchorEl.S)
+  let open_I = Boolean(anchorEl.I)
+  let open_B = Boolean(anchorEl.B)
+  let open_S = Boolean(anchorEl.S)
 
   const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
@@ -74,7 +78,7 @@ export const Navigation = (props) => {
         {renderMenuSection('Individual', handleClick('I'), open_I, anchorEl.I, [
           {to: '/new/donor', label: 'Donor'},
           {to: '/new/sample', label: 'Sample'},
-          {to: '/new/dataset', label: 'Dataset'},
+          // {to: '/new/dataset', label: 'Dataset'},
           {to: '/new/publication', label: 'Publication'},
           {to: '/new/collection', label: 'Collection - Dataset'},
           {to: '/new/EPICollection', label: 'Collection - EPIC'}
@@ -147,6 +151,12 @@ export const Navigation = (props) => {
 
   return(
     <AppBar position="static" id="header">
+      {routingMessage && routingMessage.length >0 && (
+          <Alert variant="filled" severity="error" onClose={(e) => {setRoutingMessage(null)}}>
+            <strong>Sorry</strong> {routingMessage[0]+" "} 
+            Please use <Link to={routingMessage[1]} className="text-white">Uploads</Link> instead.
+          </Alert>
+        )}
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography

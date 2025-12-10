@@ -1,5 +1,5 @@
 import React from "react";
-import BulkCreation from "./ingest/bulk";
+import BulkCreation from "./bulkClass";
 export const RenderBulk = (props) => {
 
   function handleCancel(){
@@ -16,6 +16,4 @@ export const RenderBulk = (props) => {
     </div>
   )
     
-  }
-  
-
+}
