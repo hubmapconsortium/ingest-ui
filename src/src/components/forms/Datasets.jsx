@@ -9,21 +9,21 @@ import Grid from '@mui/material/Grid';
 import LinearProgress from "@mui/material/LinearProgress";
 import Snackbar from '@mui/material/Snackbar';
 import { useNavigate, useParams } from "react-router-dom";
-import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, TaskAssignment } from "./ui/formParts";
-import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
-import {RevertFeature} from "../utils/revertModal";
-import { humanize } from "../utils/string_helper";
-import { validateRequired } from "../utils/validators";
-import { entity_api_get_entity, entity_api_update_entity } from "../service/entity_api";
+import { BulkSelector } from "../ui/bulkSelector";
+import { FormHeader, TaskAssignment } from "../ui/formParts";
+import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
+import {RevertFeature} from "../../utils/revertModal";
+import { humanize } from "../../utils/string_helper";
+import { validateRequired } from "../../utils/validators";
+import { entity_api_get_entity, entity_api_update_entity } from "../../service/entity_api";
 import { 
   ingest_api_allowable_edit_states, 
   ingest_api_create_dataset, 
   ingest_api_validate_entity,
   ingest_api_pipeline_test_submit,
   ingest_api_dataset_submit,
-  ingest_api_notify_slack} from "../service/ingest_api";
-import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "./ui/formParts";
+  ingest_api_notify_slack} from "../../service/ingest_api";
+import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "../ui/formParts";
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 

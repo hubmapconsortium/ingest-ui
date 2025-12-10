@@ -35,16 +35,16 @@ import {
   entity_api_create_entity,
   entity_api_create_multiple_entities,
   entity_api_get_entity_ancestor_list
-} from "../service/entity_api";
-import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
-import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
-import {OrganIcons} from "./ui/icons";
-import RUIIntegration from "./ui/ruiIntegration";
+} from "../../service/entity_api";
+import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../../service/ingest_api";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "../ui/formParts";
+import {OrganIcons} from "../ui/icons";
+import RUIIntegration from "../ui/ruiIntegration";
 // import SearchComponent from "./search/SearchComponent";
-import {EmbeddedSearch} from "./embeddedSearch"; 
-import {toTitleCase} from "../utils/string_helper";
+import {EmbeddedSearch} from "../embeddedSearch"; 
+import {toTitleCase} from "../../utils/string_helper";
 // import {RUI_ORGAN_TYPES} from "../constants";
-// import {ValidateLocalhost} from "../utils/validators";
+// import {ValidateLocalhost} from "../../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {

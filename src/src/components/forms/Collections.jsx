@@ -9,13 +9,13 @@ import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from "@mui/material/NativeSelect";
 import LoadingButton from "@mui/lab/LoadingButton";
-import { BulkSelector } from "./ui/bulkSelector";
-import { ContributorsTable } from "./ui/contributorsTable";
-import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "./ui/formParts";
-import { CollectionFormFields, CollectionFieldSet } from "./ui/fields/CollectionFormFields";
-import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../service/entity_api";
-import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../service/ingest_api";
-import { validateRequired } from "../utils/validators";
+import { BulkSelector } from "../ui/bulkSelector";
+import { ContributorsTable } from "../ui/contributorsTable";
+import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "../ui/formParts";
+import { CollectionFormFields, CollectionFieldSet } from "../ui/fields/CollectionFormFields";
+import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../../service/entity_api";
+import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../../service/ingest_api";
+import { validateRequired } from "../../utils/validators";
 
 export const CollectionForm = (props) => {
   const navigate = useNavigate();

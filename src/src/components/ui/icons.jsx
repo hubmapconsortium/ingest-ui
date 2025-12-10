@@ -130,7 +130,7 @@ export function OrganIcons(organ){
     "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
   }
   let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg"
-  console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
+  // console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
   return iconURL
 }
 

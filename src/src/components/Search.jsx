@@ -717,7 +717,7 @@ export function NewSearch({
               </Typography>
             </Grid>
             <Collapse in={advancedSearch} sx={{width: "100%"}}>
-              <Grid container xs={12} sx={{display: "flex", marginTop: "16px"}}>
+              <Grid container  sx={{display: "flex", marginTop: "16px"}}>
                 <Grid item xs={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
                 </Grid>
@@ -751,7 +751,7 @@ export function NewSearch({
                 
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
+            <Grid container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
