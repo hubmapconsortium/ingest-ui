@@ -627,7 +627,7 @@ export function NewSearch({
             id="target_field"
             value={formFilters.target_field?formFilters.target_field : ""}
             onChange={(event) => handleInputChange(event)}>
-            <MenuItem key={0} value="allcom"></MenuItem>
+            <MenuItem key={0} value="">&nbsp;</MenuItem>
             {targetOptions.map((field) => {
               return (
                   <MenuItem sx={{fontSize: "0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
