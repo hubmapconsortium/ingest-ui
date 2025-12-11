@@ -615,7 +615,7 @@ export function CombinedTypeOptions(){
     organs[value] = key;
   });
   return (<>
-    <option aria-label="None" value="" />
+    <option aria-label="None" value="&nbsp;" />
     <optgroup label="Entity Types">
     {Object.entries(coreList).map(([key, label]) => (
       <option key={key} value={key}>
@@ -675,19 +675,19 @@ export function CombineTypeSelect({
             </Box>
           )}
           
-            <Select 
-              native 
-              fullWidth
-              label="Type"
-              id="entity_type"
-              sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
-              name="entity_type"
-              value={formFilters.entity_type}
-              onChange={(e) => handleInputChange(e)}
-              disabled={restrictions && restrictions.entityType?true:false}>
-              <CombinedTypeOptions />
-            </Select>
-          
+          <Select 
+            native 
+            fullWidth
+            label="Type"
+            id="entity_type"
+            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
+            name="entity_type"
+            value={formFilters.entity_type}
+            onChange={(e) => handleInputChange(e)}
+            disabled={restrictions && restrictions.entityType?true:false}>
+            <CombinedTypeOptions />
+          </Select>
+        
         </FormControl>
     )
   }catch(error){

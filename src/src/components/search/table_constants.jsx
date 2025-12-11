@@ -358,13 +358,15 @@ function entityIconsBasic(entity_type){
       return <BubbleChartIcon  sx={style}/>
   }
 }
-
-function renderFieldIcons(params: ValueFormatterParams) {
+function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  return (
+  let flipSides = ["Knee (Left)"]
+  let flipFix = {marginRight: "5px" }
+  console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
+  return(
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "5px"}} >
+        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={flipSides.includes(params.value) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} >
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
@@ -376,6 +378,8 @@ function renderFieldIcons(params: ValueFormatterParams) {
     </div>
   )
 }
+
+
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
 function shrinkCols(string){

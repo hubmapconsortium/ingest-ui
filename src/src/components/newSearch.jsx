@@ -596,7 +596,7 @@ export function NewSearch({
             name="group_uuid"
             value={formFilters.group_uuid?formFilters.group_uuid : ""}
             onChange={(event) => handleInputChange(event)}>
-            <MenuItem key={0} value="allcom"></MenuItem>
+            <MenuItem key={0} value="allcom" sx={{color:"#ddd"}}>All Groups</MenuItem>
             {allGroups.map((group) => {
               return (
                   <MenuItem sx={{fontSize: "0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
