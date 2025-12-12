@@ -149,6 +149,39 @@ export const Navigation = (props) => {
     )
   }
 
+  const [logoutHover, setLogoutHover] = React.useState(false);
+  const [ctrlPressed, setCtrlPressed] = React.useState(false);
+
+  function clearLocalStorage(){
+    try{
+      window.localStorage.clear();
+      console.debug('Local storage cleared via Logout+modifier');
+    }catch(err){
+      console.error('Error clearing localStorage', err);
+    }
+  }
+
+  const handleLogoutKeyDown = (e) => {
+    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
+  };
+  const handleLogoutKeyUp = (e) => {
+    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
+  };
+
+  function handleLogout(e){
+    // Prefer the explicit event flags, fall back to our tracked state
+    const modifierHeld = !!(e && (e.ctrlKey || e.metaKey)) || ctrlPressed;
+    if(modifierHeld){
+      let savedInfo = localStorage.getItem("info");
+      clearLocalStorage();
+      localStorage.setItem("info", savedInfo);
+    }else if (props && typeof props.logout === 'function'){
+      props.logout(e);
+    }else{
+      // nah
+    }
+  }
+
   return(
     <AppBar position="static" id="header">
       {routingMessage && routingMessage.length >0 && (
@@ -239,8 +272,11 @@ export const Navigation = (props) => {
                     <LoadingButton
                       loading={props.isLoggingOut}
                       color='info'
-                      onClick={(e) => props.logout(e)}>
-                    Log Out
+                      onClick={(e) => handleLogout(e)}
+                      onMouseEnter={(e) => { setLogoutHover(true); setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleLogoutKeyDown); window.addEventListener('keyup', handleLogoutKeyUp); }}
+                      onMouseLeave={() => { setLogoutHover(false); setCtrlPressed(false); window.removeEventListener('keydown', handleLogoutKeyDown); window.removeEventListener('keyup', handleLogoutKeyUp); }}
+                      sx={ logoutHover && ctrlPressed ? { border: '2px solid red' } : {} }>
+                      { (logoutHover && ctrlPressed) ? 'Clear Local Storage' : 'Log Out' }
                     </LoadingButton>
                   </span>
                   {}
