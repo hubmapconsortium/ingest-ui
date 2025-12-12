@@ -172,12 +172,6 @@ export const COLUMN_DEF_UPLOADS = [
 
  // COLLECTIONS COLUMNS
  export const COLUMN_DEF_COLLECTION = [
-  //   Created By
-  //   HuBMAP ID
-  //   Title *(see below for title)
-  //   Group Name
-  // DOI * (see below for DOI)
-
   { field: "created_by_user_email", headerName: "Created By", width: 210 },
   { field: "hubmap_id", headerName: "HubMAP ID", width: 180 },
   {
@@ -213,30 +207,39 @@ export const COLUMN_DEF_UPLOADS = [
 ];
 
 // EPICOLLECTIONS COLUMNS
-export const COLUMN_DEF_EPICOLLECTIONS = [
-  { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
-  { field: 'group_name', headerName: 'Group Name', width: 200},
-  { field: "statusAccess",
-    width: 180,
-    headerName: "Status / Access Level",
-    sortable: false,
-    valueGetter: getStatusAccess,
-    renderCell: renderStatusAccess
-  }, 
-  { field: "uuid",
-    headerName: "Action",
-    sortable: false,
+export const COLUMN_DEF_EPICOLLECTION = [
+  { field: "created_by_user_email", headerName: "Created By", width: 210 },
+  { field: "hubmap_id", headerName: "HubMAP ID", width: 180 },
+  {
+    field: "title",
+    headerName: "Title",
+    width: 250,
     renderCell: (params: ValueFormatterParams) => (
-      <div sx={{width: "100%"}} className="actionButton" data-target={params.row.uuid} >
-        <FontAwesomeIcon
-          className='inline-icon interaction-icon'
-          icon={faTrash}
-          color="red"
-          // onClick={() => sourceRemover(row, index)}
-        />
-    </div>
-   ), 
-  }, 
+      <React.Fragment>
+        <span>{params.value}</span>
+      </React.Fragment>
+    ),
+  },
+  { field: "group_name", headerName: "Group", width: 210 },
+  {field: "doi_url",
+    headerName: "DOI",
+    width: 400,
+    renderCell: (params: ValueFormatterParams) => (
+      <React.Fragment>
+       <span>{params.value}</span>
+     </React.Fragment>
+   ),
+    valueGetter: ({ row }) => {
+      if (row.doi_url && row.registered_doi) {
+        return (doiLink(row.doi_url, row.registered_doi))
+      }
+    },
+  },{
+    // This is just so it's included in the requested columns
+    field: "registered_doi",
+    headerName: "registered_doi",
+    hide: true,
+  },
 ];
 
 // CONTRIBUTORS COLUMNS

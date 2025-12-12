@@ -607,7 +607,8 @@ export function CombinedTypeOptions(){
     dataset: "Dataset", 
     upload: "Data Upload",
     publication: "Publication",
-    collection: "Collection"
+    collection: "Collection",
+    epicollection: "EPICollection"
   }
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))

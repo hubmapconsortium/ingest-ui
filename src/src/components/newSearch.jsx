@@ -31,6 +31,7 @@ import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
+  COLUMN_DEF_EPICOLLECTION,
   COLUMN_DEF_SAMPLE,
   COLUMN_DEF_DATASET,
   COLUMN_DEF_PUBLICATION,
@@ -92,21 +93,14 @@ export function NewSearch({
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
-  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
-
-  // helper handlers used while hovering the Clear button only
-  const handleClearKeyDown = (e) => {
-    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
-  };
-  const handleClearKeyUp = (e) => {
-    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
-  };
+  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection","EPICollection"];
 
   function resultFieldSet() {
     var fieldObjects = [];
     var fieldArray = fieldObjects.concat(
       COLUMN_DEF_SAMPLE,
       COLUMN_DEF_COLLECTION,
+      COLUMN_DEF_EPICOLLECTION,
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
       COLUMN_DEF_DONOR,
@@ -239,7 +233,8 @@ export function NewSearch({
         dataset: "Dataset", 
         upload: "Data Upload",
         publication: "Publication",
-        collection: "Collection"
+        collection: "Collection",
+        epicollection: "EPICollection"
       }
     //  console.debug('%c◉ SAMPLE_CATEGORIES ', 'color:#00ff7b', SAMPLE_CATEGORIES ,searchFilterParams.entity_type, entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase()));
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
@@ -250,8 +245,6 @@ export function NewSearch({
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
         if(searchFiltersState && searchFiltersState.entityType !=="DonorSample"){
-          // Coughs on Restricted Source Selector for EPICollections
-          // console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFiltersState.entityType);
           searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
         }
       }
@@ -282,9 +275,16 @@ export function NewSearch({
         }
         if (response.total > 0 && response.status === 200) {
           let colDefs;
+          console.debug('%c◉ simpleColumns', 'color:#F6FF00', simpleColumns);
+          console.debug('%c◉ searchFilterParams.entity_type', 'color:#F6FF00', searchFilterParams.entity_type);
+          console.debug('%c◉ simpleColumns.includes(searchFilterParams.entity_type) ', 'color:#002AFF', simpleColumns.includes(searchFilterParams.entity_type));
+          if(searchFilterParams.entity_type === "Epicollection"){
+            searchFilterParams.entity_type = "EPICollection";
+          }
           if(simpleColumns.includes(searchFilterParams.entity_type) ){
             colDefs = columnDefType(searchFilterParams.entity_type);
-          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"|| searchFilterParams.entity_type === "DonorSample"){
+            console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs, searchFilterParams.entity_type);
+          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
             colDefs = COLUMN_DEF_MIXED
           }else{
             colDefs = COLUMN_DEF_MIXED
@@ -329,7 +329,7 @@ export function NewSearch({
   }, [page, pageSize, searchFiltersState, restrictions]);
 
   function columnDefType(et) {
-    // console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
+    console.debug('%c◉ columnDefType ', 'color:#D0FF00', et );
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -344,6 +344,9 @@ export function NewSearch({
     }
     if (et === "Collection") {
       return COLUMN_DEF_COLLECTION;
+    }
+    if (et === "EPICollection") {
+      return COLUMN_DEF_EPICOLLECTION;
     }
     if (et === "Mixed") {
       return COLUMN_DEF_MIXED;
@@ -718,7 +721,7 @@ export function NewSearch({
               </Typography>
             </Grid>
             <Collapse in={advancedSearch} sx={{width: "100%"}}>
-              <Grid container xs={12} sx={{display: "flex", marginTop: "16px"}}>
+              <Grid container sx={{display: "flex", marginTop: "16px"}}>
                 <Grid item xs={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
                 </Grid>
@@ -752,7 +755,7 @@ export function NewSearch({
                 
             </Collapse>
 
-            <Grid cotainer rowSpacing={1} columnSpacing={0} xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
+            <Grid container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
               {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
@@ -762,8 +765,6 @@ export function NewSearch({
                     }}
                   variant="contained"
                   size="large"  
-                  onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
-                  onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
@@ -811,7 +812,7 @@ export function NewSearch({
     if(event){event.preventDefault()}
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
-    // console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
     if(reset){
       entityType = "DonorSample";
       params["entity_type"] = "DonorSample";
@@ -826,25 +827,27 @@ export function NewSearch({
       entityType = formFilters.sample_category;
     }
     var keywords = formFilters.keywords;
-    let which_cols_def = COLUMN_DEF_SAMPLE; //default
-    if (entityType) {
-      let colSet = entityType.toLowerCase();
-      if (which_cols_def) {
-        if (colSet === "donor") {
-          which_cols_def = COLUMN_DEF_DONOR;
-        } else if (colSet === "sample") {
-          which_cols_def = COLUMN_DEF_SAMPLE;
-        } else if (colSet === "dataset") {
-          which_cols_def = COLUMN_DEF_DATASET;
-        } else if (colSet === "publication") {
-          which_cols_def = COLUMN_DEF_PUBLICATION;
-        } else if (colSet === "upload") {
-          which_cols_def = COLUMN_DEF_UPLOADS;
-        } else if (colSet === "collection") {
-          which_cols_def = COLUMN_DEF_COLLECTION;
-        }
-      }
-  }
+    // let which_cols_def = COLUMN_DEF_SAMPLE; //default
+    // if (entityType) {
+    //   let colSet = entityType.toLowerCase();
+    //   if (which_cols_def) {
+    //     if (colSet === "donor") {
+    //       which_cols_def = COLUMN_DEF_DONOR;
+    //     } else if (colSet === "sample") {
+    //       which_cols_def = COLUMN_DEF_SAMPLE;
+    //     } else if (colSet === "dataset") {
+    //       which_cols_def = COLUMN_DEF_DATASET;
+    //     } else if (colSet === "publication") {
+    //       which_cols_def = COLUMN_DEF_PUBLICATION;
+    //     } else if (colSet === "upload") {
+    //       which_cols_def = COLUMN_DEF_UPLOADS;
+    //     } else if (colSet === "collection") {
+    //       which_cols_def = COLUMN_DEF_COLLECTION;
+    //     }else if (colSet === "epicollection"){
+    //       which_cols_def = COLUMN_DEF_EPICOLLECTION;
+    //     }
+    //   }
+    // }
 
     let params = {}; // Will become the searchFilters
     var url = new URL(window.location); // Only used outside in basic / homepage Mode
