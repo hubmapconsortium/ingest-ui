@@ -63,10 +63,6 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
-
-  // Data to fill in UI Elements
-  // var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
-  // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
   
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
@@ -78,8 +74,8 @@ export function App(){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
 
-  window.onstorage = () => {
-    // console.log("onstorage Storage Event");
+  window.onstorage = (event) => {
+    console.log("onstorage Storage Event!", event);
   };
 
   useEffect(() => {

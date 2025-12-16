@@ -447,6 +447,8 @@ export const PublicationForm = (props) => {
           <BulkSelector
             dialogTitle="Search for a Source ID for your Publication"
             dialogSubtitle="Only Datasets may be selected for Publication sources"
+            tableTitle="Associated Dataset IDs"
+            tableSubtitle="Datasets that are associated with this Publication"
             permissions={permissions}
             initialSelectedUUIDs={selectedBulkUUIDs}
             initialSourcesData={selectedBulkData}

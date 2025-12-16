@@ -33,6 +33,8 @@ import { search_api_es_query_ids } from "../../service/search_api";
 export function BulkSelector({
   dialogTitle,
   dialogSubtitle,
+  tableTitle, 
+  tableSubtitle,
   permissions,
   initialSelectedHIDs = [],
   initialSelectedUUIDs = [],
@@ -455,8 +457,8 @@ export function BulkSelector({
       transitionDuration: "1s"
     }}>
       <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {dialogTitle}</Typography>
-        <Typography variant="caption">{subtitle}</Typography>
+        <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {tableTitle}</Typography>
+        <Typography variant="caption">{tableSubtitle}</Typography>
       </Box>
       <Box className="sourceShade" sx={{
         opacity: sourceBulkStatus === "loading" ? 1 : 0,
