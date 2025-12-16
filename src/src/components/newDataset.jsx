@@ -555,11 +555,6 @@ export const DatasetForm = (props) => {
               initialSourcesData={bulkSelection.data}
               initialSelectedString={bulkSelection.data.map(obj => obj.hubmap_id).join(", ")}
               onBulkSelectionChange={handleBulkSelectionChange}
-              searchFilters={{
-                custom_title: "Search for a Source ID for your Dataset",
-                custom_subtitle: "Collections may not be selected for Dataset sources",
-                blacklist: ['collection']
-              }}
               readOnly={readOnlySources}
               preLoad={loading.bulk}
             />

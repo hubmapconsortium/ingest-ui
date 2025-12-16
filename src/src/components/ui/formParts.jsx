@@ -51,7 +51,7 @@ export const FormHeader = (props) => {
     entityType = "EPICollection"
   }
   return (
-    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", backgroundColor: "#f5f5f5", borderRadius: "4px"}}>
+    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px",}}>
       {entityData[0] !== "new" && (
         <Grid item xs={12} className="topHeader" > 
           <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
@@ -397,12 +397,11 @@ function topHeader(entityData, entityType){
 
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
-  let HIPPATypes = ["donor","sample","upload"];
+  let HIPPATypes = ["Donor","Sample","Upload"];
   const type = entityData?.entity_type ?? entityData?.[1];
   const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
 
   return (
-    
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
       {globusURL&& (
         <Typography className="pb-1">
@@ -548,7 +547,7 @@ export function FormCheckRedirect(uuid,entityType,form){
 }
 
 // Prevents the Search Filter Restrictions from lingering & effecting the main Search View
-export function combineTypeOptionsComplete(){
+export function combineTypeOptionsComplete(blackList,whitelist,restrictions){
   // Removes the Whitelist / Blacklist stuff,
   // mostly for use for resetting the main Search Page View
   var combinedList = [];
@@ -559,7 +558,20 @@ export function combineTypeOptionsComplete(){
     dataset: "Dataset", 
     upload: "Data Upload",
     publication: "Publication",
-    collection: "Collection"} );
+    collection: "Collection"});
+  if(blackList && blackList.length > 0){
+    // Remove Blacklisted Items
+    console.debug('%c◉ Remove BL ', 'color:#00ff7b',blackList );
+    combinedList[0] = Object.fromEntries(
+      Object.entries(combinedList[0]).filter(([key]) => !blackList.includes(key))
+    );
+  }
+  if(whitelist && whitelist.length > 0){
+    // Keep only Whitelisted Items
+    combinedList[0] = Object.fromEntries(
+      Object.entries(combinedList[0]).filter(([key]) => whitelist.includes(key))
+    );
+  } 
 
   // NEXT: Sample Categories
   combinedList.push(SAMPLE_CATEGORIES);
@@ -600,7 +612,9 @@ export function handleSortOrgans(organList){
   }
   return sortedMap;
 };
-export function CombinedTypeOptions(){
+
+
+export function CombinedEmbeddedEntityOptions(props){ // fOR THE 
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
@@ -610,11 +624,46 @@ export function CombinedTypeOptions(){
     collection: "Collection",
     epicollection: "EPICollection"
   }
+
+  // menuMap is stored with lowercase keys; just read it and lowercase the current form
+  const menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
+  const currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '').toLowerCase();
+  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', window.location.pathname, currentForm, menuFilterMap[currentForm]);
+
+  const entry = menuFilterMap[currentForm] || {};
+
+  // Blacklisting removes the type from the list.
+  const blackList = entry.blackList || entry.blacklist || [];
+  if (blackList && blackList.length > 0) {
+    console.debug('%c◉ Have blackList ', 'color:#E7EEFF;background: #000;padding:200', blackList);
+    coreList = Object.fromEntries(
+      Object.entries(coreList).filter(([key]) => !blackList.includes(key))
+    );
+  }
+  // Whitelist limits the list to only those items
+  const whiteList = entry.whiteList || entry.whitelist || [];
+  if (whiteList && whiteList.length > 0) {
+    console.debug('%c◉ Have WhiteList ', 'color:#000;background: #E7EEFF;padding:200', whiteList);
+    coreList = Object.fromEntries(
+      Object.entries(coreList).filter(([key]) => whiteList.includes(key))
+    );
+  }
+
+  // Organs
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
   organList.forEach((value, key) => {
     organs[value] = key;
   });
+
+  if(whiteList.length === 1){
+    return (
+      <option aria-label="None" value={whiteList[0]}>
+        {coreList[whiteList[0]]}
+      </option>
+    )
+  }
+  
   return (<>
     <option aria-label="None" value="&nbsp;" />
     <optgroup label="Entity Types">
@@ -640,14 +689,12 @@ export function CombinedTypeOptions(){
     </optgroup>
   </>)
 }
-export function CombineTypeSelect({
+export function CombinedWholeEntityOptions({
   formFilters,
   handleInputChange,
   restrictions,
   embedded
   }){
-  // console.debug('%c◉  CombineTypeSelect', 'color:#9359FF', );
-  // let coreList = ["Donor","Sample","Dataset","Data Upload","Publication","Collection"]
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
@@ -686,7 +733,7 @@ export function CombineTypeSelect({
             value={formFilters.entity_type}
             onChange={(e) => handleInputChange(e)}
             disabled={restrictions && restrictions.entityType?true:false}>
-            <CombinedTypeOptions />
+            <CombinedEmbeddedEntityOptions />
           </Select>
         
         </FormControl>

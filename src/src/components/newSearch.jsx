@@ -23,7 +23,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import {CombineTypeSelect,badgeClass} from "./ui/formParts";
+import {CombinedWholeEntityOptions,badgeClass} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
@@ -153,6 +153,11 @@ export function NewSearch({
       setSearchFiltersState(paramsObj);
       // reset pagination to first page
       setPage(0);
+      // Do we need to open the Advanced Fields view?
+      if(paramsObj.target_field || paramsObj.status){
+        setAdvancedSearch(true);
+      }
+      
     } catch (err) {
       // ignore URL parse errors for now
     }
@@ -216,16 +221,20 @@ export function NewSearch({
 
   useEffect(() => {
     // If URL/initial filters were applied, and we don't yet have searchFiltersState, skip the default search
+    console.debug('%c◉ searchFiltersState ', 'color:#00ff7b', searchFiltersState);
+    console.debug('%c◉ urlParamsAppliedRef ', 'color:#00ff7b', urlParamsAppliedRef, urlParamsAppliedRef.current);
     if (!searchFiltersState && urlParamsAppliedRef.current) {
+      console.debug('%c◉ Init/Url ', 'color:#00ff7b', );
       return;
     }
-    var searchFilterParams = searchFiltersState ? searchFiltersState : { entity_type: "DonorSample" };
+    var searchFilterParams = searchFiltersState ? searchFiltersState : {  };
     // set loading in reducer so results+loading can be updated together on response
     dispatchSearchState({ type: "SET", payload: { loading: true } });
 
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
     // Let's make sure the casing is right on the entity based fields\
+    console.debug('%c◉ searchFilterParams ', 'color:#002AFF', searchFilterParams);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {
         donor: "Donor" ,
@@ -236,7 +245,7 @@ export function NewSearch({
         collection: "Collection",
         epicollection: "EPICollection"
       }
-    //  console.debug('%c◉ SAMPLE_CATEGORIES ', 'color:#00ff7b', SAMPLE_CATEGORIES ,searchFilterParams.entity_type, entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase()));
+      console.debug('%c◉ SEARCHWHAT ', 'color:#002AFF', searchFilterParams, searchFilterParams?.entity_type, searchFiltersState, searchFiltersState?.entityType);
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
         // console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
         searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
@@ -244,7 +253,8 @@ export function NewSearch({
         // console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
-        if(searchFiltersState && searchFiltersState.entityType !=="DonorSample"){
+        if(searchFilterParams && searchFilterParams.entityType !=="DonorSample"){
+          console.debug('%c◉ searchFilterParams.entityType ', 'color:#00ff7b', searchFilterParams.entityType);
           searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
         }
       }
@@ -326,6 +336,7 @@ export function NewSearch({
         //props.reportError(error);
         // console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
+      console.debug('%c◉ searchFiltersState ', 'color:#00ff7b', searchFiltersState);
   }, [page, pageSize, searchFiltersState, restrictions]);
 
   function columnDefType(et) {
@@ -705,7 +716,7 @@ export function NewSearch({
             <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "15px", }}>
               <Grid item xs={6} sx={{padding: "4px"}} >{renderGroupField()}</Grid>
               <Grid item xs={6} sx={{padding: "4px"}} > 
-                <CombineTypeSelect
+                <CombinedWholeEntityOptions
                   formFilters = {formFilters}
                   OrganIcons={OrganIcons}
                   handleInputChange = {(e) => handleInputChange(e)}
@@ -827,27 +838,6 @@ export function NewSearch({
       entityType = formFilters.sample_category;
     }
     var keywords = formFilters.keywords;
-    // let which_cols_def = COLUMN_DEF_SAMPLE; //default
-    // if (entityType) {
-    //   let colSet = entityType.toLowerCase();
-    //   if (which_cols_def) {
-    //     if (colSet === "donor") {
-    //       which_cols_def = COLUMN_DEF_DONOR;
-    //     } else if (colSet === "sample") {
-    //       which_cols_def = COLUMN_DEF_SAMPLE;
-    //     } else if (colSet === "dataset") {
-    //       which_cols_def = COLUMN_DEF_DATASET;
-    //     } else if (colSet === "publication") {
-    //       which_cols_def = COLUMN_DEF_PUBLICATION;
-    //     } else if (colSet === "upload") {
-    //       which_cols_def = COLUMN_DEF_UPLOADS;
-    //     } else if (colSet === "collection") {
-    //       which_cols_def = COLUMN_DEF_COLLECTION;
-    //     }else if (colSet === "epicollection"){
-    //       which_cols_def = COLUMN_DEF_EPICOLLECTION;
-    //     }
-    //   }
-    // }
 
     let params = {}; // Will become the searchFilters
     var url = new URL(window.location); // Only used outside in basic / homepage Mode

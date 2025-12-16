@@ -259,6 +259,8 @@ export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: "computed_lab_id_type",
     headerName: "Lab Name/ID",
+    flex: 1,
+    minWidth: 150,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
     valueGetter: getLabId,
@@ -272,7 +274,8 @@ export const COLUMN_DEF_MIXED = [
   }, 
   { field: 'submission_id', 
     headerName: 'Submission ID', 
-    width: 100,
+    flex: 1,
+    minWidth: 100,
     renderCell: params => {
       if (!params?.row?.submission_id) {
         return nullCell();
@@ -284,13 +287,16 @@ export const COLUMN_DEF_MIXED = [
   },
   { field: 'entity_type', 
     headerName: 'Entity Type', 
+    flex: 1,
+    minWidth: 150,
     renderCell: params => { 
       return (toTitleCase(params.row.entity_type))
     }
   },
   { field: "type",
     headerName: "Type",
-    width: 180,
+    flex: 1,
+    minWidth: 150,
     sortable: false,
     valueGetter: getTypeValue,
     renderCell: params => {
@@ -306,9 +312,10 @@ export const COLUMN_DEF_MIXED = [
       return (renderFieldIcons(params) )
     }
   }, 
-  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: 'group_name', headerName: 'Group Name', flex: 1, minWidth: 200},
   { field: "statusAccess",
-    width: 180,
+    flex: 1,
+    minWidth: 150,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
@@ -365,7 +372,7 @@ function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
   let flipSides = ["Knee (Left)"]
   let flipFix = {marginRight: "5px" }
-  console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
+  // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (

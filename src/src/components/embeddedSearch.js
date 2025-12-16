@@ -1,4 +1,5 @@
 import React,{useEffect,useState,useMemo} from "react";
+import { useLocation } from 'react-router-dom';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 import {SAMPLE_CATEGORIES} from "../constants";
@@ -11,7 +12,7 @@ import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import GridLoader from "react-spinners/GridLoader";
-import {CombinedTypeOptions} from "./ui/formParts";
+import {CombinedEmbeddedEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {toTitleCase} from "../utils/string_helper";
 import {
@@ -31,18 +32,33 @@ export function EmbeddedSearch({
   custom_title,
   custom_subtitle,
   searchFilters,
-  restrictions,
   urlChange,
   modecheck,
   handleTableCellClick,
 }){
-  console.debug('%c◉ restrictions ', 'color:#00ff7b', restrictions);
   var [searchTitle] = useState(
     custom_title ? 
     custom_title : "Search" );
   var [searchSubtitle] = useState(
     custom_subtitle ? 
     custom_subtitle : null);
+
+  // Restrictions / Filters (memoized)
+  const location = useLocation();
+  const menuFilterMap = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("menuMap");
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.debug('Invalid menuMap in localStorage', e);
+      return {};
+    }
+  }, []);
+  const currentForm = useMemo(() => (
+    decodeURIComponent((location?.pathname || window.location.pathname).split('/').filter(Boolean).pop() || '').toLowerCase()
+  ), [location?.pathname]);
+  const restrictions = useMemo(() => (menuFilterMap[currentForm] || {}), [menuFilterMap, currentForm]);
+  const whiteList = useMemo(() => (restrictions.whiteList || restrictions.whitelist || []), [restrictions]);
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
@@ -52,12 +68,14 @@ export function EmbeddedSearch({
     searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
+
   // TABLE DATA
   var [results, setResults] = React.useState({
     dataRows: null,
     rowCount: 0,
     colDef: COLUMN_DEF_MIXED,
   });
+
   //  LOADERS
   var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
@@ -65,8 +83,7 @@ export function EmbeddedSearch({
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
   const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection","EPICollection"];
-  
-  // Memoized helpers to avoid recreating objects/functions passed into DataGrid
+
   const colDefDep = results ? results.colDef : null;
   const hiddenFields = useMemo(() => {
     const base = [
@@ -147,12 +164,13 @@ export function EmbeddedSearch({
     // That searchFilters Update thing above is triggered on search button click,
     // If we have restrictions, we still need to set the dropdowns accordingly
     // Before the user does anything
-    if(restrictions && restrictions.entityType){
-      searchFilterParams.entity_type = toTitleCase(restrictions.entityType);
+    if (whiteList && whiteList.length > 0) {
+      searchFilterParams.entity_type = toTitleCase(whiteList[0]);
       setFormFilters((prevValues) => ({
         ...prevValues,
-      entity_type: restrictions.entityType,}));
+      entity_type: whiteList[0]}));
     }
+
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
@@ -469,7 +487,7 @@ export function EmbeddedSearch({
         <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{searchTitle} </span>
           {!searchSubtitle &&(
             <Typography align={"center"} variant="subtitle1" gutterBottom >
-              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
+              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections<br />
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
             </Typography>
           )}
@@ -534,8 +552,8 @@ export function EmbeddedSearch({
                 label="Type"
                 value={formFilters.entity_type}
                 onChange={(e) => handleInputChange(e)}
-                disabled={restrictions && restrictions.entityType?true:false}>
-                <CombinedTypeOptions />
+                disabled={whiteList && whiteList.length > 0 ? true : false }>
+                <CombinedEmbeddedEntityOptions />
                 </Select>
             </Grid>
             <Grid item xs={12}>
