@@ -22,10 +22,10 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import SearchComponent from './components/search/SearchComponent';
 
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
+import { getItem, setItem, removeItem, removeItems, ensureMenuMap } from "./service/local_storage";
 import Result from "./components/ui/result";
 import {SpeedDialTooltipOpen} from './components/ui/formParts';
 import {OrganDetails} from './components/ui/icons';
@@ -65,12 +65,6 @@ export function App(){
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
 
-  // Data to fill in UI Elements
-  // var[dataTypeList, setDataTypeList] = useState({}); //@TODO: Remove & use Local in forms
-  // var[dataTypeListAll, setDataTypeListAll] = useState({}); //@TODO: Remove & use Local in forms
-  var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
-  // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
-  
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
   var[APIErr, setAPIErr] = useState(false);
@@ -81,9 +75,6 @@ export function App(){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
 
-  var[routingMessage] = useState({
-    Datasets: ["Registering individual datasets is currently disabled.","/new/upload"],
-  });
   window.onstorage = () => {
     // console.log("onstorage Storage Event");
   };
@@ -118,23 +109,27 @@ export function App(){
     let url = new URL(window.location.href);
     let info = url.searchParams.get("info");
     if(info !== null){
-      localStorage.setItem("info", info);
+      setItem("info", info);
       window.location.replace(`${process.env.REACT_APP_URL}`);
+    }
+    // If we're here because we tried making a new Dataset from the old url, show the warning popup 
+    if(url.pathname === "/new/dataset" ){
+         
     }
 
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons")){
+    if(!getItem("organs") || !getItem("organ_icons")){
       ubkg_api_get_organ_type_set()
         .then((res) => {
           loadCount() // the Organ step
           // lets also save the organ-image mapping
           let organIcons = OrganDetails();
-          localStorage.setItem("organ_icons", JSON.stringify(organIcons));
+          setItem("organ_icons", organIcons);
           if(res !== undefined){
-            localStorage.setItem("organs",JSON.stringify(res));
-            setOrganList(res); // TODO: Eventually remove & use localstorage
+            setItem("organs", res);
+            // setOrganList(res); // TODO: Eventually remove & use localstorage
           }else{
             // Not cached, we cant really go on
             setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
@@ -152,14 +147,14 @@ export function App(){
     }
 
     // The Full RUI details for Organs
-    if(!localStorage.getItem("organs_full")){
+    if(!getItem("organs_full")){
       ubkg_api_get_organs_full()
         .then((data) => {
-          localStorage.setItem("organs_full", JSON.stringify(data));
+          setItem("organs_full", data);
           let RUIOrgans = data  
             .filter(org => org.rui_supported)
             .map(org => org.rui_code);
-          localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
+          setItem("RUIOrgans", RUIOrgans);
 
         })
         .catch(() => {
@@ -167,15 +162,12 @@ export function App(){
         });
     }
 
-    if(!localStorage.getItem("dataset_types")){
+    if(!getItem("dataset_types")){
       ubkg_api_get_dataset_type_set()
         .then((res) => {
           loadCount() // the dataset_types step
           if(res !== undefined){
-            localStorage.setItem("dataset_types",JSON.stringify(res));
-            // TODO: Eventually remove these & use localstorage
-            // setDataTypeList(res);
-            // setDataTypeListAll(res);
+            setItem("dataset_types", res);
           }else{
             setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
           }
@@ -187,8 +179,8 @@ export function App(){
       loadCount() // the dataset_types step
     }else{
       // we already have Dataset Types but are they good
-      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
-        localStorage.removeItem("datatypes");
+      if (!ValidateLocalStoreValue(getItem("datatypes"))) {
+        removeItem("datatypes");
       }
       loadCount()
     }
@@ -205,7 +197,6 @@ export function App(){
               setExpiredKey(true);
               if(results.error.response.status ===401 ){
                 // No more message, just full cache-dump and reload
-
                 // Need to give sotrage a chance to clear,
                 setTimeout(() => {
                   purgeStorage();
@@ -233,11 +224,11 @@ export function App(){
                 })
 
               try{
-                if( (!localStorage.getItem('userGroups') || localStorage.getItem('userGroups') === undefined || localStorage.getItem('userGroups') === "Non-active login") && localStorage.getItem("info") ){
+                const existingUserGroups = getItem('userGroups');
+                if( (!existingUserGroups || existingUserGroups === undefined || existingUserGroups === "Non-active login") && getItem("info") ){
                   ingest_api_users_groups()
                     .then((res) => {
                       if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
-                        // console.log("User is not a member of group HuBMAP-read");
                         setAuthStatus(true);
                         setUnregStatus(true);
                       }else if(res.results === "Non-active login" || res.status === 401){ // 401 Capture for non-active login
@@ -247,11 +238,9 @@ export function App(){
                         setExpiredKey(true);
                         loadFailed(res);
                       }else if(res.status === 200){
-                        // console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
-                        localStorage.setItem("userGroups",JSON.stringify(res.results));
+                        setItem("userGroups", res.results);
                       }else{
                         setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
-                        // loadFailed(res)
                       }
                     })
                     .catch((err) => {
@@ -265,7 +254,6 @@ export function App(){
                 loadFailed(error);
               }
               loadCount()  // the User's Groups step
-
               // All Groups
               try{
                 if(!localStorage.getItem("allGroups")){
@@ -301,13 +289,52 @@ export function App(){
           })
   
       }else{
-        // No Info, No Auth, provide login screen nothing else to load
-        // console.debug('%c◉ No INFO found ', 'color:#ff005d');
-        setIsLoading(false)
+        console.log("NOMAP")
       }   
     } 
     catch(error){
       setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',error])
+    }
+
+    // Menu Maps
+    try{
+      // ensure there's a reasonable default menuMap set in localStorage
+      ensureMenuMap({
+        datasetadmin : {blackList :  ["collection","epicollection"]},
+        publication: {whiteList: ["dataset"]},
+        collection: {whiteList: ["dataset"]},
+        epicollection: {whiteList: ["dataset"]},
+        sample: {blackList: ['collection','epicollection',"dataset","upload","publication"]},
+      });
+    } catch(error){
+      setAPIErr(["Menu Generating Error",'Error Building Menu Deinitions ',error])
+    }
+
+    // UUI Neu Setup
+    if(!localStorage.getItem("dataset_types")){
+      ubkg_api_get_dataset_type_set()
+        .then((res) => {
+          loadCount() // the dataset_types step
+          if(res !== undefined){
+            localStorage.setItem("dataset_types",JSON.stringify(res));
+            // TODO: Eventually remove these & use localstorage
+            // setDataTypeList(res);
+            // setDataTypeListAll(res);
+          }else{
+            setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
+          }
+        })
+        .catch((err) => {
+          // Not cached, we cant really go on
+          setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try again later, or contact help@hubmapconsortium.org ',err)
+        })
+      loadCount() // the dataset_types step
+    }else{
+      // we already have Dataset Types but are they good
+      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
+        localStorage.removeItem("datatypes");
+      }
+      loadCount()
     }
     
     // Banner Setting
@@ -332,18 +359,12 @@ export function App(){
       // console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
       reportError(error);
     }
+    
   
   }, []);
 
   function purgeStorage(){
-    localStorage.removeItem('info');
-    localStorage.removeItem('organs');
-    localStorage.removeItem('organ_icons');
-    localStorage.removeItem('organs_full');
-    localStorage.removeItem('RUIOrgans');
-    localStorage.removeItem('datatypes');
-    localStorage.removeItem('allGroups');
-    localStorage.removeItem('userGroups');
+    removeItems(['info','organs','organ_icons','organs_full','RUIOrgans','datatypes','allGroups','userGroups']);
   };
 
   function Logout(e){
@@ -450,8 +471,8 @@ export function App(){
           login={authStatus} 
           isLoggingOut={isLoggingOut}
           logout={Logout}
-          userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
-          appInfo={JSON.parse(localStorage.getItem("info"))}/>       
+          userDataGroups={getItem("userGroups")}
+          appInfo={getItem("info")}/>       
         { !userDev && (<Timer logout={Logout}/>)}
         <div id="content" className="container">
           <StandardErrorBoundary
@@ -564,34 +585,29 @@ export function App(){
             {authStatus && !isLoading && !unregStatus &&(
               <HuBMAPContext.Provider value={{allGroups}}> 
                 <Paper className={"px-4 py-3 admin-"+(adminStatus)}>
+                  
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route index element={<SearchComponent organList={organList} entity_type='' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
-                    <Route path="/" element={ <SearchComponent entity_type=' ' reportError={reportError} urlChange={(event, params, details) => urlChange(event, params, details)} handleCancel={handleCancel}/>} />
+                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path="/" element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
-                      <Route index element={<SearchComponent reportError={reportError} />} />
+                      <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} routingMessage={routingMessage.Datasets} />} ></Route>
+                      <Route path="dataset" element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
                     </Route>
-                    
-                    <Route path="/donors" element={<DonorForm />} ></Route>
-                    <Route path="/samples" element={<SearchComponent reportError={reportError} filter_type="Sample" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/datasets" element={<SearchComponent reportError={reportError} filter_type="Dataset" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/uploads" element={<SearchComponent reportError={reportError} filter_type="uploads" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                    <Route path="/collections" element={<SearchComponent reportError={reportError} filter_type="collections" urlChange={(event, params, details) => urlChange(event, params, details)} />} ></Route>
-                      
+                                          
                     <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
                     <Route path="/dataset/:uuid" element={<DatasetForm onUpdated={(response) => updateSuccess(response)}/>} />
@@ -654,9 +670,9 @@ export function App(){
           </StandardErrorBoundary>
         </div>
       </div>
-      {localStorage.getItem("info") && JSON.parse(localStorage.getItem("info")).email === "JJW118@pitt.edu" && (
-        <SpeedDialTooltipOpen />
-      )}
+      {getItem("info") && getItem("info").email === "JJW118@pitt.edu" && (
+          <SpeedDialTooltipOpen />
+        )}
     </React.Fragment>
   );
   

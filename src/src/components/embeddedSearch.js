@@ -1,4 +1,5 @@
 import React,{useEffect,useState,useMemo} from "react";
+import { useLocation } from 'react-router-dom';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
 import {SAMPLE_CATEGORIES} from "../constants";
@@ -11,12 +12,13 @@ import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import GridLoader from "react-spinners/GridLoader";
-import {CombinedTypeOptions} from "./ui/formParts";
+import {CombinedEmbeddedEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
+  COLUMN_DEF_EPICOLLECTION,
   COLUMN_DEF_SAMPLE,
   COLUMN_DEF_DATASET,
   COLUMN_DEF_PUBLICATION,
@@ -30,18 +32,33 @@ export function EmbeddedSearch({
   custom_title,
   custom_subtitle,
   searchFilters,
-  restrictions,
   urlChange,
   modecheck,
   handleTableCellClick,
 }){
-  console.debug('%c◉ restrictions ', 'color:#00ff7b', restrictions);
   var [searchTitle] = useState(
     custom_title ? 
     custom_title : "Search" );
   var [searchSubtitle] = useState(
     custom_subtitle ? 
     custom_subtitle : null);
+
+  // Restrictions / Filters (memoized)
+  const location = useLocation();
+  const menuFilterMap = useMemo(() => {
+    try {
+      const raw = localStorage.getItem("menuMap");
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.debug('Invalid menuMap in localStorage', e);
+      return {};
+    }
+  }, []);
+  const currentForm = useMemo(() => (
+    decodeURIComponent((location?.pathname || window.location.pathname).split('/').filter(Boolean).pop() || '').toLowerCase()
+  ), [location?.pathname]);
+  const restrictions = useMemo(() => (menuFilterMap[currentForm] || {}), [menuFilterMap, currentForm]);
+  const whiteList = useMemo(() => (restrictions.whiteList || restrictions.whitelist || []), [restrictions]);
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
@@ -51,32 +68,22 @@ export function EmbeddedSearch({
     searchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
+
   // TABLE DATA
   var [results, setResults] = React.useState({
     dataRows: null,
     rowCount: 0,
     colDef: COLUMN_DEF_MIXED,
   });
+
   //  LOADERS
   var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
-  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection"];
+  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection","EPICollection"];
 
-  // track ctrl/meta key while hovering Clear so we can change hover border
-  // treat Command (Meta) as equivalent to Control for the hover hint
-  const [ctrlPressed, setCtrlPressed] = useState(false);
-  // handlers for Clear hover behavior: attach key listeners only while hovering
-  const handleClearKeyDown = (e) => {
-    if (e.key === 'Control' || e.ctrlKey || e.key === 'Meta' || e.metaKey) setCtrlPressed(true);
-  };
-  const handleClearKeyUp = (e) => {
-    if (!(e.ctrlKey || e.metaKey)) setCtrlPressed(false);
-  };
-  
-  // Memoized helpers to avoid recreating objects/functions passed into DataGrid
   const colDefDep = results ? results.colDef : null;
   const hiddenFields = useMemo(() => {
     const base = [
@@ -116,6 +123,7 @@ export function EmbeddedSearch({
     var fieldArray = fieldObjects.concat(
       COLUMN_DEF_SAMPLE,
       COLUMN_DEF_COLLECTION,
+      COLUMN_DEF_EPICOLLECTION,
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
       COLUMN_DEF_DONOR,
@@ -136,7 +144,8 @@ export function EmbeddedSearch({
         dataset: "Dataset", 
         upload: "Data Upload",
         publication: "Publication",
-        collection: "Collection"
+        collection: "Collection",
+        epicollection: "EPICollection",
       }
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
         console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
@@ -146,7 +155,6 @@ export function EmbeddedSearch({
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
         if(searchFilters && searchFilters.entityType !=="DonorSample"){
-          // Coughs on Restricted Source Selector for EPICollections
           console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFilters.entityType);
           searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
         }
@@ -156,13 +164,13 @@ export function EmbeddedSearch({
     // That searchFilters Update thing above is triggered on search button click,
     // If we have restrictions, we still need to set the dropdowns accordingly
     // Before the user does anything
-    if(restrictions && restrictions.entityType){
-
-      searchFilterParams.entity_type = toTitleCase(restrictions.entityType);
+    if (whiteList && whiteList.length > 0) {
+      searchFilterParams.entity_type = toTitleCase(whiteList[0]);
       setFormFilters((prevValues) => ({
         ...prevValues,
-      entity_type: restrictions.entityType,}));
+      entity_type: whiteList[0]}));
     }
+
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
@@ -181,8 +189,13 @@ export function EmbeddedSearch({
       }
       if (response.total > 0 && response.status === 200) {
         let colDefs;
+        if(searchFilterParams.entity_type === "Epicollection"){
+          searchFilterParams.entity_type = "EPICollection";
+        }
         if(simpleColumns.includes(searchFilterParams.entity_type) ){
+          console.debug('%c◉ HAS CORE TYPE ', 'color:#F6FF00', );
           colDefs = columnDefType(searchFilterParams.entity_type);
+          console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
         }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
           colDefs = COLUMN_DEF_MIXED
         }else{
@@ -225,7 +238,7 @@ export function EmbeddedSearch({
   }
   
   function columnDefType(et) {
-    // console.debug('%c◉ columnDefType ', 'color:#00ff7b', et );
+    console.debug('%c◉ columnDefType ', 'color:#9900FF', et );
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -240,6 +253,9 @@ export function EmbeddedSearch({
     }
     if (et === "Collection") {
       return COLUMN_DEF_COLLECTION;
+    }
+    if (et === "EPICollection") {
+      return COLUMN_DEF_EPICOLLECTION;
     }
     if (et === "Mixed") {
       return COLUMN_DEF_MIXED;
@@ -326,6 +342,7 @@ export function EmbeddedSearch({
     if (entityType) {
       let colSet = entityType.toLowerCase();
       if (which_cols_def) {
+        console.debug('%c◉ colSet ', 'color:#9900FF', colSet);
         if (colSet === "donor") {
           which_cols_def = COLUMN_DEF_DONOR;
         } else if (colSet === "sample") {
@@ -338,9 +355,13 @@ export function EmbeddedSearch({
           which_cols_def = COLUMN_DEF_UPLOADS;
         } else if (colSet === "collection") {
           which_cols_def = COLUMN_DEF_COLLECTION;
+        } else if (colSet === "epicollection") {
+          console.debug('%c◉ EPIC ', 'color:#D0FF00', );
+          which_cols_def = COLUMN_DEF_EPICOLLECTION;
         }
       }
     }
+    console.debug('%c◉ which_cols_def ', 'color:#D0FF00', which_cols_def);
 
     let params = {}; // Will become the searchFilters
     if (keywords) {
@@ -351,7 +372,7 @@ export function EmbeddedSearch({
     } 
     if (entityType && entityType !== "----") {
       params["entity_type"] = entityType;
-    } 
+    }   
    setSearchFilters(params);
   };
 
@@ -387,7 +408,7 @@ export function EmbeddedSearch({
     }
 
     // use memoized columnFilters and getTogglableColumns defined at component scope
-    console.debug('%c◉ columnFilters ', 'color:#00ff7b', results.colDef);
+    console.debug('%c◉ results.colDef ', 'color:#9900FF', results.colDef);
 
     return (
       <div style={{height: 590, width: "100%" }}>
@@ -466,7 +487,7 @@ export function EmbeddedSearch({
         <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{searchTitle} </span>
           {!searchSubtitle &&(
             <Typography align={"center"} variant="subtitle1" gutterBottom >
-              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, or Collections.<br />
+              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections<br />
               If you know a specific ID you can enter it into the keyword field to locate individual entities.
             </Typography>
           )}
@@ -531,8 +552,8 @@ export function EmbeddedSearch({
                 label="Type"
                 value={formFilters.entity_type}
                 onChange={(e) => handleInputChange(e)}
-                disabled={restrictions && restrictions.entityType?true:false}>
-                <CombinedTypeOptions />
+                disabled={whiteList && whiteList.length > 0 ? true : false }>
+                <CombinedEmbeddedEntityOptions />
                 </Select>
             </Grid>
             <Grid item xs={12}>
@@ -565,9 +586,7 @@ export function EmbeddedSearch({
                 variant="outlined"
                 color="primary"
                 size="large"
-                sx={{ border: "1px solid #aaa", '&:hover': { border: ctrlPressed ? '1px solid #ff0000' : '1px solid #CBC6C6' } }}
-                onMouseEnter={(e) => { setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleClearKeyDown); window.addEventListener('keyup', handleClearKeyUp); }}
-                onMouseLeave={() => { setCtrlPressed(false); window.removeEventListener('keydown', handleClearKeyDown); window.removeEventListener('keyup', handleClearKeyUp); }}
+                sx={{ border: "1px solid #aaa" }}
                 onClick={(e) => handleClearFilter(e)}>
                 Clear
               </Button>

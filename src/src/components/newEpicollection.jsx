@@ -311,17 +311,12 @@ export const EPICollectionForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector 
-            dialogTitle="Associated Dataset IDs"
-            dialogSubtitle="Datasets that are associated with this EPICollection"
+            dialogTitle="Search for an Associated Dataset for your EPICollection"
+            dialogSubtitle="Only Datasets may be selected for EPICollection sources"
             permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
-            searchFilters={{
-              custom_title: "Search for an Associated Dataset for your EPICollection",
-              custom_subtitle: "Only Datasets may be selected for EPICollection sources",
-              restrictions: { entityType: "dataset" },
-            }}
           />
           <EPICollectionFormFields
             formValues={formValues}

@@ -96,16 +96,17 @@ export function search_api_filter_es_query_builder(
 ) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
-  console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
-  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
-  console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
-  console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
-  console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
+  // console.group('%c◉ search_api_filter_es_query_builder ', 'color:#E7EEFF;background: #9359FF;padding:200' );
+  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', fields);
+  // console.debug('%c◉ from ', 'color:#E7EEFF;background: #D859FF;padding:200', from, );
+  // console.debug('%c◉ size ', 'color:#E7EEFF;background: #E959FF;padding:200', size );
+  // console.debug('%c◉ colFields ', 'color:#E7EEFF;background: #E959FF;padding:200', colFields );
   // Always build a bool query and, if keywords contain a wildcard, add a
   // queryStringQuery as an additional MUST instead of short-circuiting the
   // whole builder. This preserves group/entity/organ filters while still
   // allowing wildcard searches across the wildcard-capable fields.
   const hasWildcard = fields && fields["keywords"] && fields["keywords"].indexOf("*") > -1;
+  const hasHBMID = fields["keywords"] && fields["keywords"].indexOf("HBM") === 0;
   boolQuery = esb.boolQuery();
 
   // if no field criteria is sent just default to a (keeps prior behavior)
@@ -180,6 +181,7 @@ export function search_api_filter_es_query_builder(
 
   // Status
   if (fields["status"]){
+    console.debug('%c◉ HAVE STATUS ', 'color:#00ff7b', fields["status"]);
     let queryString = fields["status"].join(" OR ");
     boolQuery.must(
       esb.matchQuery("status", queryString)
@@ -192,33 +194,72 @@ export function search_api_filter_es_query_builder(
   // filters are not dropped.
   // Determine if the UI has asked to target a single field for keyword searches
   // default keyword fields (non-wildcard) and wildcard-capable fields
-  const keywordSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_FIELDS;
-  const wildcardSearchFields = fields["target_field"] && fields["target_field"].length > 0 ? fields["target_field"] : ES_SEARCHABLE_WILDCARDS;
+  let keywordSearchFields = ES_SEARCHABLE_FIELDS;
+  let wildcardSearchFields = ES_SEARCHABLE_WILDCARDS;
+  if (fields["target_field"]) {
+    // Allow either a single field (string) or an array of fields
+    if (Array.isArray(fields["target_field"])) {
+      keywordSearchFields = fields["target_field"];
+      wildcardSearchFields = fields["target_field"];
+    } else if (typeof fields["target_field"] === 'string' && fields["target_field"].length > 0) {
+      keywordSearchFields = [fields["target_field"]];
+      wildcardSearchFields = [fields["target_field"]];
+    }
+  }
 
   if (fields["keywords"]){
-    if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
-      // exact HubMAP id match stays the same
-      boolQuery.must(
-        esb.matchQuery("hubmap_id.keyword", fields["keywords"])
-      );
-    } else if (!hasWildcard) {
-      // non-wildcard: use multiMatch across either the targeted field or the default searchable fields
-      boolQuery.filter(
-        esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
-      );
+    // if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+    //   // exact HubMAP id match stays the same
+    //   boolQuery.must(
+    //     esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+    //   );
+    //   console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
+    // } 
+  
+    if (!hasWildcard) {
+      // non-wildcard: if the UI asked to target a specific field, require the
+      // keyword to match that field (or one of the provided fields). Otherwise
+      // fall back to multiMatch across the default searchable fields.
+      if (fields["target_field"]) {
+        // When a target_field is provided, restrict the keyword search to
+        // only those fields. Use a simple_query_string over the provided
+        // fields so the query only searches those fields (no cross-field
+        // multi_match behavior).
+        boolQuery.filter(
+          esb.simpleQueryStringQuery(fields["keywords"]).fields(keywordSearchFields).defaultOperator('and')
+        );
+      } else {
+        // no explicit target_field: keep legacy multiMatch behavior
+        if(hasHBMID){
+          boolQuery.must(
+            esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+          );
+          console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
+        }else{
+          boolQuery.filter(
+            esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
+          );
+        }
+      }
     }
   }
 
   // If we have a wildcard keyword, add it as an additional MUST so it
   // coexists with other filters rather than replacing them. Respect target field if provided.
   if (hasWildcard){
-    boolQuery.must(
-      esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
-    );
+    if(hasHBMID){
+      boolQuery.must(
+        esb.queryStringQuery(fields["keywords"]).fields(["hubmap_id.keyword"])
+      );
+    }else{
+      boolQuery.must(
+        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+      );
+    }
   }
 
-  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1){
-    // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
+  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1 && !hasWildcard){
+    console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", fields );
     requestBody
       .query(boolQuery)
       .from(from)
@@ -237,7 +278,7 @@ export function search_api_filter_es_query_builder(
   }
 
   console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
-  console.groupEnd();
+  // console.groupEnd();
   return requestBody.toJSON();
   
 }
