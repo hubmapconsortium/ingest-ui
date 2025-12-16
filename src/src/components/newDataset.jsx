@@ -549,8 +549,10 @@ export const DatasetForm = (props) => {
         <form>
             <BulkSelector
               permissions={permissions}
-              dialogTitle={"Associated Entities"}
-              dialogSubtitle={"Entities associated with this Dataset"}
+              dialogTitle="Search for a Source ID for your Dataset"
+              dialogSubtitle="Collections may not be selected for Dataset sources"
+              tableTitle="Associated Dataset IDs"
+              tableSubtitle="Datasets that are associated with this Collection (Only Datasets may be selected for Collection sources)"
               initialSelectedUUIDs={bulkSelection.uuids}
               initialSourcesData={bulkSelection.data}
               initialSelectedString={bulkSelection.data.map(obj => obj.hubmap_id).join(", ")}

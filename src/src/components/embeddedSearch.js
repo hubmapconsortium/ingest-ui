@@ -54,11 +54,22 @@ export function EmbeddedSearch({
       return {};
     }
   }, []);
-  const currentForm = useMemo(() => (
-    decodeURIComponent((location?.pathname || window.location.pathname).split('/').filter(Boolean).pop() || '').toLowerCase()
-  ), [location?.pathname]);
+
+  const currentForm = useMemo(() => {
+    const path = (location?.pathname || window.location.pathname) || '';
+    const segments = path.split('/').filter(Boolean);
+    if (!segments || segments.length === 0) return '';
+    const pick = (segments[0] && String(segments[0]).toLowerCase() === 'new') ? segments[segments.length - 1] : segments[0];
+    try {
+      return decodeURIComponent(String(pick)).toLowerCase();
+    } catch (e) {
+      return String(pick).toLowerCase();
+    }
+  }, [location?.pathname]);
+    
   const restrictions = useMemo(() => (menuFilterMap[currentForm] || {}), [menuFilterMap, currentForm]);
   const whiteList = useMemo(() => (restrictions.whiteList || restrictions.whitelist || []), [restrictions]);
+  console.debug('%c◉ res/white ', 'color:#00ff7b', restrictions, whiteList);
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];

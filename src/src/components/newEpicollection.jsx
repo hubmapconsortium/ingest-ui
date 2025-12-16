@@ -311,6 +311,8 @@ export const EPICollectionForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector 
+            tableTitle="Associated Dataset IDs"
+            tableSubtitle="Datasets that are associated with this EPICollection"
             dialogTitle="Search for an Associated Dataset for your EPICollection"
             dialogSubtitle="Only Datasets may be selected for EPICollection sources"
             permissions={permissions}

@@ -10,8 +10,8 @@ const options = {headers: {Authorization: "Bearer " + globalToken,
  * User Groups only those data provider groups are return
  *
  */
-export function ingest_api_users_groups(auth) { 
-  // console.debug('%c◉ Global: ', 'color:#00ff7b', globalToken);
+export function ingest_api_users_groups() { 
+  console.debug('%c◉ ingest_api_users_groups ', 'color:#00ff7b',);
   return axios
     .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
       .then(res => {
@@ -43,7 +43,8 @@ export function ingest_api_users_groups(auth) {
  * Is User Admin
  *
  */
-export function ingest_api_user_admin(auth) { 
+export function ingest_api_user_admin() { 
+  console.debug('%c◉  ingest_api_user_admin', 'color:#00ff7b', );
   return axios 
   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
   .then(res => {
@@ -69,7 +70,8 @@ export function ingest_api_user_admin(auth) {
  * User Groups ALL groups are return (For that user only)
  *
  */
-export function ingest_api_all_user_groups(auth) { 
+export function ingest_api_all_user_groups() { 
+  console.debug('%c◉ ingest_api_all_user_groups ', 'color:#00ff7b', );
   return axios 
   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
   .then(res => {
