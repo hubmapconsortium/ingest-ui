@@ -314,8 +314,10 @@ export const CollectionForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector 
-            dialogTitle="Associated Dataset IDs"
-            dialogSubtitle="Datasets that are associated with this Collection (Only Datasets may be selected for Collection sources)"
+            tableTitle="Associated Dataset IDs"
+            tableSubtitle="Datasets that are associated with this Collection"
+            dialogTitle= "Search for an Associated Dataset for your Collection"
+            dialogSubtitle= "Only Datasets may be selected for Collection sources"
             permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
