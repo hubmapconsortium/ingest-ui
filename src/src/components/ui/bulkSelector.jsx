@@ -157,6 +157,7 @@ export function BulkSelector({
       let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
       let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
       let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
+      console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
 
       if (
         (searchFilters.blackList && searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
