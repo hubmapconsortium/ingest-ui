@@ -99,7 +99,7 @@ export function OrganIcons(organ){
     "LI": `${BASE_ICON_URL}large-intestine`,
     "LK": `${BASE_ICON_URL}kidney-left`,
     "LL": `${BASE_ICON_URL}lung-left`,
-    "LN": `${BASE_ICON_URL}knee-left`,
+    "LN": `${BASE_ICON_URL}knee`,
     "LO": `${BASE_ICON_URL}ovary-left`,
     "LT": `${BASE_ICON_URL}palatine-tonsil`,
     "LU": `${BASE_ICON_URL}ureter-left`,
@@ -110,7 +110,7 @@ export function OrganIcons(organ){
     "PA": `${BASE_ICON_URL}pancreas`,
     "PL": `${BASE_ICON_URL}placenta`,
     "PR": `${BASE_ICON_URL}prostate`,
-    "PV": `${BASE_ICON_URL}pelvis-f`,
+    "PV": `${BASE_ICON_URL}pelvis`,
     "RB": `${BASE_ICON_URL}extrapulmonary-bronchus`,
     "RE": `${BASE_ICON_URL}eye`,
     "RF": `${BASE_ICON_URL}fallopian-tube-right`,
@@ -127,7 +127,7 @@ export function OrganIcons(organ){
     "TH": `${BASE_ICON_URL}thymus`,
     "TR": `${BASE_ICON_URL}trachea`,
     "UT": `${BASE_ICON_URL}uterus`,
-    "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
+    "VL": `${BASE_ICON_URL}lymph-nodes`,
   }
   let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg"
   console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
