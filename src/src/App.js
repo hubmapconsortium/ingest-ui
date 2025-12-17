@@ -145,6 +145,42 @@ export function App(){
       loadCount()
     }
 
+    // Loads MenuMap Details
+    if(!localStorage.getItem("menuMap")){
+      localStorage.setItem("menuMap", JSON.stringify({
+        "datasetadmin": {
+          "blackList": [
+            "collection",
+            "epicollection"
+          ]
+        },
+        "publication": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "collection": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "epicollection": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "sample": {
+          "blackList": [
+            "collection",
+            "epicollection",
+            "dataset",
+            "upload",
+            "publication"
+          ]
+        }
+      }));
+    }
+    
     // The Full RUI details for Organs
     if(!localStorage.getItem("organs_full")){
       ubkg_api_get_organs_full()
