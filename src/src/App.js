@@ -63,10 +63,6 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
-
-  // Data to fill in UI Elements
-  // var[organList, setOrganList] = useState(); //@TODO: Remove & use Local in Search
-  // var [userDataGroups, setUserDataGroups] = useState({}); //@TODO: Remove & use Local in forms
   
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
@@ -78,8 +74,8 @@ export function App(){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
 
-  window.onstorage = () => {
-    // console.log("onstorage Storage Event");
+  window.onstorage = (event) => {
+    console.log("onstorage Storage Event!", event);
   };
 
   useEffect(() => {
@@ -149,6 +145,42 @@ export function App(){
       loadCount()
     }
 
+    // Loads MenuMap Details
+    if(!localStorage.getItem("menuMap")){
+      localStorage.setItem("menuMap", JSON.stringify({
+        "datasetadmin": {
+          "blackList": [
+            "collection",
+            "epicollection"
+          ]
+        },
+        "publication": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "collection": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "epicollection": {
+          "whiteList": [
+            "dataset"
+          ]
+        },
+        "sample": {
+          "blackList": [
+            "collection",
+            "epicollection",
+            "dataset",
+            "upload",
+            "publication"
+          ]
+        }
+      }));
+    }
+    
     // The Full RUI details for Organs
     if(!localStorage.getItem("organs_full")){
       ubkg_api_get_organs_full()
@@ -451,7 +483,7 @@ export function App(){
           logout={Logout}
           userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
-        (<Timer logout={Logout}/>
+        <Timer logout={Logout}/>
         <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}

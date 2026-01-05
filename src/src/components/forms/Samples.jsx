@@ -639,7 +639,6 @@ export const SampleForm = (props) => {
               modecheck="Source"
               custom_title="Search for a Source ID for your Sample"
               custom_subtitle="Only Donors or Samples may be selected as sources for newly created samples."
-              // restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}
               blackList={['collection',"dataset","upload","publication"]}
             />
           </DialogContent>

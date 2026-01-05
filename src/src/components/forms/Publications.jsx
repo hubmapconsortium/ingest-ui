@@ -445,19 +445,14 @@ export const PublicationForm = (props) => {
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
           <BulkSelector
-            dialogTitle="Associated Dataset IDs"
-            dialogSubtitle="Datasets that are associated with this Publication"
+            dialogTitle="Search for a Source ID for your Publication"
+            dialogSubtitle="Only Datasets may be selected for Publication sources"
+            tableTitle="Associated Dataset IDs"
+            tableSubtitle="Datasets that are associated with this Publication"
             permissions={permissions}
             initialSelectedUUIDs={selectedBulkUUIDs}
             initialSourcesData={selectedBulkData}
             onBulkSelectionChange={handleBulkSelectionChange}
-            searchFilters={{
-              custom_title: "Search for a Source ID for your Publication",
-              custom_subtitle: "Only Datasets may be selected for Publication sources",
-              restrictions: { 
-                entityType: "dataset"
-              },
-            }}
           />
           <PublicationFormFields
             formValues={formValues}

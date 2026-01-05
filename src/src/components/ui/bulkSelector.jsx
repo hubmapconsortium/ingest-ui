@@ -33,13 +33,15 @@ import { search_api_es_query_ids } from "../../service/search_api";
 export function BulkSelector({
   dialogTitle,
   dialogSubtitle,
+  tableTitle, 
+  tableSubtitle,
   permissions,
   initialSelectedHIDs = [],
   initialSelectedUUIDs = [],
   initialSelectedString = "",
   initialSourcesData = [],
   onBulkSelectionChange,
-  searchFilters,
+  // searchFilters,
   readOnly,
   preLoad,
 }) {
@@ -57,12 +59,16 @@ export function BulkSelector({
   const [selected_string, setSelectedString] = useState(initialSelectedString);
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
   const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
-  const title = dialogTitle || "Associated Dataset IDs";
-  const subtitle = dialogSubtitle || "Datasets that are associated with this Publication"; 
-  
+  const title = dialogTitle || "Select a Source Entity ";
+  const subtitle = dialogSubtitle || "Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections"; 
+  let menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
+  let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+  const searchFilters = menuFilterMap[currentForm] ? menuFilterMap[currentForm] : {};
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
 
+  console.debug('%c◉ title ', 'color:#00ff7b', title);
+  console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
   // Sync sourcesData with prop changes
   useEffect(() => {
     console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
@@ -143,21 +149,21 @@ export function BulkSelector({
     if (missingIds.length > 0) {
       errorArray.push([`The following Entit${missingIds.length > 1 ? 'ies' : 'y'} ${missingIds.length > 1 ? 'were' : 'was'} not found, either because ${missingIds.length > 1 ? 'they do' : 'it does'} not exist or ${missingIds.length > 1 ? 'their' : 'its'} ${missingIds.length > 1 ? 'IDs are' : 'ID is'} not formatted correctly:`, missingIds]);
     }
-
+    
     // Type check and only add unique entities to goodArray
     let addedIds = new Set();
     for (let entity of results) {
       // Only add the first occurrence of each entity (by uuid or hubmap_id)
       let entityId = entity.hubmap_id || entity.uuid;
       if (addedIds.has(entityId)) continue;
-      let restrictCheck = false;
-      if(searchFilters?.restrictions?.entityType && entity.entity_type. toLowerCase() !== searchFilters.restrictions.entityType.toLowerCase()){
-        restrictCheck = true;
-      }
+      let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
+      let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+      let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
+      console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
+
       if (
-        (searchFilters.blacklist && searchFilters.blacklist.includes(entity.entity_type.toLowerCase())) ||
-        (searchFilters.whitelist && !searchFilters.whitelist.includes(entity.entity_type.toLowerCase())) ||
-        (restrictCheck === true) 
+        (searchFilters.blackList && searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
+        (searchFilters.whiteList && !searchFilters.whiteList.includes(entity.entity_type.toLowerCase())) 
       ) {
         typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
       } else {
@@ -166,7 +172,7 @@ export function BulkSelector({
       }
     }
 
-    if (typeArray.length > 0) {
+    if (typeArray.length > 0) { 
       errorArray.push([`The following ${typeArray.length} ID${typeArray.length > 1 ? 's' : ''} ${typeArray.length > 1 ? 'are' : 'is'} of the wrong Type:`, typeArray]);
     }
     if (errorArray.length > 0) {
@@ -425,10 +431,8 @@ export function BulkSelector({
           handleTableCellClick={(e) => handleSelectClick(e)}
           modecheck="Source"
           setBulkError={(e) => setBulkError(e)}
-					custom_title={searchFilters.custom_title ? searchFilters.custom_title :"Select a Source Entity"}
-					custom_subtitle={searchFilters.custom_subtitle ? searchFilters.custom_subtitle : null}
-					restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}
-					blacklist={searchFilters.blacklist ? searchFilters.blacklist : null}
+					custom_title={title ? title :"Select a Source Entity"} 
+					custom_subtitle={subtitle ? subtitle : null}
         />
       </DialogContent>
       <DialogActions>
@@ -440,6 +444,7 @@ export function BulkSelector({
         </Button>
       </DialogActions>
     </Dialog>
+
     {/* Bulk Input Field Dialog */}
     {renderBulkDialog()}
     {/* Feedback Dialogs */}
@@ -452,8 +457,8 @@ export function BulkSelector({
       transitionDuration: "1s"
     }}>
       <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {dialogTitle}</Typography>
-        <Typography variant="caption">{subtitle}</Typography>
+        <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {tableTitle}</Typography>
+        <Typography variant="caption">{tableSubtitle}</Typography>
       </Box>
       <Box className="sourceShade" sx={{
         opacity: sourceBulkStatus === "loading" ? 1 : 0,

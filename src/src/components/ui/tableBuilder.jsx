@@ -184,30 +184,39 @@ export const COLUMN_DEF_UPLOADS = [
 ];
 
 // EPICOLLECTIONS COLUMNS
-export const COLUMN_DEF_EPICOLLECTIONS = [
-  { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
-  { field: 'group_name', headerName: 'Group Name', width: 200},
-  { field: "statusAccess",
-    width: 180,
-    headerName: "Status / Access Level",
-    sortable: false,
-    valueGetter: getStatusAccess,
-    renderCell: renderStatusAccess
-  }, 
-  { field: "uuid",
-    headerName: "Action",
-    sortable: false,
+export const COLUMN_DEF_EPICOLLECTION = [
+  { field: "created_by_user_email", headerName: "Created By", width: 210 },
+  { field: "hubmap_id", headerName: "HubMAP ID", width: 180 },
+  {
+    field: "title",
+    headerName: "Title",
+    width: 250,
     renderCell: (params: ValueFormatterParams) => (
-      <div sx={{width: "100%"}} className="actionButton" data-target={params.row.uuid} >
-        <FontAwesomeIcon
-          className='inline-icon interaction-icon'
-          icon={faTrash}
-          color="red"
-          // onClick={() => sourceRemover(row, index)}
-        />
-    </div>
-   ), 
-  }, 
+      <React.Fragment>
+        <span>{params.value}</span>
+      </React.Fragment>
+    ),
+  },
+  { field: "group_name", headerName: "Group", width: 210 },
+  {field: "doi_url",
+    headerName: "DOI",
+    width: 400,
+    renderCell: (params: ValueFormatterParams) => (
+      <React.Fragment>
+       <span>{params.value}</span>
+     </React.Fragment>
+   ),
+    valueGetter: ({ row }) => {
+      if (row.doi_url && row.registered_doi) {
+        return (doiLink(row.doi_url, row.registered_doi))
+      }
+    },
+  },{
+    // This is just so it's included in the requested columns
+    field: "registered_doi",
+    headerName: "registered_doi",
+    hide: true,
+  },
 ];
 
 // CONTRIBUTORS COLUMNS
@@ -227,6 +236,8 @@ export const COLUMN_DEF_MIXED = [
   { field: 'hubmap_id', headerName: 'HuBMAP ID', width: 180},
   { field: "computed_lab_id_type",
     headerName: "Lab Name/ID",
+    flex: 1,
+    minWidth: 150,
     //description: "This column has a value getter and is not sortable.",
     sortable: false,
     valueGetter: getLabId,
@@ -240,7 +251,8 @@ export const COLUMN_DEF_MIXED = [
   }, 
   { field: 'submission_id', 
     headerName: 'Submission ID', 
-    width: 100,
+    flex: 1,
+    minWidth: 100,
     renderCell: params => {
       if (!params?.row?.submission_id) {
         return nullCell();
@@ -252,13 +264,16 @@ export const COLUMN_DEF_MIXED = [
   },
   { field: 'entity_type', 
     headerName: 'Entity Type', 
+    flex: 1,
+    minWidth: 150,
     renderCell: params => { 
       return (toTitleCase(params.row.entity_type))
     }
   },
   { field: "type",
     headerName: "Type",
-    width: 180,
+    flex: 1,
+    minWidth: 150,
     sortable: false,
     valueGetter: getTypeValue,
     renderCell: params => {
@@ -273,9 +288,10 @@ export const COLUMN_DEF_MIXED = [
       return (renderFieldIcons(params) )
     }
   }, 
-  { field: 'group_name', headerName: 'Group Name', width: 200},
+  { field: 'group_name', headerName: 'Group Name', flex: 1, minWidth: 200},
   { field: "statusAccess",
-    width: 180,
+    flex: 1,
+    minWidth: 150,
     headerName: "Status / Access Level",
     sortable: false,
     valueGetter: getStatusAccess,
@@ -328,13 +344,15 @@ function entityIconsBasic(entity_type){
       return <BubbleChartIcon  sx={style}/>
   }
 }
-
-function renderFieldIcons(params: ValueFormatterParams) {
+function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  return (
+  let flipSides = ["Knee (Left)"]
+  let flipFix = {marginRight: "5px" }
+  // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
+  return(
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={{marginRight: "5px"}} >
+        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={flipSides.includes(params.value) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} >
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
@@ -346,6 +364,8 @@ function renderFieldIcons(params: ValueFormatterParams) {
     </div>
   )
 }
+
+
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
 function shrinkCols(string){

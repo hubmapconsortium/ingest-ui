@@ -212,7 +212,10 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
               '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': { minHeight: '60px', overflowY: 'scroll!important', maxHeight: '350px' },
               background: "rgba(0, 0, 0, 0.04)",
               cursor: "cell!important",
-            }}
+              '.MuiDataGrid-footerContainer': {
+                'background': '#444a65',
+              },
+            }} 
           />
           {contributorValidationErrors && contributorValidationErrors.length > 0 && (<>
             <Typography sx={{ width: "100%", borderBottom: "1px solid #00000030", background: '#FF000019', color: '#3E0000', padding: '10px' }}> <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-1 red' /> {formErrors?.contributors} </Typography>

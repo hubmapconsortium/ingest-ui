@@ -106,6 +106,7 @@ export function search_api_filter_es_query_builder(
   // whole builder. This preserves group/entity/organ filters while still
   // allowing wildcard searches across the wildcard-capable fields.
   const hasWildcard = fields && fields["keywords"] && fields["keywords"].indexOf("*") > -1;
+  const hasHBMID = fields["keywords"] && fields["keywords"].indexOf("HBM") === 0;
   boolQuery = esb.boolQuery();
 
   // if no field criteria is sent just default to a (keeps prior behavior)
@@ -198,12 +199,15 @@ export function search_api_filter_es_query_builder(
   }
 
   if (fields["keywords"]){
-    if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
-      // exact HubMAP id match stays the same
-      boolQuery.must(
-        esb.matchQuery("hubmap_id.keyword", fields["keywords"])
-      );
-    } else if (!hasWildcard) {
+    // if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
+    //   // exact HubMAP id match stays the same
+    //   boolQuery.must(
+    //     esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+    //   );
+    //   console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
+    // } 
+  
+    if (!hasWildcard) {
       // non-wildcard: if the UI asked to target a specific field, require the
       // keyword to match that field (or one of the provided fields). Otherwise
       // fall back to multiMatch across the default searchable fields.
@@ -217,9 +221,16 @@ export function search_api_filter_es_query_builder(
         );
       } else {
         // no explicit target_field: keep legacy multiMatch behavior
-        boolQuery.filter(
-          esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
-        );
+        if(hasHBMID){
+          boolQuery.must(
+            esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+          );
+          console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
+        }else{
+          boolQuery.filter(
+            esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
+          );
+        }
       }
     }
   }
@@ -227,13 +238,19 @@ export function search_api_filter_es_query_builder(
   // If we have a wildcard keyword, add it as an additional MUST so it
   // coexists with other filters rather than replacing them. Respect target field if provided.
   if (hasWildcard){
-    boolQuery.must(
-      esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
-    );
+    if(hasHBMID){
+      boolQuery.must(
+        esb.queryStringQuery(fields["keywords"]).fields(["hubmap_id.keyword"])
+      );
+    }else{
+      boolQuery.must(
+        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+      );
+    }
   }
 
-  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1){
-    // console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", boolQuery );
+  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1 && !hasWildcard){
+    console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", fields );
     requestBody
       .query(boolQuery)
       .from(from)
@@ -251,7 +268,7 @@ export function search_api_filter_es_query_builder(
       .trackTotalHits(true);
   }
 
-  // console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
   // console.groupEnd();
   return requestBody.toJSON();
   
