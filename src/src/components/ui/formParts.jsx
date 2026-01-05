@@ -90,6 +90,7 @@ export function IconSelection(entity_type,status){
 
 // Returns the badge class associated with provided status
 export function badgeClass(status){
+  // console.debug('%c◉ badgeClass status ', 'color:#00ff7b', status);
   var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
@@ -314,9 +315,12 @@ function noteWrap(note){
 }
 
 // Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
-function statusBadge(status){
+export function StatusBadge(status){
+  if (typeof status !== "string" && status.status){
+    status = status.status.toString() ;
+  }
   return (
-    <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
+    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
 
@@ -355,7 +359,7 @@ function topHeader(entityData, entityType){
                       {entityData?.pipeline_message || "" }
                       </Typography><br />
                     </Box>}>
-                  {entityData.status ? statusBadge(entityData.status) : ""}
+                  {entityData.status ? StatusBadge(entityData.status) : ""}
                   </Tooltip> 
                 </Typography>   
             )}

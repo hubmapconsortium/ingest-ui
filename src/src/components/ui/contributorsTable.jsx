@@ -8,7 +8,8 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import {ingest_api_validate_contributors} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
-import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
+// import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
+import {COLUMN_DEF_CONTRIBUTORS} from '../../components/ui/tableBuilder.jsx';
 
 export function ContributorsTable({ contributors, onContributorsChange, permissions }) {
   let [fileDetails,setFileDetails] = useState();

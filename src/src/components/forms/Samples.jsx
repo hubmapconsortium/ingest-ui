@@ -35,16 +35,16 @@ import {
   entity_api_create_entity,
   entity_api_create_multiple_entities,
   entity_api_get_entity_ancestor_list
-} from "../service/entity_api";
-import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../service/ingest_api";
-import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "./ui/formParts";
-import {OrganIcons} from "./ui/icons";
-import RUIIntegration from "./ui/ruiIntegration";
-import {EmbeddedSearch} from "./embeddedSearch.js"; 
+} from "../../service/entity_api";
+import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../../service/ingest_api";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "../ui/formParts";
+import {OrganIcons} from "../ui/icons";
+import RUIIntegration from "../ui/ruiIntegration";
 // import SearchComponent from "./search/SearchComponent";
-import {toTitleCase} from "../utils/string_helper";
+import {EmbeddedSearch} from "../embeddedSearch"; 
+import {toTitleCase} from "../../utils/string_helper";
 // import {RUI_ORGAN_TYPES} from "../constants";
-// import {ValidateLocalhost} from "../utils/validators";
+// import {ValidateLocalhost} from "../../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
@@ -634,12 +634,14 @@ export const SampleForm = (props) => {
           aria-labelledby="source-lookup-dialog"
           open={openSearch === true ? true : false}>
           <DialogContent>
-          <EmbeddedSearch
-            handleTableCellClick={(e) => handleSelectSource(e)}
-            modecheck="Source"
-            setBulkError={null}
-            custom_title="Search for a Source ID for your Sample"
-            custom_subtitle="Only Donors or Samples may be selected as sources for newly created samples."/>
+            <EmbeddedSearch
+              handleTableCellClick={(e) => handleSelectSource(e)}
+              modecheck="Source"
+              custom_title="Search for a Source ID for your Sample"
+              custom_subtitle="Only Donors or Samples may be selected as sources for newly created samples."
+              // restrictions={ searchFilters.restrictions ? searchFilters.restrictions : null}
+              blackList={['collection',"dataset","upload","publication"]}
+            />
           </DialogContent>
           <DialogActions>
             <Button

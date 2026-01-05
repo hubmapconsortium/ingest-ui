@@ -40,14 +40,14 @@ import {RenderMetadata} from "./components/metadata";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
-import {NewSearch} from "./components/newSearch";
-import {DonorForm} from "./components/newDonor";
-import {UploadForm} from "./components/newUpload";
-import {SampleForm} from "./components/newSample";
-import {PublicationForm} from "./components/newPublication";
-import {DatasetForm} from "./components/newDataset";
-import {CollectionForm} from "./components/newCollection";
-import {EPICollectionForm} from "./components/newEpicollection";
+import {NewSearch} from "./components/Search";
+import {DonorForm} from "./components/forms/Donors";
+import {UploadForm} from "./components/forms/Uploads";
+import {SampleForm} from "./components/forms/Samples";
+import {PublicationForm} from "./components/forms/Publications";
+import {DatasetForm} from "./components/forms/Datasets";
+import {CollectionForm} from "./components/forms/Collections";
+import {EPICollectionForm} from "./components/forms/Epicollections";
 
 import NotFound from "./components/404";
 
@@ -483,7 +483,7 @@ export function App(){
           logout={Logout}
           userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
-        { !userDev && (<Timer logout={Logout}/>)}
+        (<Timer logout={Logout}/>
         <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}

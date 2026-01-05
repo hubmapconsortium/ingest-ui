@@ -7,15 +7,15 @@ import {
   ingest_api_validate_entity,
   ingest_api_reorganize_upload,
   ingest_api_notify_slack
-} from "../service/ingest_api";
-import { ubkg_api_get_upload_dataset_types } from '../service/ubkg_api';
+} from "../../service/ingest_api";
+import { ubkg_api_get_upload_dataset_types } from '../../service/ubkg_api';
 import {
   entity_api_get_entity,
   entity_api_update_entity,
   entity_api_get_globus_url
-} from "../service/entity_api";
-import {RevertFeature} from "../utils/revertModal";
-import {COLUMN_DEF_DATASET_MINI} from './search/table_constants';
+} from "../../service/entity_api";
+import {RevertFeature} from "../../utils/revertModal";
+import {COLUMN_DEF_DATASET_MINI} from '../ui/tableBuilder';
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -46,8 +46,8 @@ import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
-import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,SnackbarFeedback} from "./ui/formParts";
-import {RenderPageError} from "../utils/error_helper";
+import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,SnackbarFeedback} from "../ui/formParts";
+import {RenderPageError} from "../../utils/error_helper";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
 import dayjs from "dayjs";
