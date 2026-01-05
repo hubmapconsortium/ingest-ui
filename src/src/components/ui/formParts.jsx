@@ -37,6 +37,7 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import {BoltRounded} from "@mui/icons-material";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -343,36 +344,42 @@ function newBadge(type){
 function topHeader(entityData, entityType){  
   if(entityData[0] !== "new"){
     return (
-        <Grid item xs={6} className="entityDataHead" >
-          <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
-          {entityData.status && (
-              <Typography><strong>Status: </strong> 
-                <Tooltip
-                  placement="bottom-start" 
-                  title={
-                    <Box>
-                      <Typography variant="caption">
-                      {entityData?.pipeline_message || "" }
-                      </Typography><br />
-                    </Box>}>
-                  {entityData.status ? statusBadge(entityData.status) : ""}
-                  </Tooltip> 
-                </Typography>   
-            )}
-          {entityData.priority_project_list	 && (
-              <Typography variant="caption" sx={{display: "inline-block"}}>
-                <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
-                  ? entityData.priority_project_list.join(", ")
-                  : entityData.priority_project_list?.[0]}
-              </Typography>   
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
-          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
-            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
-        </Grid>
+      <Grid item xs={6} className="entityDataHead" >
+        <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
+        {entityData.status && (
+          <Typography><strong>Status: </strong> 
+            <Tooltip
+              placement="bottom-start" 
+              title={
+                <Box>
+                  <Typography variant="caption">
+                  {entityData?.pipeline_message || "" }
+                  </Typography><br />
+                </Box>}>
+              {entityData.status ? statusBadge(entityData.status) : ""}
+            </Tooltip> 
+          </Typography>   
+        )}
+        {entityData.priority_project_list	 && (
+          <Typography variant="caption" sx={{display: "inline-block"}}>
+            <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
+              ? entityData.priority_project_list.join(", ")
+              : entityData.priority_project_list?.[0]}
+          </Typography>   
+        )}
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
+        {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+        )}
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
+        {entityData.previous_revision_uuid &&(
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong></Typography>   
+        )}
+        {entityData.next_revision_uuid &&(
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong></Typography>   
+        )}
+      </Grid>
     ) 
   }else{
     return (
