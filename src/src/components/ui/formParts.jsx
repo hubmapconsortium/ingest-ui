@@ -373,12 +373,7 @@ function topHeader(entityData, entityType){
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
         )}
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
-        {entityData.previous_revision_uuid &&(
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong></Typography>   
-        )}
-        {entityData.next_revision_uuid &&(
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong></Typography>   
-        )}
+
       </Grid>
     ) 
   }else{
@@ -410,6 +405,12 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
+      {entityData.previous_revision_uuid &&(
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong></Typography>   
+      )}
+      {entityData.next_revision_uuid &&(
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong></Typography>   
+      )}
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
