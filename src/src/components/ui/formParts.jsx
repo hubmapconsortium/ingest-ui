@@ -355,9 +355,9 @@ function revisionLinksTime(entityData){
         className="tiltRightIcon hoverRiseContainer"
         onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
         variant="caption" >
-          <UpdateIcon className="iconEffect" sx={{marginRight: "5px"}}/>
-          This {entityData.entity_type} has a <Tooltip title={entityData.hubmap_id }><strong><Typography className="hoverRise" sx={fauxHrefStyle}> next version</Typography> </strong></Tooltip>
-        </Typography>
+        <UpdateIcon className="iconEffect" sx={{marginRight: "5px"}}/>
+        This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> next version</Typography> </strong>
+      </Typography>
     )}
     {entityData.previous_revision_uuid &&(
       <Typography 
@@ -366,9 +366,9 @@ function revisionLinksTime(entityData){
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
         sx={{display: "inline-block", width: "100%"}}>
-          <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
-          This {entityData.entity_type} has a <Tooltip title={entityData.hubmap_id }><strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong></Tooltip>
-        </Typography> 
+        <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+        This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
+      </Typography> 
     )}
   </>)
 }
