@@ -1140,7 +1140,7 @@ status
 
 .tiltLeftIcon .iconEffect,
 .tiltRightIcon .iconEffect {
-  transition: transform 1s;
+    transition: 290ms ease-in;
 }
 
 .tiltLeftIcon:hover .iconEffect {
@@ -1150,13 +1150,12 @@ status
 
 .tiltRightIcon:hover .iconEffect {
   transform: rotate(30deg);
-  
-  }
+}
   
   .hoverRise {
     background: #eeeeee20;
     text-decoration: none;
-    padding: 3px;
+    padding: 3px 5px;
     border-radius: 10px;
     border: 1px solid rgba(13, 110, 253, 3%);
   }
@@ -1164,6 +1163,7 @@ status
   .hoverRiseContainer:hover .hoverRise {
     background: #aaaaff20;
     text-decoration: underline;
+    padding: 3px 5px;
     border: 1px solid rgba(13, 110, 253, 15%);
-    transition: 400ms linear;
+    transition: 290ms ease-in-out;
 }
