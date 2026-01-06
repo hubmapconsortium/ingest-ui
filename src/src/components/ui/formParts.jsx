@@ -346,24 +346,28 @@ function newBadge(type){
 
 function revisionLinksTime(entityData){
   console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
+  const fauxHrefStyle = {color:"rgb(13, 110, 253)", fontWeight:"bold", display:"inline-block", fontSize:"0.75rem"}
+
   return(<>
     {entityData.next_revision_uuid &&(
       <Typography
+        component="div"
+        className="tiltRightIcon hoverRiseContainer"
         onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
-        className="tiltRightIcon"
         variant="caption" >
-          <UpdateIcon className="revisionNextIcon iconEffect" sx={{marginRight: "5px"}}/>
-          This {entityData.entity_type} has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong>
+          <UpdateIcon className="iconEffect" sx={{marginRight: "5px"}}/>
+          This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> next version</Typography> </strong>
       </Typography>   
     )}
     {entityData.previous_revision_uuid &&(
       <Typography 
-        onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
-        className="tiltLeftIcon"
+        component="div"
+        onClick={() => window.open(entityData.entity_type+"/"+entityData.previous_revision_uuid, "_blank")}
+        className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
         sx={{display: "inline-block", width: "100%"}}>
-          <UpdateIcon className="revisionPrevIcon iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
-          This {entityData.entity_type} has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong>
+          <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+          This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
       </Typography>   
     )}
   </>)
@@ -376,7 +380,7 @@ function revisionLinksPoint(entityData){
         variant="caption" 
         className="tiltRightIcon" 
         sx={{display: "inline-block", width: "100%"}}> 
-         This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
+         This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
       </Typography>   
     )}
     {entityData.previous_revision_uuid &&(
@@ -384,7 +388,7 @@ function revisionLinksPoint(entityData){
         className="tiltLeftIcon"
         variant="caption" 
         sx={{display: "inline-block", width: "100%"}}>
-          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
+          This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
       </Typography>   
     )}
   </>)
@@ -460,21 +464,25 @@ function infoPanels(entityData,permissions,globusURL){
         {revisionLinksTime(entityData)}
       </Box>
       {globusURL&& (
-        <Typography className="pb-1">
-          <strong><big>
-            <a href={globusURL}
-              target='_blank'
-              rel='noopener noreferrer'>   
-                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
-                  <>Open data repository {" "}</>
-                )}
-                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
-                  <>To add or modify data files go to the data repository {" "}</>
-                )}
-                <OpenInNewIcon />
-            </a>
-          </big></strong>
-        </Typography>
+        <Alert 
+          severity="info" 
+          sx={{ width: "100%", marginBottom:"15px", border:"1px solid #00003305" }}
+          iconMapping={{info: <OpenInNewIcon style={{fontSize: "2em"}} />}}>
+          <Typography className="pb-1">
+            <strong><big>
+              <a href={globusURL}
+                target='_blank'
+                rel='noopener noreferrer'>   
+                  {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
+                    <>Open data repository {" "}</>
+                  )}
+                  {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                    <>To add or modify data files go to the data repository {" "}</>
+                  )}
+              </a>
+            </big></strong>
+          </Typography>
+        </Alert>
       )}
       {permissions.has_write_priv && HIPPATypes.includes(entityData.entity_type) &&(
         <HIPPA />
@@ -484,9 +492,9 @@ function infoPanels(entityData,permissions,globusURL){
         <Alert severity="warning" 
           iconMapping={{warning: <VpnLockIcon style={{fontSize: "2em"}} />}}
           sx={{
-            // minHeight: "100%",
             minWidth: "100%",
-            padding: "10px"
+            padding: "10px",
+            border:"1px solid #33000008"
           }}>This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
@@ -511,7 +519,6 @@ function infoPanels(entityData,permissions,globusURL){
           }}
           iconMapping={{
             warning: <UpdateDisabledIcon style={{fontSize: "2em"}} />
-            // warning: <WarningIcon style={{fontSize: "2em"}} />
           }} >
           You do not have permission to modify this item.
         </Alert>

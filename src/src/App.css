@@ -1144,10 +1144,26 @@ status
 }
 
 .tiltLeftIcon:hover .iconEffect {
-  transform: rotate(-180deg) scaleX(-1);
+  transform: rotate(-30deg) scaleX(-1);
   animation-direction: reverse;
 }
 
 .tiltRightIcon:hover .iconEffect {
-  transform: rotate(180deg);
+  transform: rotate(30deg);
+  
+  }
+  
+  .hoverRise {
+    background: #eeeeee20;
+    text-decoration: none;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid rgba(13, 110, 253, 3%);
+  }
+  
+  .hoverRiseContainer:hover .hoverRise {
+    background: #aaaaff20;
+    text-decoration: underline;
+    border: 1px solid rgba(13, 110, 253, 15%);
+    transition: 400ms linear;
 }
