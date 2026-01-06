@@ -13,6 +13,7 @@ import {Typography} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import UpdateIcon from '@mui/icons-material/Update';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -38,6 +39,10 @@ import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {BoltRounded} from "@mui/icons-material";
+import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
+import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
+import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
+import VpnLockIcon from '@mui/icons-material/VpnLock';
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -52,7 +57,7 @@ export const FormHeader = (props) => {
     entityType = "EPICollection"
   }
   return (
-    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px",}}>
+    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
       {entityData[0] !== "new" && (
         <Grid item xs={12} className="topHeader" > 
           <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
@@ -339,9 +344,55 @@ function newBadge(type){
   )
 }
 
-// SWAT / MOSDAP Helper to build a pretty list of priority projects
+function revisionLinksTime(entityData){
+  console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
+  return(<>
+    {entityData.next_revision_uuid &&(
+      <Typography
+        onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
+        className="tiltRightIcon"
+        variant="caption" >
+          <UpdateIcon className="revisionNextIcon iconEffect" sx={{marginRight: "5px"}}/>
+          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong>
+      </Typography>   
+    )}
+    {entityData.previous_revision_uuid &&(
+      <Typography 
+        onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
+        className="tiltLeftIcon"
+        variant="caption" 
+        sx={{display: "inline-block", width: "100%"}}>
+          <UpdateIcon className="revisionPrevIcon iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong>
+      </Typography>   
+    )}
+  </>)
+}
+
+function revisionLinksPoint(entityData){
+  return(<>
+    {entityData.next_revision_uuid &&(
+      <Typography 
+        variant="caption" 
+        className="tiltRightIcon" 
+        sx={{display: "inline-block", width: "100%"}}> 
+         This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
+      </Typography>   
+    )}
+    {entityData.previous_revision_uuid &&(
+      <Typography 
+        className="tiltLeftIcon"
+        variant="caption" 
+        sx={{display: "inline-block", width: "100%"}}>
+          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
+      </Typography>   
+    )}
+  </>)
+}
+
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType){  
+
   if(entityData[0] !== "new"){
     return (
       <Grid item xs={6} className="entityDataHead" >
@@ -373,7 +424,7 @@ function topHeader(entityData, entityType){
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
         )}
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
-
+        {/* {revisionLinksTime(entityData)} */}
       </Grid>
     ) 
   }else{
@@ -405,12 +456,9 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.previous_revision_uuid &&(
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong></Typography>   
-      )}
-      {entityData.next_revision_uuid &&(
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}>This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong></Typography>   
-      )}
+      <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
+        {revisionLinksTime(entityData)}
+      </Box>
       {globusURL&& (
         <Typography className="pb-1">
           <strong><big>
@@ -434,13 +482,12 @@ function infoPanels(entityData,permissions,globusURL){
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
         // They might not have write access but not because of data_access_level
         <Alert severity="warning" 
-          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
+          iconMapping={{warning: <VpnLockIcon style={{fontSize: "2em"}} />}}
           sx={{
             // minHeight: "100%",
             minWidth: "100%",
             padding: "10px"
-          }}>
-          This entity is no longer editable. It was locked when it became publicly
+          }}>This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
       )}
@@ -463,12 +510,15 @@ function infoPanels(entityData,permissions,globusURL){
             padding: "0px",
           }}
           iconMapping={{
-            warning: <WarningIcon style={{fontSize: "2em"}} />
+            warning: <UpdateDisabledIcon style={{fontSize: "2em"}} />
+            // warning: <WarningIcon style={{fontSize: "2em"}} />
           }} >
           You do not have permission to modify this item.
         </Alert>
       )}
-     
+      {/* <Box sx={{textAlign: "right"  }}>
+        {revisionLinksTime(entityData)}
+      </Box> */}
     </Grid>
   )
 }

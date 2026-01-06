@@ -1132,3 +1132,22 @@ status
   font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
 } 
 
+/* Icon ROtations */
+.tiltLeftIcon,
+.tiltRightIcon {
+  cursor: pointer;
+}
+
+.tiltLeftIcon .iconEffect,
+.tiltRightIcon .iconEffect {
+  transition: transform 1s;
+}
+
+.tiltLeftIcon:hover .iconEffect {
+  transform: rotate(-180deg) scaleX(-1);
+  animation-direction: reverse;
+}
+
+.tiltRightIcon:hover .iconEffect {
+  transform: rotate(180deg);
+}
