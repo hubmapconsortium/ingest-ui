@@ -13,6 +13,7 @@ import {Typography} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import UpdateIcon from '@mui/icons-material/Update';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -37,6 +38,11 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
+import {BoltRounded} from "@mui/icons-material";
+import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
+import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
+import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
+import VpnLockIcon from '@mui/icons-material/VpnLock';
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -51,7 +57,7 @@ export const FormHeader = (props) => {
     entityType = "EPICollection"
   }
   return (
-    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px",}}>
+    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
       {entityData[0] !== "new" && (
         <Grid item xs={12} className="topHeader" > 
           <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
@@ -338,41 +344,92 @@ function newBadge(type){
   )
 }
 
-// SWAT / MOSDAP Helper to build a pretty list of priority projects
+function revisionLinksTime(entityData){
+  console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
+  const fauxHrefStyle = {color:"rgb(13, 110, 253)", fontWeight:"bold", display:"inline-block", fontSize:"0.75rem"}
+
+  return(<>
+    {entityData.next_revision_uuid &&(
+      <Typography
+        component="div"
+        className="tiltRightIcon hoverRiseContainer"
+        onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
+        variant="caption" >
+          <UpdateIcon className="iconEffect" sx={{marginRight: "5px"}}/>
+          This {entityData.entity_type} has a <Tooltip title={entityData.hubmap_id }><strong><Typography className="hoverRise" sx={fauxHrefStyle}> next version</Typography> </strong></Tooltip>
+        </Typography>
+    )}
+    {entityData.previous_revision_uuid &&(
+      <Typography 
+        component="div"
+        onClick={() => window.open(entityData.entity_type+"/"+entityData.previous_revision_uuid, "_blank")}
+        className="tiltLeftIcon hoverRiseContainer"
+        variant="caption" 
+        sx={{display: "inline-block", width: "100%"}}>
+          <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+          This {entityData.entity_type} has a <Tooltip title={entityData.hubmap_id }><strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong></Tooltip>
+        </Typography> 
+    )}
+  </>)
+}
+
+function revisionLinksPoint(entityData){
+  return(<>
+    {entityData.next_revision_uuid &&(
+      <Typography 
+        variant="caption" 
+        className="tiltRightIcon" 
+        sx={{display: "inline-block", width: "100%"}}> 
+         This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
+      </Typography>   
+    )}
+    {entityData.previous_revision_uuid &&(
+      <Typography 
+        className="tiltLeftIcon"
+        variant="caption" 
+        sx={{display: "inline-block", width: "100%"}}>
+          This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
+      </Typography>   
+    )}
+  </>)
+}
+
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType){  
+
   if(entityData[0] !== "new"){
     return (
-        <Grid item xs={6} className="entityDataHead" >
-          <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
-          {entityData.status && (
-              <Typography><strong>Status: </strong> 
-                <Tooltip
-                  placement="bottom-start" 
-                  title={
-                    <Box>
-                      <Typography variant="caption">
-                      {entityData?.pipeline_message || "" }
-                      </Typography><br />
-                    </Box>}>
-                  {entityData.status ? statusBadge(entityData.status) : ""}
-                  </Tooltip> 
-                </Typography>   
-            )}
-          {entityData.priority_project_list	 && (
-              <Typography variant="caption" sx={{display: "inline-block"}}>
-                <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
-                  ? entityData.priority_project_list.join(", ")
-                  : entityData.priority_project_list?.[0]}
-              </Typography>   
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
-          {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
-            <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
-          )}
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>   
-        </Grid>
+      <Grid item xs={6} className="entityDataHead" >
+        <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
+        {entityData.status && (
+          <Typography><strong>Status: </strong> 
+            <Tooltip
+              placement="bottom-start" 
+              title={
+                <Box>
+                  <Typography variant="caption">
+                  {entityData?.pipeline_message || "" }
+                  </Typography><br />
+                </Box>}>
+              {entityData.status ? statusBadge(entityData.status) : ""}
+            </Tooltip> 
+          </Typography>   
+        )}
+        {entityData.priority_project_list	 && (
+          <Typography variant="caption" sx={{display: "inline-block"}}>
+            <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
+              ? entityData.priority_project_list.join(", ")
+              : entityData.priority_project_list?.[0]}
+          </Typography>   
+        )}
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
+        {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
+          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+        )}
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
+        {/* {revisionLinksTime(entityData)} */}
+      </Grid>
     ) 
   }else{
     return (
@@ -403,22 +460,29 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
+      <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
+        {revisionLinksTime(entityData)}
+      </Box>
       {globusURL&& (
-        <Typography className="pb-1">
-          <strong><big>
-            <a href={globusURL}
-              target='_blank'
-              rel='noopener noreferrer'>   
-                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
-                  <>Open data repository {" "}</>
-                )}
-                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
-                  <>To add or modify data files go to the data repository {" "}</>
-                )}
-                <OpenInNewIcon />
-            </a>
-          </big></strong>
-        </Typography>
+        <Alert 
+          severity="info" 
+          sx={{ width: "100%", marginBottom:"15px", border:"1px solid #00003305" }}
+          iconMapping={{info: <OpenInNewIcon style={{fontSize: "2em"}} />}}>
+          <Typography className="pb-1">
+            <strong><big>
+              <a href={globusURL}
+                target='_blank'
+                rel='noopener noreferrer'>   
+                  {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
+                    <>Open data repository {" "}</>
+                  )}
+                  {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                    <>To add or modify data files go to the data repository {" "}</>
+                  )}
+              </a>
+            </big></strong>
+          </Typography>
+        </Alert>
       )}
       {permissions.has_write_priv && HIPPATypes.includes(entityData.entity_type) &&(
         <HIPPA />
@@ -426,13 +490,12 @@ function infoPanels(entityData,permissions,globusURL){
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
         // They might not have write access but not because of data_access_level
         <Alert severity="warning" 
-          iconMapping={{warning: <WarningIcon style={{fontSize: "2em"}} />}}
+          iconMapping={{warning: <VpnLockIcon style={{fontSize: "2em"}} />}}
           sx={{
-            // minHeight: "100%",
             minWidth: "100%",
-            padding: "10px"
-          }}>
-          This entity is no longer editable. It was locked when it became publicly
+            padding: "10px",
+            border:"1px solid #33000008"
+          }}>This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
       )}
@@ -455,12 +518,14 @@ function infoPanels(entityData,permissions,globusURL){
             padding: "0px",
           }}
           iconMapping={{
-            warning: <WarningIcon style={{fontSize: "2em"}} />
+            warning: <UpdateDisabledIcon style={{fontSize: "2em"}} />
           }} >
           You do not have permission to modify this item.
         </Alert>
       )}
-     
+      {/* <Box sx={{textAlign: "right"  }}>
+        {revisionLinksTime(entityData)}
+      </Box> */}
     </Grid>
   )
 }
