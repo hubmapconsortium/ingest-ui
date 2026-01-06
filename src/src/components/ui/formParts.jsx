@@ -353,7 +353,7 @@ function revisionLinksTime(entityData){
         className="tiltRightIcon"
         variant="caption" >
           <UpdateIcon className="revisionNextIcon iconEffect" sx={{marginRight: "5px"}}/>
-          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong>
+          This {entityData.entity_type} has a <strong><a target="_blank" href={"dataset/"+entityData.next_revision_uuid}> next version</a> </strong>
       </Typography>   
     )}
     {entityData.previous_revision_uuid &&(
@@ -363,7 +363,7 @@ function revisionLinksTime(entityData){
         variant="caption" 
         sx={{display: "inline-block", width: "100%"}}>
           <UpdateIcon className="revisionPrevIcon iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
-          This dataset has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong>
+          This {entityData.entity_type} has a <strong><a target="_blank" href={"dataset/"+entityData.previous_revision_uuid}> previous version</a> </strong>
       </Typography>   
     )}
   </>)
