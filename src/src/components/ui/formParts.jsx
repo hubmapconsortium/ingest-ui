@@ -429,7 +429,6 @@ function topHeader(entityData, entityType){
           <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
         )}
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
-        {/* {revisionLinksTime(entityData)} */}
       </Grid>
     ) 
   }else{
@@ -462,7 +461,7 @@ function infoPanels(entityData,permissions,globusURL){
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
       <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
-        {revisionLinksTime(entityData)}
+        {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
       {globusURL&& (
         <Alert 
@@ -525,7 +524,6 @@ function infoPanels(entityData,permissions,globusURL){
         </Alert>
       )}
       {/* <Box sx={{textAlign: "right"  }}>
-        {revisionLinksTime(entityData)}
       </Box> */}
     </Grid>
   )
