@@ -347,13 +347,14 @@ function newBadge(type){
 function revisionLinksTime(entityData){
   console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
   const fauxHrefStyle = {color:"rgb(13, 110, 253)", fontWeight:"bold", display:"inline-block", fontSize:"0.75rem"}
+  const revURLBase = entityData.entity_type ? entityData.entity_type.toLowerCase : "ERR: No Entity Type";
 
   return(<>
     {entityData.next_revision_uuid &&(
       <Typography
         component="div"
         className="tiltRightIcon hoverRiseContainer"
-        onClick={() => window.open(entityData.entity_type+"/"+entityData.next_revision_uuid, "_blank")}
+        onClick={() => window.open(revURLBase+"/"+entityData.next_revision_uuid, "_blank")}
         variant="caption" >
         <UpdateIcon className="iconEffect" sx={{marginRight: "5px"}}/>
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> next version</Typography> </strong>
@@ -362,7 +363,7 @@ function revisionLinksTime(entityData){
     {entityData.previous_revision_uuid &&(
       <Typography 
         component="div"
-        onClick={() => window.open(entityData.entity_type+"/"+entityData.previous_revision_uuid, "_blank")}
+        onClick={() => window.open(revURLBase+"/"+entityData.previous_revision_uuid, "_blank")}
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
         sx={{display: "inline-block", width: "100%"}}>
