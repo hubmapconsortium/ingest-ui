@@ -370,13 +370,12 @@ function entityIconsBasic(entity_type){
 }
 function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  let flipSides = ["Knee (Left)"]
-  let flipFix = {marginRight: "5px" }
+  let toMirror = ["Knee (Left)"]
   // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={flipSides.includes(params.value) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} >
+        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.value) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} >
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
