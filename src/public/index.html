@@ -21,7 +21,7 @@
   
   <script>
     (function() {
-      var t=Math.floor(Date.now()/1000); // current UTC time in seconds
+      var t=Math.floor(Date.now()/10000); // current UTC time in milliseconds
       var s=document.createElement('script');
       s.src='%PUBLIC_URL%/assets/liveBanner.js?v='+t;
       s.type='text/javascript';
