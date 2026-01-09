@@ -38,7 +38,7 @@
     "react-idle-timer": "^4.6.4",
     "react-papaparse": "^3.18.1",
     "react-query": "^3.39.3",
-    "react-router-dom": "^6.2.1",
+    "react-router-dom": "^6.30.3",
     "react-select": "^5.2.1",
     "react-spinners": "^0.13.8",
     "react-tooltip": "4.2.13",
