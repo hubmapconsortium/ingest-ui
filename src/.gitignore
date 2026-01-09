@@ -53,6 +53,7 @@ src/build/*
 
 #Ignoring the local liveBanner file in Public
 src/public/assets/liveBanner.js
+src/public/assets/liveBanner.json
 
 # VS Code 
 *.code-workspace
