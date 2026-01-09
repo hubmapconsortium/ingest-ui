@@ -82,8 +82,8 @@ export function App(){
 
     // in your react app useEffect hook call the following
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
-    const url2 = '%PUBLIC_URL%/assets/liveBanner.js?v='+t;
-    fetch(url2) 
+    const bannerUrl ='/assets/liveBanner.json?v='+t;
+    fetch(bannerUrl) 
       .then(response => { 
         if (!response.ok) { 
           return {}
