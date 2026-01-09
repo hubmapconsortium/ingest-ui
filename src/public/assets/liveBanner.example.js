@@ -1,2 +1,0 @@
-var REACT_APP_BANNER_TITLE=' Title Goes here'
-var REACT_APP_BANNER_DETAILS='<strong>Format with HTML</strong> which uses tags like <Link to="https://software.docs.hubmapconsortium.org/metadata" target="_blank">this page</Link>. <br /> tags work as well. For apostrophies and quoters, please use htmlencoded values, like &#39; for an apostrophie. <br />Oh and  <a href="mailto:help@hubmapconsortium.org ">MailTO</a> Works as well.'
