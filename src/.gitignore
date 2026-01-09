@@ -45,15 +45,13 @@ src/npm-debug.log*
 src/yarn-debug.log*
 src/yarn-error.log*
 
-
-
 #ignore the ui build dir
 src/build/*
 !src/build/README.md
 
 #Ignoring the local liveBanner file in Public
-src/public/assets/liveBanner.js
-src/public/assets/liveBanner.json
+*liveBanner.json
+# src/public/assets/liveBanner.json
 
 # VS Code 
 *.code-workspace
