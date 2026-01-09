@@ -50,6 +50,7 @@ src/build/*
 !src/build/README.md
 
 #Ignoring the local liveBanner file in Public
+src/public/assets/liveBanner.json
 
 # VS Code 
 *.code-workspace
