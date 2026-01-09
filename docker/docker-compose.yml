@@ -22,7 +22,7 @@ services:
       # Mount the .env config to container
       - "../src/.env:/usr/src/app/src/.env"
       # For configurable banner message
-      - "../src/public/assets/liveBanner.js:/usr/src/app/src/build/assets/liveBanner.js"
+      - "../src/public/assets/liveBanner.json:/usr/src/app/src/build/assets/liveBanner.json"
     networks:
       - gateway_hubmap
 
