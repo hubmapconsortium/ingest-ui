@@ -79,6 +79,29 @@ export function App(){
   };
 
   useEffect(() => {
+
+    // in your react app useEffect hook call the following
+    const t = Math.floor(Date.now()/1000); // current UTC time in seconds
+    const url2 = '%PUBLIC_URL%/assets/liveBanner.js?v='+t;
+    fetch(url2) 
+      .then(response => { 
+        if (!response.ok) { 
+          return {}
+        }
+        return response.json(); 
+      })
+      .then(result => { 
+        if (result.title || result.details) {
+          setBannerTitle(result.title)
+          setBannerDetails(result.details)
+          setBannerShow(true)
+        }
+    
+      })
+      .catch(error => { 
+        console.error('There was a problem with the fetch operation:', error);
+      })
+
     gateway_api_status()
     .then((response) => {
       // If any monitored services are false, surface a friendly APIErr
@@ -340,14 +363,6 @@ export function App(){
       setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',error])
     }
     
-    // Banner Setting
-    // We'll sometimes have details & no title, 
-    // but ALWAYS have details
-    if( window.hasOwnProperty('REACT_APP_BANNER_DETAILS') && window.REACT_APP_BANNER_DETAILS!==""){
-      setBannerTitle(window.REACT_APP_BANNER_TITLE ? window.REACT_APP_BANNER_TITLE : "" );
-      setBannerDetails(window.REACT_APP_BANNER_DETAILS);
-      setBannerShow(true)
-    }
 
     function loadCount(){
       loadCounter++;
