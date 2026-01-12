@@ -24,7 +24,7 @@ import {
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
   COLUMN_DEF_MIXED,
-} from "./search/table_constants";
+} from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 
@@ -146,7 +146,7 @@ export function EmbeddedSearch({
 
   useEffect(() => {
     var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
-    console.debug('%c◉ searchFilterParams ', 'color:#00ff7b',searchFilterParams );
+    // console.debug('%c◉ searchFilters ', 'color:#1900FF', searchFilterParams);
     setTableLoading(true);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {

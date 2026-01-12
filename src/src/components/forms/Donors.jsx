@@ -1,17 +1,17 @@
 import React, {useEffect, useState} from "react";
 import {useParams, useNavigate} from "react-router-dom";
-import {ingest_api_allowable_edit_states} from "../service/ingest_api";
+import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 import {
   entity_api_get_entity,
   entity_api_update_entity,
   entity_api_create_entity,
-} from "../service/entity_api";
+} from "../../service/entity_api";
 import {
   validateRequired,
   validateProtocolIODOI,
   validateSingleProtocolIODOI
-} from "../utils/validators";
-import { humanize } from "../utils/string_helper";
+} from "../../utils/validators";
+import { humanize } from "../../utils/string_helper";
 
 import LoadingButton from "@mui/lab/LoadingButton";
 import LinearProgress from "@mui/material/LinearProgress";
@@ -24,8 +24,8 @@ import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,UserGroupSelectMenu} from "./ui/formParts";
-import { DonorFormFields,DonorFieldSet } from "./ui/fields/DonorFormFields";
+import {FormHeader,UserGroupSelectMenu} from "../ui/formParts";
+import { DonorFormFields,DonorFieldSet } from "../ui/fields/DonorFormFields";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();

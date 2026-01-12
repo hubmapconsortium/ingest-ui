@@ -3,11 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
-import { getPublishStatusColor } from "../../utils/badgeClasses";
+import { StatusBadge } from "./formParts";
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
-import Skeleton from '@mui/material/Skeleton';
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
@@ -64,11 +63,7 @@ export const COLUMN_DEF_DATASET = [
   {
     field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
-      <span
-        className={"badge " + getPublishStatusColor(params.value,"NA")}
-        style={{width: "100px"}}>
-        {params.value}
-      </span>
+        <StatusBadge status={params.value}/>
       )
   },{
     field: 'uuid', headerName: 'Data', width: 100,
@@ -102,12 +97,8 @@ export const COLUMN_DEF_DATASET_MINI = [
   { field: 'group_name', headerName: 'Group Name', flex: 0.4},
   { field: 'status', headerName: 'Submission Status', flex: 0.3,
     renderCell: (params: ValueFormatterParams) => (
-      <span
-        className={"badge " + getPublishStatusColor(params.value,"NA")}
-        style={{width: "100px",margin: "0px auto"}}>
-        {params.value}
-      </span>
-      )
+      <StatusBadge status={params.value}/>
+    )
   },
   { field: 'uuid', headerName: 'UUID', hide: true, filterable: false, sortable: false},
 ];
@@ -120,23 +111,17 @@ export const COLUMN_DEF_PUBLICATION = [
   {
  field: 'status', headerName: 'Submission Status', width: 200,
     renderCell: (params: ValueFormatterParams) => (
-      <span
-              style={{
-                width: "100px"
-              }}
-              className={"badge " + getPublishStatusColor(params.value,"NA")}>
-              {params.value}
-            </span>
-      )
+      <StatusBadge status={params.value}/>
+    )
   },
   {
  field: 'uuid', headerName: 'Data', width: 100,
   renderCell: (params: ValueFormatterParams) => (
     <React.Fragment>
       <button
-              className='btn btn-link'
-              onClick={() => handleDataClick(params.value)}>
-              <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+        className='btn btn-link'
+        onClick={() => handleDataClick(params.value)}>
+        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
       </button>                         
       </React.Fragment>
     )
@@ -145,8 +130,7 @@ export const COLUMN_DEF_PUBLICATION = [
 // UPLOADS COLUMNS
 export const COLUMN_DEF_UPLOADS = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
-  {
- field: 'title', headerName: 'Upload Name', width: 250,
+  { field: 'title', headerName: 'Upload Name', width: 250,
     renderCell: (params: ValueFormatterParams) => (
       <React.Fragment>
         <span>{params.value}</span>
@@ -155,17 +139,10 @@ export const COLUMN_DEF_UPLOADS = [
   },
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
-  {
- field: 'status', headerName: 'Submission Status', width: 160,
+  { field: 'status', headerName: 'Submission Status', width: 160,
     renderCell: (params: ValueFormatterParams) => (
-      <span
-              style={{
-                width: "100px"
-              }}
-              className={"badge " + getPublishStatusColor(params.value,"NA")}>
-              {params.value}
-            </span>
-      )
+      <StatusBadge status={params.value}/>
+    )
   },
   
  ];
@@ -302,13 +279,12 @@ export const COLUMN_DEF_MIXED = [
     renderCell: params => {
       let typeVal = getTypeValue(params)
       let entityType = params?.row?.entity_type === "Upload" ? "Data Upload" : params?.row?.entity_type
-      // console.debug('%c◉  typevalcheck', 'color:#00ff7b', entityType, typeVal, entityType === typeVal );
       if (!typeVal) {
         return nullCell()
-        // return <Skeleton sx={nullRowBarStyle} animation={false} />
-      }else if(entityType === typeVal ){
-        let icon = entityIconsBasic(entityType) // The only Dupe we SHOULD have is Donor/Donor
-        return <Typography variant="caption" sx={{color:"#dedede",}}>{icon}{typeVal}</Typography>      }
+      }else if(entityType === typeVal ){ // When the Type & Entity Type are the Same
+        let icon = entityIconsBasic(entityType) 
+        return <Typography variant="caption" sx={{color:"#dedede",}}>{icon}{typeVal}</Typography>
+      }
       return (renderFieldIcons(params) )
     }
   }, 
@@ -396,10 +372,6 @@ function shrinkCols(string){
   return stripped
 }
 
-function prettyCase(string){
-  return "YES "+toTitleCase(string)
-}
-
 function getLabId(params: ValueGetterParams) {
  // console.debug('params:', params.row)
   try {
@@ -431,11 +403,7 @@ function renderStatusAccess(params: ValueFormatterParams) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
   if (params.value[0]==="status") {
     return (
-      <span
-        className={"badge " + getPublishStatusColor(params.value[1],"NA")}
-        style={{width: "100px"}}>
-        {params.value[1]}
-      </span>
+      <StatusBadge status={params.value}/>
     )
   }else{
     return (params.value[1])
@@ -474,12 +442,4 @@ function handleOpenPage(e,dataset_uuid) {
   e.preventDefault()    
   let url = `${process.env.REACT_APP_URL}/dataset/${dataset_uuid}/`
   window.open(url, "_blank");
-}
-
-function groupNames(entity) {
-  let unique_values = [
-    ...new Set(entity.datasets.map((entity) => entity.group_name)),
-  ];
-  return unique_values;
-  
 }

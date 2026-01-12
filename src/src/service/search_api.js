@@ -119,9 +119,7 @@ export function search_api_filter_es_query_builder(
       )
     );
   } else {
-
     // FIELD PROCESSING
-
     // Group
     if (fields["group_name"]){
       boolQuery.must(
@@ -133,7 +131,6 @@ export function search_api_filter_es_query_builder(
         esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
       );
     }
-
     // Specimen Types
     if (fields["sample_category"]){
       // console.debug("sample_category", fields["sample_category"]);
@@ -145,19 +142,15 @@ export function search_api_filter_es_query_builder(
         boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
       }
     } 
-    
     // Organ
     else if (fields["organ"]){
       boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
     } 
-    
     // Entity Type
     else if (fields["entity_type"]){
-
       if(["Data Upload"].includes(fields["entity_type"])){
         fields["entity_type"] = "Upload";
       }
-
       if (fields["entity_type"] === "DonorSample"){
         // hack to deal with no type selected from the UI, this clues from the donor/sample filer
         boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
@@ -167,7 +160,6 @@ export function search_api_filter_es_query_builder(
         );
       }
     }
-    
     // Default all entity types
     else {
       boolQuery.must(
@@ -178,7 +170,6 @@ export function search_api_filter_es_query_builder(
       ); // default everything ; this maybe temp
     }
   }
-
   // Status
   if (fields["status"]){
     console.debug('%c◉ HAVE STATUS ', 'color:#00ff7b', fields["status"]);
