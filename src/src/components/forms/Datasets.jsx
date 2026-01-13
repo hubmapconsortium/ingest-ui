@@ -15,7 +15,7 @@ import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
 import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
 import { validateRequired } from "../../utils/validators";
-import { entity_api_get_entity, entity_api_update_entity } from "../../service/entity_api";
+import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../../service/entity_api";
 import { 
   ingest_api_allowable_edit_states, 
   ingest_api_create_dataset, 
@@ -48,6 +48,7 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({});
   let [errorMessages, setErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [globusPath, setGlobusPath] = useState(null);
   let [readOnlySources, setReadOnlySources] = useState(false);
   let [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   let [entityValidation, setEntityValidation] = useState({
@@ -117,7 +118,7 @@ export const DatasetForm = (props) => {
   ], []);
 
   const memoizedFormHeader = useMemo(
-    () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} />, [uuid, entityData, permissions]
+    () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} globusURL={globusPath?globusPath:null} />, [uuid, entityData, permissions]
   );
 
   useEffect(() => {
@@ -149,6 +150,12 @@ export const DatasetForm = (props) => {
                 ingest_task: entityData.ingest_task || "",
                 assigned_to_group_name: entityData.assigned_to_group_name || ""
               });
+              entity_api_get_globus_url(entityData.uuid)
+                .then((res) => {
+                  if(res && res.status === 200){
+                    setGlobusPath(res.results);
+                  }
+                })
               setBulkSelection({
                 uuids: entityData.direct_ancestors.map(obj => obj.uuid),
                 data: entityData.direct_ancestors
