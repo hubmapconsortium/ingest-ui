@@ -214,7 +214,7 @@ export function Search({
     setPageSize(pageInfo.pageSize);
   }, []);
 
-  const onCellClickHandler = useCallback((event, params, details) => {
+  const onCellClickHandler = useCallback((params, event, details) => {
     return handleTableCellClickDefault(params, event, details);
   }, [handleTableCellClickDefault]);
 
