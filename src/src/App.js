@@ -40,7 +40,7 @@ import {RenderMetadata} from "./components/metadata";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
-import {NewSearch} from "./components/Search";
+import {Search} from "./components/Search";
 import {DonorForm} from "./components/forms/Donors";
 import {UploadForm} from "./components/forms/Uploads";
 import {SampleForm} from "./components/forms/Samples";
@@ -615,20 +615,20 @@ export function App(){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route path="/" element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
-                    <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
-                      <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route path="dataset" element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}

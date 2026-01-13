@@ -43,7 +43,7 @@ import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
  
-export function NewSearch({
+export function Search({
   searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
