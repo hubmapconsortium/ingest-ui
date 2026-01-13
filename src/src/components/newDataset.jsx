@@ -109,7 +109,7 @@ export const DatasetForm = (props) => {
     {
       id: "group_uuid",
       label: "Group",
-      helperText: (uuid?.length<=0 || uuid === undefined || uuid === null) ? "" : `Select the group for this dataset.`,
+      helperText: (uuid?.length<=0 || uuid === undefined || uuid === null) ? `Select the group for this dataset.` : "",
       required: true,
       type: "select", 
       writeEnabled: (uuid?.length<=0 || uuid === undefined || uuid === null) ? true : false,
