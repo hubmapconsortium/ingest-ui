@@ -99,10 +99,11 @@ export function ubkg_api_get_dataset_type_set() {
   return axios
     .get(url)
       .then(res => {
-        const newDataArray = [...new Set(
-          res.data.flatMap(item => item.assaytypes || [])
-        )].map(assay => ({ value: assay, label: assay }));
-        return newDataArray;
+        // const newDataArray = [...new Set(
+        //   res.data.flatMap(item => item.assaytypes || [])
+        // )].map(assay => ({ value: assay, label: assay })); 
+        // return newDataArray;
+        return res.data;
       })
       .catch(error => {
         captureError(error);
