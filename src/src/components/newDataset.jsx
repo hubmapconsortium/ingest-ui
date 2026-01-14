@@ -282,16 +282,11 @@ export const DatasetForm = (props) => {
         ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
         ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task})
       };
+      // console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
         let target = e.target.name;
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: true } }));
-        console.group("handleSave");
-          // console.log("handleSave");
-          console.log("cleanForm ", cleanForm);
-          // console.log("CHGS_val ", CHGS_val);
-          console.log("form.contains_human_genetic_sequences ",form.contains_human_genetic_sequences);
-          console.log("cleanForm.contains_human_genetic_sequences ",cleanForm.contains_human_genetic_sequences);
-        console.groupEnd();
+        // console.log("handleSave", target);
         entity_api_update_entity(uuid, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
