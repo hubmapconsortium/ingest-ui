@@ -255,7 +255,7 @@ export const DatasetForm = (props) => {
     let selectedUUIDs = bulkSelection.data.map(obj => obj.uuid);
     let cleanForm = {
       lab_dataset_id: form.lab_dataset_id,
-      contains_human_genetic_sequences: form.contains_human_genetic_sequences === "yes",
+      contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
       description: form.description,
       dataset_info: form.dataset_info,
       direct_ancestor_uuids: selectedUUIDs,
@@ -276,7 +276,7 @@ export const DatasetForm = (props) => {
       let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
       let cleanForm = {
         lab_dataset_id: form.lab_dataset_id,
-        contains_human_genetic_sequences: form.contains_human_genetic_sequences === "yes" ? true : false,
+        contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
         description: form.description,
         dataset_info: form.dataset_info,
         direct_ancestor_uuids: selectedUUIDs,
@@ -454,7 +454,6 @@ export const DatasetForm = (props) => {
               message: "Process Error - "+statusText+" "+submitErrorResponse,
               status: "error"
             });
-            // console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
           }
         })
         .catch((error) => {
@@ -463,6 +462,7 @@ export const DatasetForm = (props) => {
             message: "Process Error - "+error.toString(),
             status: "error"
           });
+          setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: false } }));
         });
             
   }
