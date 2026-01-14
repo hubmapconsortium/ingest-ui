@@ -63,6 +63,7 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
+  var[showFullError, setShowFullError] = useState(false);
   
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
@@ -592,7 +593,12 @@ export function App(){
                 {APIErr[3] && (
                   <>{APIErr[3]}: {APIErr[0]}</>
                 )}
-                {APIErr[1]}&nbsp;{APIErr[2]}
+                Render full error details? <IconButton color="error" size="small" onClick={()=>setShowFullError(!showFullError)}> <ExpandMoreIcon /></IconButton>
+                <Collapse in={showFullError}>
+                  {APIErr[1]}&nbsp;{APIErr[2]}
+                  {APIErr.toString()}
+                </Collapse>
+                
               </Alert>
             )}
 
