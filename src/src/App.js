@@ -18,6 +18,7 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
@@ -74,6 +75,15 @@ export function App(){
   var[bannerDetails,setBannerDetails] = useState();
   var[bannerShow,setBannerShow] = useState(false);
 
+  // Error Query Bits
+  var[errorShow,setErrorShow] = useState(false);
+  var[errorInfo,setErrorInfo] = useState("");
+  var[errorInfoShow,setErrorInfoShow] = useState(false);
+  var[errorDetail, setErrorDetail] = useState({});
+
+  // API Error Bits 
+  var[showFullError, setShowFullError] = useState(false);
+
   window.onstorage = (event) => {
     console.log("onstorage Storage Event!", event);
   };
@@ -104,29 +114,29 @@ export function App(){
       })
 
     gateway_api_status()
-    .then((response) => {
-      // If any monitored services are false, surface a friendly APIErr
-      if (response && response.results) {
-        const toTitle = (key) =>key
-          .split('_')
-          .map(w => (w.toUpperCase() === 'API' ? 'API' : w.charAt(0).toUpperCase() + w.slice(1)))
-          .join(' ');
-        const downServices = Object.entries(response.results)
-            .filter(([key, val]) => !val) // treat falsy as "down"
-            .map(([key]) => toTitle(key));
-        if (downServices.length > 0) {
-          setAPIErr([
-            "There is currently a service disruption detected for: ",
-            downServices.join(", "),
-            "If you encounter instability, please try again later, or contact help@hubmapconsortium.org",
-            "Service Instability"
-          ]);
+      .then((response) => {
+        // If any monitored services are false, surface a friendly APIErr
+        if (response && response.results) {
+          const toTitle = (key) =>key
+            .split('_')
+            .map(w => (w.toUpperCase() === 'API' ? 'API' : w.charAt(0).toUpperCase() + w.slice(1)))
+            .join(' ');
+          const downServices = Object.entries(response.results)
+              .filter(([key, val]) => !val) // treat falsy as "down"
+              .map(([key]) => toTitle(key));
+          if (downServices.length > 0) {
+            setAPIErr([
+              "There is currently a service disruption detected for: ",
+              downServices.join(", "),
+              "If you encounter instability, please try again later, or contact help@hubmapconsortium.org",
+              "Service Instability"
+            ]);
+          }
         }
-      }
-    })
-    .catch((error) => {
-      console.error("gateway_api_status ERROR", error);
-    });
+      })
+      .catch((error) => {
+        console.error("gateway_api_status ERROR", error);
+      });
 
     var loadCounter = 0;
     let url = new URL(window.location.href);
@@ -148,25 +158,71 @@ export function App(){
         .then((res) => {
           loadCount() // the Organ step
           // lets also save the organ-image mapping
-          let organIcons = OrganDetails();
-          localStorage.setItem("organ_icons", JSON.stringify(organIcons));
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
-            // setOrganList(res); // TODO: Eventually remove & use localstorage
+            localStorage.setItem("organ_icons", JSON.stringify(OrganDetails()));
           }else{
+            console.debug('%c◉ Undefined Caught! ', 'color:#00ff7b', );
             // Not cached, we cant really go on
-            setAPIErr(["UBKG API : Organ",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',res])
+            setAPIErr(["UBKG API : Organ",' No local ORGAN data was found. Please try logging out and back in, or trying again later. If this error persists, contact help@hubmapconsortium.org',res])
             // reportError(res)
           } 
         })
-        .catch((err) => {
+        .catch((error) => {
           // Not cached, we cant really go on
-          setAPIErr("UBKG API Error: Organ Type Set",'No local ORGAN data was found. Please try again later, or contact help@hubmapconsortium.org',err)
+          console.debug('%c◉ Get organs ubkg_api_get_organ_type_set ERROR ','color:#E7EEFF;background: #C800FF;padding:200', error);
+          setAPIErr(["UBKG API Error: Organ Type Set",' No local ORGAN data was found, and there was an error repopulating the data. Please try logging out and back in, or trying again later. If this error persists, contact help@hubmapconsortium.org',error])
           // reportError(err)
         })
     }else{
       // we already have organs
       loadCount()
+    }
+
+    // The Full RUI details for Organs
+    if(!localStorage.getItem("organs_full")){
+      ubkg_api_get_organs_full()
+        .then((res) => {
+          if (res === undefined){
+            setAPIErr(["UBKG API Error: Organ Details",'Unable to load Organ Detail res from UBKG. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org '])
+          }else{
+            localStorage.setItem("organs_full", JSON.stringify(res));
+            let RUIOrgans = res  
+              .filter(org => org.rui_supported)
+              .map(org => org.rui_code);
+            localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
+          }
+
+        })
+        .catch((error) => {
+          console.debug('%c◉ Get FULL organs ubkg_api_get_organs_full ERROR ','color:#E7EEFF;background: #C800FF;padding:200', error);
+          setAPIErr(["UBKG API Error: Organ Details",'Error when populating Organ Detail data from UBKG. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org ', error])
+        });
+    }
+
+    if(!localStorage.getItem("dataset_types")){
+      ubkg_api_get_dataset_type_set()
+        .then((res) => {
+          loadCount() // the dataset_types step
+          if(res !== undefined){
+            localStorage.setItem("dataset_types",JSON.stringify(res));
+          }else{
+            setAPIErr(["UBKG API : Dataset Types",'No local Dataset Type data could be found and none could be fetched. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org',res])
+          }
+        })
+        .catch((error) => {
+          console.debug('%c◉  Caught error ubkg_api_get_dataset_type_set ', 'color:#E7EEFF;background: #C800FF;padding:200', );
+          setAPIErr(["UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try logging out and back in, or trying again later. If this error persists, contact help@hubmapconsortium.org ',error])
+        })
+      loadCount() // the dataset_types step
+    }else{
+      // we already have Dataset Types but they are not good
+      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
+        localStorage.removeItem("datatypes");
+        console.debug('%c◉  Malformed DT', 'color:#E7EEFF;background: #C800FF;padding:200', );
+        setAPIErr(["UBKG API Error: Dataset Types",'Local Dataset Type value storage malformed, please refresh the page to repopulate the data. If this error persists, contact help@hubmapconsortium.org '])
+        loadCount() // the dataset_types step
+      }
     }
 
     // Loads MenuMap Details
@@ -205,61 +261,17 @@ export function App(){
       }));
     }
     
-    // The Full RUI details for Organs
-    if(!localStorage.getItem("organs_full")){
-      ubkg_api_get_organs_full()
-        .then((data) => {
-          localStorage.setItem("organs_full", JSON.stringify(data));
-          let RUIOrgans = data  
-            .filter(org => org.rui_supported)
-            .map(org => org.rui_code);
-          localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
-
-        })
-        .catch(() => {
-          // console.debug("RUI_ORGAN_MAP", error, error.response);
-        });
-    }
-
-    if(!localStorage.getItem("dataset_types")){
-      ubkg_api_get_dataset_type_set()
-        .then((res) => {
-          loadCount() // the dataset_types step
-          if(res !== undefined){
-            localStorage.setItem("dataset_types",JSON.stringify(res));
-            // TODO: Eventually remove these & use localstorage
-            // setDataTypeList(res);
-            // setDataTypeListAll(res);
-          }else{
-            setAPIErr(["UBKG API : Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched  Please try again later, or contact help@hubmapconsortium.org',res])
-          }
-        })
-        .catch((err) => {
-          // Not cached, we cant really go on
-          setAPIErr("UBKG API Error: Dataset Types",'No local DATASET TYPE definitions were found and none could be fetched. Please try again later, or contact help@hubmapconsortium.org ',err)
-        })
-      loadCount() // the dataset_types step
-    }else{
-      // we already have Dataset Types but are they good
-      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
-        localStorage.removeItem("datatypes");
-      }
-      loadCount()
-    }
-
     // User Loading Bits Now
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
         // Validate our Token
         api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
           .then((results) => {
-            // console.debug('%c◉ results  ', 'color:#b300ff', results);
             loadCount() // the API token step
             if(results.error?.response && results.error.response.status){
               setExpiredKey(true);
               if(results.error.response.status ===401 ){
                 // No more message, just full cache-dump and reload
-
                 // Need to give sotrage a chance to clear,
                 setTimeout(() => {
                   purgeStorage();
@@ -304,7 +316,7 @@ export function App(){
                         // console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
                       }else{
-                        setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',res])
+                        setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try logging out and back in, or trying again later. If this error persists, contact help@hubmapconsortium.org',res])
                         // loadFailed(res)
                       }
                     })
@@ -361,9 +373,10 @@ export function App(){
       }   
     } 
     catch(error){
-      setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try again later, or contact help@hubmapconsortium.org',error])
+      setAPIErr(["User Group Data Error",'No local User Group data could be found and attempts to fetch this data have failed. Please try logging out and back in, or trying again later. If this error persists, contact help@hubmapconsortium.org',error])
     }
     
+
 
     function loadCount(){
       loadCounter++;
@@ -463,11 +476,6 @@ export function App(){
 
 
   // Error Query Bits
-  var[errorShow,setErrorShow] = useState(false);
-  var[errorInfo,setErrorInfo] = useState("");
-  var[errorInfoShow,setErrorInfoShow] = useState(false);
-  var[errorDetail, setErrorDetail] = useState({});
-
   function reportError(error, details){
     console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
     if(details){
@@ -481,6 +489,37 @@ export function App(){
     setErrorInfo(errString);
     setErrorShow(true);
     throw(error || "Unknown Error?");
+  }
+
+  // API Error bits
+  function renderAPIError(){
+    let APIError = APIErr
+    let errType = typeof APIError
+    console.debug('%c◉ APIERR DEETS ', 'background:#0073FF, color:#FFFFFF', APIError, errType);
+    return(
+      <Alert variant="filled" severity="error" icon={<SyncProblemIcon />}  >
+        {!APIErr[3] && (
+          <>API Error: {APIErr[0]}</>
+        )}
+        {APIErr[2] && (
+          <>{APIErr[2]}</>
+        )}
+        &nbsp;| Render full error details? 
+        <IconButton color="error" size="small" onClick={()=>setShowFullError(!showFullError)}> 
+          <ExpandMoreIcon 
+            sx={ 
+              showFullError ? 
+                {color:"#fff", transition: "transform 5s ease-in-out"} :
+                {color:"#fff", transition: "transform 5s ease-in-out", transform: "rotate(270deg)"}
+              } 
+          />
+          {/* <ExpandMoreIcon sx={{color:"#fff"}} /> */}
+        </IconButton>
+        <Collapse in={showFullError}>
+          {APIErr.toString()}
+        </Collapse>
+      </Alert>
+    )
   }
 
   return(
@@ -583,18 +622,9 @@ export function App(){
               </React.Fragment>
             )}
           
-            {APIErr.length > 0 && (
-              <Alert variant="filled" severity="error">
-                
-                {!APIErr[3] && (
-                  <>There was an error populating from datasource {APIErr[0]}</>
-                )}
-                {APIErr[3] && (
-                  <>{APIErr[3]}: {APIErr[0]}</>
-                )}
-                {APIErr[1]}&nbsp;{APIErr[2]}
-              </Alert>
-            )}
+            {APIErr.length > 0 && (<>
+              {renderAPIError()}
+            </>)}
 
             {unregStatus === true && (
               <Routes>
