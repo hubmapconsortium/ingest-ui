@@ -217,12 +217,12 @@ export function App(){
       loadCount() // the dataset_types step
     }else{
       // we already have Dataset Types but they are not good
-      if (!ValidateLocalStoreValue(localStorage.getItem("datatypes"))) {
-        localStorage.removeItem("datatypes");
+      if (!ValidateLocalStoreValue(localStorage.getItem("dataset_types"))) {
+        localStorage.removeItem("dataset_types");
         console.debug('%c◉  Malformed DT', 'color:#E7EEFF;background: #C800FF;padding:200', );
         setAPIErr(["UBKG API Error: Dataset Types",'Local Dataset Type value storage malformed, please refresh the page to repopulate the data. If this error persists, contact help@hubmapconsortium.org '])
-        loadCount() // the dataset_types step
       }
+      loadCount() // the dataset_types step
     }
 
     // Loads MenuMap Details
