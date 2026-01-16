@@ -692,7 +692,7 @@ export function CombinedEmbeddedEntityOptions(props){ // fOR THE
   // menuMap is stored with lowercase keys; just read it and lowercase the current form
   const menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
   const currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '').toLowerCase();
-  console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', window.location.pathname, currentForm, menuFilterMap[currentForm]);
+  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', window.location.pathname, currentForm, menuFilterMap[currentForm]);
 
   const entry = menuFilterMap[currentForm] || {};
 
