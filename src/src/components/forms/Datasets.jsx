@@ -15,7 +15,8 @@ import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
 import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
 import { validateRequired } from "../../utils/validators";
-import { entity_api_get_entity, entity_api_update_entity } from "../../service/entity_api";
+import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url } from "../../service/entity_api";
+
 import { 
   ingest_api_allowable_edit_states, 
   ingest_api_create_dataset, 
@@ -48,6 +49,7 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({});
   let [errorMessages, setErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [globusPath, setGlobusPath] = useState(null);
   let [readOnlySources, setReadOnlySources] = useState(false);
   let [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   let [entityValidation, setEntityValidation] = useState({
@@ -108,7 +110,7 @@ export const DatasetForm = (props) => {
     {
       id: "group_uuid",
       label: "Group",
-      helperText: (uuid?.length<=0 || uuid === undefined || uuid === null) ? "" : `Select the group for this dataset.`,
+      helperText: (uuid?.length<=0 || uuid === undefined || uuid === null) ? `Select the group for this dataset.` : "",
       required: true,
       type: "select", 
       writeEnabled: (uuid?.length<=0 || uuid === undefined || uuid === null) ? true : false,
@@ -117,7 +119,7 @@ export const DatasetForm = (props) => {
   ], []);
 
   const memoizedFormHeader = useMemo(
-    () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} />, [uuid, entityData, permissions]
+    () => <FormHeader entityData={uuid ? entityData : ["new", "Dataset"]} permissions={permissions} globusURL={globusPath?globusPath:null} />, [uuid, entityData, permissions]
   );
 
   useEffect(() => {
@@ -137,6 +139,7 @@ export const DatasetForm = (props) => {
               );
             } else {
               const entityData = response.results;
+              entityData.isPrimary = response.results.creation_action === "Create Dataset Activity" ? true : false; 
               setEntityData(entityData);
               setForm({
                 lab_dataset_id: entityData.lab_dataset_id,
@@ -149,6 +152,12 @@ export const DatasetForm = (props) => {
                 ingest_task: entityData.ingest_task || "",
                 assigned_to_group_name: entityData.assigned_to_group_name || ""
               });
+              entity_api_get_globus_url(entityData.uuid)
+                .then((res) => {
+                  if(res && res.status === 200){
+                    setGlobusPath(res.results);
+                  }
+                })
               setBulkSelection({
                 uuids: entityData.direct_ancestors.map(obj => obj.uuid),
                 data: entityData.direct_ancestors
@@ -247,7 +256,7 @@ export const DatasetForm = (props) => {
     let selectedUUIDs = bulkSelection.data.map(obj => obj.uuid);
     let cleanForm = {
       lab_dataset_id: form.lab_dataset_id,
-      contains_human_genetic_sequences: form.contains_human_genetic_sequences === "yes",
+      contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
       description: form.description,
       dataset_info: form.dataset_info,
       direct_ancestor_uuids: selectedUUIDs,
@@ -268,7 +277,7 @@ export const DatasetForm = (props) => {
       let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
       let cleanForm = {
         lab_dataset_id: form.lab_dataset_id,
-        contains_human_genetic_sequences: form.contains_human_genetic_sequences === "yes" ? true : false,
+        contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
         description: form.description,
         dataset_info: form.dataset_info,
         direct_ancestor_uuids: selectedUUIDs,
@@ -446,7 +455,6 @@ export const DatasetForm = (props) => {
               message: "Process Error - "+statusText+" "+submitErrorResponse,
               status: "error"
             });
-            // console.debug("entity_api_get_entity RESP NOT 200", response.status, response);
           }
         })
         .catch((error) => {
@@ -455,6 +463,7 @@ export const DatasetForm = (props) => {
             message: "Process Error - "+error.toString(),
             status: "error"
           });
+          setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: false } }));
         });
             
   }
@@ -462,12 +471,6 @@ export const DatasetForm = (props) => {
   const buttonEngine = () => {
     return (<>
       <Box sx={{ textAlign: "right" }}>
-        <LoadingButton
-          variant="contained"
-          className="m-2"
-          onClick={() => navigate("/")}>
-          Cancel
-        </LoadingButton>
         {/* NEW, INVALID, REOPENED, ERROR, SUBMITTED */}
         {!uuid && (
           <LoadingButton
@@ -484,7 +487,7 @@ export const DatasetForm = (props) => {
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/* NEW, SUBMITTED */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && entityData.isPrimary && (
           <LoadingButton
             loading={loading.button.process}
             name="process"
@@ -494,7 +497,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && entityData.isPrimary && (["new", "submitted"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -534,6 +537,12 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
+        <LoadingButton
+          variant="contained"
+          className="m-2"
+          onClick={() => navigate("/")}>
+          Cancel
+        </LoadingButton>
       </Box>
     </>);
   };
