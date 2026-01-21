@@ -40,14 +40,14 @@ import {RenderMetadata} from "./components/metadata";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
-import {NewSearch} from "./components/newSearch";
-import {DonorForm} from "./components/newDonor";
-import {UploadForm} from "./components/newUpload";
-import {SampleForm} from "./components/newSample";
-import {PublicationForm} from "./components/newPublication";
-import {DatasetForm} from "./components/newDataset";
-import {CollectionForm} from "./components/newCollection";
-import {EPICollectionForm} from "./components/newEpicollection";
+import {Search} from "./components/Search";
+import {DonorForm} from "./components/forms/Donors";
+import {UploadForm} from "./components/forms/Uploads";
+import {SampleForm} from "./components/forms/Samples";
+import {PublicationForm} from "./components/forms/Publications";
+import {DatasetForm} from "./components/forms/Datasets";
+import {CollectionForm} from "./components/forms/Collections";
+import {EPICollectionForm} from "./components/forms/Epicollections";
 
 import NotFound from "./components/404";
 
@@ -63,6 +63,7 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
+  var[showFullError, setShowFullError] = useState(false);
   
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
@@ -499,7 +500,7 @@ export function App(){
           logout={Logout}
           userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
-        { !userDev && (<Timer logout={Logout}/>)}
+        <Timer logout={Logout}/>
         <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
@@ -592,7 +593,12 @@ export function App(){
                 {APIErr[3] && (
                   <>{APIErr[3]}: {APIErr[0]}</>
                 )}
-                {APIErr[1]}&nbsp;{APIErr[2]}
+                Render full error details? <IconButton color="error" size="small" onClick={()=>setShowFullError(!showFullError)}> <ExpandMoreIcon /></IconButton>
+                <Collapse in={showFullError}>
+                  {APIErr[1]}&nbsp;{APIErr[2]}
+                  {APIErr.toString()}
+                </Collapse>
+                
               </Alert>
             )}
 
@@ -615,20 +621,20 @@ export function App(){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route path="/" element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
-                    <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
-                      <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route path="dataset" element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
