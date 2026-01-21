@@ -9,21 +9,22 @@ import Grid from '@mui/material/Grid';
 import LinearProgress from "@mui/material/LinearProgress";
 import Snackbar from '@mui/material/Snackbar';
 import { useNavigate, useParams } from "react-router-dom";
-import { BulkSelector } from "./ui/bulkSelector";
-import { FormHeader, TaskAssignment } from "./ui/formParts";
-import { DatasetFormFields } from "./ui/fields/DatasetFormFields";
-import {RevertFeature} from "../utils/revertModal";
-import { humanize } from "../utils/string_helper";
-import { validateRequired } from "../utils/validators";
-import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../service/entity_api";
+import { BulkSelector } from "../ui/bulkSelector";
+import { FormHeader, TaskAssignment } from "../ui/formParts";
+import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
+import {RevertFeature} from "../../utils/revertModal";
+import { humanize } from "../../utils/string_helper";
+import { validateRequired } from "../../utils/validators";
+import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url } from "../../service/entity_api";
+
 import { 
   ingest_api_allowable_edit_states, 
   ingest_api_create_dataset, 
   ingest_api_validate_entity,
   ingest_api_pipeline_test_submit,
   ingest_api_dataset_submit,
-  ingest_api_notify_slack} from "../service/ingest_api";
-import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "./ui/formParts";
+  ingest_api_notify_slack} from "../../service/ingest_api";
+import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "../ui/formParts";
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
@@ -138,6 +139,7 @@ export const DatasetForm = (props) => {
               );
             } else {
               const entityData = response.results;
+              entityData.isPrimary = response.results.creation_action === "Create Dataset Activity" ? true : false; 
               setEntityData(entityData);
               setForm({
                 lab_dataset_id: entityData.lab_dataset_id,
@@ -469,12 +471,6 @@ export const DatasetForm = (props) => {
   const buttonEngine = () => {
     return (<>
       <Box sx={{ textAlign: "right" }}>
-        <LoadingButton
-          variant="contained"
-          className="m-2"
-          onClick={() => navigate("/")}>
-          Cancel
-        </LoadingButton>
         {/* NEW, INVALID, REOPENED, ERROR, SUBMITTED */}
         {!uuid && (
           <LoadingButton
@@ -491,7 +487,7 @@ export const DatasetForm = (props) => {
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/* NEW, SUBMITTED */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && entityData.isPrimary && (
           <LoadingButton
             loading={loading.button.process}
             name="process"
@@ -501,7 +497,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && entityData.isPrimary && (["new", "submitted"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -541,6 +537,12 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
+        <LoadingButton
+          variant="contained"
+          className="m-2"
+          onClick={() => navigate("/")}>
+          Cancel
+        </LoadingButton>
       </Box>
     </>);
   };

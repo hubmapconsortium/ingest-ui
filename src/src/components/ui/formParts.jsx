@@ -8,7 +8,6 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
-import WarningIcon from '@mui/icons-material/Warning';
 import {Typography} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -38,7 +37,6 @@ import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import {BoltRounded} from "@mui/icons-material";
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
 import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
@@ -96,6 +94,7 @@ export function IconSelection(entity_type,status){
 
 // Returns the badge class associated with provided status
 export function badgeClass(status){
+  // console.debug('%c◉ badgeClass status ', 'color:#00ff7b', status);
   var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
@@ -320,9 +319,12 @@ function noteWrap(note){
 }
 
 // Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
-function statusBadge(status){
+export function StatusBadge(status){
+  if (typeof status !== "string" && status.status){
+    status = status.status.toString() ;
+  }
   return (
-    <Chip sx={{fontWeight: "bold"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
+    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
 
@@ -412,7 +414,7 @@ function topHeader(entityData, entityType){
                   {entityData?.pipeline_message || "" }
                   </Typography><br />
                 </Box>}>
-              {entityData.status ? statusBadge(entityData.status) : ""}
+              {entityData.status ? StatusBadge(entityData.status) : ""}
             </Tooltip> 
           </Typography>   
         )}
@@ -677,8 +679,7 @@ export function handleSortOrgans(organList){
   return sortedMap;
 };
 
-
-export function CombinedEmbeddedEntityOptions(props){ // fOR THE 
+export function CombinedEmbeddedEntityOptions(props){ 
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",

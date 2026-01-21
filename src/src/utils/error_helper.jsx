@@ -68,9 +68,6 @@ export const RenderPageError = (errorObj) => {
   );
 }
 
-// ERR TABLE
-// const isUnacceptable = (code) => code === 406
-
 export const getErrorList = (details) => {
     console.debug('%c⊙ getErrorList', 'color:#00ff7b', details);
     let data = []

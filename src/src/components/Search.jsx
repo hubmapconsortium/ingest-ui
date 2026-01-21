@@ -37,17 +37,16 @@ import {
   COLUMN_DEF_PUBLICATION,
   COLUMN_DEF_UPLOADS,
   COLUMN_DEF_MIXED,
-} from "./search/table_constants";
+} from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
 import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
-
-export function NewSearch({
+ 
+export function Search({
   searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
-  modecheck,
 }){
 
   // TABLE & FILTER VALUES
@@ -215,7 +214,7 @@ export function NewSearch({
     setPageSize(pageInfo.pageSize);
   }, []);
 
-  const onCellClickHandler = useCallback((event, params, details) => {
+  const onCellClickHandler = useCallback((params, event, details) => {
     return handleTableCellClickDefault(params, event, details);
   }, [handleTableCellClickDefault]);
 

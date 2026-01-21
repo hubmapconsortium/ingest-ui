@@ -41,14 +41,14 @@ import {RenderMetadata} from "./components/metadata";
 import {RenderBulk} from "./components/bulk";
 
 // The New Forms
-import {NewSearch} from "./components/newSearch";
-import {DonorForm} from "./components/newDonor";
-import {UploadForm} from "./components/newUpload";
-import {SampleForm} from "./components/newSample";
-import {PublicationForm} from "./components/newPublication";
-import {DatasetForm} from "./components/newDataset";
-import {CollectionForm} from "./components/newCollection";
-import {EPICollectionForm} from "./components/newEpicollection";
+import {Search} from "./components/Search";
+import {DonorForm} from "./components/forms/Donors";
+import {UploadForm} from "./components/forms/Uploads";
+import {SampleForm} from "./components/forms/Samples";
+import {PublicationForm} from "./components/forms/Publications";
+import {DatasetForm} from "./components/forms/Datasets";
+import {CollectionForm} from "./components/forms/Collections";
+import {EPICollectionForm} from "./components/forms/Epicollections";
 
 import NotFound from "./components/404";
 
@@ -64,6 +64,7 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
+  var[showFullError, setShowFullError] = useState(false);
   
   var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
@@ -493,9 +494,6 @@ export function App(){
 
   // API Error bits
   function renderAPIError(){
-    let APIError = APIErr
-    let errType = typeof APIError
-    console.debug('%c◉ APIERR DEETS ', 'background:#0073FF, color:#FFFFFF', APIError, errType);
     return(
       <Alert variant="filled" severity="error" icon={<SyncProblemIcon />}  >
         {!APIErr[3] && (
@@ -509,11 +507,10 @@ export function App(){
           <ExpandMoreIcon 
             sx={ 
               showFullError ? 
-                {color:"#fff", transition: "transform 5s ease-in-out"} :
-                {color:"#fff", transition: "transform 5s ease-in-out", transform: "rotate(270deg)"}
+                {color:"#fff", transition: "transform 500ms ease-in-out"} :
+                {color:"#fff", transition: "transform 500ms ease-in-out", transform: "rotate(270deg)"}
               } 
           />
-          {/* <ExpandMoreIcon sx={{color:"#fff"}} /> */}
         </IconButton>
         <Collapse in={showFullError}>
           {APIErr.toString()}
@@ -538,7 +535,7 @@ export function App(){
           logout={Logout}
           userDataGroups={JSON.parse(localStorage.getItem("userGroups") ? localStorage.getItem("userGroups") : null)}
           appInfo={JSON.parse(localStorage.getItem("info"))}/>       
-        { !userDev && (<Timer logout={Logout}/>)}
+        <Timer logout={Logout}/>
         <div id="content" className="container">
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
@@ -645,20 +642,20 @@ export function App(){
                   {/* {() => renderSuccessDialog()} */}
                   <Routes>
                       
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route path="/" element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
-                    <Route path='/newSearch' element={ <NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                    <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
 
                     <Route path="/new">
-                      <Route index element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
                       <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
                       <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<NewSearch urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+                      <Route path="dataset" element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                       <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
                       <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
                       {/* In Develpment here */}
