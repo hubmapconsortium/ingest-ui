@@ -14,9 +14,20 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
+import StarIcon from '@mui/icons-material/Star';
+import SaveIcon from '@mui/icons-material/Save';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -63,10 +74,21 @@ export function Search({
   var [advancedSearch,setAdvancedSearch] = useState(false);
   const [ctrlPressed, setCtrlPressed] = useState(false);
   const urlParamsAppliedRef = useRef(false);
+  const [savedDialogOpen, setSavedDialogOpen] = useState(false);
+  const [savedSearches, setSavedSearches] = useState([]);
   if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
     // if parent provided initial filters, treat like URL-driven initial search
     urlParamsAppliedRef.current = true;
   }
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('savedSearches');
+      if (raw) setSavedSearches(JSON.parse(raw));
+    } catch (err) {
+      // ignore
+    }
+  }, []);
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -740,7 +762,6 @@ export function Search({
                     <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                     <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
                   </Box>
-
                   <Box 
                     sx={{
                       display: 'flex',
@@ -760,7 +781,14 @@ export function Search({
                     {renderStatusControls()}
                   </Box>
                 </Grid>
+                <Grid item xs={6} sx={{padding: "8px", display: 'flex', justifyContent: 'flex-start'}}>
+                  
+                  <Button startIcon={<StarIcon />} size="small" variant="link" onClick={() => openSavedDialog()} sx={{}}>
+                    Load Saved Search
+                  </Button>
+                </Grid>
 
+                
               </Grid>
                 
             </Collapse>
@@ -779,6 +807,15 @@ export function Search({
                   Clear
                 </Button>
               <Button 
+                className="m-1 HBM_DarkButton"
+                startIcon={<SaveIcon />}
+                size="large"
+                sx={{width: "40%"}}
+                variant="contained"
+                onClick={() => handleSaveSearch()}>
+                Save
+              </Button>
+              <Button 
                 className="m-1 HBM_DarkBlueButton"
                 size="large"
                 sx={{width: "70%",}}
@@ -788,6 +825,30 @@ export function Search({
                 Search
               </Button>
            </Grid>
+            {/* Saved Searches Dialog */}
+            <Dialog open={savedDialogOpen} onClose={() => closeSavedDialog()} fullWidth maxWidth="sm">
+              <DialogTitle>Saved Searches</DialogTitle>
+              <DialogContent>
+                {savedSearches && savedSearches.length > 0 ? (
+                  <List>
+                    {savedSearches.map((s, idx) => (
+                      <ListItem key={idx} secondaryAction={
+                        <IconButton edge="end" aria-label="delete" onClick={() => deleteSavedSearch(idx)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      } button onClick={() => loadSavedSearch(idx)}>
+                        <ListItemText primary={s.name} secondary={s.search || ''} />
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <div>No saved searches</div>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => closeSavedDialog()}>Close</Button>
+              </DialogActions>
+            </Dialog>
           </Grid>
         </form>
       </Box>
@@ -879,6 +940,75 @@ export function Search({
     // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
   };
+
+  // Saved Searches: helpers
+  function applyParamsFromSearchString(searchString){
+    try{
+      if(!searchString) return;
+      const qs = searchString.startsWith('?') ? searchString : (searchString.startsWith(window.location.origin) ? new URL(searchString).search : '?'+searchString);
+      const params = new URLSearchParams(qs);
+      const entries = Array.from(params.entries());
+      const paramsObj = Object.fromEntries(entries);
+
+      // map to formFilters similar to URL effect
+      const newForm = { ...formFilters };
+      if (paramsObj.keywords) newForm.keywords = paramsObj.keywords;
+      if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
+      if (paramsObj.entity_type) newForm.entity_type = paramsObj.entity_type;
+      if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
+
+      // status handling
+      const statusParams = params.getAll('status');
+      if (statusParams && statusParams.length > 0) {
+        const statusList = statusParams.flatMap((s) => s.split(',')).map((s) => s.trim()).filter(Boolean);
+        if (statusList.length > 0) {
+          setChipSelect(statusList);
+          paramsObj.status = statusList;
+        }
+      } else {
+        setChipSelect([]);
+      }
+
+      setFormFilters(newForm);
+      // push URL and trigger search
+      const newUrl = window.location.pathname + (qs.startsWith('?') ? qs : '?'+qs);
+      window.history.pushState({}, "", newUrl);
+      setPage(0);
+      setSearchFiltersState(paramsObj);
+      if(paramsObj.target_field || paramsObj.status) setAdvancedSearch(true);
+    }catch(err){
+      // ignore
+    }
+  }
+
+  function handleSaveSearch(){
+    // Save current window.search (including params) with a user-provided name
+    const searchString = window.location.search || '';
+    const name = window.prompt('Name for saved search:');
+    if(!name) return;
+    const entry = { name: name, search: searchString };
+    const updated = [entry, ...savedSearches];
+    setSavedSearches(updated);
+    try{ localStorage.setItem('savedSearches', JSON.stringify(updated)); }catch(err){}
+    // open dialog to show saved list
+    setSavedDialogOpen(true);
+  }
+
+  function openSavedDialog(){ setSavedDialogOpen(true); }
+  function closeSavedDialog(){ setSavedDialogOpen(false); }
+
+  function loadSavedSearch(idx){
+    const entry = savedSearches[idx];
+    if(!entry) return;
+    applyParamsFromSearchString(entry.search);
+    setSavedDialogOpen(false);
+  }
+
+  function deleteSavedSearch(idx){
+    const updated = savedSearches.filter((_,i) => i !== idx);
+    setSavedSearches(updated);
+    try{ localStorage.setItem('savedSearches', JSON.stringify(updated)); }catch(err){}
+  }
 
   return renderView();
 
