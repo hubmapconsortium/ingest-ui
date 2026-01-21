@@ -34,7 +34,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import {CombinedWholeEntityOptions,badgeClass} from "./ui/formParts";
+import {CombinedWholeEntityOptions,badgeClass, SavedSearchDialog} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
@@ -643,6 +643,40 @@ export function Search({
     )
   }
 
+  function renderSavedSearchInterface(){
+    
+    return(
+      <FormControl sx={{width: "100%", marginTop:"10px"}} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroup" >
+          <StarIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex", paddingRight:"10px"}}> Saved Searches | </Typography>  
+          <Typography 
+            variant="caption" 
+            onClick={() => openSavedDialog()} 
+            id="saved_search_label" 
+            sx={{
+              color: "#fff", 
+              cursor:"pointer",
+              backgroundColor: "#cccccc40",
+              color: "#fff",
+              padding: "2px 6px",
+              borderRadius: "8px",
+              marginRight: "5px",
+              border: "1px solid #ccc",
+              display: "inline-flex",
+                '&:hover': {
+                boxShadow: `0 0 6px #cccccc60`,
+                backgroundColor: `#cccccc60`,
+              },
+            }}>
+              Manage
+            </Typography>
+        </Box>
+      </FormControl>
+    )
+  }
+
+
   function renderTargetField(){
     const targetOptions = ES_SEARCHABLE_FIELDS.map((f) => {
       const clean = f.replace(/\.keyword$/i, "").replace(/[._]/g, " ");
@@ -756,6 +790,7 @@ export function Search({
               <Grid container sx={{display: "flex", marginTop: "16px"}}>
                 <Grid item xs={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
+                  {renderSavedSearchInterface()}
                 </Grid>
                 <Grid item xs={6} sx={{padding: "4px"}}>
                   <Box className="searchFieldLabel" id="SearchLabelGroiup" >
@@ -777,24 +812,12 @@ export function Search({
                       border: "thick double solid #ccc",
                       width: "100%"
                     }}>
-
                     {renderStatusControls()}
                   </Box>
                 </Grid>
-                <Grid item xs={6} sx={{padding: "8px", display: 'flex', justifyContent: 'flex-start'}}>
-                  
-                  <Button startIcon={<StarIcon />} size="small" variant="link" onClick={() => openSavedDialog()} sx={{}}>
-                    Load Saved Search
-                  </Button>
-                </Grid>
-
-                
               </Grid>
-                
             </Collapse>
-
             <Grid container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
-              {/* <Grid item xs={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
                   startIcon={<ClearIcon />}
@@ -807,7 +830,7 @@ export function Search({
                   Clear
                 </Button>
               <Button 
-                className="m-1 HBM_DarkButton"
+                className="m-1 HBM_LightButton"
                 startIcon={<SaveIcon />}
                 size="large"
                 sx={{width: "40%"}}
@@ -826,29 +849,13 @@ export function Search({
               </Button>
            </Grid>
             {/* Saved Searches Dialog */}
-            <Dialog open={savedDialogOpen} onClose={() => closeSavedDialog()} fullWidth maxWidth="sm">
-              <DialogTitle>Saved Searches</DialogTitle>
-              <DialogContent>
-                {savedSearches && savedSearches.length > 0 ? (
-                  <List>
-                    {savedSearches.map((s, idx) => (
-                      <ListItem key={idx} secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => deleteSavedSearch(idx)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      } button onClick={() => loadSavedSearch(idx)}>
-                        <ListItemText primary={s.name} secondary={s.search || ''} />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <div>No saved searches</div>
-                )}
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => closeSavedDialog()}>Close</Button>
-              </DialogActions>
-            </Dialog>
+            <SavedSearchDialog
+              savedSearches={savedSearches}
+              setSavedSearches={setSavedSearches}
+              savedDialogOpen={savedDialogOpen} 
+              loadSavedSearch={loadSavedSearch}
+              deleteSavedSearch={(idx) => deleteSavedSearch(idx)}
+              closeSavedDialog={()=> closeSavedDialog()} />
           </Grid>
         </form>
       </Box>

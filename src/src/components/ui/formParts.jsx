@@ -10,8 +10,14 @@ import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
 import Alert from "@mui/material/Alert";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import IconButton from '@mui/material/IconButton';
+import StarIcon from '@mui/icons-material/Star';
 import UpdateIcon from '@mui/icons-material/Update';
 import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
@@ -982,6 +988,85 @@ export function FeedbackDialog( {
           startIcon={<ClearIcon />}
           color="primary">
           Ok
+        </Button>
+      </DialogActions>
+		</Dialog>
+  )
+}
+
+// Returns a Dialog Modal for displaying Saved Searches
+export function SavedSearchDialog( { 
+  savedSearches,
+  setSavedSearches,
+  loadSavedSearch,
+  deleteSavedSearch,
+  savedDialogOpen, 
+  closeSavedDialog
+  } ){
+  let messageColor = "#444A65";
+  let altColorLight = LightenHex(messageColor, 20);
+  let altColorDark = DarkenHex(messageColor, 20);
+
+  
+  return (
+    <Dialog 
+      maxWidth="sm"
+      open={savedDialogOpen} 
+      sx={{margin: "auto", marginBottom: "0px"}}
+      fullWidth={true}>
+      <DialogTitle sx={{
+        background: `linear-gradient(180deg,${messageColor} 0%, ${altColorDark} 100%)`, 
+        border: `1px solid ${messageColor}`, 
+        color: "white", 
+        padding: "2px 10px 0px 10px",
+        borderTopLeftRadius: "4px",
+        borderTopRightRadius: "4px",}}> 
+        <FontAwesomeIcon icon={<StarIcon />} sx={{marginRight: "10px"}} /> Saved Searches
+      </DialogTitle>
+      <DialogContent > 
+        {/* <Typography sx={{fontSize: "0.9rem", marginBottom: "10px", marginTop: "10px"}}> */}
+          {savedSearches && savedSearches.length > 0 ? (
+            <List>
+              {savedSearches.map((s, idx) => (
+                
+                <ListItem sx={{}} key={idx} 
+                  secondaryAction={
+                    <DeleteIcon sx={{width:"0.7em"}} onClick={() => deleteSavedSearch(idx)}/>
+                  } button onClick={() => loadSavedSearch(idx)}>
+                  <Typography variant="overline"sx={{fontWeight: "700", paddingRight:"10px"}} > {s.name} </Typography>  
+                  <Typography variant="caption"  sx={{overflowX:"scroll", background:"#00000010", wordWrap: "break-word"}} > {s.search || ''} </Typography>  
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <div>No saved searches</div>
+          )}
+        {/* </Typography > */}
+        
+      </DialogContent>
+      <DialogActions sx={{
+        background: "rgb(207, 211, 226)", 
+        padding: "6px 10px", 
+        display: "flex", 
+        border: `1px solid ${messageColor}`, 
+        borderTop: "none",
+        borderBottomLeftRadius: "4px",
+        borderBottomRightRadius: "4px"}}>
+        <Button
+          size="small"
+          sx={{
+            background: "white", 
+            color: "#444a65",
+            "&:hover": {
+              backgroundColor: "#444a65",
+              color: "white"
+            }
+          }}
+          onClick={() => closeSavedDialog()}
+          variant="contained"
+          startIcon={<ClearIcon />}
+          color="primary">
+          Close
         </Button>
       </DialogActions>
 		</Dialog>

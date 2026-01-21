@@ -84,6 +84,14 @@ body {
     background-color: var(--HBM_Lavender)!important;  
     color: var(--HBM_Smoke)!important;
 }
+.HBM_LightButton{
+    background: linear-gradient(180deg, var(--HBM_SmokeCL) 0%,  var(--HBM_DarkBlueCL) 100%);
+    background-color: var(--HBM_Lavender)!important;  
+    color: var(--HBM_Smoke)!important;
+}
+.HBM_LightButton:hover{
+  background-color: var(--HBM_BrightBlue)!important;
+}
 
 
 
