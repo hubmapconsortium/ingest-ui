@@ -16,6 +16,7 @@ import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import SyncProblemIcon from '@mui/icons-material/SyncProblem';
@@ -185,7 +186,11 @@ export function App(){
       ubkg_api_get_organs_full()
         .then((res) => {
           if (res === undefined){
-            setAPIErr(["UBKG API Error: Organ Details",'Unable to load Organ Detail res from UBKG. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org '])
+            setAPIErr([
+              "UBKG API Error: Organ Details",
+              "Unable to load Organ Detail res from UBKG.\
+              Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org ",
+            ]);
           }else{
             localStorage.setItem("organs_full", JSON.stringify(res));
             let RUIOrgans = res  
@@ -197,7 +202,12 @@ export function App(){
         })
         .catch((error) => {
           console.debug('%c◉ Get FULL organs ubkg_api_get_organs_full ERROR ','color:#E7EEFF;background: #C800FF;padding:200', error);
-          setAPIErr(["UBKG API Error: Organ Details",'Error when populating Organ Detail data from UBKG. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org ', error])
+          setAPIErr([
+            "UBKG API Error: Organ Details",
+            "Error when populating Organ Detail data from UBKG.\
+              Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org ",
+            error,
+          ]);
         });
     }
 
@@ -208,7 +218,11 @@ export function App(){
           if(res !== undefined){
             localStorage.setItem("dataset_types",JSON.stringify(res));
           }else{
-            setAPIErr(["UBKG API : Dataset Types",'No local Dataset Type data could be found and none could be fetched. Please refresh the page or try logging out annf back in. If this error persists, contact help@hubmapconsortium.org',res])
+            setAPIErr([
+              "UBKG API : Dataset Types",
+              "No local Dataset Type data could be found and none could be fetched. Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org",
+              res,
+            ]);
           }
         })
         .catch((error) => {
@@ -494,29 +508,34 @@ export function App(){
 
   // API Error bits
   function renderAPIError(){
-    return(
-      <Alert variant="filled" severity="error" icon={<SyncProblemIcon />}  >
-        {!APIErr[3] && (
-          <>API Error: {APIErr[0]}</>
-        )}
-        {APIErr[2] && (
-          <>{APIErr[2]}</>
-        )}
-        &nbsp;| Render full error details? 
-        <IconButton color="error" size="small" onClick={()=>setShowFullError(!showFullError)}> 
-          <ExpandMoreIcon 
-            sx={ 
-              showFullError ? 
-                {color:"#fff", transition: "transform 500ms ease-in-out"} :
-                {color:"#fff", transition: "transform 500ms ease-in-out", transform: "rotate(270deg)"}
-              } 
-          />
-        </IconButton>
-        <Collapse in={showFullError}>
-          {APIErr.toString()}
-        </Collapse>
+    let baseChevronStyle = {
+      cursor: "pointer",
+      color: "#fff",
+      transition: "transform 500ms ease-in-out",
+      height: "0.6em",
+      marginLeft: "-3px",
+      paddingBottom: "2px",
+    };
+    let errorDetails =
+      APIErr[1] && typeof APIErr[1] === "string"
+        ? APIErr[1]
+        : APIErr.toString();
+    return (
+      <Alert variant="filled" severity="error" icon={<SyncProblemIcon />}>
+        {!APIErr[3] && <>API Error: {APIErr[0]}</>}
+        {APIErr[2] && <>&nbsp; {APIErr[2]}</>}
+        &nbsp;| Render full error details?
+        <ArrowForwardIosIcon
+          onClick={() => setShowFullError(!showFullError)}
+          sx={
+            showFullError
+              ? {...baseChevronStyle, transform: "rotate(90deg)"}
+              : baseChevronStyle
+          }
+        />
+        <Collapse in={showFullError}>{APIErr[1]}</Collapse>
       </Alert>
-    )
+    );
   }
 
   return(
