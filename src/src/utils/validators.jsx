@@ -74,7 +74,8 @@ export function ValidateJSON(str){
 }
 
 export function ValidateLocalStoreValue(data){
-  return data && !data.includes("[object Object]");
+  console.debug('%c◉  ValidateLocalStoreValue', 'color:#00ff7b', !data.includes("[object Object]"), !data.includes("undefined"), !data.includes("null"), typeof data === "string");
+  return data && (!data.includes("[object Object]") && !data.includes("undefined") && !data.includes("null") && typeof data !== "string");
 }
 
 export function ValidateLocalhost(){
