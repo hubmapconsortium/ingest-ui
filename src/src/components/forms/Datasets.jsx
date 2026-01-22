@@ -15,7 +15,7 @@ import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
 import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
 import { validateRequired } from "../../utils/validators";
-import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, entity_api_get_globus_url, } from "../../service/entity_api";
+import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../../service/entity_api";
 
 import { 
   ingest_api_allowable_edit_states, 
