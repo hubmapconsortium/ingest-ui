@@ -999,82 +999,106 @@ status
 .MuiDataGrid-panel .MuiButtonBase-root .MuiSwitch-track{
   background-color: #444a6520!important;
 }
+/* --- DataGrid Styles: SearchGridWrap & AssociationTable --- */
 
-.SearchGridWrap .MuiDataGrid-toolbarContainer{
-  background: #444a65!important;
+.SearchGridWrap .MuiDataGrid-toolbarContainer {
+  background: #444a65 !important;
   border-bottom: 1px solid #ffffff35;
 }
+
 .SearchGridWrap .MuiDataGrid-toolbarContainer button,
 .SearchGridWrap .MuiDataGrid-footerContainer p {
-  color:#fff!important;
+  color: #fff !important;
 }
 
-.associationTable .MuiDataGrid-row:hover {backgroundColor: "inherit",} 
-.SearchGridWrap .MuiDataGrid-columnHeaders, 
-.associationTable .MuiDataGrid-columnHeaders, 
-.SearchGridWrap .MuiDataGrid-footerContainer{
+.associationTable .MuiDataGrid-row:hover {
+  background-color: inherit;
+}
+
+/* Column headers and footers */
+.SearchGridWrap .MuiDataGrid-columnHeaders,
+.associationTable .MuiDataGrid-columnHeaders,
+.associationTable .MuiDataGrid-footerContainer,
+.SearchGridWrap .MuiDataGrid-footerContainer {
   background-color: #444a65;
   border-color: #454d55;
-  color:#fff!important;
+  color: #fff !important;
   min-height: 54px;
 }
-.SearchGridWrap .MuiDataGrid-columnHeaders{
-  border-radius: 0%!important;
+
+.SearchGridWrap .MuiDataGrid-columnHeaders {
+  border-radius: 0% !important;
 }
-.SearchGridWrap .MuiDataGrid-footerContainer div{
+
+.SearchGridWrap .MuiDataGrid-footerContainer div {
   background-color: #444a65;
 }
-.associationTable .MuiDataGrid-footerContainer{
+
+.associationTable .MuiDataGrid-footerContainer {
   min-height: 35px;
   max-height: 35px;
-  cursor:initial;
+  cursor: initial;
 }
-.SearchGridWrap  .MuiDataGrid-footerContainer{
+
+.SearchGridWrap .MuiDataGrid-footerContainer {
   min-height: 54px;
   max-height: 54px;
-  cursor:initial;
-} 
+  cursor: initial;
+}
+
+/* Hide column separators */
 .associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator,
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator svg{
+.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator svg {
   display: none;
 }
+
+/* Column header and cell borders */
 .associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader,
-.associationTableWrap .MuiTableRow-head th.MuiTableCell-head{
-  border-right:1px solid #ffffff35;
+.associationTableWrap .MuiTableRow-head th.MuiTableCell-head {
+  border-right: 1px solid #ffffff35;
 }
+
 .associationTable .MuiDataGrid-row[data-error],
 .associationTable .MuiDataGrid-row[data-error]:hover,
 .associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover{
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
   background: #FF000019;
 }
+
 .associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover{
+.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
   border: 1px solid #FF000019;
 }
-.associationTable .MuiDataGrid-row .MuiDataGrid-cell{
+
+.associationTable .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
 }
+
 .associationTable .MuiDataGrid-row .MuiDataGrid-cell:last-child,
 .associationTableWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader:last-child{
-  border-right:0px;
+.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader:last-child {
+  border-right: 0;
 }
+
+/* Footer and icon color overrides */
 .associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader svg,
 .associationTable .MuiDataGrid-footerContainer p,
 .associationTable .MuiDataGrid-footerContainer button,
 .associationTable .MuiDataGrid-footerContainer svg,
 .associationTable .MuiDataGrid-footerContainer div,
-.SearchGridWrap .MuiDataGrid-footerContainer div{
+.SearchGridWrap .MuiDataGrid-footerContainer div {
   color: #fff;
 }
-.associationTable .MuiDataGrid-footerContainer p{
-  margin: 0%;
+
+.associationTable .MuiDataGrid-footerContainer p {
+  margin: 0;
 }
 
-.associatedContributorsTable .MuiDataGrid-cellContent{
+/* Contributors table cell font size */
+.associatedContributorsTable .MuiDataGrid-cellContent {
   font-size: 0.8em;
 }
+
 
 #revert_tooltip{
   background-color: #fff!important;
