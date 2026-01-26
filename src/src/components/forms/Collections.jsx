@@ -322,6 +322,8 @@ export const CollectionForm = (props) => {
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
             onBulkSelectionChange={handleBulkSelectionChange}
+            tableClassName="HDT"
+            wrapperClassName="associationTableWrap"
           />
           <CollectionFormFields
             formValues={formValues}

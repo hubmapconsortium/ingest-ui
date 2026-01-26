@@ -457,7 +457,7 @@ export function EmbeddedSearch({
             }
           }}
           id="SearchDataGrid"
-          className="SearchGridWrap associationTable "
+          className="SearchGridWrap associationTable HDT"
           columnBuffer={2}
           columns={results.colDef}
           columnThreshold={2}

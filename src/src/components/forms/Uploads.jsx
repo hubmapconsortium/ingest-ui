@@ -500,7 +500,7 @@ export const UploadForm = (props) => {
             columnVisibilityModel={{
               uuid: false,
             }}
-            className='associationTable w-100'
+            className='HDT shortFooter shortHeader w-100'
             rows={compiledCollection}
             columns={COLUMN_DEF_DATASET_MINI}
             disableColumnMenu={true}
@@ -516,11 +516,10 @@ export const UploadForm = (props) => {
             rowCount={compiledCollection.length}
             loading={!compiledCollection.length > 0 && uuid}
             sx={{
-              border: "none",
               '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': {minHeight: '60px',overflowY: 'scroll!important',maxHeight: '350px'},
+              border: "none",
               background: "rgba(0, 0, 0, 0.04)",
               cursor: "cell!important",
-              
               }}
           />
         </div>
