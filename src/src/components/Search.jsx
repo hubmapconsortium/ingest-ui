@@ -566,7 +566,7 @@ export function Search({
             }
           }}
           id="SearchDataGrid"
-          className="SearchGridWrap associationTable "
+          className="SearchGridWrap HDT "
           columnBuffer={2}
           columns={searchState.colDef}
           columnThreshold={2}

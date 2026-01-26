@@ -192,7 +192,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
       return (
         <div className={"associationTableWrap associatedContributorsTable"} style={{ width: "100%" }}>
           <DataGrid
-            className='associationTable w-100'
+            className='HDT shortFooter w-100'
             rows={rows}
             columns={COLUMN_DEF_CONTRIBUTORS}
             loading={validatingContributorsUpload}
@@ -212,9 +212,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
               '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': { minHeight: '60px', overflowY: 'scroll!important', maxHeight: '350px' },
               background: "rgba(0, 0, 0, 0.04)",
               cursor: "cell!important",
-              '.MuiDataGrid-footerContainer': {
-                'background': '#444a65',
-              },
+            
             }} 
           />
           {contributorValidationErrors && contributorValidationErrors.length > 0 && (<>

@@ -123,6 +123,7 @@ export const Navigation = (props) => {
         </Button>
         <Menu
           id="IndividualMenu"
+          className='navMenu'
           anchorEl={anchorEl}
           open={open}
           onClose={(e) => handleClose(e)}

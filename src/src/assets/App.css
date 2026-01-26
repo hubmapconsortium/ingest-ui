@@ -977,21 +977,7 @@ status
   color: white!important;
   font-size:1.1em;
 }
-.associationTableWrap{
-  width: 100%;
-  border: 3px solid #444a65;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-}
-.SearchGridWrap{
-  border: 3px solid #444a65!important;
-  border-bottom-left-radius: 4px!important;
-  border-bottom-right-radius: 4px!important;
-  border-top-right-radius: 0px!important;
-  border-top-left-radius: 0px!important;
-}
+
 
 .MuiDataGrid-panel .MuiButtonBase-root{
   color: #444a65!important;
@@ -999,105 +985,131 @@ status
 .MuiDataGrid-panel .MuiButtonBase-root .MuiSwitch-track{
   background-color: #444a6520!important;
 }
-/* --- DataGrid Styles: SearchGridWrap & AssociationTable --- */
 
-.SearchGridWrap .MuiDataGrid-toolbarContainer {
-  background: #444a65 !important;
+
+/* --- HuBMAP Dark Table (HDT) Styles --- */
+.MuiDataGrid-main,
+.MuiTableCell-head {
+  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+}
+
+.associationTableWrap{
+    width: 100%;
+    border: 3px solid #444a65;
+    border-radius: 10px 10px 4px 4px;
+}
+.SearchGridWrap{
+  border: 3px solid #444a65 !important;
+  border-radius: 0 0 4px 4px !important;
+}
+.HDT .MuiDataGrid-toolbarContainer {
+  /* background: #444a65!important ; */
+  background: linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
   border-bottom: 1px solid #ffffff35;
 }
-
-.SearchGridWrap .MuiDataGrid-toolbarContainer button,
-.SearchGridWrap .MuiDataGrid-footerContainer p {
-  color: #fff !important;
-}
-
-.associationTable .MuiDataGrid-row:hover {
+.HDT .MuiDataGrid-row:hover {
   background-color: inherit;
 }
-
-/* Column headers and footers */
-.SearchGridWrap .MuiDataGrid-columnHeaders,
-.associationTable .MuiDataGrid-columnHeaders,
-.associationTable .MuiDataGrid-footerContainer,
-.SearchGridWrap .MuiDataGrid-footerContainer {
-  background-color: #444a65;
-  border-color: #454d55;
-  color: #fff !important;
-  min-height: 54px;
+.associationTableWrap{
+  width: 100%;
+  border: 3px solid #444a65;
+  border-radius: 10px 10px 4px 4px!important;
 }
-
-.SearchGridWrap .MuiDataGrid-columnHeaders {
+.SearchGridWrap{
+  border: 3px solid #444a65 !important;
+  border-radius: 0 0 4px 4px !important;
+}
+/* Column headers and footers */
+.HDT .MuiDataGrid-columnHeaders,
+.HDT.shortHeader .MuiDataGrid-columnHeaders,
+.HDT .MuiDataGrid-footerContainer,
+.HDT .thead-dark {
+  background: linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  border-color: #454d55!important;
+  color: #fff !important;
+  min-height: 35px;
+}
+.HDT .thead-dark th{
+  background: none!important;
+}
+.HDT .MuiDataGrid-columnHeaders {
   border-radius: 0% !important;
 }
-
-.SearchGridWrap .MuiDataGrid-footerContainer div {
-  background-color: #444a65;
-}
-
-.associationTable .MuiDataGrid-footerContainer {
-  min-height: 35px;
-  max-height: 35px;
+.HDT .MuiDataGrid-footerContainer {
+  /* min-height: 54px;
+  max-height: 54px; */
   cursor: initial;
 }
-
-.SearchGridWrap .MuiDataGrid-footerContainer {
-  min-height: 54px;
-  max-height: 54px;
-  cursor: initial;
+/* For tables that need a shorter footer (override with .shortFooter) */
+.HDT.shortFooter .MuiDataGrid-footerContainer,
+.HDT.shortHeader .MuiDataGrid-columnHeaders,
+.MuiTablePagination-root .MuiToolbar-root {
+  min-height: 35px!important;
+  max-height: 35px!important;
 }
-
 /* Hide column separators */
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator,
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator svg {
+.HDT .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator,
+.HDT .MuiDataGrid-columnHeaders .MuiDataGrid-columnSeparator svg {
   display: none;
 }
-
 /* Column header and cell borders */
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader,
-.associationTableWrap .MuiTableRow-head th.MuiTableCell-head {
+.HDT .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader,
+.HDTWrap .MuiTableRow-head th.MuiTableCell-head {
   border-right: 1px solid #ffffff35;
 }
-
-.associationTable .MuiDataGrid-row[data-error],
-.associationTable .MuiDataGrid-row[data-error]:hover,
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
+.HDT .MuiDataGrid-row[data-error],
+.HDT .MuiDataGrid-row[data-error]:hover,
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
   background: #FF000019;
 }
-
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.associationTable .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
   border: 1px solid #FF000019;
 }
-
-.associationTable .MuiDataGrid-row .MuiDataGrid-cell {
+.HDT .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
 }
-
-.associationTable .MuiDataGrid-row .MuiDataGrid-cell:last-child,
-.associationTableWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader:last-child {
+.HDT .MuiDataGrid-row .MuiDataGrid-cell:last-child,
+.HDTWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
+.HDT .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader:last-child {
   border-right: 0;
 }
-
 /* Footer and icon color overrides */
-.associationTable .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader svg,
-.associationTable .MuiDataGrid-footerContainer p,
-.associationTable .MuiDataGrid-footerContainer button,
-.associationTable .MuiDataGrid-footerContainer svg,
-.associationTable .MuiDataGrid-footerContainer div,
-.SearchGridWrap .MuiDataGrid-footerContainer div {
+.HDT .MuiDataGrid-columnHeaders .MuiDataGrid-columnHeader svg,
+.HDT .MuiDataGrid-footerContainer p,
+.HDT .MuiDataGrid-footerContainer button,
+.HDT .MuiDataGrid-footerContainer svg,
+.HDT .MuiDataGrid-footerContainer div,
+.HDT .MuiDataGrid-toolbarContainer button,
+.HDT .MuiDataGrid-footerContainer p  {
   color: #fff;
+  font-family: 'Inter Variable', sans-serif!important;
 }
-
-.associationTable .MuiDataGrid-footerContainer p {
+.HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
-
 /* Contributors table cell font size */
-.associatedContributorsTable .MuiDataGrid-cellContent {
-  font-size: 0.8em;
+.HDT .MuiDataGrid-cellContent {
+  font-family: 'Inter Variable', sans-serif!important;
+  /* font-size: 0.8rem; */
+} 
+.MuiPopover-paper:not(#IndividualMenu) ul[role=listbox].MuiMenu-list{
+  padding: 0px !important;
+  background-color: #444a65!important;
+  border: 1px solid #708090!important;
+  border-top: 1px solid #444a65!important;
 }
+.MuiTablePagination-toolbar  div.MuiTablePagination-select{
+  background-color: #444a65!important;
+}
+ul.MuiMenu-list li[class*="MuiTablePagination-menuItem"]{
+  padding: 0px 2px !important;
+  color:#ffffff;
+  font-family: 'Inter Variable', sans-serif!important;
+  border: 1px solid #444a6590!important;
+}
+
 
 
 #revert_tooltip{
@@ -1141,14 +1153,13 @@ status
   opacity: 0.7;
 }
 
-
+/* @TODO: nix/handle in  HDT */
 .bulk-table tr td{
   height:24px; 
   overflow:hidden; 
   white-space:nowrap; 
   text-overflow:ellipsis;
 } 
-
 /* Brute Force Inter Variable Fix / Death To Roboto */
 /* all of the manual overrides to force Inter Variable over Roboto */
 .bulk-table,
@@ -1164,28 +1175,30 @@ status
 
 .tiltLeftIcon .iconEffect,
 .tiltRightIcon .iconEffect {
-  transition: transform 1s;
+    transition: 290ms ease-in;
 }
 
 .tiltLeftIcon:hover .iconEffect {
-  transform: rotate(-180deg) scaleX(-1);
+  transform: rotate(-30deg) scaleX(-1);
   animation-direction: reverse;
 }
 
 .tiltRightIcon:hover .iconEffect {
-  transform: rotate(180deg);
+  transform: rotate(30deg);
 }
-.hoverRise {
-  background: #eeeeee20;
+  
+  .hoverRise {
+    background: #eeeeee20;
     text-decoration: none;
     padding: 3px 5px;
     border-radius: 10px;
     border: 1px solid rgba(13, 110, 253, 3%);
-}
-.hoverRiseContainer:hover .hoverRise {
-  background: #aaaaff20;
-  text-decoration: underline;
-  padding: 3px 5px;
-  border: 1px solid rgba(13, 110, 253, 15%);
-  transition: 290ms ease-in-out;
+  }
+  
+  .hoverRiseContainer:hover .hoverRise {
+    background: #aaaaff20;
+    text-decoration: underline;
+    padding: 3px 5px;
+    border: 1px solid rgba(13, 110, 253, 15%);
+    transition: 290ms ease-in-out;
 }
