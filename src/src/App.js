@@ -246,7 +246,8 @@ export function App(){
       loadCount() // the dataset_types step
     }else{
       // we already have Dataset Types but they are not good
-      if (!ValidateLocalStoreValue(JSON.parse(localStorage.getItem("dataset_types")))) {
+      let dt = JSON.parse(localStorage.getItem("dataset_types"))
+      if (dt.status || !ValidateLocalStoreValue(dt)){
         localStorage.removeItem("dataset_types");
         console.debug("%c◉  Malformed DT","color:#E7EEFF;background: #C800FF;padding:200",JSON.parse(localStorage.getItem("dataset_types")));
         setAPIErrQueue((prev) => [...prev,[
