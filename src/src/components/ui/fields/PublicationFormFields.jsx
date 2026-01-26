@@ -29,7 +29,7 @@ export const PublicationFieldSet = [
   }, {
     id: "publication_status",
     label: "Publication Status ",
-    helperText: "Has this Publication been Published?",
+    helperText: "Has this Publication been Published? Not published (No) includes publications in preprint status.",
     required: true,
     type: "radio",
     values: ["true", "false"]
