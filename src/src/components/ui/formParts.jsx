@@ -400,58 +400,59 @@ function revisionLinksPoint(entityData){
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType){  
 
-  if(entityData[0] !== "new"){
-    return (
-      <Grid item xs={6} className="entityDataHead" >
-        <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
-        {entityData.status && (
-          <Typography><strong>Status: </strong> 
-            <Tooltip
-              placement="bottom-start" 
-              title={
-                <Box>
-                  <Typography variant="caption">
-                  {entityData?.pipeline_message || "" }
-                  </Typography><br />
-                </Box>}>
-              {entityData.status ? StatusBadge(entityData.status) : ""}
-            </Tooltip> 
-          </Typography>   
-        )}
-        {entityData.priority_project_list	 && (
-          <Typography variant="caption" sx={{display: "inline-block"}}>
-            <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
-              ? entityData.priority_project_list.join(", ")
-              : entityData.priority_project_list?.[0]}
-          </Typography>   
-        )}
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
-        {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
-          <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
-        )}
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
+  return entityData[0] !== "new" ? (
+    <Grid item xs={6} className="entityDataHead" >
+      <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
+      {entityData.status && (<>
+        <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>   
+        {entityData.pipeline_message ? (
+          <Tooltip
+            placement="bottom-start" 
+            title={
+              <Box>
+                <Typography variant="caption">
+                {entityData?.pipeline_message || "" }
+                </Typography><br />
+              </Box>}>
+            {entityData.status ? StatusBadge(entityData.status) : ""}
+          </Tooltip> ):(  <>
+            {entityData.status ? StatusBadge(entityData.status) : ""}
+          </>)
+        }
+      </>)}
+
+
+      {entityData.priority_project_list	 && (
+        <Typography variant="caption" sx={{display: "inline-block"}}>
+          <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
+            ? entityData.priority_project_list.join(", ")
+            : entityData.priority_project_list?.[0]}
+        </Typography>   
+      )}
+      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
+      {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
+      )}
+      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
+    </Grid>
+  ) : (
+    <React.Fragment>
+      <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
+        {newBadge(entityData[1],"new")}
+        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityType}</h3>
       </Grid>
-    ) 
-  }else{
-    return (
-      <React.Fragment>
-        <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
-          {newBadge(entityData[1],"new")}
-          <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityType}</h3>
+        
+      {entityData[1] === "Upload" && (
+        <Grid item xs={6} className="" >
+          <Typography sx={{marginRight: "10px"}} >
+            Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
+          </Typography>
         </Grid>
+      )}
         
-        {entityData[1] === "Upload" && (
-          <Grid item xs={6} className="" >
-            <Typography sx={{marginRight: "10px"}} >
-              Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
-            </Typography>
-          </Grid>
-        )}
-        
-      </React.Fragment>
-    )
-  }
+    </React.Fragment>
+  );
 }
 
 // The Rightmost part of the Form Header

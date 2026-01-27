@@ -453,6 +453,9 @@ export const PublicationForm = (props) => {
             initialSelectedUUIDs={selectedBulkUUIDs}
             initialSourcesData={selectedBulkData}
             onBulkSelectionChange={handleBulkSelectionChange}
+            tableClassName="HDT"
+            wrapperClassName="associationTableWrap"
+          
           />
           <PublicationFormFields
             formValues={formValues}

@@ -568,6 +568,9 @@ export const DatasetForm = (props) => {
               onBulkSelectionChange={handleBulkSelectionChange}
               readOnly={readOnlySources}
               preLoad={loading.bulk}
+              tableClassName="HDT"
+              wrapperClassName="associationTableWrap"
+          
             />
           <DatasetFormFields
             formFields={formFields}

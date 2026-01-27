@@ -479,7 +479,7 @@ export function BulkSelector({
         <GridLoader size="2px" color="white" width="30px" /> Loading ...
       </Box>
 
-      <Box className={"associationTableWrap"} id="bulkTableWrapper" sx={{ borderRadius: "4px", border: "4px solid #444a65" }}>
+      <Box className={"associationTableWrap"} id="bulkTableWrapper" >
         <TableContainer
           style={{ border: sourceTableError ? "2px solid red" : "" }}
           sx={{
@@ -489,13 +489,13 @@ export function BulkSelector({
             background: "#444a65"
           }}>
           <Table
-            sx={{ borderLeft: "12px solid #444a65" }}
+            // sx={{ borderLeft: "12px solid #444a65" }}
             stickyHeader
             aria-label={{ dialogTitle }}
             size="small"
-            className="bulk-table table table-striped table-hover mb-0">
+            className="bulk-table shortFooter table table-striped table-hover mb-0 associationTable HDT">
             <TableHead className="thead-dark font-size-sm" sx={{
-              background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)",
+              background: "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
               color: "white",
               padding: "2rem .0rem"
             }}>
