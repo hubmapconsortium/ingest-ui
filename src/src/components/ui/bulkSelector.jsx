@@ -67,11 +67,11 @@ export function BulkSelector({
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
 
-  console.debug('%c◉ title ', 'color:#00ff7b', title);
-  console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
+  // console.debug('%c◉ title ', 'color:#00ff7b', title);
+  // console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
   // Sync sourcesData with prop changes
   useEffect(() => {
-    console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
+    // console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
     setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
@@ -81,7 +81,7 @@ export function BulkSelector({
   // Keep parent in sync
   useEffect(() => {
     if (onBulkSelectionChange) {
-      console.debug('%c◉ if (onBulkSelectionChange) ', 'color:rgb(255 0 144)', selected_UUIDs, selected_HIDs, selected_string, sourcesData);
+      // console.debug('%c◉ if (onBulkSelectionChange) ', 'color:rgb(255 0 144)', selected_UUIDs, selected_HIDs, selected_string, sourcesData);
       onBulkSelectionChange(selected_UUIDs, selected_HIDs, selected_string, sourcesData);
     }
   }, [selected_UUIDs, selected_HIDs, selected_string, sourcesData]);
@@ -159,7 +159,7 @@ export function BulkSelector({
       let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
       let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
       let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
-      console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
+      // console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
 
       if (
         (searchFilters.blackList && searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
@@ -184,7 +184,7 @@ export function BulkSelector({
 
   // Helper to format display_subtype for sources
   function assembleSourceAncestorData(sources) {
-    console.debug('%c◉  assembleSourceAncestorData', 'color:#00ff7b', sources);
+    // console.debug('%c◉  assembleSourceAncestorData', 'color:#00ff7b', sources);
     var dst = "";
     sources.forEach(function(row, index) {
       dst = ubkg_api_generate_display_subtype(row);
@@ -200,7 +200,7 @@ export function BulkSelector({
   // Handle bulk input dialog update
   // Modified handleInputUUIDs to accept an optional overrideString (e.g. from URL)
   const handleInputUUIDs = useCallback((e, overrideString) => {
-    console.debug('%c◉  handleInputUUIDs', 'color:#00ff7b', overrideString ? overrideString : "No Override String");
+    // console.debug('%c◉  handleInputUUIDs', 'color:#00ff7b', overrideString ? overrideString : "No Override String");
     if (e) e.preventDefault();
     setSourceTableError(false);
     // If triggered by URL, treat as if showHIDList is false (i.e. go straight to else branch)
@@ -299,7 +299,7 @@ export function BulkSelector({
 
   // Handle row selection from search dialog
   const handleSelectClick = (event) => {
-    console.debug('%c◉  handleSelectClick', 'color:#00ff7b', event);
+    // console.debug('%c◉  handleSelectClick', 'color:#00ff7b', event);
     setSourceTableError(false);
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
