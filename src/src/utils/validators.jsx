@@ -74,7 +74,7 @@ export function ValidateJSON(str){
 }
 
 export function ValidateLocalStoreValue(data){
-  console.debug('%c◉  ValidateLocalStoreValue', 'color:#00FFEE', data, !data.includes("[object Object]"), data !== undefined, typeof data === "string");
+  console.debug('%c◉  ValidateLocalStoreValue', 'color:#00FFEE', data, !data.includes("[object Object]"), data !== undefined, typeof data !== "string");
   return data && (!data.includes("[object Object]") && data !== undefined && typeof data !== "string");
 }
 
