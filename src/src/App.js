@@ -223,7 +223,7 @@ export function App(){
       ubkg_api_get_dataset_type_set()
         .then((res) => {
           loadCount() // the dataset_types step
-          if(res !== undefined){
+          if(res !== undefined && ValidateLocalStoreValue(res)){
             localStorage.setItem("dataset_types",JSON.stringify(res));
           }else{
             setAPIErrQueue((prev) => [...prev,[
