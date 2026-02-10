@@ -1,9 +1,13 @@
-import React from "react";
+import React, {useEffect, useState, useMemo} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { StatusBadge } from "./formParts";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
@@ -316,6 +320,66 @@ export const COLUMN_DEF_MIXED = [
 // LIMITED DATASET TYPE COLUMNS (FOR SOURCE DISPLAY)
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
+// COLUMNS FOR TSV UPLOADS FOR BULK DONORS AND SAMPLES
+
+export const COLUMN_DEF_BULK_SAMPLES = [
+  { field: "source_id", headerName: "Source Id", minWidth: 150,},
+  { field: "lab_id", headerName: "Lab Id",minWidth: 150, },
+  // { field: "sample_category", headerName: "Type", width: 150 },
+  { field: "sample_category",
+    headerName: "Type",
+    minWidth: 100,
+    sortable: false,
+    valueGetter: getTypeValue,
+    renderCell: params => { 
+      // console.debug('%c◉COLUMN_DEF_BULK_SAMPLES  sample_category', 'color:#00ff7b', params);
+      return (toTitleCase(params.row.sample_category))
+    }
+  }, 
+  { field: "organ_type", 
+    headerName: "Organ", 
+    minWidth: 150,
+    renderCell: params => {
+      let toMirror = ["Knee (Left)"]
+      let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+      let organ_types = JSON.parse(localStorage.getItem("organs"));
+      return (<> 
+        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ_type) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={params.row.organ_type} href={systemIcons[params.row.organ_type]} width="25" height="25" /></svg> {organ_types[params.row.organ_type]}
+      </>)
+    }},
+  { field: "sample_protocol", headerName: "Protocol",  },
+  { field: "description", headerName: "Description",  },
+];
+
+export const COLUMN_DEF_BULK_REGISTERED_SAMPLES = COLUMN_DEF_SAMPLE.map((col) => {
+  if (col.field === 'hubmap_id') {
+    return {
+      ...col,
+      renderCell: (params: ValueFormatterParams) => (
+        <Button
+          fullWidth
+          variant="contained"
+          className="m-2"
+          onClick={(e) => handleOpenPage(e, params.value)}>
+          {params.value}
+        </Button>
+      ),
+    };
+  }
+  return col;
+});
+
+export const COLUMN_DEF_BULK_DONORS = [
+  { field: "lab_id", headerName: "Lab ID", width: 150 },
+  { field: "lab_name", headerName: "Lab Name", width: 150 },
+  { field: "selection_protocol", headerName: "Protocol", width: 150 },
+  { field: "description", headerName: "Description", width: 200 },
+];
+export const COLUMN_DEF_BULK_ERRORS = [
+  { field: "row", headerName: "Row", minWidth:50, flex: 0.1 },
+  { field: "error", headerName: "Message", flex: 1}
+];
+
 // Computed column functions
 
 function nullCell() {
@@ -363,7 +427,6 @@ function renderFieldIcons(params: ValueFormatterParams){
     </div>
   )
 }
-
 
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
@@ -438,7 +501,7 @@ function handleDataClick(dataset_uuid) {
   });
 }
 
-function handleOpenPage(e,dataset_uuid) {
+export function handleOpenPage(e,dataset_uuid) {
   e.preventDefault()    
   let url = `${process.env.REACT_APP_URL}/dataset/${dataset_uuid}/`
   window.open(url, "_blank");

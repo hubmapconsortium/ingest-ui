@@ -41,6 +41,8 @@ import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
 import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
+import {toTitleCase} from "../../utils/string_helper";
+import {OrganIcons} from "../ui/icons";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -51,6 +53,8 @@ export const FormHeader = (props) => {
   // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
+  let subType = entityType === "Bulk" ? entityData[2] : null;
+  console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
@@ -61,7 +65,7 @@ export const FormHeader = (props) => {
           <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
         </Grid>
       )}
-      {topHeader(entityData, entityType)}
+      {topHeader(entityData, entityType,subType)}
       {infoPanels(entityData,permissions,globusURL)}
     </Grid>
   )
@@ -329,9 +333,9 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-function newBadge(type){
-  // console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
-  let newBadgeStyle = {
+export function NewBadge(type){
+  // console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
+  let NewBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
     color: "white",
@@ -342,7 +346,7 @@ function newBadge(type){
     verticalAlign: "super",
   }
   return (  
-    <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
@@ -398,7 +402,17 @@ function revisionLinksPoint(entityData){
 }
 
 // The TopLeftmost part of the Form Header 
-function topHeader(entityData, entityType){  
+function topHeader(entityData, entityType, subType){
+  let type = entityType
+  let organ_types = JSON.parse(localStorage.getItem("organs"));
+  let newTitle = "Registering a new "+type
+  if (entityType === "Bulk"){
+    console.debug('%c◉ SETTYPE ', 'color:#00ff7b', subType, type);
+    type = subType ? toTitleCase(subType) : "Entity"
+    newTitle = `Bulk Registration for ${type}s`
+  }
+  
+  
 
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
@@ -429,6 +443,13 @@ function topHeader(entityData, entityType){
             : entityData.priority_project_list?.[0]}
         </Typography>   
       )}
+      {entityData.organ	 && (
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong> 
+          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+            <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
+          </svg> {organ_types[entityData.organ]}
+                    </Typography>
+      )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
       {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
@@ -439,8 +460,8 @@ function topHeader(entityData, entityType){
   ) : (
     <React.Fragment>
       <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
-        {newBadge(entityData[1],"new")}
-        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityType}</h3>
+        {NewBadge(type,"new")}
+        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{newTitle}</h3>
       </Grid>
         
       {entityData[1] === "Upload" && (
@@ -460,6 +481,10 @@ function infoPanels(entityData,permissions,globusURL){
   let HIPPATypes = ["Donor","Sample","Upload"];
   const type = entityData?.entity_type ?? entityData?.[1];
   const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
+  console.debug('%c◉ type ', 'color:#00ff7b', type);
+  if (type === "Bulk"){
+    permissions = {has_write_priv: true, has_admin_priv: true}; // Permissions do not really apply for the Bulk Uploader
+  }
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
@@ -1046,6 +1071,35 @@ export function SnackbarFeedback(props){
       </Alert>
     </Snackbar>
   );
+}
+
+export function ViewDebug(values){
+  let valList = []
+  // console.debug('%c◉ values ', 'color:#00ff7b', values.data, typeof values.data);
+  Object.entries(values.data).forEach(([key, value]) => {
+    // console.debug(`%c${key}:`, 'color:#00ff7b', value);
+    valList.push()
+  })
+
+  return(
+    <Box 
+      sx={{
+        padding:"10px",
+        position:"fixed",
+        bottom:"0px",
+        left:"50%",
+        backgroundColor:"#00000020",
+        color:"#000",
+        width:"60%",
+        maxHeight:"40vh",
+        overflowY:"scroll",
+        zIndex: 9999
+      }}>
+      {Object.entries(values.data).map(([key, value]) => (
+        <Typography key={key} variant="caption" sx={{color:"#000"}}>{key}: {JSON.stringify(value)} | </Typography>
+      ))}
+    </Box>
+  )
 }
 
 

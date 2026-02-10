@@ -39,7 +39,7 @@ import { gateway_api_status } from "./service/gateway_service";
 
 // The legacy form loaders
 import {RenderMetadata} from "./components/metadata";
-import {RenderBulk} from "./components/bulk";
+import {BulkEntityForm} from "./components/forms/formBulkEntity";
 
 // The New Forms
 import {Search} from "./components/Search";
@@ -163,11 +163,10 @@ export function App(){
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons")){
+    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons") || localStorage.getItem("organ_icons") === "{}" ){
       ubkg_api_get_organ_type_set()
         .then((res) => {
           loadCount() // the Organ step
-          // lets also save the organ-image mapping
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
             localStorage.setItem("organ_icons", JSON.stringify(OrganDetails()));
@@ -772,8 +771,8 @@ export function App(){
                     <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/epicollection/:uuid" element={<EPICollectionForm onUpdated={(response) => updateSuccess(response)} />} />
 
-                    <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
-                    <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                    <Route path="/bulk/donors" exact element={<BulkEntityForm reportError={reportError} bulkType="donor" />} />
+                    <Route path="/bulk/samples" exact element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
                     
                     <Route path="/metadata">
                       <Route index element={<RenderMetadata reportError={reportError} type="block" />} />

@@ -243,21 +243,16 @@ export function ingest_api_bulk_entities_upload(type, data) {
     headers: {
       Authorization: `Bearer ${globalToken}`,
       "Content-Type": "multipart/form-data"
-    },
-    // This hasnt been working (github.com/axios/axios/issues/5149#issuecomment-1705809606)
-    onUploadProgress:(ev: ProgressEvent) => { 
-      const progress = ev.loaded / ev.total * 100;
-      // console.debug("prog", Math.round(progress));
     }};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
   return axios 
-    .post(url, dataForm, optionsMultipart)
+    .post(url, dataForm, {headers: {Authorization: `Bearer ${globalToken}`,"Content-Type": "multipart/form-data"}})
       .then(res => {
-        // console.debug("ingest_api_bulk_entities",res);
+        console.debug("ingest_api_bulk_entities",res);
         //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
         // We might back back a 201 with an array of errors encountered. Let's check for that!  
         let results = res.data;
-        // console.debug("results",results);
+        console.debug("results",results);
         if(results[0]){
           // console.debug("results DATA ",results[0]);
         }
@@ -273,24 +268,17 @@ export function ingest_api_bulk_entities_upload(type, data) {
  *
  */
 export function ingest_api_bulk_entities_register(type, data) { 
-  // console.debug("Starting Data: ",data);
+  console.debug("Starting Data: ",data);
   const options = {
     headers: {
-      Authorization: `Bearer ${globalToken}`,
+      Authorization: "Bearer " + globalToken, 
       "Content-Type": "application/json"
-    },
-    // This hasnt been working (github.com/axios/axios/issues/5149#issuecomment-1705809606)
-    onUploadProgress:(ev: ProgressEvent) => { 
-      const progress = ev.loaded / ev.total * 100;
-      // console.debug("prog", Math.round(progress));
     }};
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk`;
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}s/bulk`;
   // console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   return axios 
      .post(url, data, options)
       .then(res => {
-        // console.debug('%c⭗ INGESTAPI BULK RES: ', 'color:#FF00FF',  res);
-        // console.debug("ingest_ap i_bulk_entities",res);
         let results = res.data;
         return {status: res.status, results: results}
       })

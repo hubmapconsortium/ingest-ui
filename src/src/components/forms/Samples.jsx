@@ -154,6 +154,15 @@ export const SampleForm = (props) => {
                 details: {...prevValues.details, json: entityInfo.rui_location}}))
             }
             setSourceRUIDetails(response.results.direct_ancestor.uuid,response.results.direct_ancestor);
+
+            // IF we got here through one of the VIEW RUI links in the Bulk Entity Table (or elsewhere)
+            // let's check for the URL flag
+            let params = Object.fromEntries(url.searchParams.entries());
+            if(Object.keys(params).length > 0 && (params.openRUI)){
+              console.debug('%c◉ RUIOPEN ', 'color:#00ff7b',params );
+              setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, JSONView: true}}))
+            }
+
             // Permissions
             ingest_api_allowable_edit_states(uuid)
               .then((response) => {
@@ -741,8 +750,6 @@ export const SampleForm = (props) => {
                   {organ_types[sourceEntity.organ]}
                 </Typography>
               )}
-
-
               {isOrganBloodType(sourceEntity.sample_category) && (
                 <Typography >
                   <b>Organ Type:</b>
@@ -789,26 +796,55 @@ export const SampleForm = (props) => {
           )}
 
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type === "Donor") && (
-            <Box className="my-4" >           
-                <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
-                  Organ
-                </InputLabel>
-                <NativeSelect
-                  id="organ"
-                  label="Organ"
-                  required={sourceEntity.entity_type === "Donor"}
-                  onChange={(e) => handleInputChange(e)}
-                  fullWidth
-                  helperText={(formErrors.organ ? formErrors.organ : "")}
-                  inputProps={{style: {padding: "0.8em"}}}
-                  sx={{background: "rgba(0, 0, 0, 0.06)"}}
-                  disabled={uuid?true:false}
-                  value={formValues.organ ? formValues.organ : ""}>
-                  <option key={"DEFAULT"} value={""}></option>
-                  {organMenu}  
-                </NativeSelect>
-                <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
-            </Box>
+            <Box className="my-4" >       
+                {!uuid && (<>    
+                  <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
+                    Organ
+                  </InputLabel>
+                  <NativeSelect
+                    id="organ"
+                    label="Organ"
+                    required={sourceEntity.entity_type === "Donor"}
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    helperText={(formErrors.organ ? formErrors.organ : "")}
+                    inputProps={{style: {padding: "0.8em"}}}
+                    sx={{background: "rgba(0, 0, 0, 0.06)"}}
+                    disabled={uuid?true:false}
+                    value={formValues.organ ? formValues.organ : ""}>
+                    <option key={"DEFAULT"} value={""}></option>
+                    {organMenu}  
+                  </NativeSelect>
+                  <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
+                </>)}
+                {/* {uuid && formValues.organ && (<>    
+                  <InputLabel sx={{display:"inline-flex", color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
+                    Organ: &nbsp;
+                  </InputLabel>
+                  <Box 
+                  sx={{
+                    font:"inherit",
+                    letterSpacing:"inherit",
+                    color:"currentColor",
+                    border:"1px solid rgba(0, 0, 0, 0.26)",
+                    boxSizing:"content-box",
+                    background:"none", 
+                    height:"1.4375em", 
+                    margin:"0",
+                    display:"block", 
+                    minWidth:"0", 
+                    width:"100%",
+                    padding:"16.5px 14px", 
+                  }}>
+                  </Box>
+                  <Typography component="span" color= "rgba(0, 0, 0, 0.38)">
+                    <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+                      <image alt={formValues.organ} href={OrganIcons(formValues.organ)} className="opacity-50" width="25" height="25" />
+                    </svg>
+                    {organ_types[formValues.organ]}
+                  </Typography>
+                </>)} */}
+                </Box>
           )}
 
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (

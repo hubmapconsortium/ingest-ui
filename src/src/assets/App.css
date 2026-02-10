@@ -1110,6 +1110,21 @@ ul.MuiMenu-list li[class*="MuiTablePagination-menuItem"]{
   border: 1px solid #444a6590!important;
 }
 
+/* HuBMAP Dark Wizard */
+.wizardWrap{
+    width: 100%;
+    border: 3px solid #444a65;
+    border-radius: 10px 10px 4px 4px;
+}
+.wizardWrap .stepTitle{
+  background: linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  color: #fff !important;
+  border-bottom: 1px solid #ffffff35;
+  border-radius: 7px 7px 0 0;
+  padding: 10px;
+  font-size: 1.2em;
+  font-family: 'Inter Variable', sans-serif!important;
+}
 
 
 #revert_tooltip{

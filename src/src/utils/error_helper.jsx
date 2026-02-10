@@ -153,3 +153,66 @@ export const tableColumns = (d = '"') => [{
     }
 ]
 
+
+export function parseErrorMessage(err) {
+console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
+var formattingMessage = err;
+try { 
+  if(err["error"]){
+    console.debug('%c⊙', 'color:#00ff7b', "err has err" );
+      formattingMessage = err["error"].split(":");   // parse out the : which separates the error number and message
+    }else if(err.data){
+      console.debug('%c⊙ErrData', 'color:#00ff7b', err.data );
+    }
+    // console.log('parseErrorMessageerror ', l, (1)[1])\
+    console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
+     return formattingMessage
+  } catch {
+    console.debug('%c⊙parseErrorMessage CATCH', 'color:#ff005d', err );
+  }
+ return err
+}
+
+export const ParseRegErrorFrame = (errResp) => {
+  var parsedError;
+  
+  if(errResp.results && errResp.results.data && errResp.results.data.data){
+    parsedError = parseErrorMessage(errResp.results.data.data);
+  }else if(errResp.results && errResp.results.data){
+    parsedError = parseErrorMessage(errResp.results.data);
+  }else if(errResp.results && errResp.results.data){
+    parsedError = parseErrorMessage(errResp.results.data);
+  }else if(errResp.status && errResp.data){
+    parsedError = parseErrorMessage(errResp.data);
+  }else{
+    let regErrorSet ={}
+    if(errResp.err && errResp.err.response.data){
+      regErrorSet = errResp.err.response.data 
+    }else if(errResp.error && errResp.error.response.data){
+      regErrorSet = errResp.error.response.data 
+    }else if(errResp.data){
+      regErrorSet = errResp 
+    }else{
+      regErrorSet = errResp
+    }
+    // var errRows = regErrorSet.data;
+    var errRows = regErrorSet.map(g => {
+      return g.message
+    })
+    var errMessage = regErrorSet.status;
+    parsedError=errResp;
+  }
+
+  this.handleErrorCompiling(parsedError); // Error Array's set in that not here
+  this.setState({ 
+    error_status:   true, 
+    submit_error:   true, 
+    error_message:  errMessage,
+    success_message:null,
+    submitting:     false,
+    response_status:errResp.Error
+  });
+  console.debug("DEBUG",this.state.error_message_detail);
+  this.setState({loading:false,}, () => {   
+  });
+}

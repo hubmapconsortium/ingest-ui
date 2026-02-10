@@ -993,11 +993,6 @@ status
   font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
 }
 
-.associationTableWrap{
-    width: 100%;
-    border: 3px solid #444a65;
-    border-radius: 10px 10px 4px 4px;
-}
 .SearchGridWrap{
   border: 3px solid #444a65 !important;
   border-radius: 0 0 4px 4px !important;
@@ -1019,16 +1014,68 @@ status
   border: 3px solid #444a65 !important;
   border-radius: 0 0 4px 4px !important;
 }
+.associationTableWrap.errorSetWrap{
+  border: 3px solid #C40000 ;
+  background:#ffe6e6 !important;
+  border-radius:4px 4px 0px 0px!important;
+}
+.associationTableWrap.errorSetWrap.regErrorTable{
+  border-radius:0px 0px 4px 4px!important;
+  border-color:#C40000;
+}
+.associationTableWrap.successWrap{
+  border-radius:0px 0px 4px 4px!important;
+  border-color:#444a65;
+}
+.HDT.errorFrame{
+  border:1px solid #9A0A4B;
+  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
+  border-radius:0px 0px 4px 4px;
+  padding:2px;
+  margin-bottom: 6px;
+}
+.HDT.errorFrame div{
+  background: #FADDDD!important;
+  padding: 4px;
+}
+.HDT.errorFrame .preamble{
+  background: #FAECEC!important;
+  padding: 4px; 
+}
+.HDT.errorFrame .MuiBox-root{
+  /* border:1px solid #444a65; */
+  background: #ffe6e6!important;
+  padding:2px;
+}
+
 /* Column headers and footers */
-.HDT .MuiDataGrid-columnHeaders,
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
+.HDT .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
-  background: linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  background: linear-gradient(180deg,  #585E7A 0%,  #444A65 100%) !important;
   border-color: #454d55!important;
   color: #fff !important;
   min-height: 35px;
 }
+.HDT.errorSetTable.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-footerContainer,
+.HDT.errorSetTable .thead-dark{
+  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
+  border-color: #C40000!important;
+}
+.HDT.successReg.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-footerContainer,
+.HDT.successReg .thead-dark{
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
+  border-color: #585E7A!important;
+}
+.HDT.errorSetTable.shortFooter{
+  border-radius: 0px !important;
+}
+
 .HDT .thead-dark th{
   background: none!important;
 }
@@ -1061,11 +1108,11 @@ status
 .HDT .MuiDataGrid-row[data-error]:hover,
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
-  background: #FF000019;
+  background: #ffe6e6;
 }
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
-  border: 1px solid #FF000019;
+  border: 1px solid #ffe6e6;
 }
 .HDT .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
@@ -1094,20 +1141,36 @@ status
   font-family: 'Inter Variable', sans-serif!important;
   /* font-size: 0.8rem; */
 } 
-.MuiPopover-paper:not(#IndividualMenu) ul[role=listbox].MuiMenu-list{
-  padding: 0px !important;
-  background-color: #444a65!important;
-  border: 1px solid #708090!important;
-  border-top: 1px solid #444a65!important;
-}
-.MuiTablePagination-toolbar  div.MuiTablePagination-select{
-  background-color: #444a65!important;
-}
-ul.MuiMenu-list li[class*="MuiTablePagination-menuItem"]{
-  padding: 0px 2px !important;
-  color:#ffffff;
-  font-family: 'Inter Variable', sans-serif!important;
-  border: 1px solid #444a6590!important;
+
+
+.bulkTSVUp {
+  width: 100%;
+  margin: 10px auto;
+  padding: 1.5em;
+  border: 1px solid #bbbbbb40;
+  background-color: #bbbbbb30;
+  transition: border-color .25s ease-in-out;
+  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-size: 1em;
+  &::file-selector-button{
+    padding: 10px;
+    border-width: 0;
+    border-radius: 10px;
+    background-color: hsl(210 70% 30%);
+    background-image: linear-gradient(rgb(88, 94, 122) 0%, rgb(68, 74, 101) 100%);
+    color: hsl(210 40% 90%);
+    transition: all .25s ease-in-out;
+    cursor: pointer;
+    margin-right: 1em;
+  }
+  &:hover {
+  border-color: #1F66AD20;
+  background-color: #bbbbbb40;
+  &::file-selector-button{  
+    background-color: #1F66AD;
+    background-image: linear-gradient(#1F66AD 0%, rgb(68, 74, 101) 100%);
+    }
+  }
 }
 
 
