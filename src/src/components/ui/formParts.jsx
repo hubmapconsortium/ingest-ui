@@ -557,51 +557,38 @@ function infoPanels(entityData,permissions,globusURL){
   )
 }
 
-// Looks at the Bulk Selector Table and returns an array of  all Hubmap IDs
-// Used in HandleCopyFormUrl to populate source_list
-function getHubmapIDsFromBulkTable() {
-  const wrapper = document.getElementById('bulkTableWrapper');
-  if (!wrapper) return [];
-  const table = wrapper.querySelector('table');
-  if (!table) return [];
-  // Select all first-column <a> elements in table rows
-  const idLinks = table.querySelectorAll('tbody tr td:first-child a');
-  // console.log("idLinks",idLinks);
-  return Array.from(idLinks).map(a => a.textContent.trim());
-}
-
 export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submitting, handleSubmitAction}){
-      return (
-          <Dialog
-            sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
-            maxWidth="xs" 
-            aria-labelledby="submit-dialog" 
-            open={showSubmitModal}>
-            <DialogContent>
-              <h4>Preparing to Submit</h4>
-              <div>  Has all data for this dataset been <br/>
-                1	&#41; validated locally, and  <br/>
-                2	&#41; uploaded to the globus folder?</div>
-           </DialogContent>
-             <DialogActions>
-             <LoadingButton 
-                loading={submitting} 
-                sx={{width:"150px"}} 
-                loadingIndicator="Submitting..." 
-                variant="outlined" 
-                onClick={ (e) => handleSubmitAction(e)}>
-              Submit
-             </LoadingButton>
-            <Button
-              className="btn btn-secondary"
-              onClick={() => setIsSubmitModalOpen(false)}>
-              Cancel
-            </Button>          
-            </DialogActions>
-          </Dialog>
-      
-      );
-    }
+    return (
+        <Dialog
+          sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+          maxWidth="xs" 
+          aria-labelledby="submit-dialog" 
+          open={showSubmitModal}>
+          <DialogContent>
+            <h4>Preparing to Submit</h4>
+            <div>  Has all data for this dataset been <br/>
+              1	&#41; validated locally, and  <br/>
+              2	&#41; uploaded to the globus folder?</div>
+          </DialogContent>
+            <DialogActions>
+            <LoadingButton 
+              loading={submitting} 
+              sx={{width:"150px"}} 
+              loadingIndicator="Submitting..." 
+              variant="outlined" 
+              onClick={ (e) => handleSubmitAction(e)}>
+            Submit
+            </LoadingButton>
+          <Button
+            className="btn btn-secondary"
+            onClick={() => setIsSubmitModalOpen(false)}>
+            Cancel
+          </Button>          
+          </DialogActions>
+        </Dialog>
+    
+    );
+  }
 
 // Returns a select menu of the User's dataprovider groups
 // Possibly Deprecating with move of GroupsSelector into modal or Field managers
@@ -803,31 +790,31 @@ export function CombinedWholeEntityOptions({
     });
     // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
-        <FormControl size="small" sx={{width:"100%"}}>
-          {embedded && (
-            <InputLabel htmlFor="entity_type">Type</InputLabel>
-          )}
-          {!embedded && (
-            <Box className="searchFieldLabel" id="SearchLabelType" >
-              <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-              <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
-            </Box>
-          )}
-          
-          <Select 
-            native 
-            fullWidth
-            label="Type"
-            id="entity_type"
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
-            name="entity_type"
-            value={formFilters.entity_type}
-            onChange={(e) => handleInputChange(e)}
-            disabled={restrictions && restrictions.entityType?true:false}>
-            <CombinedEmbeddedEntityOptions />
-          </Select>
+      <FormControl size="small" sx={{width:"100%"}}>
+        {embedded && (
+          <InputLabel htmlFor="entity_type">Type</InputLabel>
+        )}
+        {!embedded && (
+          <Box className="searchFieldLabel" id="SearchLabelType" >
+            <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
+          </Box>
+        )}
         
-        </FormControl>
+        <Select 
+          native 
+          fullWidth
+          label="Type"
+          id="entity_type"
+          sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
+          name="entity_type"
+          value={formFilters.entity_type}
+          onChange={(e) => handleInputChange(e)}
+          disabled={restrictions && restrictions.entityType?true:false}>
+          <CombinedEmbeddedEntityOptions />
+        </Select>
+      
+      </FormControl>
     )
   }catch(error){
     let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;
@@ -835,70 +822,6 @@ export function CombinedWholeEntityOptions({
     return (<Typography> ERROR: {error.toString()} </Typography>)
   }  
 };
-
-// Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL
-export function HandleCopyFormUrl() {
-  // e.preventDefault();
-  const url = new URL(window.location.origin + window.location.pathname);
-  let formValues = document.querySelectorAll("input, textarea, select");
-  // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
-  Object.entries(formValues).forEach(([key, value]) => {
-    // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
-    if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
-      url.searchParams.set(value.id, value.value);
-    }
-    else if (value.type === "checkbox" && value.checked ) {
-      url.searchParams.set(value.id, value.checked === true ? "true" : "false");
-    }
-  });
-  let sourceTable = getHubmapIDsFromBulkTable();
-  if (sourceTable.length > 0) {
-    url.searchParams.set("source_list", sourceTable.join(","));
-  }
-  navigator.clipboard.writeText(url.toString())
-    .then(() => {
-      // setSnackMessage("Form URL copied to clipboard!");
-      // setShowSnack(true)
-    })
-    .catch(() => {
-      // setSnackMessage("Form URL Failed to copy to clipboard!");
-      // setShowSnack(true)
-    });
-}
-
-// The SpeedDial tool being used for quick actions like Copy Form URL & Create Dataset (Admin quick access)
-export function SpeedDialTooltipOpen() {
-  let navigate = useNavigate();
-  const actions = [
-    { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
-    { icon: <TableChartIcon />, name: 'Create Dataset', action: () => navigate(`/new/datasetAdmin`) },
-  ];
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  return (
-    <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', top: 0, right: 16,/*  background:"#0080d009", borderRadius:"1.2em"*/ }}
-        icon={<OfflineBoltIcon />}
-        direction={"down"}>
-        {actions.map((action) => (
-          <SpeedDialAction
-            key={action.name}
-            icon={action.icon}
-            onClick={() => action.action ? action.action() : alert(action.name)}
-            slotProps={{
-              tooltip: {
-                title: action.name,
-              },
-            }}
-          />
-        ))}
-      </SpeedDial>
-    </Box>
-  );
-}
 
 // Returns a Feedback Dialog Modal for displaying Warnings, Errors, etc
 export function FeedbackDialog( { 
@@ -1071,35 +994,6 @@ export function SnackbarFeedback(props){
       </Alert>
     </Snackbar>
   );
-}
-
-export function ViewDebug(values){
-  let valList = []
-  // console.debug('%c◉ values ', 'color:#00ff7b', values.data, typeof values.data);
-  Object.entries(values.data).forEach(([key, value]) => {
-    // console.debug(`%c${key}:`, 'color:#00ff7b', value);
-    valList.push()
-  })
-
-  return(
-    <Box 
-      sx={{
-        padding:"10px",
-        position:"fixed",
-        bottom:"0px",
-        left:"50%",
-        backgroundColor:"#00000020",
-        color:"#000",
-        width:"60%",
-        maxHeight:"40vh",
-        overflowY:"scroll",
-        zIndex: 9999
-      }}>
-      {Object.entries(values.data).map(([key, value]) => (
-        <Typography key={key} variant="caption" sx={{color:"#000"}}>{key}: {JSON.stringify(value)} | </Typography>
-      ))}
-    </Box>
-  )
 }
 
 

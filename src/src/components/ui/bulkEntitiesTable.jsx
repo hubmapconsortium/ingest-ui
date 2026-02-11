@@ -16,7 +16,8 @@ import {
   ingest_api_bulk_entities_register,
   ingest_api_users_groups
 } from '../../service/ingest_api';
-import {ParsePreflightString, ViewDebug} from '../ui/formParts.jsx';
+import {ParsePreflightString} from '../ui/formParts.jsx';
+import {ViewDebug} from '../ui/devTools.jsx';
 import {ParseRegErrorFrame, parseErrorMessage} from '../../utils/error_helper.jsx';
 import {toTitleCase} from "../../utils/string_helper";
 import LoadingButton from "@mui/lab/LoadingButton";
@@ -80,8 +81,9 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
       default:
         return COLUMN_DEF_SAMPLE;
     }
-  }, []);
+  }, []); 
   const columnsSuccess = (type ? colSelectionComplete(type) : COLUMN_DEF_SAMPLE);
+  console.debug('%c◉ columnsSuccess ', 'color:#00ff7b', columnsSuccess);
   // Format success columns: remove created_by fields and make hubmap_id a clickable Button
   const columnsSuccessFormatted = columnsSuccess
     .filter(col => col.field !== 'created_by_user_displayname' && col.field !== 'created_by_user_email')
@@ -121,6 +123,26 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     }
     return col;
   });
+  const hiddenFields = useMemo(() => {
+    const base = [
+      "created_by_user_displayname",
+      "lab_tissue_sample_id",
+      "lab_donor_id",
+      "specimen_type",
+      "organ",
+      "registered_doi",
+    ];
+    const hf = [...base];
+    return hf;
+  }, []);
+
+  const columnFieldFilter = useMemo(() => {
+    const obj = {};
+    hiddenFields.forEach((value) => {
+      obj[value] = false;
+    });
+    return obj;
+  }, [hiddenFields]);
 
 
   // Sync local BulkEntity with prop changes
@@ -625,6 +647,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           rows={successRows}
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccessFormatted}
+          columnVisibilityModel={columnFieldFilter}
           loading={loaders.uploadTable}
           density="compact"
           logLevel="info"

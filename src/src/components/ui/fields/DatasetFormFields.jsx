@@ -101,6 +101,8 @@ export const DatasetFormFields = ({ formFields, formValues, formErrors, permissi
               {field.writeEnabled && (
                 <Select
                   id={field.id}
+                  className="datasetTypeDropdown"
+                  sx={{backgroundColor: "#ebebeb"}}
                   name={field.id}
                   value={formValues[field.id] || ""}
                   onChange={handleInputChange}

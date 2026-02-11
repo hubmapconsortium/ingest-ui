@@ -46,6 +46,8 @@ body {
   --HBM_BrightBlueCLPlus: #97CDF610;
   --HBM_DarkBlue: #444A65;
   --HBM_DarkBlueCL: #444A6560;
+  --HBM_DarkBlueAlt: #585E7A;
+  --HBM_DarkBlueAltCL: #444A6520;  
   --HBM_Lavender: #9AA0BC;
   --HBM_LavenderCL: #9AA0BC20;
   --HBM_Red: #96909A;
@@ -84,8 +86,6 @@ body {
     background-color: var(--HBM_Lavender)!important;  
     color: var(--HBM_Smoke)!important;
 }
-
-
 
 .tooltip {
   width: 250px;
@@ -999,7 +999,7 @@ status
 }
 .HDT .MuiDataGrid-toolbarContainer {
   /* background: #444a65!important ; */
-  background: linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
   border-bottom: 1px solid #ffffff35;
 }
 .HDT .MuiDataGrid-row:hover {
@@ -1053,7 +1053,7 @@ status
 .HDT .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
-  background: linear-gradient(180deg,  #585E7A 0%,  #444A65 100%) !important;
+  background: linear-gradient(180deg,  #585E7A 0%,  #444a65 100%) !important;
   border-color: #454d55!important;
   color: #fff !important;
   min-height: 35px;
@@ -1142,7 +1142,6 @@ status
   /* font-size: 0.8rem; */
 } 
 
-
 .bulkTSVUp {
   width: 100%;
   margin: 10px auto;
@@ -1172,8 +1171,6 @@ status
     }
   }
 }
-
-
 
 #revert_tooltip{
   background-color: #fff!important;

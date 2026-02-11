@@ -28,7 +28,6 @@ import Grid from '@mui/material/Grid';
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
-import {SpeedDialTooltipOpen} from './components/ui/formParts';
 import {OrganDetails} from './components/ui/icons';
 import {ValidateLocalStoreValue} from './utils/validators';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
@@ -36,6 +35,9 @@ import {api_validate_token} from './service/search_api';
 import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set, ubkg_api_get_organs_full} from "./service/ubkg_api";
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import { gateway_api_status } from "./service/gateway_service";
+
+// DEVtools
+import {SpeedDialTooltipOpen} from './components/ui/devTools';
 
 // The legacy form loaders
 import {RenderMetadata} from "./components/metadata";
