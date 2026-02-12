@@ -1,5 +1,5 @@
 body {
-  font-family: 'Inter Variable',"Helvetica", "sans-serif";
+  font-family: 'Inter var',"Helvetica", "sans-serif";
 }
 #header {
   margin-bottom: 20px;
@@ -16,14 +16,18 @@ body {
 
 body {
   background-color: #ebebeb;
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
 }
 
 
-/* Inter Variable Font override */
+/* Inter var Font override */
 /* Avoids having to muck about ThemeProvider nonsense */
-#root{
-  font-family: 'Inter Variable', sans-serif!important;
+/* #root{
+  font-family: 'Inter var', sans-serif!important;
+} */
+ :root { font-family: 'Inter', sans-serif; }
+@supports (font-variation-settings: normal) {
+  :root { font-family: 'Inter var', sans-serif; }
 }
 .MuiPaper-root,
 .MuiTypography-root,
@@ -34,7 +38,7 @@ body {
 .MuiInputLabel-root,
 .MuiButtonBase-root,
 .MuiDataGrid-main {
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
 }
 :root {
   --HBM_Smoke: #F4F4F4;
@@ -523,7 +527,7 @@ a:not([href]).ttip {
 
 .table-hdr-fmt {
   font-size: 0.95rem;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
 }
@@ -552,13 +556,13 @@ a:not([href]).ttip {
 
 .portal-jss116 {
   font-size: 0.95rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.5;
 }
 .portal-alert-text {
   font-size: 0.7rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
   color: red;
@@ -566,14 +570,14 @@ a:not([href]).ttip {
 
 .portal-label {
   font-size: 1.2rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
 }
 
 .portal-jss120 {
   font-size: 2.3rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.2;
 }
@@ -603,7 +607,7 @@ a:not([href]).ttip {
   padding: 16px;
   font-size: 0.8rem;
   text-align: left;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.43;
   /*border-bottom: 1px solid rgba(224, 224, 224, 1);*/
@@ -763,7 +767,7 @@ select#groups {
 
 .portal-jss117 {
   font-size: 0.8rem;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.66;
 }
@@ -990,7 +994,7 @@ status
 /* --- HuBMAP Dark Table (HDT) Styles --- */
 .MuiDataGrid-main,
 .MuiTableCell-head {
-  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
 }
 
 .SearchGridWrap{
@@ -1029,24 +1033,63 @@ status
 }
 .HDT.errorFrame{
   border:1px solid #9A0A4B;
-  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
-  border-radius:0px 0px 4px 4px;
-  padding:2px;
+  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) ;
+  border-radius:4px;
+  /* border-radius:0px 0px 4px 4px; */
+  padding:4px;
   margin-bottom: 6px;
 }
 .HDT.errorFrame div{
   background: #FADDDD!important;
   padding: 4px;
+  /* border-radius:4px; */
+  border-radius:0px 0px 4px 4px!important;
+  
 }
-.HDT.errorFrame .preamble{
-  background: #FAECEC!important;
-  padding: 4px; 
-}
+/* .HDT.errorFrame .preamble{
+  
+} */
 .HDT.errorFrame .MuiBox-root{
   /* border:1px solid #444a65; */
   background: #ffe6e6!important;
   padding:2px;
 }
+.HDT.errorFrame .errorFrameDetail{
+  background: #FADDDD!important;
+  padding: 10px 4px 4px 4px;
+  border-radius:4px 4px 0px 0px !important;
+  border-bottom: 1px solid #f00f0020;
+}
+.HDT.errorFrame .errorFrameDetail span{
+  line-height: 1em;;
+}
+
+
+.HDT div[data-cell-spotlight="true"]{
+  box-shadow: 0px 5px 6px 1px #f56e6e;
+  border:1px solid #ff0000;
+  background: #FF4949!important;
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+.HDT div[data-row-spotlight="true"].rowNum{
+  font-weight: bold;
+  color: #ff0000;
+}
+.HDT div[data-cell-spotlight="true"]{
+  box-shadow: 0px 5px 6px 1px #f56e6e;
+  border:1px solid #ff0000;
+  background: #FF4949!important;
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+.HDT div[data-row-spotlight="true"]{
+  /* background-image: linear-gradient(to right, ffe6e6 50%, ff0000 50%);
+  -webkit-transition: background-position 1s;
+  -moz-transition: background-position 1s;
+  transition: background-position 1s;
+  background-position: 0 -100%; */
+  background: #ffd0d0 !important;
+}
+
 
 /* Column headers and footers */
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
@@ -1105,15 +1148,32 @@ status
   border-right: 1px solid #ffffff35;
 }
 .HDT .MuiDataGrid-row[data-error],
-.HDT .MuiDataGrid-row[data-error]:hover,
-.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
+.HDT .MuiDataGrid-row[data-error]:hover{
   background: #ffe6e6;
+  border-top:1px solid #FCCDCD;
+  border-bottom:1px solid #FCCDCD;
 }
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error],
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error]:hover {
+  background: #FF7B7B;
+  border:1px solid #E13434;
+  color:#fff;
+  font-weight: 400;
+  /* border-right:1px solid #E13434; */
+}
+.HDT .errIcon{
+  position: relative;
+  float: left;
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+  margin-left: 10px;
+}
+/* 
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
   border: 1px solid #ffe6e6;
-}
+} */
 .HDT .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
 }
@@ -1131,14 +1191,14 @@ status
 .HDT .MuiDataGrid-toolbarContainer button,
 .HDT .MuiDataGrid-footerContainer p  {
   color: #fff;
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
 }
 .HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
 /* Contributors table cell font size */
 .HDT .MuiDataGrid-cellContent {
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
   /* font-size: 0.8rem; */
 } 
 
@@ -1149,7 +1209,7 @@ status
   border: 1px solid #bbbbbb40;
   background-color: #bbbbbb30;
   transition: border-color .25s ease-in-out;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
   font-size: 1em;
   &::file-selector-button{
     padding: 10px;
@@ -1220,11 +1280,11 @@ status
   white-space:nowrap; 
   text-overflow:ellipsis;
 } 
-/* Brute Force Inter Variable Fix / Death To Roboto */
-/* all of the manual overrides to force Inter Variable over Roboto */
+/* Brute Force Inter var Fix / Death To Roboto */
+/* all of the manual overrides to force Inter var over Roboto */
 .bulk-table,
 .bulk-table tr td{
-  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
 } 
 
 /* Icon ROtations */

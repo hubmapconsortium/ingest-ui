@@ -320,9 +320,22 @@ export const COLUMN_DEF_MIXED = [
 // LIMITED DATASET TYPE COLUMNS (FOR SOURCE DISPLAY)
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
-// COLUMNS FOR TSV UPLOADS FOR BULK DONORS AND SAMPLES
 
+// COLUMNS FOR TSV UPLOADS FOR BULK DONORS AND SAMPLES
+export const COLUMN_DEF_BULK_ERRORS = [
+  { field: "row", headerName: "Row", minWidth:50, flex: 0.1 },
+  { field: "error", headerName: "Message", flex: 1}
+];
+
+// SAMPLES
 export const COLUMN_DEF_BULK_SAMPLES = [
+  { field: "row", headerName: "Row", flex: 0.1,
+    renderCell: (params: ValueFormatterParams) => (
+        <Typography className="rowNum" variant="caption" >
+          {params.value}
+        </Typography>
+      ), 
+  },
   { field: "source_id", headerName: "Source Id", minWidth: 150,},
   { field: "lab_id", headerName: "Lab Id",minWidth: 150, },
   // { field: "sample_category", headerName: "Type", width: 150 },
@@ -336,7 +349,7 @@ export const COLUMN_DEF_BULK_SAMPLES = [
       return (toTitleCase(params.row.sample_category))
     }
   }, 
-  { field: "organ_type", 
+  { field: "organ", 
     headerName: "Organ", 
     minWidth: 150,
     renderCell: params => {
@@ -350,34 +363,87 @@ export const COLUMN_DEF_BULK_SAMPLES = [
   { field: "sample_protocol", headerName: "Protocol",  },
   { field: "description", headerName: "Description",  },
 ];
-
-export const COLUMN_DEF_BULK_REGISTERED_SAMPLES = COLUMN_DEF_SAMPLE.map((col) => {
-  if (col.field === 'hubmap_id') {
-    return {
-      ...col,
-      renderCell: (params: ValueFormatterParams) => (
+export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
+  { field: 'hubmap_id', 
+    headerName: 'HubMAP ID', 
+    width: 180,
+    renderCell: (params: ValueFormatterParams) => (
         <Button
           fullWidth
           variant="contained"
+          size="small"
           className="m-2"
           onClick={(e) => handleOpenPage(e, params.value)}>
           {params.value}
         </Button>
-      ),
-    };
-  }
-  return col;
-});
+      ), 
+  },
+  { field: 'submission_id', headerName: 'Submission ID', width: 150 }, 
+  { field: "computed_lab_id_type",
+    headerName: "Lab ID",
+    //description: "This column has a value getter and is not sortable.",
+    sortable: false,
+    width: 173,
+    valueGetter: getLabId
+  }, 
+  { field: "entity_type",
+    headerName: "Type",
+    minWidth: 150,
+    sortable: false,
+    // valueGetter: getTypeValue,
+    renderCell: params => {
+      let icon = entityIconsBasic(params.row.entity_type) 
+      if(params.row.organ){
+        let toMirror = ["Knee (Left)"]
+        let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+        let organ_types = JSON.parse(localStorage.getItem("organs"));
+        return (<> 
+          <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={params.row.organ} href={systemIcons[params.row.organ]} width="25" height="25" /></svg>{organ_types[params.row.organ]} (Organ)
+        </>)
+      }else if(params.row.sample_category){
+        return (<>{icon}{toTitleCase(params.row.sample_category)}</>)
+      }
+      return (<>{icon}{toTitleCase(params.row.sample_category)}</>)
+    }
+  }, 
+  { field: "description",
+    headerName: "Description",
+    flex: 1,
+    sortable: false,
+  }, 
+  { field: "group_name",
+    headerName: "Group",
+    flex: 1,
+    sortable: false,
+  }, 
+];
 
+// DONORS
 export const COLUMN_DEF_BULK_DONORS = [
   { field: "lab_id", headerName: "Lab ID", width: 150 },
   { field: "lab_name", headerName: "Lab Name", width: 150 },
   { field: "selection_protocol", headerName: "Protocol", width: 150 },
   { field: "description", headerName: "Description", width: 200 },
 ];
-export const COLUMN_DEF_BULK_ERRORS = [
-  { field: "row", headerName: "Row", minWidth:50, flex: 0.1 },
-  { field: "error", headerName: "Message", flex: 1}
+export const COLUMN_DEF_BULK_DONORS_SUCCESS = [
+  { field: 'hubmap_id', 
+    headerName: 'HubMAP ID', 
+    width: 180,
+    renderCell: (params: ValueFormatterParams) => (
+        <Button
+          fullWidth
+          variant="contained"
+          size="small"
+          className="m-2"
+          onClick={(e) => handleOpenPage(e, params.value)}>
+          {params.value}
+        </Button>
+      ), 
+  },
+  { field: 'submission_id', headerName: 'Submission ID' },
+  { field: 'lab_donor_id', headerName: 'Lab ID',flex:0.2},
+  { field: 'description', headerName: 'Description', flex:0.5},
+  { field: 'group_name', headerName: 'Group',flex:0.2},
 ];
 
 // Computed column functions
@@ -408,7 +474,9 @@ function entityIconsBasic(entity_type){
       return <BubbleChartIcon  sx={style}/>
   }
 }
-function renderFieldIcons(params: ValueFormatterParams){
+
+
+export function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
   let toMirror = ["Knee (Left)"]
   // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
@@ -422,12 +490,19 @@ function renderFieldIcons(params: ValueFormatterParams){
       {!params.row.organ && params.row.entity_type && (
         entityIconsBasic(params.row.entity_type)
       )}
-
       {params.value}
     </div>
   )
 }
-
+function renderOrganCell(row){
+  let toMirror = ["Knee (Left)"]
+  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+  let organ_types = JSON.parse(localStorage.getItem("organs"));
+  return (<> 
+    <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(row.organ_type) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={row.organ_type} href={systemIcons[row.organ_type]} width="25" height="25" /></svg> {organ_types[row.organ_type]}
+  </>)
+    
+}
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
 function shrinkCols(string){

@@ -13,7 +13,7 @@ import Papa from 'papaparse';
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSpinner,faExclamationTriangle,faFileDownload} from "@fortawesome/free-solid-svg-icons";
+import {faSpinner,faExclamationTriangle,faFileDownload,faTruckMoving} from "@fortawesome/free-solid-svg-icons";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import {NewBadge,IconSelection,prefillFormValuesFromUrl,SnackbarFeedback} from "../ui/formParts";
 import {AddBoxOutlined} from "@material-ui/icons";
@@ -56,38 +56,6 @@ const VisuallyHiddenInput = styled('input')({
   whiteSpace: 'nowrap',
   width: 1,
 });
-
-
-  // Memoize file handlers to avoid recreation
-  const handleFileUpload = useCallback((file) => {
-    setValidatingUpload(true);
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        setBulkRows(results.data.map((row, idx) => ({ id: idx, ...row })));
-        setValidatingUpload(false);
-        setActiveStep(1);
-      },
-      error: () => {
-        setValidatingUpload(false);
-      }
-    });
-  }, []);
-
-  const handleFileGrab = useCallback((e) => {
-    var grabbedFile = e.target.files[0];
-    var newName = grabbedFile.name.replace(/ /g, '_');
-    var newFile = new File([grabbedFile], newName);
-    if (newFile && newFile.name.length > 0) {
-      setTsvFile(newFile);
-      handleFileUpload(newFile);
-    } else {
-      console.debug("No Data??");
-    }
-  }, [handleFileUpload]);
-
-
 
   return(
     <Box>

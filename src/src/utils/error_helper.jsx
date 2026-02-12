@@ -216,3 +216,89 @@ export const ParseRegErrorFrame = (errResp) => {
   this.setState({loading:false,}, () => {   
   });
 }
+
+
+export function TableErrorRowProcessing(errorsArray){
+  console.debug('%c◉ TableErrorRowProcessing ', 'color:#00ff7b', errorsArray);
+  // Build a normalized error set: ensure we operate on strings
+    const errorSet = errorsArray.map((item) => {
+      console.debug('%c◉ item ', 'color:#00ff7b', item);
+      const message = (typeof item === 'string') ? item : (item && item.error ? item.error : '');
+      const msgStr = String(message || '');
+      const lower = msgStr.toLowerCase();
+      // If message indicates a missing required header, capture the column name
+      // get row Number
+      const rowMatch = msgStr.match(/Row Number:\s*(\d+)\./i);
+      let trimMsg = msgStr.replace(/Row Number:\s*\d+\./ig, ""); // Remove row number from message to avoid duplication in table
+      const eRow = (rowMatch ? parseInt(rowMatch[1], 10) : null) + 1;
+      
+      const requiredMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+is\s+a\s+required\s+header\b/i);
+      if (requiredMatch) {
+        console.dir('%c◉ requiredMatch ', 'color:#00ff7b', requiredMatch);
+        return {
+          column: requiredMatch[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }
+      // If message indicates a value is invalid, capture col name
+      const valueMustBeMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+value\s+must\b/i);
+      if (valueMustBeMatch) {
+        console.dir('%c◉ valueMustBeMatch ', 'color:#00ff7b', valueMustBeMatch);
+        return {
+          column: valueMustBeMatch[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }              
+      // If message indicates a value is invalid, capture col name
+      const mustBeMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+must\b/i);
+      if (mustBeMatch) {
+        console.dir('%c◉ valueMustBeMatch ', 'color:#00ff7b', mustBeMatch);
+        return {
+          column: mustBeMatch[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }
+      // If message indicates a value is invalid, capture col name
+      const blankCheck = msgStr.match(/\b([A-Za-z0-9_]+)\s+field\s+is\s+not\s+blank,\b/i);
+      if (mustBeMatch) {
+        console.dir('%c◉ valueMustBeMatch ', 'color:#00ff7b', blankCheck);
+        return {
+          column: blankCheck[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }
+      // If message indicates an unaccepted field, capture the column name
+      const notAcceptedMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+is\s+not\s+an\s+accepted\s+field\b/i);
+      if (notAcceptedMatch) {
+        console.dir('%c◉ notAcceptedMatch ', 'color:#00ff7b', notAcceptedMatch);
+        return {
+          column: notAcceptedMatch[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }
+      // If message indicates an unaccepted field, capture the column name
+      const canNotBeMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+can\s+not\s+be\b/i);
+      if (canNotBeMatch) {
+        console.dir('%c◉ notAcceptedMatch ', 'color:#00ff7b', canNotBeMatch);
+        return {
+          column: canNotBeMatch[1],
+          error: trimMsg,
+          row: eRow ? eRow : "",
+        };
+      }
+      
+      const colMatch = msgStr.match(/\b([A-Za-z0-9_]+)\s+field\b/i);
+      const column = colMatch ? colMatch[1] : "";
+      return {
+        column: column,
+        error: trimMsg,
+        row: eRow ? eRow : "",
+      };
+  });
+  return errorSet;
+}
