@@ -164,7 +164,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             uploaded: true,
             registered: false,
           });
-          setLoaders((prev) => ({ ...prev, uploadTable: false, }));
           handleFileUpload(newFile);
           console.debug('%c◉ fileData ', 'color:#00ff7b', fileData, fileData.rows);
         }
@@ -196,7 +195,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             // Keep the raw array for now
             setBulkEntityValidationErrors(errorsArray)
             let errorSet = TableErrorRowProcessing(errorsArray)
-            console.log(errorSet)
+            console.debug('%c◉ TableErrorRowProcessing errorSet ', 'background:#0033FF', respSet);
             // Replace validation errors with the normalized set
             setBulkEntityValidationErrors(errorSet)
             highlightTableErrors(errorSet);
@@ -283,6 +282,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           //setValidatingBulkEntityUpload(false)
         }
         //setValidatingBulkEntityUpload(false)
+        setLoaders((prev) => ({ ...prev, uploadTable: false, }));
       })
       .catch((error) => {
         //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
@@ -377,6 +377,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
                 ...originalRow,
                 ...respMeta,
                 error: val.error,
+                listIndex: rowIndex-1,
               };
             });
             console.debug('%c◉ errRows ', 'color:#00ff7b', errRows);
@@ -421,29 +422,43 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     
   }
 
+  // function cellParse(error, errorRow){
+  //   console.debug('%c◉ error ', 'color:#00ff7b', error);
+  //   // let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
+  //   // If we're in the type column, this could be labeled as either sample_category or sample_type depending on the error source, so let's check for both
+  //   let columnSelector = `[data-field="${error.column}" ]`;
+  //   if(error.column === "type"){
+  //     if(errorRow.querySelector(`[data-field="sample_category" ]`)){
+  //       console.debug('%c◉ sample_category ', 'color:#00ff7b', );
+  //       columnSelector = `[data-field="sample_category" ]`;
+  //     }else if(errorRow.querySelector(`[data-field="sample_type" ]`)){
+  //       console.debug('%c◉  sample_type', 'color:#00ff7b', );
+  //       columnSelector = `[data-field="sample_type" ]`;
+  //     }
+  //   }
+  //   let cell = errorRow.querySelector(columnSelector);
+  //   return cell
+  // }
+
   function highlightTableErrors(errorSet){
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       for (const error of errorSet) {
-        console.debug('%c◉ error to highlight ', 'color:#00ff7b', error);
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
-        console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
         errorRow.setAttribute('data-error','true')
-
         if(error.column === "organ_type"){
           error.column = "organ"
         }
+        // let cell = cellParse(error, errorRow)
         let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
         console.debug('%c◉ cell ', 'color:#00ff7b', cell);
         if(cell){
           cell.setAttribute('data-error','true')
-          cell.setAttribute('data-cell-error','true')
+          // cell.setAttribute('data-cell-error','true')
+          cell.setAttribute('data-target',`${error?.row-1}_${error?.column}`)
           cell.addEventListener("mouseenter", function (e) {
-            
-            spotlightErrorRow(e, error);
+            spotlightCellAndRow(e, error, `${error?.row-1}_${error?.column}`); 
           });
-
-          
         }
       }
     }else{
@@ -458,78 +473,81 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     }
   }
 
-
-
-    // if(errorSet && errorSet.length > 0){
-    //   for (const error of errorSet) {
-    //     const errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
-    //     if (!errorRow) continue;
-    //     errorRow.setAttribute('data-error','true');
-    //     const cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
-    //     if (cell) cell.setAttribute('data-error','true');
-    //   }
-    // }else{
-    //   // Remove any previously-set data-error attributes
-      
-    // }
-  // }
   
-  function spotlightErrorRow(e, error){
-    let rowVal = error?.row;
-    console.debug('%c◉ spotlightErrorRow ', 'color:#00ff7b', rowVal, error);
-    if(rowVal){
-      try{
-        // document.getElementById("errListRow-"+rowVal)?.scrollIntoView({behavior:"smooth", block:"center"});
-        let listRow = document.getElementById("rowValerrListRow-"+rowVal);
-        listRow.setAttribute('data-row-spotlight','true');
-        setTimeout(() => {
-          listRow.removeAttribute('data-row-spotlight');
-        }, 4000);
-        // console.debug('%c◉ spotlightErrorRow ', 'color:#00ff7b', error.row, e);
-        
-      }catch(err){
-        console.debug('spotlightErrorRow error', err);
-      }
-    }
-  }
+  // function spotlightErrorRow(e, error, target){
+  //   document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
+  //   let rowVal = error?.row;
+  //   console.debug('%c◉ RW ', 'color:#00ff7b', target);
+  //   let targetVal = rowVal+_+error?.column;
+  //   if(rowVal){
+  //     try{
+  //       let listContainer = document.getElementsByClassName("renderErrorList");
+  //        console.debug('%c◉ listContainer ', 'color:#00ff7b', listContainer, listContainer[0]);
+  //       let targetRow = listContainer[0].querySelectorAll(`[data-target="${targetVal}" ]`)
+  //       console.debug('%c◉ targetRow ', 'color:#00ff7b', targetRow);
+  //       setTimeout(() => {
+  //       }, 3000);        
+  //       // }, 4000);        
+  //     }catch(err){
+  //       console.debug('spotlightErrorRow error', err);
+  //     }
+  //   }
+  // }
 
 
-  function spotlightErrorCell(e, error){
-    console.debug('%c◉ e ', 'color:#00ff7b', e);
-    console.debug('%c◉ spotlightErrorCell ', 'color:#00ff7b', error.row, error.column);
-    document.querySelector(`[data-cell-spotlight="true" ]`)?.removeAttribute('data-cell-spotlight');
-    document.querySelector(`[data-row-spotlight="true" ]`)?.removeAttribute('data-row-spotlight');
-    try{
-      let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
-      console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
-      if(errorRow){
-        errorRow.setAttribute('data-row-spotlight','true')
-        let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
-        console.debug('%c◉ cell ', 'color:#00ff7b', cell);
-        if(cell){
-          cell.setAttribute('data-cell-spotlight','true')
-          dimSpotlight(); 
-        }
-      }
-    }catch(err){
-      console.debug('spotlightErrorCell error', err);
-    }
-  }
-  function dimSpotlight(){
-    let brightCell = document.querySelector(`[data-cell-spotlight="true" ]`);
-    let brightRow = document.querySelector(`[data-row-spotlight="true" ]`);
+  // function spotlightErrorCell(e, error){
+  //   // console.debug('%c◉ e ', 'color:#00ff7b', e);
+  //   // console.debug('%c◉ spotlightErrorCell ', 'color:#00ff7b', error.row, error.column);
+  //   document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
+  //   try{
+  //     let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
+  //     console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
+  //     if(errorRow){
+  //       let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
+  //       console.debug('%c◉ cell ', 'color:#00ff7b', cell);
+  //       if(cell){
+  //         cell.setAttribute('data-spotlight','true')
+  //         dimSpotlight(); 
+  //       }
+  //     }
+  //   }catch(err){
+  //     console.debug('spotlightErrorCell error', err);
+  //   }
+  // }
+
+
+  function spotlightCellAndRow(e, error, target){
+    console.debug('%c◉ spotlightCellAndRow ', 'color:#00ff7b', target);
+
+    // Turn off Old Lights
+    document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
+    let olds = document.querySelectorAll(`[data-spotlight="true" ]`);
+    olds.forEach(el => el.removeAttribute('data-spotlight', 'true'));
+
+    // Attach data-spotlight to both the error list item and the cell, so both will be highlighted
+    let spotlightTargets = document.querySelectorAll(`[data-target="${target}" ]`);
+    spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true'));
+
+    // Add bonus row highlight on table when spotlit
+    let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
+    console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
+    errorRow.setAttribute('data-spotlight', 'true');
+
     setTimeout(() => {
-      if(brightCell){
-        brightCell.removeAttribute('data-cell-spotlight');
-        brightRow.removeAttribute('data-row-spotlight');
-      }
-    }, 4000);
+      spotlightTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
+    }, 3000);
+
   }
+
+  // function dimSpotlight(){
+  //   let brightCell = document.querySelectorAll(`[data-spotlight="true" ]`);
+    
+  // }
 
   // Renders bulkEntity errors as HTML list
   function renderBulkEntityErrors() {
     return (
-      <Box>
+      <Box  className="renderErrorList">
         {Array.isArray(bulkEntityValidationErrors) && bulkEntityValidationErrors.map((item, i) => {
           let rowStart 
           if(item?.row){
@@ -548,6 +566,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             <Box 
               id={"errListRow-"+item?.row}
               className={"errListRow"}
+              data-column={item?.column}
+              data-target={`${item?.row-1}_${item?.column}`}
               sx={{
                 display:"flex", 
                 flexDirection:"row", 
@@ -557,13 +577,12 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
                 background: i%2 === 0 ? "#ffe6e6" : "#ffcccc", 
                 padding: "5px 10px", 
                 borderBottom: "1px solid #00000030"}}>
-
               <Typography key={i} variant="caption">
                 <Typography
                   variant="caption"
                   component={"span"}
                   onMouseEnter={(e) => { 
-                    spotlightErrorCell(e, {row: (item?.row)-1,column: item?.column,}) 
+                    spotlightCellAndRow(e, {row: (item?.row)-1,column: item?.column,}, `${item?.row-1}_${item?.column}`) 
                   }}
 
                   sx={{
@@ -777,7 +796,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         <Box sx={{float:"right", display:"inline-block", }}>
           {!fileData.registered && (
             <LoadingButton
-              disabled={!fileData.uploaded || fileData.registered}
+              disabled={(bulkEntityValidationErrors && bulkEntityValidationErrors?.length > 0 ) || fileData.registered}
               variant="outlined"
               size="large"
               loadingIndicator={<CircularProgress color="inherit" size={16} />}

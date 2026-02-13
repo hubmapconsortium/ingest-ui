@@ -18,6 +18,7 @@ import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
+import {max} from "moment";
 // @TODO: Move into TableBuilder (Since these aren't very well constant but dynamically generated) under /ui
 
 // table column definitions
@@ -329,14 +330,26 @@ export const COLUMN_DEF_BULK_ERRORS = [
 
 // SAMPLES
 export const COLUMN_DEF_BULK_SAMPLES = [
-  { field: "row", headerName: "Row", flex: 0.1,
+  { field: "row", headerName: "", flex: 0.1, maxWidth: 20,
     renderCell: (params: ValueFormatterParams) => (
         <Typography className="rowNum" variant="caption" >
           {params.value}
         </Typography>
       ), 
   },
-  { field: "source_id", headerName: "Source Id", minWidth: 150,},
+  { field: "source_id", headerName: "Source Id", minWidth: 150,
+    renderCell: (params: ValueFormatterParams) => (
+        <Button
+          fullWidth
+          variant="contained"
+          size="small"
+          className="px-2"
+          sx={{fontSize: "0.65rem", minWidth: "80px"}}
+          onClick={(e) => handleOpenPage(e, params.value)}>
+          {params.value}
+        </Button>
+      ), 
+  },
   { field: "lab_id", headerName: "Lab Id",minWidth: 150, },
   // { field: "sample_category", headerName: "Type", width: 150 },
   { field: "sample_category",

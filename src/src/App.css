@@ -1061,34 +1061,49 @@ status
   border-bottom: 1px solid #f00f0020;
 }
 .HDT.errorFrame .errorFrameDetail span{
-  line-height: 1em;;
+  line-height: 1em;
 }
 
+.HDT div[data-cell-error="true"] button{
+  border:1px solid #ff0000;
+  background-color: #FF4949!important;
+}
+.HDT div[data-error="true"] div[data-error="true"]:hover{
+  z-index: 9999;
+  /* box-shadow: 0px 5px 6px 1px #f56e6e; */
+  border:1px solid #ff0000;
+  background-color: #FF4949!important;
+  transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
 
-.HDT div[data-cell-spotlight="true"]{
+.HDT .MuiDataGrid-row[data-spotlight="true"]{
+  background-color: #F8CECE!important;
+  transition:  0.2s ease-in-out;
+}
+
+.HDT .MuiDataGrid-cell[data-spotlight="true"]{
+  z-index: 9999;
   box-shadow: 0px 5px 6px 1px #f56e6e;
   border:1px solid #ff0000;
-  background: #FF4949!important;
+  background-color: #FF4949!important;
   transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
-.HDT div[data-row-spotlight="true"].rowNum{
-  font-weight: bold;
-  color: #ff0000;
+
+.HDT.errorFrame div[data-spotlight="true"]{
+  /* box-shadow: 0px 5px 6px 1px #f56e6e; */
+  border:inset 1px solid #ff0000;
+  transition: 0.2s ease-in-out;
+  background: #ff000020 !important;
 }
-.HDT div[data-cell-spotlight="true"]{
-  box-shadow: 0px 5px 6px 1px #f56e6e;
-  border:1px solid #ff0000;
-  background: #FF4949!important;
-  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-}
-.HDT div[data-row-spotlight="true"]{
-  /* background-image: linear-gradient(to right, ffe6e6 50%, ff0000 50%);
+/* 
+.HDT.errorFrame div[data-row-spotlight="true"]{
+  background-image: linear-gradient(to right, #ffe6e6 50%, #ff0000 100%);
   -webkit-transition: background-position 1s;
   -moz-transition: background-position 1s;
   transition: background-position 1s;
-  background-position: 0 -100%; */
+  background-position: 0 -100%;
   background: #ffd0d0 !important;
-}
+} */
 
 
 /* Column headers and footers */
@@ -1147,16 +1162,18 @@ status
 .HDTWrap .MuiTableRow-head th.MuiTableCell-head {
   border-right: 1px solid #ffffff35;
 }
-.HDT .MuiDataGrid-row[data-error],
-.HDT .MuiDataGrid-row[data-error]:hover{
+.HDT .MuiDataGrid-row[data-error]{
   background: #ffe6e6;
-  border-top:1px solid #FCCDCD;
-  border-bottom:1px solid #FCCDCD;
+  border-top: inset 1px solid #FCCDCD;
+  border-bottom: inset 1px solid #FCCDCD;
+}
+.HDT .MuiDataGrid-row[data-error]:hover{
+  background: #FFD8D8;
 }
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error]:hover {
   background: #FF7B7B;
-  border:1px solid #E13434;
+  border:inset 1px solid #E13434;
   color:#fff;
   font-weight: 400;
   /* border-right:1px solid #E13434; */
