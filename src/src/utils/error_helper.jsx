@@ -243,6 +243,8 @@ export function TableErrorRowProcessing(errorsArray){
         { name: 'requiredMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+a\s+required\s+header\b/i },
         // [COL] value Must Be
         { name: 'valueMustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+value\s+must\b/i },
+        // [COL] field must  
+        { name: 'fieldMustMatch', regex: /\b([A-Za-z0-9_]+)\s+field\s+must\b/i },
         // [COL] must be 
         { name: 'mustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+must\b/i },
         // [COL] can not be

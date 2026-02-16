@@ -1068,12 +1068,15 @@ status
   border:1px solid #ff0000;
   background-color: #FF4949!important;
 }
+.HDT div[data-error="true"] div[data-error="true"]{
+  transition:0.1s ease-out;
+}
 .HDT div[data-error="true"] div[data-error="true"]:hover{
   z-index: 9999;
   /* box-shadow: 0px 5px 6px 1px #f56e6e; */
   border:1px solid #ff0000;
   background-color: #FF4949!important;
-  transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  transition: 0.2s ease-in-out;
 }
 
 .HDT .MuiDataGrid-row[data-spotlight="true"]{
@@ -1086,7 +1089,7 @@ status
   box-shadow: 0px 5px 6px 1px #f56e6e;
   border:1px solid #ff0000;
   background-color: #FF4949!important;
-  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  transition:0.2s ease-in-out;
 }
 
 .HDT.errorFrame div[data-spotlight="true"]{

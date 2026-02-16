@@ -422,27 +422,10 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     
   }
 
-  // function cellParse(error, errorRow){
-  //   console.debug('%c◉ error ', 'color:#00ff7b', error);
-  //   // let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
-  //   // If we're in the type column, this could be labeled as either sample_category or sample_type depending on the error source, so let's check for both
-  //   let columnSelector = `[data-field="${error.column}" ]`;
-  //   if(error.column === "type"){
-  //     if(errorRow.querySelector(`[data-field="sample_category" ]`)){
-  //       console.debug('%c◉ sample_category ', 'color:#00ff7b', );
-  //       columnSelector = `[data-field="sample_category" ]`;
-  //     }else if(errorRow.querySelector(`[data-field="sample_type" ]`)){
-  //       console.debug('%c◉  sample_type', 'color:#00ff7b', );
-  //       columnSelector = `[data-field="sample_type" ]`;
-  //     }
-  //   }
-  //   let cell = errorRow.querySelector(columnSelector);
-  //   return cell
-  // }
-
   function highlightTableErrors(errorSet){
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
+      dimSpotlight();
       for (const error of errorSet) {
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
         errorRow.setAttribute('data-error','true')
@@ -454,7 +437,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         console.debug('%c◉ cell ', 'color:#00ff7b', cell);
         if(cell){
           cell.setAttribute('data-error','true')
-          // cell.setAttribute('data-cell-error','true')
+          cell.setAttribute('data-cell-error','true')
           cell.setAttribute('data-target',`${error?.row-1}_${error?.column}`)
           cell.addEventListener("mouseenter", function (e) {
             spotlightCellAndRow(e, error, `${error?.row-1}_${error?.column}`); 
@@ -463,58 +446,12 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
       }
     }else{
       try{
-        const oldErrorEls = document.querySelectorAll('[data-error]');
-        console.debug('%c◉ clearing out old errs: ', 'color:#00ff7b', oldErrorEls);
-        oldErrorEls.forEach(el => el.removeAttribute('data-error'));
-
+        dimSpotlight();
       }catch(err){
         console.debug('highlightTableErrors clear error', err);
       }
     }
   }
-
-  
-  // function spotlightErrorRow(e, error, target){
-  //   document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
-  //   let rowVal = error?.row;
-  //   console.debug('%c◉ RW ', 'color:#00ff7b', target);
-  //   let targetVal = rowVal+_+error?.column;
-  //   if(rowVal){
-  //     try{
-  //       let listContainer = document.getElementsByClassName("renderErrorList");
-  //        console.debug('%c◉ listContainer ', 'color:#00ff7b', listContainer, listContainer[0]);
-  //       let targetRow = listContainer[0].querySelectorAll(`[data-target="${targetVal}" ]`)
-  //       console.debug('%c◉ targetRow ', 'color:#00ff7b', targetRow);
-  //       setTimeout(() => {
-  //       }, 3000);        
-  //       // }, 4000);        
-  //     }catch(err){
-  //       console.debug('spotlightErrorRow error', err);
-  //     }
-  //   }
-  // }
-
-
-  // function spotlightErrorCell(e, error){
-  //   // console.debug('%c◉ e ', 'color:#00ff7b', e);
-  //   // console.debug('%c◉ spotlightErrorCell ', 'color:#00ff7b', error.row, error.column);
-  //   document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
-  //   try{
-  //     let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
-  //     console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
-  //     if(errorRow){
-  //       let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
-  //       console.debug('%c◉ cell ', 'color:#00ff7b', cell);
-  //       if(cell){
-  //         cell.setAttribute('data-spotlight','true')
-  //         dimSpotlight(); 
-  //       }
-  //     }
-  //   }catch(err){
-  //     console.debug('spotlightErrorCell error', err);
-  //   }
-  // }
-
 
   function spotlightCellAndRow(e, error, target){
     console.debug('%c◉ spotlightCellAndRow ', 'color:#00ff7b', target);
@@ -531,7 +468,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     // Add bonus row highlight on table when spotlit
     let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
     console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
-    errorRow.setAttribute('data-spotlight', 'true');
+    errorRow?.setAttribute('data-spotlight', 'true');
 
     setTimeout(() => {
       spotlightTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
@@ -539,10 +476,12 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
 
   }
 
-  // function dimSpotlight(){
-  //   let brightCell = document.querySelectorAll(`[data-spotlight="true" ]`);
-    
-  // }
+  function dimSpotlight(){
+    let oldDataError = document.querySelectorAll('[data-error]');
+    oldDataError.forEach(el => el.removeAttribute('data-error'));
+    let oldDataCellError= document.querySelectorAll('[data-cell-error]');
+    oldDataCellError.forEach(el => el.removeAttribute('data-cell-error'));
+  }
 
   // Renders bulkEntity errors as HTML list
   function renderBulkEntityErrors() {
@@ -835,7 +774,9 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
       uploaded: fileData.uploaded, 
       registered: fileData.registered, 
       upOnly: (fileData.uploaded && !fileData.registered), 
-      FDER: fileData?.regValidation?.error, 
+      bulkEntityValidationErrors: bulkEntityValidationErrors,
+      Len: bulkEntityValidationErrors?.length
+
     }}/> */}
 
   </>);
