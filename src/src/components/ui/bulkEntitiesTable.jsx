@@ -498,8 +498,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             rowStart = (<>{item?.name.toString()}</>)
           }else if(item?.column){
             rowStart = (<>{item?.column.toString()}</>)
-          }else{
-
           }
           return (
             <Box 
@@ -507,40 +505,16 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
               className={"errListRow"}
               data-column={item?.column}
               data-target={`${item?.row-1}_${item?.column}`}
-              sx={{
-                display:"flex", 
-                flexDirection:"row", 
-                flexWrap:"wrap", 
-                gap:"10px", 
-                width:"100%", 
-                background: i%2 === 0 ? "#ffe6e6" : "#ffcccc", 
-                padding: "5px 10px", 
-                borderBottom: "1px solid #00000030"}}>
+              onMouseEnter={(e) => { 
+                spotlightCellAndRow(e, {row: (item?.row)-1,column: item?.column,}, `${item?.row-1}_${item?.column}`) 
+              }}>
               <Typography key={i} variant="caption">
                 <Typography
                   variant="caption"
                   component={"span"}
-                  onMouseEnter={(e) => { 
-                    spotlightCellAndRow(e, {row: (item?.row)-1,column: item?.column,}, `${item?.row-1}_${item?.column}`) 
-                  }}
-
-                  sx={{
-                  fontWeight: "bolder",
-                  color: "#AA0000",
-                  background: "rgba(255, 34, 0, 0.125)",
-                  fontSize: "0.75em",
-                  padding: "2px 4px",
-                  borderRadius: "4px",
-                  border:"1px solid #AA000075",
-                  fontSize:"0.85em",
-                  boxShadow:"1px 1px #00000020",
-                  "&:hover": {
-                    cursor: "pointer",
-                    boxShadow:"2px 2px #AA000040",
-                    // backgroundColor: "#ffcccc",
-                    // color: "white"
-                  }                  }}>{rowStart} </Typography>
-
+                  className='bulk-error-chip'>
+                    {rowStart}
+                </Typography>
                 &nbsp;{item?.error.toString().replace(/^.*value "([^"]+)"/, 'value "$1"')}
               </Typography>
             
