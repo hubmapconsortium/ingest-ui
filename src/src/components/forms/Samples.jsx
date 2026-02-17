@@ -817,33 +817,6 @@ export const SampleForm = (props) => {
                   </NativeSelect>
                   <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
                 </>)}
-                {/* {uuid && formValues.organ && (<>    
-                  <InputLabel sx={{display:"inline-flex", color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
-                    Organ: &nbsp;
-                  </InputLabel>
-                  <Box 
-                  sx={{
-                    font:"inherit",
-                    letterSpacing:"inherit",
-                    color:"currentColor",
-                    border:"1px solid rgba(0, 0, 0, 0.26)",
-                    boxSizing:"content-box",
-                    background:"none", 
-                    height:"1.4375em", 
-                    margin:"0",
-                    display:"block", 
-                    minWidth:"0", 
-                    width:"100%",
-                    padding:"16.5px 14px", 
-                  }}>
-                  </Box>
-                  <Typography component="span" color= "rgba(0, 0, 0, 0.38)">
-                    <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
-                      <image alt={formValues.organ} href={OrganIcons(formValues.organ)} className="opacity-50" width="25" height="25" />
-                    </svg>
-                    {organ_types[formValues.organ]}
-                  </Typography>
-                </>)} */}
                 </Box>
           )}
 
