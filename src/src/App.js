@@ -24,7 +24,6 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
@@ -41,7 +40,6 @@ import {SpeedDialTooltipOpen} from './components/ui/devTools';
 
 // The legacy form loaders
 import {RenderMetadata} from "./components/metadata";
-import {BulkEntityForm} from "./components/forms/formBulkEntity";
 
 // The New Forms
 import {Search} from "./components/Search";
@@ -53,6 +51,10 @@ import {DatasetForm} from "./components/forms/Datasets";
 import {CollectionForm} from "./components/forms/Collections";
 import {EPICollectionForm} from "./components/forms/Epicollections";
 
+// Bulk Forms
+import {BulkEntityForm} from "./components/forms/BulkEntity";
+
+// 404
 import NotFound from "./components/404";
 
 export function App(){
