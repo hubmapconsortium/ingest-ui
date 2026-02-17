@@ -1,13 +1,9 @@
-import React, {useEffect, useState, useMemo} from "react";
+import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { StatusBadge } from "./formParts";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Link from "@mui/material/Link";
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
@@ -18,11 +14,9 @@ import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
-import {max} from "moment";
 // @TODO: Move into TableBuilder (Since these aren't very well constant but dynamically generated) under /ui
 
 // table column definitions
-let nullRowBarStyle = {width:"100%", opacity:"0.4"}
 
 // DONOR COLUMNS
 export const COLUMN_DEF_DONOR = [
@@ -232,7 +226,7 @@ export const COLUMN_DEF_CONTRIBUTORS = [
   { field: "email", headerName:"Email", flex:1},
   { field: "is_contact", headerName:"Contact", flex:0.4},
   { field: "is_principal_investigator", headerName:"Principal Investigator", flex:0.4},
-  { field: "is_operator", headerName:"Operator",  flex:0.4},
+  { field: "is_operator", headerName:"Operator", flex:0.4},
   { field: "metadata_schema_id", headerName:"Metadata", flex:1}
 ];
 
@@ -321,7 +315,6 @@ export const COLUMN_DEF_MIXED = [
 // LIMITED DATASET TYPE COLUMNS (FOR SOURCE DISPLAY)
 export const COLUMN_DEF_MIXED_SM = shrinkCols;
 
-
 // COLUMNS FOR TSV UPLOADS FOR BULK DONORS AND SAMPLES
 export const COLUMN_DEF_BULK_ERRORS = [
   { field: "row", headerName: "Row", minWidth:50, flex: 0.1 },
@@ -370,11 +363,11 @@ export const COLUMN_DEF_BULK_SAMPLES = [
       let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
       let organ_types = JSON.parse(localStorage.getItem("organs"));
       return (<> 
-        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ_type) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={params.row.organ_type} href={systemIcons[params.row.organ_type]} width="25" height="25" /></svg> {organ_types[params.row.organ_type]}
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ_type) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}><image alt={params.row.organ_type} href={systemIcons[params.row.organ_type]} width="25" height="25" /></svg> {organ_types[params.row.organ_type]}
       </>)
     }},
-  { field: "sample_protocol", headerName: "Protocol",  },
-  { field: "description", headerName: "Description",  },
+  { field: "sample_protocol", headerName: "Protocol" },
+  { field: "description", headerName: "Description" },
 ];
 export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
   { field: 'hubmap_id', 
@@ -411,7 +404,7 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
         let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
         let organ_types = JSON.parse(localStorage.getItem("organs"));
         return (<> 
-          <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={params.row.organ} href={systemIcons[params.row.organ]} width="25" height="25" /></svg>{organ_types[params.row.organ]} (Organ)
+          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}><image alt={params.row.organ} href={systemIcons[params.row.organ]} width="25" height="25" /></svg>{organ_types[params.row.organ]} (Organ)
         </>)
       }else if(params.row.sample_category){
         return (<>{icon}{toTitleCase(params.row.sample_category)}</>)
@@ -484,19 +477,18 @@ function entityIconsBasic(entity_type){
     case "eppicollection":
       return <CollectionsBookmarkIcon sx={style}/>
     default:
-      return <BubbleChartIcon  sx={style}/>
+        return <BubbleChartIcon sx={style}/>
   }
 }
 
-
-export function renderFieldIcons(params: ValueFormatterParams){
+  export function renderFieldIcons(params: ValueFormatterParams){
   let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
   let toMirror = ["Knee (Left)"]
   // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
       {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.value) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} >
+        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.value) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}>
           <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
         </svg>
       )}
@@ -507,20 +499,11 @@ export function renderFieldIcons(params: ValueFormatterParams){
     </div>
   )
 }
-function renderOrganCell(row){
-  let toMirror = ["Knee (Left)"]
-  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  let organ_types = JSON.parse(localStorage.getItem("organs"));
-  return (<> 
-    <svg width="25" height="25"   xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(row.organ_type) ?  {transform: "scaleX(-1)", marginRight: "5px"} : {marginRight: "5px"}} ><image alt={row.organ_type} href={systemIcons[row.organ_type]} width="25" height="25" /></svg> {organ_types[row.organ_type]}
-  </>)
-    
-}
+// renderOrganCell removed (unused)
 
 // Strips the Submission ID column from COLUMN_DEF_MIXED
-function shrinkCols(string){
-  var stripped = COLUMN_DEF_MIXED.delete('submission_id');
-  return stripped
+function shrinkCols(){
+  return COLUMN_DEF_MIXED.filter(col => col.field !== 'submission_id');
 }
 
 function getLabId(params: ValueGetterParams) {

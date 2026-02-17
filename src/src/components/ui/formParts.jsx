@@ -1,4 +1,3 @@
-import {useNavigate} from "react-router-dom";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
@@ -30,17 +29,11 @@ import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
 import {tsToDate} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
-import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
-import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
-import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
 import {OrganIcons} from "../ui/icons";
@@ -384,26 +377,7 @@ function revisionLinksTime(entityData){
   </>)
 }
 
-function revisionLinksPoint(entityData){
-  return(<>
-    {entityData.next_revision_uuid &&(
-      <Typography 
-        variant="caption" 
-        className="tiltRightIcon" 
-        sx={{display: "inline-block", width: "100%"}}> 
-         This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
-      </Typography>   
-    )}
-    {entityData.previous_revision_uuid &&(
-      <Typography 
-        className="tiltLeftIcon"
-        variant="caption" 
-        sx={{display: "inline-block", width: "100%"}}>
-          This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
-      </Typography>   
-    )}
-  </>)
-}
+
 
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType, subType){
@@ -787,14 +761,7 @@ export function CombinedWholeEntityOptions({
   restrictions,
   embedded
   }){
-  let coreList = {
-    donor: "Donor" ,
-    sample: "Sample",
-    dataset: "Dataset", 
-    upload: "Data Upload",
-    publication: "Publication",
-    collection: "Collection"
-  }
+  
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
   // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);

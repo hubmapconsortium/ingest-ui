@@ -69,9 +69,6 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
-  var[showFullError, setShowFullError] = useState(false);
-  
-  var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
   var[APIErrQueue, setAPIErrQueue] = useState([]);
 
@@ -86,9 +83,6 @@ export function App(){
   var[errorInfo,setErrorInfo] = useState("");
   var[errorInfoShow,setErrorInfoShow] = useState(false);
   var[errorDetail, setErrorDetail] = useState({});
-
-  // API Error Bits 
-  var[showFullError, setShowFullError] = useState(false);
 
   const APIErrorTip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
 
@@ -196,7 +190,6 @@ export function App(){
 
     // The Full RUI details for Organs
     if(!localStorage.getItem("organs_full")){
-      let tip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
       ubkg_api_get_organs_full()
         .then((res) => {
           if (res === undefined){
@@ -463,9 +456,6 @@ export function App(){
     window.location.reload();
   };
   
-  function handleCancel(){
-    navigate("/");
-  }
   const onClose = () => {
     navigate("/");
   }

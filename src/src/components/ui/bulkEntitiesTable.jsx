@@ -1,51 +1,34 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {DataGrid} from "@mui/x-data-grid";
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
-import NativeSelect from "@mui/material/NativeSelect";
 import MenuItem from '@mui/material/MenuItem';
 import Select from "@mui/material/Select";
 import Collapse from '@mui/material/Collapse';
-import FormHelperText from '@mui/material/FormHelperText';
-import {readString} from 'papaparse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 import { faExclamationTriangle, faFileCircleXmark, faUpload, faRepeat } from '@fortawesome/free-solid-svg-icons';
-// import {ingest_api_validate_bulkEntity} from '../../service/ingest_api';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from "@mui/material/Alert";
-import AlertTitle from '@mui/material/AlertTitle';
 import {
   ingest_api_bulk_entities_upload,
-  ingest_api_bulk_entities_register,
-  ingest_api_users_groups
-} from '../../service/ingest_api';
-import {ParsePreflightString, UserGroupSelectMenu} from '../ui/formParts.jsx';
-import {ViewDebug} from '../ui/devTools.jsx';
+  ingest_api_bulk_entities_register} from '../../service/ingest_api';
+import {ParsePreflightString} from '../ui/formParts.jsx';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
-import {toTitleCase} from "../../utils/string_helper";
 import LoadingButton from "@mui/lab/LoadingButton";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 // import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import {
   COLUMN_DEF_BULK_SAMPLES, 
   COLUMN_DEF_BULK_DONORS, 
-  COLUMN_DEF_SAMPLE, 
-  COLUMN_DEF_DONOR, 
   COLUMN_DEF_BULK_ERRORS, 
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
-  COLUMN_DEF_BULK_DONORS_SUCCESS,
-  renderFieldIcons,
-  handleOpenPage } from '../ui/tableBuilder';
+  COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
-import {fontGrid} from '@mui/material/styles/cssUtils.js';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import * as prettyBytes from 'pretty-bytes';
-import _ from 'lodash';
+// lodash removed (not used)
 
-export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
+export function BulkEntitiesTable({ type,onDataChange }) {
   let [pageErrors, setPageErrors] = useState(null);
   let [fileData,setFileData] = useState({
     file: null,
@@ -148,7 +131,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
 
   useEffect(() => {
     onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors})
-  }, [bulkEntityRows, bulkEntityValidationErrors])
+  }, [bulkEntityRows, bulkEntityValidationErrors, onDataChange])
 
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
@@ -271,13 +254,13 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         } 
 
       })
-      .catch((error) => {
+      .catch(() => {
         //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
       });
   }
 
-  function handleFileWipe(e) {
-    console.debug('%c◉ FILE WIPE ', 'color:#4000FF', );
+  function handleFileWipe() {
+    console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
     setBulkEntityRows([]);
     setFileData({
       file:null,
@@ -288,8 +271,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     })
   }
 
-  function handleRegister(e){
-    console.debug('%c◉ HANDLE REGISTER ', 'color:#4000FF',fileData );
+  function handleRegister(){
+    console.debug('%c◉ HANDLE REGISTER ', 'color:#00ff7b', fileData );
 
     setLoaders((prev) => ({ ...prev, registration: true }));
     let fileRef = {"temp_id":fileData.temp_id,"group_uuid":fileData.group ? fileData.group : (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}
@@ -311,7 +294,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           var respData = resp.results.data;
           console.debug("respData",respData);
           var dataRows = [];
-          for (var [key, value] of Object.entries(respData)) {
+          for (var [, value] of Object.entries(respData)) {
             console.debug("value",value);
             dataRows.push(value);
           }
@@ -328,14 +311,14 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             
           setPageErrors(null);
 
-        }else if( 
-          (resp.response && resp.response.status && resp.response.status === 504) || 
-          (resp.error  && resp.error.response  && resp.error.response.status === 504) ){
+        } else if (
+          (resp.response && resp.response.status && resp.response.status === 504) ||
+          (resp.error && resp.error.response && resp.error.response.status === 504)) {
           console.debug('%c⊙504', 'color:#ff005d' );
           ParseRegErrorFrame(resp);
-        }else if(
-          (resp.response && resp.response.status && resp.response.status === 500) || 
-          (resp.error  && resp.error.response && resp.error.response.status === 500)){
+        } else if (
+          (resp.response && resp.response.status && resp.response.status === 500) ||
+          (resp.error && resp.error.response && resp.error.response.status === 500)) {
           console.debug('%c⊙500', 'color:#ff005d' );
           var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
           setPageErrors({ status: 'server', message: 'Registration Failure', detail: grabFullError });
@@ -347,7 +330,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           let redoEntries = [];
         
           const errRows = entries
-            .filter(([key, val]) => val && val.error)
+            .filter(([, val]) => val && val.error)
             .map(([key, val], i) => {
               const rowIndex = Number(key);
               redoEntries.push(bulkEntityRows[rowIndex-1]);
@@ -366,8 +349,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             console.debug('%c◉ errRows ', 'color:#00ff7b', errRows);
           // Keep success rows intact (original response objects)
           const successRows = entries
-            .filter(([key, val]) => !(val && val.error))
-            .map(([key, val]) => val);
+            .filter(([, val]) => !(val && val.error))
+            .map(([, val]) => val);
           console.debug('%c◉ errRows ', 'background:#00ff7b', errRows);
           console.debug('%c◉ successRows ', 'background:#00ff7b', successRows);
           setBulkEntityRows(successRows.length > 0 ? successRows : [])
@@ -405,7 +388,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   }
 
   function highlightTableErrors(errorSet){
-    let olds  = document.querySelector(`[data-error="${true}" ]`)
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
@@ -438,7 +420,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   }
 
   function spotlightCellAndRow(e, error, target){
-
     // Turn off Old Lights
     document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
     let olds = document.querySelectorAll(`[data-spotlight="true" ]`);
@@ -469,8 +450,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
 
   // Renders bulkEntity errors as HTML list
   function renderBulkEntityErrors() {
-    return (
-      <Box  className="renderErrorList">
+      return (
+        <Box className="renderErrorList">
         {Array.isArray(bulkEntityValidationErrors) && bulkEntityValidationErrors.map((item, i) => {
           let rowStart 
           if(item?.row){
@@ -501,8 +482,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
                 </Typography>
                 &nbsp;{item?.error.toString().replace(/^.*value "([^"]+)"/, 'value "$1"')}
               </Typography>
-            
-          
+                      
             </Box>
             );
         } )}
@@ -544,7 +524,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
       <div className={"associationTableWrap associatedBulkEntityTable"} style={{ width: "100%" }}>
         <DataGrid
           className='HDT shortFooter w-100'
-          rows={(bulkEntityRows && bulkEntityRows.length > 0) ? bulkEntityRows.map((row, idx) => ({ id: idx, "row": idx+1, ...row })) : []  }
+          rows={(bulkEntityRows && bulkEntityRows.length > 0) ? bulkEntityRows.map((row, idx) => ({ id: idx, "row": idx+1, ...row })) : [] }
           columns={columns}
           loading={loaders.uploadTable}
           density="compact"
@@ -566,7 +546,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         />
       </div>
       
-      {(fileData?.uploaded && !fileData.registered ) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 &&(<>
+      {(fileData?.uploaded && !fileData.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && ( <>
         {renderErrorFrame()}
       </>)}
       <Box className="">
@@ -580,7 +560,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   function renderSuccesTable(){
     let successRows = fileData?.regValidation?.success || [];
     return (<>
-      <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{borderRadius: "4px 4px 0px 0px",  background: "linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important" }}>
+      <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{ borderRadius: "4px 4px 0px 0px", background: "linear-gradient(180deg, #585E7A 0%, #444A65 100%) !important" }}>
         <strong>Success:</strong> The following rows registered successfully!
       </Alert>
       <div className={"associationTableWrap associatedBulkEntityTable successWrap"} style={{ width: "100%" }}>
@@ -618,8 +598,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         <strong>Errors:</strong> The following rows were not registered. Please review the provided error messaging and try again.
       </Alert>
       <div className={"associationTableWrap associatedBulkEntityTable errorSetWrap regErrorTable mt-0 w-100"} >
-        <DataGrid
-          className='HDT errorSetTable  shortFooter w-100'
+          <DataGrid
+            className='HDT errorSetTable shortFooter w-100'
           rows={errorRows}
           columns={errCols}
           loading={loaders.registration}
@@ -641,9 +621,9 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           }} 
         />
       </div>
-      {(fileData?.uploaded && fileData?.registered ) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 &&(
-        <>{renderErrorFrame()}</>
-      )}
+      {(fileData?.uploaded && fileData?.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && (
+          <>{renderErrorFrame()}</>
+        )}
     </>)
   }
 
@@ -660,7 +640,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
      
   }
 
-
   return (<>
 
     {/* Main Upload Table */}
@@ -671,23 +650,25 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     )}
 
     {/* Reg Success Table */}
-    {(fileData?.uploaded && fileData?.registered )&&( <>
+    {(fileData?.uploaded && fileData?.registered) && (
+      <>
       <FormControl className="w-100">
         {renderSuccesTable()}  
       </FormControl>
-    </>)}
+    </>
+    )}
     
     {/* Reg Error Table */}
     {/* {(fileData?.regValidation?.error && fileData?.regValidatio?.error.length)?.toString} */}
-    {(fileData?.uploaded && fileData?.registered ) && fileData?.regValidation?.error && fileData?.regValidation?.error.length > 0 &&( <>
+    {(fileData?.uploaded && fileData?.registered) && fileData?.regValidation?.error && fileData?.regValidation?.error.length > 0 && (
       <FormControl className="w-100">
         {renderRegErrorTable()}  
       </FormControl>
-    </>)}
+    )}
 
     {/* Upload Field/zone */}
   
-      <Box className="uploadManager " sx={{display:"inline-block", width:"100%", mt:2}}>
+      <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
       {fileData.registered === false && (
         <Box className="text-left">
           <input
@@ -735,7 +716,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
                 loadingIndicator={<CircularProgress color="inherit" size={16} />}
                 color="primary"
                 loading={loaders.registration}
-                onClick={(e)=>handleRegister(e)}
+                onClick={handleRegister}
                 loadingPosition="start"
                 startIcon={<FontAwesomeIcon icon={faUpload} />}
                 rel="noreferrer">
@@ -758,7 +739,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         </Box>      
       </Box>
 
-    
     {/* Page Errors */}
     {pageErrors && (
       <Alert variant="filled" severity="error">
