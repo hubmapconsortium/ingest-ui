@@ -1218,9 +1218,13 @@ status
   color: #fff;
   font-family: 'Inter var', sans-serif!important;
 }
+.HDT .MuiDataGrid-footerContainer .MuiSelect-select  {
+  background-color: #444a65;
+}
 .HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
+
 /* Contributors table cell font size */
 .HDT .MuiDataGrid-cellContent {
   font-family: 'Inter var', sans-serif!important;
