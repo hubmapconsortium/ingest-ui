@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {DataGrid} from "@mui/x-data-grid";
@@ -15,6 +15,7 @@ import {
   ingest_api_bulk_entities_upload,
   ingest_api_bulk_entities_register} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
+import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
 import LoadingButton from "@mui/lab/LoadingButton";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
@@ -51,6 +52,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     showGroupSelect: false,
     RUIRender:null,
   });
+  const spotlightTimeoutRef = useRef(null);
   let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
   let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
 
@@ -132,6 +134,16 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   useEffect(() => {
     onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors})
   }, [bulkEntityRows, bulkEntityValidationErrors, onDataChange])
+
+  // Clear any active spotlight timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (spotlightTimeoutRef.current) {
+        clearTimeout(spotlightTimeoutRef.current);
+        spotlightTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
@@ -393,19 +405,17 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       dimSpotlight();
       for (const error of errorSet) {
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
-        if(error.column === "organ_type"){
-          error.column = "organ"
-        }
-        let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
+        const col = error.column === "organ_type" ? "organ" : error.column;
+        let cell = errorRow.querySelector(`[data-field="${col}" ]`);
         if(cell){
           // We only want to set up the hover listeners and data attributes 
           // if there is a cell to attach them to.
           errorRow.setAttribute('data-error','true')
           cell.setAttribute('data-error','true')
           cell.setAttribute('data-cell-error','true')
-          cell.setAttribute('data-target',`${error?.row-1}_${error?.column}`)
+          cell.setAttribute('data-target',`${error?.row-1}_${col}`)
           cell.addEventListener("mouseenter", function (e) {
-            spotlightCellAndRow(e, error, `${error?.row-1}_${error?.column}`); 
+            spotlightCellAndRow(e, error, `${error?.row-1}_${col}`); 
           });
           
         }
@@ -448,47 +458,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     oldDataCellError.forEach(el => el.removeAttribute('data-cell-error'));
   }
 
-  // Renders bulkEntity errors as HTML list
-  function renderBulkEntityErrors() {
-      return (
-        <Box className="renderErrorList">
-        {Array.isArray(bulkEntityValidationErrors) && bulkEntityValidationErrors.map((item, i) => {
-          let rowStart 
-          if(item?.row){
-            rowStart = (<>
-                Row: {(item?.row)-1} &nbsp;{item?.column?.toString()}
-              </>)
-              
-          }else if(item?.name){
-            rowStart = (<>{item?.name.toString()}</>)
-          }else if(item?.column){
-            rowStart = (<>{item?.column.toString()}</>)
-          }
-          return (
-            <Box 
-              id={"errListRow-"+item?.row}
-              className={"errListRow"}
-              data-column={item?.column}
-              data-target={`${item?.row-1}_${item?.column}`}
-              onMouseEnter={(e) => { 
-                spotlightCellAndRow(e, {row: (item?.row)-1,column: item?.column,}, `${item?.row-1}_${item?.column}`) 
-              }}>
-              <Typography key={i} variant="caption">
-                <Typography
-                  variant="caption"
-                  component={"span"}
-                  className='bulk-error-chip'>
-                    {rowStart}
-                </Typography>
-                &nbsp;{item?.error.toString().replace(/^.*value "([^"]+)"/, 'value "$1"')}
-              </Typography>
-                      
-            </Box>
-            );
-        } )}
-      </Box>
-    );
-  }
+  // Error list renderer moved to ErrorList component
 
   function renderErrorFrame(){
     return (
@@ -513,7 +483,17 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           </Typography>
         )}
         <Box className="errorListWrap">
-          {renderBulkEntityErrors()}
+          <ErrorList
+            errors={bulkEntityValidationErrors}
+            onHover={(e, item) => {
+              const col = item?.column === 'organ_type' ? 'organ' : item?.column;
+              spotlightCellAndRow(
+                e,
+                { row: (item?.row) - 1, column: col },
+                `${item?.row - 1}_${col}`
+              );
+            }}
+          />
         </Box>
       </Box>
     );
