@@ -23,6 +23,7 @@ import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fort
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
+import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
 import React from "react";
@@ -261,13 +262,14 @@ export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
 // Not yet in use Modal similar to the one in the legacy forms that prompts for your group if you have multiple groups
 // Considering switching back to this, saving for now
 export function GroupModal ({
-    submitWithGroup,
-    showGroupSelect,
+    selectionAction,
+    open,
     closeGroupModal
   }){
     let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
+    let [selectedGroup, setSelectedGroup] = userGroups.find(g => g.selected)?.displayname || "";  
     return (
-       <Dialog aria-labelledby="group-dialog" open={showGroupSelect}>
+       <Dialog aria-labelledby="group-dialog" open={open}>
         <DialogTitle >
           You currently have multiple group assignments, Please select a primary group for submission
         </DialogTitle>
@@ -275,7 +277,9 @@ export function GroupModal ({
           <select
             name="selected_group"
             id="selected_group"
-            className="form-control">
+            value={selectedGroup}
+            className="form-control"
+            onChange={(event)=> setSelectedGroup(event.target.value)}>
             {userGroups
               .filter((g) => g.data_provider)  // only show those designated as data providers
               .map(g => {
@@ -289,13 +293,13 @@ export function GroupModal ({
          </DialogContent>
            <DialogActions>
             <Button
-            className="btn btn-primary mr-1"
-            onClick={() => submitWithGroup()}>
-            Submit
+              className="btn btn-primary mr-1"
+              onClick={(e,selectedGroup) => selectionAction(e,selectedGroup)}>
+              Submit
           </Button>
           <Button
            variant="outlined"
-            onClick={() => closeGroupModal()}>
+            onClick={(e) => closeGroupModal(e)}>
             Cancel
           </Button>          
           </DialogActions>
@@ -592,8 +596,9 @@ export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submit
 
 // Returns a select menu of the User's dataprovider groups
 // Possibly Deprecating with move of GroupsSelector into modal or Field managers
-export function UserGroupSelectMenu(formValues){
+export function UserGroupSelectMenu(formValues, menu){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
+  console.debug('%c◉ menu ', 'color:#00ff7b', menu);
   if(formValues.group_name){
     return(
       <option value={formValues.group_uuid}>
@@ -603,11 +608,20 @@ export function UserGroupSelectMenu(formValues){
   }else{
     let menuArray = [];
     for(let group of userGroups){
-      menuArray.push(
-        <option key={group.uuid} value={group.uuid}>
-          {group.shortname}
-        </option>
-      );
+      if(menu===true){
+        menuArray.push(
+          <MenuItem key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </MenuItem>
+        );
+      }else{
+        menuArray.push(
+          <option key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </option>
+        );
+      }
+      
     }
     return menuArray;
   } 

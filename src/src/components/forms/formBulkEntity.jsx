@@ -32,30 +32,8 @@ export const BulkEntityForm = (props) => {
   });
 
   const [tsvFile, setTsvFile] = useState(null);
-  const [bulkRows, setBulkRows] = useState([]);
-  const [activeStep, setActiveStep] = useState(0);
-  const [validatingUpload, setValidatingUpload] = useState(false);
-  const [validationErrors, setValidationErrors] = useState([]);
+  let [TMError, setTMError] = useState(false);
 
-  useEffect(() => {
-    let pathName = location.pathname
-    console.debug('%c◉ pathName ', 'color:#00ff7b',pathName );
-    // setLoading(false);
-  }, []);
-
-
-// Move VisuallyHiddenInput outside component to avoid recreation
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
 
   return(
     <Box>
@@ -68,7 +46,7 @@ const VisuallyHiddenInput = styled('input')({
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display:"inline-block", fontSize:""  }} >
             To bulk register multiple {props.bulkType.toLowerCase()}s at one time, upload a tsv file here in the format specified by the example file provided at the footer of the table below. Include one line per {props.bulkType.toLowerCase()} to register. <br />{toTitleCase(props.bulkType)} metadata must be provided separately. <br />
-            <span className={"rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
+            <span  className={TMError?"rowLimitClass error":"rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>
       </Grid>
@@ -80,9 +58,12 @@ const VisuallyHiddenInput = styled('input')({
         type={props.bulkType}
         // columns={columns}
         onDataChange ={({data, errors})=>{
-          // setBulkRows(data);
-          console.debug('%c◉ onDataChange ', 'color:#00ff7b', data, errors);
-          setValidationErrors(errors);
+          console.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);
+          if(errors[0]?.name === "Too Many"){
+            setTMError(true);
+          }else{
+            setTMError(false);
+          }
         }}
       />
     

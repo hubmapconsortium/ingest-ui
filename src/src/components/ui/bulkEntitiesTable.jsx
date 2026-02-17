@@ -3,6 +3,12 @@ import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {DataGrid} from "@mui/x-data-grid";
 import Papa from 'papaparse';
+import InputLabel from "@mui/material/InputLabel";
+import NativeSelect from "@mui/material/NativeSelect";
+import MenuItem from '@mui/material/MenuItem';
+import Select from "@mui/material/Select";
+import Collapse from '@mui/material/Collapse';
+import FormHelperText from '@mui/material/FormHelperText';
 import {readString} from 'papaparse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
@@ -16,7 +22,7 @@ import {
   ingest_api_bulk_entities_register,
   ingest_api_users_groups
 } from '../../service/ingest_api';
-import {ParsePreflightString} from '../ui/formParts.jsx';
+import {ParsePreflightString, UserGroupSelectMenu} from '../ui/formParts.jsx';
 import {ViewDebug} from '../ui/devTools.jsx';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
 import {toTitleCase} from "../../utils/string_helper";
@@ -46,8 +52,8 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     temp_id: null,
     uploaded:false,
     registered:false,
+    group: JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "",
     rows:[],
-    redoRows:[],
     regValidation:{
       success:[],
       error:[],
@@ -59,11 +65,13 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   let [loaders, setLoaders] = useState({
     uploadTable: false,
     registration: false,
-    showRUIModal: false,
+    showGroupSelect: false,
     RUIRender:null,
   });
   let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
-  
+  let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
+
+  // Column Management 
   const colSelection = useCallback((type) => {
     type = type.toLowerCase();
     switch (type) {
@@ -76,7 +84,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     }
   }, []);
   const columns = (type ? colSelection(type) : COLUMN_DEF_BULK_SAMPLES);
-  
   const colSuccessSelection = useCallback((type) => {
     type = type.toLowerCase();
     switch (type) {
@@ -89,46 +96,11 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     }
   }, []);
   const columnsSuccess = (type ? colSuccessSelection(type) : COLUMN_DEF_BULK_SAMPLES);
-  const errCols = COLUMN_DEF_BULK_ERRORS;
-
-  let hiddenFields = useMemo(() => {
-    let base = [
-      "created_by_user_displayname",
-      "lab_tissue_sample_id",
-      "lab_donor_id",
-      "specimen_type",
-      "sample_category",
-      // "organ",
-      // "entity_type",
-      "registered_doi",
-    ];
-    const hf = [...base];
-    return hf;
-  }, []);
-  const columnFieldFilter = useMemo(() => {
-    const obj = {};
-    hiddenFields.forEach((value) => {
-      obj[value] = false;
-    });
-    
-    return obj;
-  }, [hiddenFields]);
-
-
-  // Sync local BulkEntity with prop changes
-  // useEffect(() => {
-  //   setBulkEntityRows(temp_id);
-  // }, [temp_id]);
-
-  // useEffect(() => {
-  //   if (onDataChange) {
-  //     //console.debug('%c◉ if onDataChange ', 'color:#00ff7b',bulkEntityRows );
-  //     onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors});
-  //   }
-  // }, [bulkEntityRows, bulkEntityValidationErrors]);
+  const errCols= COLUMN_DEF_BULK_ERRORS;
 
   // Handle file upload and parse bulkEntity
   function handleFileGrab(e) {
+    dimSpotlight();
     console.debug('%c◉ Grabbing file ', 'color:#00ff7b');
     setBulkEntityValidationErrors([])
     highlightTableErrors("clear");
@@ -174,10 +146,14 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     }
   }
 
+  useEffect(() => {
+    onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors})
+  }, [bulkEntityRows, bulkEntityValidationErrors])
+
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
       .then((res) => {
-        console.debug('%c◉ ingest_api_bulk_entities_upload res ', 'color:#fff; background:#0033FF;',res.status, res, res?.results?.temp_id);
+        // console.debug('%c◉ ingest_api_bulk_entities_upload res ', 'color:#fff; background:#0033FF;',res.status, res, res?.results?.temp_id);
         if(res.status === 200 || res.status === 201){
           setFileData({
             ...fileData,
@@ -205,30 +181,21 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         }else if(res?.res?.response?.data){
           console.debug('%c◉ .res?.response?.data Errors ', 'background:#0033FF', );
           let errorSet = res.res.response.data.description
-          // console.debug('%c◉ typeof res?.res?.response?.data?.description ', 'color:#00ff7b',typeof res?.res?.response?.data?.description );
           if(res?.res?.response?.data?.code === 406 && typeof res?.res?.response?.data?.description?.description === 'string'){
+            // THis might just be a metadata issue
             let parsedPreflight = ParsePreflightString(decodeURI(errorSet?.description));
-            // console.debug('%c◉ parsedPreflight ', 'color:#00ff7b',parsedPreflight );
             let errString;
             let name = res?.res?.response?.data?.description?.name ? res?.res?.response?.data?.description?.name : null;
             for (let i = 0; i < parsedPreflight.length; i++) {
-              // console.debug('%c◉ parsedPreflight[i] ', 'color:#00ff7b', parsedPreflight[i]);
               const item = parsedPreflight[i];
               const itemStr = (item && typeof item === 'object') ? JSON.stringify(item) : String(item);
               errString = itemStr;
-              // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
               if (item && typeof item === 'object') {
-                // console.debug('%c◉ item ', 'color:#00ff7b', item);
                 for (const [key, value] of Object.entries(item)) {
-                  // name = key;
-                  // console.debug('%c◉ key,value ', 'color:#00ff7b', key, value);
-                  // console.debug('%c◉ val ', 'color:#00ff7b', value);
                   if (item && typeof item === 'object') {
                     for (const [k, v] of Object.entries(value)) {
-                        // console.debug('%c◉ kv ', 'color:#00ff7b', k,v);
                         errString = `${key}: \n ${k} |  ${v}`;
                     }
-                    // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
                   }else{
                     errString = `${key}: ${value}`;
                   }
@@ -255,9 +222,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
                 "error": errorSet.toString(),
                 "row": ""
               }])
-              //setValidatingBulkEntityUpload(false)
             }catch(error){
-              //setValidatingBulkEntityUpload(false)
               console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
@@ -277,12 +242,34 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             ...prevValues,
             'bulkEntity': "Please Review the following validation errors and re-upload your file.",
           }))
+        }else if(res?.error?.response?.data?.error){ // 400 / too many
+          console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
+          try{
+            setBulkEntityValidationErrors([{
+              "name": "Too Many",
+              "error": res?.error?.response?.data?.error,
+            }])
+          }catch(error){
+            console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
+          }
+          
         }else{
+          setPageErrors((prevValues) => ({
+            ...prevValues,
+            'bulkEntity': "An error occurred during file upload. Please review the message and try again. || "+res.toString(),
+          }))
+          
           console.error("IDK" , res);
           //setValidatingBulkEntityUpload(false)
         }
         //setValidatingBulkEntityUpload(false)
         setLoaders((prev) => ({ ...prev, uploadTable: false, }));
+        let showGroupCheck = calcRegDisabled();
+        if(userGroups.length > 1 && showGroupCheck === true ){
+          console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
+          setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
+        } 
+
       })
       .catch((error) => {
         //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
@@ -291,20 +278,23 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
 
   function handleFileWipe(e) {
     console.debug('%c◉ FILE WIPE ', 'color:#4000FF', );
+    setBulkEntityRows([]);
     setFileData({
       file:null,
       temp_id:null,
       registered:false,
       uploaded:false,
+      rows:[],
     })
-
   }
 
   function handleRegister(e){
     console.debug('%c◉ HANDLE REGISTER ', 'color:#4000FF',fileData );
+
     setLoaders((prev) => ({ ...prev, registration: true }));
-    let fileRef = {"temp_id":fileData.temp_id,"group_uuid":"5bd084c8-edc2-11e8-802f-0e368f3075e8"}
-    try{ // this.props.bulkType, fileData, JSON.parse(localStorage.getItem("info")).groups_token
+    let fileRef = {"temp_id":fileData.temp_id,"group_uuid":fileData.group ? fileData.group : (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}
+    console.debug('%c◉ fileRef ', 'color:#00ff7b', fileRef);
+    try{
       ingest_api_bulk_entities_register(type, fileRef)
       .then((resp) => {
         setFileData((prev) => ({ ...prev, registered: true, temp_id: null }));
@@ -316,11 +306,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         }else{
           serverResp = resp;
         }
-        
         console.debug('%c◉ serverResp ', 'color:#00ff7b', serverResp);
-        //There's a chance our data may pass the Entity validation, but not the Subsequent pre-insert Valudation
-        // We might back back a 201 with an array of errors encountered. Let's check for that!  
-        
         if(resp.status && resp.status === 201 && resp.results){
           var respData = resp.results.data;
           console.debug("respData",respData);
@@ -357,12 +343,9 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         }else if (resp.results && resp.results.data && resp.status === 207) {
         // Partial Success
           console.debug('%c⊙207', 'color:#f4d006' );
-
-          // Preserve original ordering from the response and retain the original keys
           const entries = Object.entries(resp.results.data || {});
           let redoEntries = [];
-          // Build error rows by merging original uploaded row data and server metadata.
-          // Ensure `row` is first and `error` is last in the object insertion order.
+        
           const errRows = entries
             .filter(([key, val]) => val && val.error)
             .map(([key, val], i) => {
@@ -387,7 +370,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             .map(([key, val]) => val);
           console.debug('%c◉ errRows ', 'background:#00ff7b', errRows);
           console.debug('%c◉ successRows ', 'background:#00ff7b', successRows);
-
           setBulkEntityRows(successRows.length > 0 ? successRows : [])
           setFileData({
             ...fileData,
@@ -423,25 +405,27 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   }
 
   function highlightTableErrors(errorSet){
+    let olds  = document.querySelector(`[data-error="${true}" ]`)
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
       for (const error of errorSet) {
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
-        errorRow.setAttribute('data-error','true')
         if(error.column === "organ_type"){
           error.column = "organ"
         }
-        // let cell = cellParse(error, errorRow)
         let cell = errorRow.querySelector(`[data-field="${error.column}" ]`);
-        console.debug('%c◉ cell ', 'color:#00ff7b', cell);
         if(cell){
+          // We only want to set up the hover listeners and data attributes 
+          // if there is a cell to attach them to.
+          errorRow.setAttribute('data-error','true')
           cell.setAttribute('data-error','true')
           cell.setAttribute('data-cell-error','true')
           cell.setAttribute('data-target',`${error?.row-1}_${error?.column}`)
           cell.addEventListener("mouseenter", function (e) {
             spotlightCellAndRow(e, error, `${error?.row-1}_${error?.column}`); 
           });
+          
         }
       }
     }else{
@@ -454,25 +438,25 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
   }
 
   function spotlightCellAndRow(e, error, target){
-    console.debug('%c◉ spotlightCellAndRow ', 'color:#00ff7b', target);
 
     // Turn off Old Lights
     document.querySelector(`[data-spotlight="true" ]`)?.removeAttribute('data-spotlight');
     let olds = document.querySelectorAll(`[data-spotlight="true" ]`);
     olds.forEach(el => el.removeAttribute('data-spotlight', 'true'));
-
     // Attach data-spotlight to both the error list item and the cell, so both will be highlighted
     let spotlightTargets = document.querySelectorAll(`[data-target="${target}" ]`);
-    spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true'));
-
-    // Add bonus row highlight on table when spotlit
-    let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
-    console.debug('%c◉ errorRow ', 'color:#00ff7b', errorRow);
-    errorRow?.setAttribute('data-spotlight', 'true');
-
+    const hasUndefinedErrRow = Array.from(spotlightTargets).some(
+      (el) => el?.id === 'errListRow-undefined'
+    );
+    if (!hasUndefinedErrRow) {
+      spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
+      // Add bonus row highlight on table when spotlit
+      let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
+      errorRow?.setAttribute('data-spotlight', 'true');
+    }
     setTimeout(() => {
       spotlightTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
-    }, 3000);
+    }, 4000);
 
   }
 
@@ -548,7 +532,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
             The following rows were not accepted; Please review validation messages and try again. 
           </Typography>
         )}
-        <Box>
+        <Box className="errorListWrap">
           {renderBulkEntityErrors()}
         </Box>
       </Box>
@@ -605,7 +589,6 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
           rows={successRows}
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
-          // columnVisibilityModel={columnFieldFilter}
           loading={loaders.uploadTable}
           density="compact"
           logLevel="info"
@@ -664,6 +647,18 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
     </>)
   }
 
+  function calcRegDisabled(){
+    let erCheck = bulkEntityValidationErrors && bulkEntityValidationErrors?.length > 0
+    let upCheck = fileData.uploaded
+    let ldCheck = loaders.uploadTable
+    let calc = (erCheck === false && upCheck === true && ldCheck === false)
+    if(calc){
+      return false
+    }else{
+      return true
+    }
+     
+  }
 
 
   return (<>
@@ -692,13 +687,13 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
 
     {/* Upload Field/zone */}
   
-      <Box className="uploadManager" sx={{display:"inline-block", width:"100%", mt:2}}>
+      <Box className="uploadManager " sx={{display:"inline-block", width:"100%", mt:2}}>
       {fileData.registered === false && (
         <Box className="text-left">
           <input
             accept=".tsv, .csv"
             type="file"
-            id="FileUploadContriubtors"
+            id="uploadBulk"
             name="BulkEntity"
             onClick={(e)=>handleFileWipe(e)}
             onChange={(e)=>handleFileGrab(e)}
@@ -706,34 +701,60 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         </Box>
       )}
 
-        <Box sx={{float:"right", display:"inline-block", }}>
-          {!fileData.registered && (
-            <LoadingButton
-              disabled={(bulkEntityValidationErrors && bulkEntityValidationErrors?.length > 0 ) || fileData.registered}
-              variant="outlined"
-              size="large"
-              loadingIndicator={<CircularProgress color="inherit" size={16} />}
-              color="primary"
-              loading={loaders.registration}
-              onClick={(e)=>handleRegister(e)}
-              loadingPosition="start"
-              startIcon={<FontAwesomeIcon icon={faUpload} />}
-              rel="noreferrer">
-              Register
-            </LoadingButton>
-          )}
-          {fileData.registered && (
-            <Button
-              variant="contained"
-              size="large"
-              color="primary"
-              onClick={() => {
-                window.location.reload();
-              }}
-              startIcon={<FontAwesomeIcon icon={faRepeat} />}>
-              Restart
-            </Button>
-          )}
+        <Box className="w-100">
+          <Box className="float-left" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"left"}}>
+            <Collapse in={loaders.showGroupSelect}>
+              <FormControl size="small">
+                <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+                  Group
+                </InputLabel>
+                <Select
+                  id="group_uuid"
+                  label="Group"
+                  onChange={(e)=>setFileData(prev => ({ ...prev, group: e.target.value }))}
+                  sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px", fontSize:"0.8em" }}
+                  value={fileData.group || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
+                  {userGroups && userGroups.map((group, index) => (
+                    <MenuItem sx={{fontSize:"0.7em"}} key={(group.uuid)+"-i"+index} value={group.uuid}>{group.shortname}</MenuItem>
+                  ))}
+                </Select> 
+                <Typography variant="caption" color={"#444a65"}>
+                  You are a member of multiple Data Provider groups. <br /> 
+                  Please Select which one to apply.
+                </Typography>
+              </FormControl>
+            </Collapse>
+          </Box>
+          <Box className="float-right" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"right"}} > 
+            {!fileData.registered && (
+              <LoadingButton
+                disabled={calcRegDisabled()}
+                variant="outlined"
+                sx={{float:"right"}}
+                size="large" 
+                loadingIndicator={<CircularProgress color="inherit" size={16} />}
+                color="primary"
+                loading={loaders.registration}
+                onClick={(e)=>handleRegister(e)}
+                loadingPosition="start"
+                startIcon={<FontAwesomeIcon icon={faUpload} />}
+                rel="noreferrer">
+                Register
+              </LoadingButton>
+            )}
+            {fileData.registered && (
+              <Button
+                variant="contained"
+                size="large"
+                color="primary"
+                onClick={() => {
+                  window.location.reload();
+                }}
+                startIcon={<FontAwesomeIcon icon={faRepeat} />}>
+                Restart
+              </Button>
+            )}
+          </Box>
         </Box>      
       </Box>
 
@@ -744,6 +765,7 @@ export function BulkEntitiesTable({ temp_id,type,onDataChange }) {
         <strong>Error:</strong> {JSON.stringify(pageErrors)}
       </Alert>
     )}
+    {/* <GroupModal open={loaders.showGroupModal} selectionAction={(e,group)=>closeGroupModal(e,group)} closeGroupModal={}                                                              /> */}
     {/* <ViewDebug data={{
       uploaded: fileData.uploaded, 
       registered: fileData.registered, 
