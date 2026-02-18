@@ -154,8 +154,17 @@ export const SampleForm = (props) => {
                 details: {...prevValues.details, json: entityInfo.rui_location}}))
             }
             setSourceRUIDetails(response.results.direct_ancestor.uuid,response.results.direct_ancestor);
+
+            // IF we got here through one of the VIEW RUI links in the Bulk Entity Table (or elsewhere)
+            // let's check for the URL flag
+            let params = Object.fromEntries(url.searchParams.entries());
+            if(Object.keys(params).length > 0 && (params.openRUI)){
+              console.debug('%c◉ RUIOPEN ', 'color:#00ff7b',params );
+              setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, JSONView: true}}))
+            }
+
             // Permissions
-            ingest_api_allowable_edit_states(uuid)
+            ingest_api_allowable_edit_states(entityData.uuid)
               .then((response) => {
                 // console.debug('%c◉ ingest_api_allowable_edit_states RESPONSE ', 'color:#00ff7b', response);
                 const updatedPermissions = {
@@ -741,8 +750,6 @@ export const SampleForm = (props) => {
                   {organ_types[sourceEntity.organ]}
                 </Typography>
               )}
-
-
               {isOrganBloodType(sourceEntity.sample_category) && (
                 <Typography >
                   <b>Organ Type:</b>
@@ -789,26 +796,28 @@ export const SampleForm = (props) => {
           )}
 
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type === "Donor") && (
-            <Box className="my-4" >           
-                <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
-                  Organ
-                </InputLabel>
-                <NativeSelect
-                  id="organ"
-                  label="Organ"
-                  required={sourceEntity.entity_type === "Donor"}
-                  onChange={(e) => handleInputChange(e)}
-                  fullWidth
-                  helperText={(formErrors.organ ? formErrors.organ : "")}
-                  inputProps={{style: {padding: "0.8em"}}}
-                  sx={{background: "rgba(0, 0, 0, 0.06)"}}
-                  disabled={uuid?true:false}
-                  value={formValues.organ ? formValues.organ : ""}>
-                  <option key={"DEFAULT"} value={""}></option>
-                  {organMenu}  
-                </NativeSelect>
-                <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
-            </Box>
+            <Box className="my-4" >       
+                {!uuid && (<>    
+                  <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="organ">
+                    Organ
+                  </InputLabel>
+                  <NativeSelect
+                    id="organ"
+                    label="Organ"
+                    required={sourceEntity.entity_type === "Donor"}
+                    onChange={(e) => handleInputChange(e)}
+                    fullWidth
+                    helperText={(formErrors.organ ? formErrors.organ : "")}
+                    inputProps={{style: {padding: "0.8em"}}}
+                    sx={{background: "rgba(0, 0, 0, 0.06)"}}
+                    disabled={uuid?true:false}
+                    value={formValues.organ ? formValues.organ : ""}>
+                    <option key={"DEFAULT"} value={""}></option>
+                    {organMenu}  
+                  </NativeSelect>
+                  <FormHelperText id="organIDHelp" className="mb-3">The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.</FormHelperText>
+                </>)}
+                </Box>
           )}
 
           {sourceEntity && sourceEntity.uuid && (sourceEntity.entity_type !== "Donor") && (

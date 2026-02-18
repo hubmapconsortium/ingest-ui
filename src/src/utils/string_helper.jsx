@@ -42,26 +42,6 @@ export function tsToDate(timestamp_ms) {
   return date.toLocaleString()
 }
 
-export function parseErrorMessage(err) {
-  // console.log('parseErrorMessage', err)
-console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
-var formattingMessage = err;
-try { 
-  if(err["error"]){
-    console.debug('%c⊙', 'color:#00ff7b', "err has err" );
-      formattingMessage = err["error"].split(":");   // parse out the : which separates the error number and message
-    }else if(err.data){
-      console.debug('%c⊙ErrData', 'color:#00ff7b', err.data );
-    }
-    // console.log('parseErrorMessageerror ', l, (1)[1])\
-    console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
-     return formattingMessage
-  } catch {
-    console.debug('%c⊙parseErrorMessage CATCH', 'color:#ff005d', err );
-  }
- return err
-}
-
 export function toTitleCase(str) {
   if(str){
     try { 

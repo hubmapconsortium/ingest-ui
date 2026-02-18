@@ -119,7 +119,7 @@ export const PublicationForm = (props) => {
               setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
               setSelectedBulkData(entityData.direct_ancestors);
 
-              ingest_api_allowable_edit_states(uuid)
+              ingest_api_allowable_edit_states(entityData.uuid)
                 .then((response) => {
                   if (entityData.data_access_level === "public") {
                     setPermissions({

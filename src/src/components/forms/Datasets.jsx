@@ -189,7 +189,6 @@ export const DatasetForm = (props) => {
           }
         })
         .catch((error) => {
-            // console.debug('%c◉ ingest_api_allowable_edit_states ERR Catch ', 'color:#FFFFFF;background: #2200FF;padding:200' ,error );
           if(error.status === 404){
             navigate("/notFound?entityID="+uuid);
           }

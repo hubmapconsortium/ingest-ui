@@ -153,3 +153,123 @@ export const tableColumns = (d = '"') => [{
     }
 ]
 
+
+export function parseErrorMessage(err) {
+console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
+var formattingMessage = err;
+try { 
+  if(err["error"]){
+    console.debug('%c⊙', 'color:#00ff7b', "err has err" );
+      formattingMessage = err["error"].split(":");   // parse out the : which separates the error number and message
+    }else if(err.data){
+      console.debug('%c⊙ErrData', 'color:#00ff7b', err.data );
+    }
+    // console.log('parseErrorMessageerror ', l, (1)[1])\
+    console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
+     return formattingMessage
+  } catch {
+    console.debug('%c⊙parseErrorMessage CATCH', 'color:#ff005d', err );
+  }
+ return err
+}
+
+export const ParseRegErrorFrame = (errResp) => {
+  var parsedError;
+  
+  if(errResp.results && errResp.results.data && errResp.results.data.data){
+    parsedError = parseErrorMessage(errResp.results.data.data);
+  }else if(errResp.results && errResp.results.data){
+    parsedError = parseErrorMessage(errResp.results.data);
+  }else if(errResp.results && errResp.results.data){
+    parsedError = parseErrorMessage(errResp.results.data);
+  }else if(errResp.status && errResp.data){
+    parsedError = parseErrorMessage(errResp.data);
+  }else{
+    let regErrorSet ={}
+    if(errResp.err && errResp.err.response.data){
+      regErrorSet = errResp.err.response.data 
+    }else if(errResp.error && errResp.error.response.data){
+      regErrorSet = errResp.error.response.data 
+    }else if(errResp.data){
+      regErrorSet = errResp 
+    }else{
+      regErrorSet = errResp
+    }
+    // var errRows = regErrorSet.data;
+    var errRows = regErrorSet.map(g => {
+      return g.message
+    })
+    var errMessage = regErrorSet.status;
+    parsedError=errResp;
+  }
+
+  this.handleErrorCompiling(parsedError); // Error Array's set in that not here
+  this.setState({ 
+    error_status:   true, 
+    submit_error:   true, 
+    error_message:  errMessage,
+    success_message:null,
+    submitting:     false,
+    response_status:errResp.Error
+  });
+  console.debug("DEBUG",this.state.error_message_detail);
+  this.setState({loading:false,}, () => {   
+  });
+}
+
+
+export function TableErrorRowProcessing(errorsArray){
+  console.debug('%c◉ TableErrorRowProcessing ', 'color:#00ff7b', errorsArray);
+  // Build a normalized error set: ensure we operate on strings
+    const errorSet = errorsArray.map((item) => {
+      console.debug('%c◉ item ', 'color:#00ff7b', item);
+
+      const message = (typeof item === 'string') ? item : (item && item.error ? item.error : '');
+      const msgStr = String(message || '');
+
+      // Row #
+      const rowMatch = msgStr.match(/Row Number:\s*(\d+)\./i);
+      let trimMsg = msgStr.replace(/Row Number:\s*\d+\./ig, ""); // Nix "Row N" from message
+      // Sometimes the error lists "sample type" instead of "sample_category". 
+      // Until this is fixes in the API, let's do a simple replace
+      trimMsg = trimMsg.replace(/sample type/ig, "sample_category")
+      console.debug('%c◉ rowMatch ', 'color:#00ff7b', rowMatch);
+      const eRow = (rowMatch ? parseInt(rowMatch[1], 10) : null) + 1;
+      
+  
+      // Consolidated regex patterns — try each in order and return on first match
+      const patterns = [
+        // [COL] is a required header
+        { name: 'requiredMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+a\s+required\s+header\b/i },
+        // [COL] value Must Be
+        { name: 'valueMustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+value\s+must\b/i },
+        // [COL] field must  
+        { name: 'fieldMustMatch', regex: /\b([A-Za-z0-9_]+)\s+field\s+must\b/i },
+        // [COL] must be 
+        { name: 'mustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+must\b/i },
+        // [COL] can not be
+        { name: 'canNotBeMatch', regex: /\b([A-Za-z0-9_]+)\s+can\s+not\s+be\b/i },
+        // [COL] cannot be
+        { name: 'canNotBeConjMatch', regex: /\b([A-Za-z0-9_]+)\s+cannot\s+be\b/i },
+        // [COL] field is not blank
+        { name: 'blankCheck', regex: /\b([A-Za-z0-9_]+)\s+field\s+is\s+not\s+blank,\b/i },
+        // [COL] is not an accepted field
+        { name: 'notAcceptedMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+not\s+an\s+accepted\s+field\b/i },
+        // [COL] field
+        { name: 'fieldMatch', regex: /\b([A-Za-z0-9_]+)\s+field\b/i },
+      ];
+
+      for (const p of patterns) {
+        const m = trimMsg.match(p.regex);
+        if (m) {
+          console.dir('%c◉ ' + p.name + ' ', 'color:#00ff7b', m);
+          return {
+            column: m[1] || "",
+            error: trimMsg,
+            row: eRow ? eRow : "",
+          };
+        }
+      }
+  });
+  return errorSet;
+}
