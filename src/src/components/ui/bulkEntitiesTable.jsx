@@ -539,10 +539,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
   function renderSuccesTable(){
     let successRows = fileData?.regValidation?.success || [];
-    return (<>
-      <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{ borderRadius: "4px 4px 0px 0px", background: "linear-gradient(180deg, #585E7A 0%, #444A65 100%) !important" }}>
-        <strong>Success:</strong> The following rows registered successfully!
-      </Alert>
+    return (<Box>
+      <Box className="successAlertWrap">
+      {/* <Alert  severity="info" className="mt-4 mb-0  " sx={{ borderRadius: "4px", background: "linear-gradient(180deg, #24F759 0%, #3B8C4F 100%) !important", color:"#D3FFD9", border:"3px solid #444a65" }}> */}
+        <Alert className="mt-4 mb-0 successAlert" sx={{ borderRadius: "4px 4px 0px 0px" }}>
+          <Box><strong>Success:</strong> The following rows registered successfully!</Box>
+        </Alert>
+      </Box>
       <div className={"associationTableWrap associatedBulkEntityTable successWrap"} style={{ width: "100%" }}>
         <DataGrid
           className='HDT shortFooter successReg w-100'
@@ -568,7 +571,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           }} 
         />
       </div>
-    </>);
+    </Box>);
   }
 
   function renderRegErrorTable(){

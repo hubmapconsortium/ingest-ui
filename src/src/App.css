@@ -1027,10 +1027,54 @@ status
   border-radius:0px 0px 4px 4px!important;
   border-color:#C40000;
 }
-.associationTableWrap.successWrap{
+/* .associationTableWrap.successWrap{
   border-radius:0px 0px 4px 4px!important;
   border-color:#444a65;
+} */
+.associationTableWrap.successWrap{
+  border-radius: 4px !important;
+  /* border-color: #12B10C; */
 }
+/* 
+.associationTableWrap.successWrap .HDT {
+  border: 1px solid #0ecd3a;
+}  */
+.associationTableWrap.successWrap .HDT .MuiDataGrid-virtualScroller{
+  border:3px solid #12B10C50;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root{
+  background:#1bad0f;
+  box-shadow: 0px 1px 1px 1px #03167a50;
+  border: 1px solid #00000030;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root:hover{
+  background:#50d845;
+  box-shadow: 0px 1px 1px 1px #03167a70;
+  border: 1px solid #00000050;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row{
+  background:#D2EBD1;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row:nth-child(even){
+  background:#D7F5D5;
+}
+.successAlertWrap {
+  margin: 10px auto 20px auto;
+}
+.successAlertWrap .successAlert{
+  border:1px solid #12973255;
+  box-shadow: 0 1px 7px #BCF1D5;
+  border-radius:10px!important;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, #3B8C4F20 0%,  #50d84530 100%) 
+}
+.successAlertWrap .successAlert strong{
+  color: #129732;
+}
+
+
 .HDT.errorFrame{
   border:1px solid #9A0A4B;
   background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) ;
@@ -1230,6 +1274,7 @@ status
   font-family: 'Inter var', sans-serif!important;
   /* font-size: 0.8rem; */
 } 
+
 
 /* Bulk Error List */
 .errListRow {

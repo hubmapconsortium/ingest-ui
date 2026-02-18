@@ -379,6 +379,7 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
           variant="contained"
           size="small"
           className="m-2"
+          sx={{fontSize: "0.65rem", minWidth: "80px"}}
           onClick={(e) => handleOpenPage(e, params.value)}>
           {params.value}
         </Button>
