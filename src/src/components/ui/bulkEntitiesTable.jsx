@@ -3,10 +3,6 @@ import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {
   DataGrid, 
-  // GridSelectionModel,
-  gridExpandedRowCountSelector,
-  gridVisibleColumnDefinitionsSelector,
-  gridExpandedSortedRowIdsSelector,
   useGridApiRef} from "@mui/x-data-grid";
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
@@ -25,7 +21,6 @@ import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
 import LoadingButton from "@mui/lab/LoadingButton";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
-// import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import {
   COLUMN_DEF_BULK_SAMPLES, 
   COLUMN_DEF_BULK_DONORS, 
@@ -33,7 +28,6 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
-import {LegendToggleOutlined} from '@mui/icons-material';
 // lodash removed (not used)
 
 export function BulkEntitiesTable({ type,onDataChange }) {
@@ -62,15 +56,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     showGroupSelect: false,
     RUIRender:null,
   });
-  let [coordinates, setCoordinates] = React.useState({
-    rowIndex: 0,
-    colIndex: 0,
-  });
   const spotlightTimeoutRef = useRef(null);
-  let [tableScroll, setTableScroll] = useState({
-    rowIndex: 0,
-    colIndex: 0,
-  })
   let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
   let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
 
@@ -154,15 +140,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   useEffect(() => {
     onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors})
   }, [bulkEntityRows, bulkEntityValidationErrors, onDataChange])
-
-  // Scroll Coordinates for Table Error / List synch
-  useEffect(() => {
-    const { rowIndex, colIndex } = tableScroll;
-    apiRef.current.scrollToIndexes({rowIndex: rowIndex, colIndex: 1});
-    // const id = gridVisibleSortedRowIdsSelector(apiRef)[rowIndex];
-    // const column = gridVisibleColumnDefinitionsSelector(apiRef)[colIndex];
-    // apiRef.current.setCellFocus(id, column.field);
-  }, [apiRef, tableScroll]);
 
   // Clear any active spotlight timeout on unmount
   useEffect(() => {
@@ -522,11 +499,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
-  function getTableScroll (e,coords){
-    console.debug('%c◉ setTableScroll ', 'color:#00ff7b', coords);
-    setCoordinates({ rowIndex: coords.rowIndex, colIndex: coords.colIndex });
-  }
-
   // Error list renderer moved to ErrorList component
 
   function renderErrorFrame(){
@@ -575,7 +547,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       </Box>
     );
   }
-
 
   function CustomFooterStatusComponent(props) {
     console.debug('%c◉ CustomFooterStatusComponent rowCount` ', 'color:#00ff7b', );
