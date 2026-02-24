@@ -300,6 +300,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       });
   }
 
+  function handleTriggerUpload() {
+    console.debug('%c◉ handleTriggerUpload', 'color:#4000FF');
+    document.getElementById('uploadBulk').click();
+  }
+
   function handleFileWipe() {
     console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
     setBulkEntityRows([]);
@@ -741,9 +746,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
     {/* Upload Field/zone */}
   
-      <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
+    <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
       {fileData.registered === false && (
-        <Box className="text-left">
+        <Box className="text-left" onClick={(e)=>handleTriggerUpload(e)}>
           <input
             accept=".tsv, .csv"
             type="file"
