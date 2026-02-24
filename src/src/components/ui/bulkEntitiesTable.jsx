@@ -33,7 +33,6 @@ import Button from "@mui/material/Button";
 export function BulkEntitiesTable({ type,onDataChange }) {
   const apiRef = useGridApiRef();
 
-  const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
   let [pageErrors, setPageErrors] = useState(null);
   let [fileData,setFileData] = useState({
     file: null,
