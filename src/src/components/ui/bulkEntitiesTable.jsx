@@ -450,17 +450,22 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     // Attach data-spotlight to both the error list item and the cell, so both will be highlighted
     // Exclude any elements that are currently selected (`data-selected="true"`).
     let spotlightTargets = Array.from(document.querySelectorAll(`[data-target="${target}" ]`))
-      .filter((el) => el.getAttribute('data-selected') !== 'true');
+      .filter((el) => (el?.getAttribute('data-selected') !== 'true' || !el.getAttribute('data-selected')));
+      let cleanTargets = []
+      if(spotlightTargets[0]?.attributes["data-target"]?.value === spotlightTargets[1]?.attributes["data-target"]?.value){
+        cleanTargets.push(spotlightTargets[0],spotlightTargets[1]);
+      }
 
-    const hasUndefinedErrRow = spotlightTargets.some((el) => el?.id === 'errListRow-undefined');
+    const hasUndefinedErrRow = cleanTargets.some((el) => el?.id === 'errListRow-undefined');
+    
     if (!hasUndefinedErrRow) {
-      spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
+      cleanTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
       // Add bonus row highlight on table when spotlit
       let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
       errorRow?.setAttribute('data-spotlight', 'true');
     }
     setTimeout(() => {
-      spotlightTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
+      cleanTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
     }, 4000);
 
   }
@@ -474,17 +479,21 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
   function setSelectionTableRow(e, item, target){
     let oldSelected = document.querySelectorAll('[data-selected]'); 
+    console.debug('%c◉ oldSelected ', 'color:#FFCC00', oldSelected);
     oldSelected.forEach(el => el.removeAttribute('data-selected')); 
     oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
+    let oldByClass = document.getElementsByClassName("Mui-selected");
+    console.debug('%c◉ oldByClass ', 'color:#FFCC00', oldByClass);
+    Array.from(oldByClass).forEach(el => el.classList.remove('Mui-selected'));
 
     let newSelected = e.currentTarget;
     e.currentTarget.setAttribute('data-selected', 'true');
     console.debug('%c◉ onRowClick ', 'color:#00ff7b',oldSelected, newSelected);
-
     let selectedRow = document.querySelector(`[aria-rowindex="${target}" ]`);
+    // let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
+    selectedRow.click();
     selectedRow?.setAttribute('data-selected', 'true');
     selectedRow?.classList.add('Mui-selected');
-  
     console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
@@ -576,10 +585,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           slotProps={{
             footer: {rowCount: bulkEntityRows.length},
           }}
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
+
           hideFooterSelectedRowCount
           rowCount={bulkEntityRows && bulkEntityRows.length >0 ? bulkEntityRows.length : 0}
           sx={{

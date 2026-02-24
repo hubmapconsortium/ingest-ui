@@ -1239,7 +1239,7 @@ status
   font-weight: bolder;
   color: #E13434;
 }
-.HDT .MuiDataGrid-row[data-error]{
+.HDT .MuiDataGrid-row[data-error]:not([data-selected="true"]){
   background: #ffe6e6;
   border-top: inset 1px solid #FCCDCD;
   border-bottom: inset 1px solid #FCCDCD;
