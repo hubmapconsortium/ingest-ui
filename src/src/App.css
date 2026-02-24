@@ -1027,10 +1027,54 @@ status
   border-radius:0px 0px 4px 4px!important;
   border-color:#C40000;
 }
-.associationTableWrap.successWrap{
+/* .associationTableWrap.successWrap{
   border-radius:0px 0px 4px 4px!important;
   border-color:#444a65;
+} */
+.associationTableWrap.successWrap{
+  border-radius: 4px !important;
+  /* border-color: #12B10C; */
 }
+/* 
+.associationTableWrap.successWrap .HDT {
+  border: 1px solid #0ecd3a;
+}  */
+.associationTableWrap.successWrap .HDT .MuiDataGrid-virtualScroller{
+  border:3px solid #12B10C50;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root{
+  background:#1bad0f;
+  box-shadow: 0px 1px 1px 1px #03167a50;
+  border: 1px solid #00000030;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root:hover{
+  background:#50d845;
+  box-shadow: 0px 1px 1px 1px #03167a70;
+  border: 1px solid #00000050;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row{
+  background:#D2EBD1;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row:nth-child(even){
+  background:#D7F5D5;
+}
+.successAlertWrap {
+  margin: 10px auto 20px auto;
+}
+.successAlertWrap .successAlert{
+  border:1px solid #12973255;
+  box-shadow: 0 1px 7px #BCF1D5;
+  border-radius:10px!important;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, #3B8C4F20 0%,  #50d84530 100%) 
+}
+.successAlertWrap .successAlert strong{
+  color: #129732;
+}
+
+
 .HDT.errorFrame{
   border:1px solid #9A0A4B;
   background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) ;
@@ -1040,23 +1084,26 @@ status
   margin-bottom: 6px;
 }
 .HDT.errorFrame div{
-  background: #FADDDD!important;
+  /* background: #FADDDD!important; */
   padding: 4px;
   /* border-radius:4px; */
   border-radius:0px 0px 4px 4px!important;
+  /* margin: 2px 0px; */
   
 }
 /* .HDT.errorFrame .preamble{
   
 } */
 
-.HDT.errorFrame .MuiBox-root{
+.HDT.errorFrame .MuiBox-root:not(.errListRow){
   /* border:1px solid #444a65; */
-  background: #ffe6e6!important;
+  background: #ffe6e6;
   padding:2px 4px;
 } 
+
 .HDT.errorFrame .errorListWrap{
   padding:10px 2px 2px 4px;
+  background: #ffe6e6!important;
 }
 .HDT.errorFrame .errorFrameDetail{
   background: #FADDDD!important;
@@ -1075,6 +1122,10 @@ status
 .HDT div[data-error="true"] div[data-error="true"]{
   transition:0.1s ease-out;
 }
+.HDT .MuiDataGrid-row[data-spotlight="true"]:not([data-selected="true"]){
+  background-color: #F8CECE!important;
+  transition:  0.2s ease-in-out;
+}
 .HDT div[data-error="true"] div[data-error="true"]:hover{
   z-index: 9999;
   /* box-shadow: 0px 5px 6px 1px #f56e6e; */
@@ -1083,22 +1134,28 @@ status
   transition: 0.2s ease-in-out;
 }
 
-.HDT .MuiDataGrid-row[data-spotlight="true"]{
-  background-color: #F8CECE!important;
-  transition:  0.2s ease-in-out;
+
+.HDT.condensed .MuiDataGrid-row,
+.HDT.condensed .MuiDataGrid-row .MuiDataGrid-cell{
+  /* max-height: 30px!important; */
+  min-height: 34px!important;
+  border:0px;
+}
+.HDT.condensed .MuiDataGrid-row{
+  border-bottom: 1px solid #00000020;
 }
 
 .HDT .MuiDataGrid-cell[data-spotlight="true"]{
   z-index: 9999;
-  box-shadow: 0px 5px 6px 1px #f56e6e;
-  border:1px solid #ff0000;
+  box-shadow: 0px 0px 8px 1px #FF7373;
+  border:1px solid #9A0A4B;
   background-color: #FF4949!important;
   transition:0.2s ease-in-out;
 }
 
-.HDT.errorFrame div[data-spotlight="true"]{
-  /* box-shadow: 0px 5px 6px 1px #f56e6e; */
-  border:inset 1px solid #ff0000;
+.HDT.errorFrame div[data-spotlight="true"]:not([data-selected="true"]){
+  box-shadow:inset 0px 0px 1px 1px #f56e6e;
+  /* border: 1px solid #ff0000; */
   transition: 0.2s ease-in-out;
   background: #ff000020 !important;
 }
@@ -1133,6 +1190,18 @@ status
 .HDT.errorSetTable.shortFooter{
   border-radius: 0px !important;
 }
+.HDT .pagelessFooter{
+  /* display: none; */
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
+  border-top: 2px solid #444A65;
+  color:#ffffffd9;
+  padding:10px;
+  display: flex;  
+  justify-content: end;
+}
+/* .HDT.errorSetTable.shortFooter.noPage p{
+  display: none;
+} */
 
 .HDT .thead-dark th{
   background: none!important;
@@ -1170,7 +1239,7 @@ status
   font-weight: bolder;
   color: #E13434;
 }
-.HDT .MuiDataGrid-row[data-error]{
+.HDT .MuiDataGrid-row[data-error]:not([data-selected="true"]){
   background: #ffe6e6;
   border-top: inset 1px solid #FCCDCD;
   border-bottom: inset 1px solid #FCCDCD;
@@ -1178,14 +1247,25 @@ status
 .HDT .MuiDataGrid-row[data-error]:hover{
   background: #FFD8D8;
 }
+.HDT .MuiDataGrid-row[data-error].Mui-selected{
+  /* background-color: #9A0A4B; */
+  background:linear-gradient(200deg, #FFB2B9 20%,  #FA5858 150%)!important;
+  border: 1px solid #FF0033 ;
+  /* color: #fff !important; */
+  transition:  0.2s ease-in-out;
+  outline: 0px;
+} 
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error]:hover {
   background: #FF7B7B;
-  border:inset 1px solid #E13434;
+  /* border: 0px solid #E13434; */
   color:#fff;
   font-weight: 400;
-  /* border-right:1px solid #E13434; */
+  /* margin-top: -2px; */
+  outline-width: 0px;
+  /* border-right:1px solid #3A3838; */
 }
+
 .HDT .errIcon{
   position: relative;
   float: left;
@@ -1201,6 +1281,10 @@ status
 } */
 .HDT .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
+}
+.HDT .MuiDataGrid-row .MuiDataGrid-cell:focus {
+  outline-width: 0px;
+  /* outline-color:#FF4949; */
 }
 .HDT .MuiDataGrid-row .MuiDataGrid-cell:last-child,
 .HDTWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
@@ -1224,12 +1308,11 @@ status
 .HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
-
-/* Contributors table cell font size */
 .HDT .MuiDataGrid-cellContent {
   font-family: 'Inter var', sans-serif!important;
   /* font-size: 0.8rem; */
 } 
+
 
 /* Bulk Error List */
 .errListRow {
@@ -1253,8 +1336,19 @@ status
   box-shadow: 1px 1px #00000020;
 }
 .errListRow span.bulk-error-chip:hover {
-  box-shadow: 2px 2px #AA000040;
+  box-shadow: 1px 2px #AA000040;
   cursor: default;
+}
+.errListRow[data-selected="true"],
+.errListRow[data-selected="true"]:hover{
+  background:linear-gradient(200deg, #FFB2B9 20%,  #FA5858 150%)!important;
+  /* transition:  0.2s ease-in-out; */
+  color: #fff !important;
+}
+.errListRow[data-selected="true"] span.bulk-error-chip {
+  /* border:1px solid #fff; */
+  color:#FFF1F2;
+  background: #FF0037;
 }
 
 .bulkTSVUp {
