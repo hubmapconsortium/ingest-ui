@@ -323,51 +323,96 @@ export const COLUMN_DEF_BULK_ERRORS = [
 
 // SAMPLES
 export const COLUMN_DEF_BULK_SAMPLES = [
-  { field: "row", headerName: "", flex: 0.1, maxWidth: 20,
+  {
+    field: "row",
+    headerName: "",
+    flex: 0.1,
     renderCell: (params: ValueFormatterParams) => (
-        <Typography className="rowNum" variant="caption" >
-          {params.value}
-        </Typography>
-      ), 
+      <Typography className="rowNum" variant="caption">
+        {params.value}
+      </Typography>
+    ),
   },
-  { field: "source_id", headerName: "Source Id", minWidth: 150,
+  {
+    field: "source_id",
+    headerName: "Source Id",
+    flex: 0.6,
     renderCell: (params: ValueFormatterParams) => (
-        <Button
-          fullWidth
-          variant="contained"
-          size="small"
-          className="px-2"
-          sx={{fontSize: "0.65rem", minWidth: "80px"}}
-          onClick={(e) => handleOpenPage(e, params.value)}>
-          {params.value}
-        </Button>
-      ), 
+      <Button
+        fullWidth
+        variant="contained"
+        size="small"
+        className="px-2"
+        sx={{ fontSize: "0.65rem", minWidth: "80px" }}
+        onClick={(e) => handleOpenPage(e, params.value)}>
+        {params.value}
+      </Button>
+    ),
   },
-  { field: "lab_id", headerName: "Lab Id",minWidth: 150, },
+  {
+    field: "lab_id",
+    headerName: "Lab Id",
+    flex: 0.7,  
+  },
   // { field: "sample_category", headerName: "Type", width: 150 },
-  { field: "sample_category",
+  {
+    field: "sample_category",
     headerName: "Type",
-    minWidth: 100,
+    flex: 0.5,
     sortable: false,
     valueGetter: getTypeValue,
-    renderCell: params => { 
+    renderCell: (params) => {
       // console.debug('%c◉COLUMN_DEF_BULK_SAMPLES  sample_category', 'color:#00ff7b', params);
-      return (toTitleCase(params.row.sample_category))
-    }
-  }, 
-  { field: "organ", 
-    headerName: "Organ", 
-    minWidth: 150,
-    renderCell: params => {
-      let toMirror = ["Knee (Left)"]
-      let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
+      return toTitleCase(params.row.sample_category);
+    },
+  },
+  {
+    field: "organ",
+    headerName: "Organ",
+    // minWidth: 150,
+    renderCell: (params) => {
+      let toMirror = ["Knee (Left)"];
+      let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}");
       let organ_types = JSON.parse(localStorage.getItem("organs"));
-      return (<> 
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ_type) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}><image alt={params.row.organ_type} href={systemIcons[params.row.organ_type]} width="25" height="25" /></svg> {organ_types[params.row.organ_type]}
-      </>)
-    }},
-  { field: "sample_protocol", headerName: "Protocol" },
-  { field: "description", headerName: "Description" },
+      if (!params.row['organ_type']) {
+        return nullCell();
+      }else{
+        return (
+          <>
+            <svg
+              width="25"
+              height="25"
+              xmlns="http://www.w3.org/2000/svg"
+              style={
+                toMirror.includes(params.row.organ_type)
+                  ? { transform: "scaleX(-1)", marginRight: "5px" }
+                  : { marginRight: "5px" }
+              }
+            >
+              <image
+                alt={params.row.organ_type}
+                href={systemIcons[params.row.organ_type]}
+                width="25"
+                height="25"
+              />
+            </svg>{" "}
+            {organ_types[params.row.organ_type]}
+          </>
+        );
+      }
+      
+    },
+  },
+  {
+    field: "sample_protocol",
+    headerName: "Protocol",
+    flex:0.8
+  },
+  {
+    field: "description",
+    headerName: "Description",
+    flex: 1.5,
+  },
 ];
 export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
   { field: 'hubmap_id', 

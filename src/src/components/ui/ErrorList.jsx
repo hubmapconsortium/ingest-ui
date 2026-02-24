@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-export default function ErrorList({ errors = [], onHover = () => {} }) {
+export default function ErrorList({ errors, onHover, onRowClick }) {
   if (!Array.isArray(errors)) return null;
 
   return (
@@ -31,8 +31,11 @@ export default function ErrorList({ errors = [], onHover = () => {} }) {
             data-column={item?.column}
             data-target={target}
             onMouseEnter={(e) => onHover(e, item)}
-            key={i}
-          >
+            onClick={(e) => {
+              onRowClick(e, item, item?.row);
+              // const el = document.getElementById(target);
+            }}
+            key={i}>
             <Typography variant="caption">
               <Typography variant="caption" component={'span'} className="bulk-error-chip">
                 {rowStart}

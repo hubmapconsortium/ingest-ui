@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import {
-  DataGrid, 
-  // GridSelectionModel,
-  gridExpandedRowCountSelector,
-  gridVisibleColumnDefinitionsSelector,
-  gridExpandedSortedRowIdsSelector,
-  useGridApiRef} from "@mui/x-data-grid";
+import {DataGrid} from "@mui/x-data-grid";
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from '@mui/material/MenuItem';
@@ -17,9 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faFileCircleXmark, faUpload, faRepeat } from '@fortawesome/free-solid-svg-icons';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from "@mui/material/Alert";
-import {
-  ingest_api_bulk_entities_upload,
-  ingest_api_bulk_entities_register} from '../../service/ingest_api';
+import {ingest_api_upload_bulk_metadata} from '../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
@@ -33,13 +25,9 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
-import {LegendToggleOutlined} from '@mui/icons-material';
 // lodash removed (not used)
 
-export function BulkEntitiesTable({ type,onDataChange }) {
-  const apiRef = useGridApiRef();
-
-  const [rowSelectionModel, setRowSelectionModel] = React.useState([]);
+export function BulkMetaTable({ type,onDataChange }) {
   let [pageErrors, setPageErrors] = useState(null);
   let [fileData,setFileData] = useState({
     file: null,
@@ -54,23 +42,15 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       errorMessages:[],
     }
   });
-  let [bulkEntityValidationErrors, setBulkEntityValidationErrors] = useState([]);
-  let [bulkEntityRows, setBulkEntityRows] = useState([]);
+  let [bulkMetaValidationErrors, setBulkMetaValidationErrors] = useState([]);
+  let [bulkMetaRows, setBulkMetaRows] = useState([]);
   let [loaders, setLoaders] = useState({
     uploadTable: false,
     registration: false,
     showGroupSelect: false,
     RUIRender:null,
   });
-  let [coordinates, setCoordinates] = React.useState({
-    rowIndex: 0,
-    colIndex: 0,
-  });
   const spotlightTimeoutRef = useRef(null);
-  let [tableScroll, setTableScroll] = useState({
-    rowIndex: 0,
-    colIndex: 0,
-  })
   let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
   let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
 
@@ -101,11 +81,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   const columnsSuccess = (type ? colSuccessSelection(type) : COLUMN_DEF_BULK_SAMPLES);
   const errCols= COLUMN_DEF_BULK_ERRORS;
 
-  // Handle file upload and parse bulkEntity
+  // Handle file upload and parse bulkMeta
   function handleFileGrab(e) {
     dimSpotlight();
     console.debug('%c◉ Grabbing file ', 'color:#00ff7b');
-    setBulkEntityValidationErrors([])
+    setBulkMetaValidationErrors([])
     highlightTableErrors("clear");
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
     
@@ -133,7 +113,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           let expectedCols = columns.map(col => col.field);
           let matchingCols = fileCols.filter(col => expectedCols.includes(col));
 
-          setBulkEntityRows(matchingCols.length > 0 ? data.data : []);
+          setBulkMetaRows(matchingCols.length > 0 ? data.data : []);
           setFileData({...fileData, 
             rows: (data.data),
             uploaded: true,
@@ -149,20 +129,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     }
   }
 
-  // Data Sync wuth wrapper
-  // @TODO: No real need to wrap now 
   useEffect(() => {
-    onDataChange({data: bulkEntityRows, errors: bulkEntityValidationErrors})
-  }, [bulkEntityRows, bulkEntityValidationErrors, onDataChange])
-
-  // Scroll Coordinates for Table Error / List synch
-  useEffect(() => {
-    const { rowIndex, colIndex } = tableScroll;
-    apiRef.current.scrollToIndexes({rowIndex: rowIndex, colIndex: 1});
-    // const id = gridVisibleSortedRowIdsSelector(apiRef)[rowIndex];
-    // const column = gridVisibleColumnDefinitionsSelector(apiRef)[colIndex];
-    // apiRef.current.setCellFocus(id, column.field);
-  }, [apiRef, tableScroll]);
+    onDataChange({data: bulkMetaRows, errors: bulkMetaValidationErrors})
+  }, [bulkMetaRows, bulkMetaValidationErrors, onDataChange])
 
   // Clear any active spotlight timeout on unmount
   useEffect(() => {
@@ -193,11 +162,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               .sort((a, b) => Number(a) - Number(b))
               .map(k => ({ column: "", error: obj[k], row: "" }));
             // Keep the raw array for now
-            setBulkEntityValidationErrors(errorsArray)
+            setBulkMetaValidationErrors(errorsArray)
             let errorSet = TableErrorRowProcessing(errorsArray)
             console.debug('%c◉ TableErrorRowProcessing errorSet ', 'background:#0033FF', respSet);
             // Replace validation errors with the normalized set
-            setBulkEntityValidationErrors(errorSet)
+            setBulkMetaValidationErrors(errorSet)
             highlightTableErrors(errorSet);
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
@@ -227,21 +196,21 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               }
             }
             try{
-              setBulkEntityValidationErrors([{
+              setBulkMetaValidationErrors([{
                 // "column": "N/A",
                 "error": errString,
                 "name": name ? name : "",
               }])
-              //setValidatingBulkEntityUpload(false)
+              //setValidatingBulkMetaUpload(false)
             }catch(error){
-              //setValidatingBulkEntityUpload(false)
+              //setValidatingBulkMetaUpload(false)
               //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
             console.debug('%c◉ Nonrow ', 'background:#0033FF', );
             try{
-              setBulkEntityValidationErrors([{
+              setBulkMetaValidationErrors([{
                 "column": "",
                 "error": errorSet.toString(),
                 "row": ""
@@ -253,23 +222,23 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             //  IVT Row by Row Error Handling
             try{
               errorSet = errorSet.sort((a, b) => a.row - b.row);
-              setBulkEntityValidationErrors(errorSet);
-              //setValidatingBulkEntityUpload(false)
+              setBulkMetaValidationErrors(errorSet);
+              //setValidatingBulkMetaUpload(false)
               highlightTableErrors(errorSet);
             }catch(error){
-              //setValidatingBulkEntityUpload(false)
+              //setValidatingBulkMetaUpload(false)
               // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
           }
           console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
           setPageErrors((prevValues) => ({
             ...prevValues,
-            'bulkEntity': "Please Review the following validation errors and re-upload your file.",
+            'bulkMeta': "Please Review the following validation errors and re-upload your file.",
           }))
         }else if(res?.error?.response?.data?.error){ // 400 / too many
           console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
           try{
-            setBulkEntityValidationErrors([{
+            setBulkMetaValidationErrors([{
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
@@ -280,13 +249,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         }else{
           setPageErrors((prevValues) => ({
             ...prevValues,
-            'bulkEntity': "An error occurred during file upload. Please review the message and try again. || "+res.toString(),
+            'bulkMeta': "An error occurred during file upload. Please review the message and try again. || "+res.toString(),
           }))
           
           console.error("IDK" , res);
-          //setValidatingBulkEntityUpload(false)
+          //setValidatingBulkMetaUpload(false)
         }
-        //setValidatingBulkEntityUpload(false)
+        //setValidatingBulkMetaUpload(false)
         setLoaders((prev) => ({ ...prev, uploadTable: false, }));
         let showGroupCheck = calcRegDisabled();
         if(userGroups.length > 1 && showGroupCheck === true ){
@@ -302,7 +271,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
   function handleFileWipe() {
     console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
-    setBulkEntityRows([]);
+    setBulkMetaRows([]);
     setFileData({
       file:null,
       temp_id:null,
@@ -339,7 +308,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             console.debug("value",value);
             dataRows.push(value);
           }
-          setBulkEntityRows(dataRows.length > 0 ? dataRows : [])
+          setBulkMetaRows(dataRows.length > 0 ? dataRows : [])
           setFileData({
             ...fileData,
             registered: true,
@@ -374,8 +343,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             .filter(([, val]) => val && val.error)
             .map(([key, val], i) => {
               const rowIndex = Number(key);
-              redoEntries.push(bulkEntityRows[rowIndex-1]);
-              const originalRow = bulkEntityRows[rowIndex-1] ? bulkEntityRows[rowIndex-1] : {}
+              redoEntries.push(bulkMetaRows[rowIndex-1]);
+              const originalRow = bulkMetaRows[rowIndex-1] ? bulkMetaRows[rowIndex-1] : {}
               const respMeta = { ...originalRow, ...val };
               delete respMeta.error;
               return {
@@ -394,7 +363,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             .map(([, val]) => val);
           console.debug('%c◉ errRows ', 'background:#00ff7b', errRows);
           console.debug('%c◉ successRows ', 'background:#00ff7b', successRows);
-          setBulkEntityRows(successRows.length > 0 ? successRows : [])
+          setBulkMetaRows(successRows.length > 0 ? successRows : [])
           setFileData({
             ...fileData,
             registered: true,
@@ -405,7 +374,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             },
           });
 
-          // setBulkEntityValidationErrors(errRows);
+          // setBulkMetaValidationErrors(errRows);
           setPageErrors(null);
 
         } else {
@@ -446,9 +415,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           cell.addEventListener("mouseenter", function (e) {
             spotlightCellAndRow(e, error, `${error?.row-1}_${col}`); 
           });
-          errorRow.addEventListener("click", function (e) {
-            setSelectionListRow(e, error, `${error?.row}`); 
-          });
+          
         }
       }
     }else{
@@ -466,11 +433,10 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     let olds = document.querySelectorAll(`[data-spotlight="true" ]`);
     olds.forEach(el => el.removeAttribute('data-spotlight', 'true'));
     // Attach data-spotlight to both the error list item and the cell, so both will be highlighted
-    // Exclude any elements that are currently selected (`data-selected="true"`).
-    let spotlightTargets = Array.from(document.querySelectorAll(`[data-target="${target}" ]`))
-      .filter((el) => el.getAttribute('data-selected') !== 'true');
-
-    const hasUndefinedErrRow = spotlightTargets.some((el) => el?.id === 'errListRow-undefined');
+    let spotlightTargets = document.querySelectorAll(`[data-target="${target}" ]`);
+    const hasUndefinedErrRow = Array.from(spotlightTargets).some(
+      (el) => el?.id === 'errListRow-undefined'
+    );
     if (!hasUndefinedErrRow) {
       spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
       // Add bonus row highlight on table when spotlit
@@ -490,38 +456,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     oldDataCellError.forEach(el => el.removeAttribute('data-cell-error'));
   }
 
-  function setSelectionTableRow(e, item, target){
-    let oldSelected = document.querySelectorAll('[data-selected]'); 
-    oldSelected.forEach(el => el.removeAttribute('data-selected')); 
-    oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
-
-    let newSelected = e.currentTarget;
-    e.currentTarget.setAttribute('data-selected', 'true');
-    console.debug('%c◉ onRowClick ', 'color:#00ff7b',oldSelected, newSelected);
-
-    let selectedRow = document.querySelector(`[aria-rowindex="${target}" ]`);
-    selectedRow?.setAttribute('data-selected', 'true');
-    selectedRow?.classList.add('Mui-selected');
-  
-    console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
-  }
-
-  function setSelectionListRow(e, item, target){
-    let oldSelected = document.querySelectorAll('[data-selected]'); 
-    oldSelected.forEach(el => el.removeAttribute('data-selected')); 
-    oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
-  
-    let selectedRow = document.getElementById(`errListRow-${target}`);
-    selectedRow?.setAttribute('data-selected', 'true');
-  
-    console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
-  }
-
-  function getTableScroll (e,coords){
-    console.debug('%c◉ setTableScroll ', 'color:#00ff7b', coords);
-    setCoordinates({ rowIndex: coords.rowIndex, colIndex: coords.colIndex });
-  }
-
   // Error list renderer moved to ErrorList component
 
   function renderErrorFrame(){
@@ -534,7 +468,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               The following errors were encountered when trying to upload your data. Please review the messages below and try again.
             </Typography>
           </>)}
-          {bulkEntityRows && bulkEntityRows.length <= 0 &&(
+          {bulkMetaRows && bulkMetaRows.length <= 0 &&(
             <Typography className='preamble' variant='caption' component={"p"} sx={{ width: "100%", borderBottom: "1px solid #00000030", background: '#ffe6e6', color: '#3E0000', padding: '5px 10px' }}> 
               <FontAwesomeIcon icon={faFileCircleXmark} color="red" className='mr-2 red' /> Additionally, no valid columns were found in the uploaded file, so no data can be displayed. Please ensure your file matches the expected format.  
             </Typography>
@@ -548,7 +482,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         )}
         <Box className="errorListWrap">
           <ErrorList
-            errors={bulkEntityValidationErrors}
+            errors={bulkMetaValidationErrors}
             onHover={(e, item) => {
               const col = item?.column === 'organ_type' ? 'organ' : item?.column;
               spotlightCellAndRow(
@@ -557,55 +491,30 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 `${item?.row - 1}_${col}`
               );
             }}
-            onRowClick={(e, item) => {
-              const col = item?.column === 'organ_type' ? 'organ' : item?.column;
-              setSelectionTableRow(
-                e,
-                { row: (item?.row), column: col },
-                `${item?.row}`
-              )
-            }}
           />
         </Box>
       </Box>
     );
   }
 
-
-  function CustomFooterStatusComponent(props) {
-    console.debug('%c◉ CustomFooterStatusComponent rowCount` ', 'color:#00ff7b', );
-    return (
-      <Box className="pagelessFooter">
-        <Typography variant='caption'> <strong>Total Rows:</strong>  {props.rowCount.toString()}</Typography>
-      </Box>
-    );
-  }
-
   function renderEntityTable(){
     return (<>
-      <div className={"associationTableWrap associatedBulkEntityTable"} style={{ width: "100%" }}>
+      <div className={"associationTableWrap associatedBulkMetaTable"} style={{ width: "100%" }}>
         <DataGrid
-          apiRef={apiRef}
-          className='HDT condensed shortFooter w-100'
-          rows={(bulkEntityRows && bulkEntityRows.length > 0) ? bulkEntityRows.map((row, idx) => ({ id: idx, "row": idx+1, ...row })) : [] }
+          className='HDT shortFooter w-100'
+          rows={(bulkMetaRows && bulkMetaRows.length > 0) ? bulkMetaRows.map((row, idx) => ({ id: idx, "row": idx+1, ...row })) : [] }
           columns={columns}
           loading={loaders.uploadTable}
-          // onRowClick={setSelectionListRow(params)} 
-          disableVirtualization
-          // density="compact"
+          density="compact"
           logLevel="info"
-          slots={{
-            footer: CustomFooterStatusComponent,
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 10, page: 0 },
+            },
           }}
-          slotProps={{
-            footer: {rowCount: bulkEntityRows.length},
-          }}
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
+          pageSizeOptions={[5, 10, 25, 40]}
           hideFooterSelectedRowCount
-          rowCount={bulkEntityRows && bulkEntityRows.length >0 ? bulkEntityRows.length : 0}
+          rowCount={bulkMetaRows && bulkMetaRows.length >0 ? bulkMetaRows.length : 0}
           sx={{
             fontSize:"0.75em",
             border: "none",
@@ -615,7 +524,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         />
       </div>
       
-      {(fileData?.uploaded && !fileData.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && ( <>
+      {(fileData?.uploaded && !fileData.registered) && bulkMetaValidationErrors && bulkMetaValidationErrors.length > 0 && ( <>
         {renderErrorFrame()}
       </>)}
       <Box className="">
@@ -628,29 +537,25 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
   function renderSuccesTable(){
     let successRows = fileData?.regValidation?.success || [];
-    return (<Box>
-      <Box className="successAlertWrap">
-      {/* <Alert  severity="info" className="mt-4 mb-0  " sx={{ borderRadius: "4px", background: "linear-gradient(180deg, #24F759 0%, #3B8C4F 100%) !important", color:"#D3FFD9", border:"3px solid #444a65" }}> */}
-        <Alert className="mt-4 mb-0 successAlert" sx={{ borderRadius: "4px 4px 0px 0px" }}>
-          <Box><strong>Success:</strong> The following rows registered successfully!</Box>
-        </Alert>
-      </Box>
-      <div className={"associationTableWrap associatedBulkEntityTable successWrap"} style={{ width: "100%" }}>
+    return (<>
+      <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{ borderRadius: "4px 4px 0px 0px", background: "linear-gradient(180deg, #585E7A 0%, #444A65 100%) !important" }}>
+        <strong>Success:</strong> The following rows registered successfully!
+      </Alert>
+      <div className={"associationTableWrap associatedBulkMetaTable successWrap"} style={{ width: "100%" }}>
         <DataGrid
-          className='HDT shortFooter borderless noPage successReg w-100'
+          className='HDT shortFooter successReg w-100'
           rows={successRows}
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
           density="compact"
           logLevel="info"
-          
-          // initialState={{
-          //   pagination: {
-          //     paginationModel: { pageSize: 10, page: 0 },
-          //   },
-          // }}
-          // pageSizeOptions={[5, 10, 25, 40]}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 10, page: 0 },
+            },
+          }}
+          pageSizeOptions={[5, 10, 25, 40]}
           hideFooterSelectedRowCount
           rowCount={successRows && successRows.length >0 ? successRows.length : 0}
           sx={{
@@ -661,7 +566,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           }} 
         />
       </div>
-    </Box>);
+    </>);
   }
 
   function renderRegErrorTable(){
@@ -670,7 +575,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       <Alert variant="filled" severity="error"className="mt-4 mb-0" sx={{borderRadius: "4px 4px 0px 0px" }}>
         <strong>Errors:</strong> The following rows were not registered. Please review the provided error messaging and try again.
       </Alert>
-      <div className={"associationTableWrap associatedBulkEntityTable errorSetWrap regErrorTable mt-0 w-100"} >
+      <div className={"associationTableWrap associatedBulkMetaTable errorSetWrap regErrorTable mt-0 w-100"} >
           <DataGrid
             className='HDT errorSetTable shortFooter w-100'
           rows={errorRows}
@@ -679,11 +584,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           density="compact"
           logLevel="info"
           initialState={{
-            // pagination: {
-            //   paginationModel: { pageSize: 10, page: 0 },
-            // },
+            pagination: {
+              paginationModel: { pageSize: 10, page: 0 },
+            },
           }}
-          // pageSizeOptions={[5, 10, 25, 40]}
+          pageSizeOptions={[5, 10, 25, 40]}
           hideFooterSelectedRowCount
           rowCount={errorRows && errorRows.length >0 ? errorRows.length : 0}
           sx={{
@@ -694,14 +599,14 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           }} 
         />
       </div>
-      {(fileData?.uploaded && fileData?.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && (
+      {(fileData?.uploaded && fileData?.registered) && bulkMetaValidationErrors && bulkMetaValidationErrors.length > 0 && (
           <>{renderErrorFrame()}</>
         )}
     </>)
   }
 
   function calcRegDisabled(){
-    let erCheck = bulkEntityValidationErrors && bulkEntityValidationErrors?.length > 0
+    let erCheck = bulkMetaValidationErrors && bulkMetaValidationErrors?.length > 0
     let upCheck = fileData.uploaded
     let ldCheck = loaders.uploadTable
     let calc = (erCheck === false && upCheck === true && ldCheck === false)
@@ -748,7 +653,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             accept=".tsv, .csv"
             type="file"
             id="uploadBulk"
-            name="BulkEntity"
+            name="BulkMeta"
             onClick={(e)=>handleFileWipe(e)}
             onChange={(e)=>handleFileGrab(e)}
             className="bulkTSVUp"/>
@@ -823,8 +728,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       uploaded: fileData.uploaded, 
       registered: fileData.registered, 
       upOnly: (fileData.uploaded && !fileData.registered), 
-      bulkEntityValidationErrors: bulkEntityValidationErrors,
-      Len: bulkEntityValidationErrors?.length
+      bulkMetaValidationErrors: bulkMetaValidationErrors,
+      Len: bulkMetaValidationErrors?.length
 
     }}/> */}
 
