@@ -184,5 +184,3 @@ class RUIIntegration extends Component {
 }
 
 export default RUIIntegration;
-
-//{/** width = {this.state.width} height= {this.state.height} **/}

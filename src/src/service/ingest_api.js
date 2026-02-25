@@ -439,18 +439,18 @@ export function ingest_api_notify_slack(data) {
  *
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile) { 
-  // console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
+  console.debug('%c⭗ ingest_api_upload_bulk_metadata', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
   const options = {headers: { Authorization: "Bearer " + globalToken,"Content-Type": "multipart/form-data"}};
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
   formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
-  // console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
+  console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`;
   // console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios 
-    .put(url,formData,options)
+    .put(url,formData,{headers: {Authorization: `Bearer ${globalToken}`,"Content-Type": "multipart/form-data"}})
     .then(res => {
       // console.debug("ingest_api_upload_bulk_metadata",res);
         let results = res.data;

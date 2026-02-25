@@ -557,7 +557,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function CustomFooterStatusComponent(props) {
-    console.debug('%c◉ CustomFooterStatusComponent rowCount` ', 'color:#00ff7b', );
     return (
       <Box className="pagelessFooter">
         <Typography variant='caption'> <strong>Total Rows:</strong>  {props.rowCount.toString()}</Typography>
