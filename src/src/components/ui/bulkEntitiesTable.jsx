@@ -230,7 +230,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             try{
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkEntityValidationErrors(errorSet);
-              //setValidatingBulkEntityUpload(false)
               highlightTableErrors(errorSet);
             }catch(error){
               //setValidatingBulkEntityUpload(false)
@@ -269,8 +268,15 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
           setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
         } 
-
-      })
+        
+        let fullTableContent = document.getElementsByClassName("MuiDataGrid-virtualScrollerRenderZone");
+        let newHeight = fullTableContent[0].clientHeight
+        let outerTable = document.getElementsByClassName("HDTdynamic")
+        if(newHeight > 350){ newHeight = 300; console.log("2Big")}
+        outerTable[0].setAttribute("style", `height: ${newHeight+100}px!important;`);
+        console.debug('%c◉ outerTable.style.height ', 'color:#00ff7b', outerTable[0]);
+      })          
+      
       .catch(() => {
         //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
       });
@@ -350,7 +356,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           console.debug('%c⊙207', 'color:#f4d006' );
           const entries = Object.entries(resp.results.data || {});
           let redoEntries = [];
-        
           const errRows = entries
             .filter(([, val]) => val && val.error)
             .map(([key, val], i) => {
@@ -477,34 +482,29 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function setSelectionTableRow(e, item, target){
+    console.debug('%c◉ setSelectionTableRow ', 'color:#00ff7b', setSelectionTableRow);
     let oldSelected = document.querySelectorAll('[data-selected]'); 
-    console.debug('%c◉ oldSelected ', 'color:#FFCC00', oldSelected);
     oldSelected.forEach(el => el.removeAttribute('data-selected')); 
     oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
     let oldByClass = document.getElementsByClassName("Mui-selected");
-    console.debug('%c◉ oldByClass ', 'color:#FFCC00', oldByClass);
     Array.from(oldByClass).forEach(el => el.classList.remove('Mui-selected'));
 
-    let newSelected = e.currentTarget;
-    e.currentTarget.setAttribute('data-selected', 'true');
-    console.debug('%c◉ onRowClick ', 'color:#00ff7b',oldSelected, newSelected);
-    let selectedRow = document.querySelector(`[aria-rowindex="${target}" ]`);
-    // let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
-    selectedRow.click();
-    selectedRow?.setAttribute('data-selected', 'true');
-    selectedRow?.classList.add('Mui-selected');
-    console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
+    let dataGridContainer = document.querySelector('.associatedBulkEntityTable');
+    let selectedRow = dataGridContainer.querySelector(`[aria-rowindex="${target}" ]`);
+    selectedRow?.setAttribute('data-selected', 'true').classList.add('Mui-selected');
+    e.target.setAttribute('data-selected', 'true');
+    // console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
   function setSelectionListRow(e, item, target){
+    console.debug('%c◉ setSelectionListRow ', 'color:#00ff7b', e, item, target );
     let oldSelected = document.querySelectorAll('[data-selected]'); 
     oldSelected.forEach(el => el.removeAttribute('data-selected')); 
     oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
-  
+    // we only wanna run this if we're not being selected by the row already, check event
+    console.debug('%c◉ setSelectionListRow e ', 'color:#00ff7b', e);
     let selectedRow = document.getElementById(`errListRow-${target}`);
     selectedRow?.setAttribute('data-selected', 'true');
-  
-    console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
   // Error list renderer moved to ErrorList component
@@ -569,13 +569,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       <div className={"associationTableWrap associatedBulkEntityTable"} style={{ width: "100%" }}>
         <DataGrid
           apiRef={apiRef}
-          className='HDT condensed shortFooter w-100'
+          className='HDT HDTdynamic condensed shortFooter w-100'
           rows={(bulkEntityRows && bulkEntityRows.length > 0) ? bulkEntityRows.map((row, idx) => ({ id: idx, "row": idx+1, ...row })) : [] }
           columns={columns}
           loading={loaders.uploadTable}
-          // onRowClick={setSelectionListRow(params)} 
           disableVirtualization
-          // density="compact"
           logLevel="info"
           slots={{
             footer: CustomFooterStatusComponent,
@@ -583,13 +581,12 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           slotProps={{
             footer: {rowCount: bulkEntityRows.length},
           }}
-
           hideFooterSelectedRowCount
           rowCount={bulkEntityRows && bulkEntityRows.length >0 ? bulkEntityRows.length : 0}
           sx={{
             fontSize:"0.75em",
             border: "none",
-            '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': { minHeight: '60px', overflowY: 'scroll!important', maxHeight: '350px' },
+            '.MuiDataGrid-main > .MuiDataGrid-virtualScroller': { minHeight: '60px', overflowY: 'scroll!important', },
             background: "rgba(0, 0, 0, 0.04)",
           }} 
         />
@@ -624,13 +621,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           loading={loaders.uploadTable}
           density="compact"
           logLevel="info"
-          
-          // initialState={{
-          //   pagination: {
-          //     paginationModel: { pageSize: 10, page: 0 },
-          //   },
-          // }}
-          // pageSizeOptions={[5, 10, 25, 40]}
           hideFooterSelectedRowCount
           rowCount={successRows && successRows.length >0 ? successRows.length : 0}
           sx={{
@@ -798,15 +788,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         <strong>Error:</strong> {JSON.stringify(pageErrors)}
       </Alert>
     )}
-    {/* <GroupModal open={loaders.showGroupModal} selectionAction={(e,group)=>closeGroupModal(e,group)} closeGroupModal={}                                                              /> */}
-    {/* <ViewDebug data={{
-      uploaded: fileData.uploaded, 
-      registered: fileData.registered, 
-      upOnly: (fileData.uploaded && !fileData.registered), 
-      bulkEntityValidationErrors: bulkEntityValidationErrors,
-      Len: bulkEntityValidationErrors?.length
-
-    }}/> */}
 
   </>);
 }
