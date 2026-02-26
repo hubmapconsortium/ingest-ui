@@ -1134,6 +1134,9 @@ status
   transition: 0.2s ease-in-out;
 }
 
+.HDTdynamic{
+  transition:  0.2s ease-in-out;
+}
 
 .HDT.condensed .MuiDataGrid-row,
 .HDT.condensed .MuiDataGrid-row .MuiDataGrid-cell{
@@ -1199,9 +1202,11 @@ status
   display: flex;  
   justify-content: end;
 }
-/* .HDT.errorSetTable.shortFooter.noPage p{
-  display: none;
-} */
+
+.HDT.condensed .MuiDataGrid-virtualScrollerContent{
+  height: max-content!important;
+  min-height: 50px!important;
+}
 
 .HDT .thead-dark th{
   background: none!important;
