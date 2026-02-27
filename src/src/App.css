@@ -1128,12 +1128,14 @@ status
 }
 .HDT div[data-error="true"] div[data-error="true"]:hover{
   z-index: 9999;
-  /* box-shadow: 0px 5px 6px 1px #f56e6e; */
   border:1px solid #ff0000;
   background-color: #FF4949!important;
   transition: 0.2s ease-in-out;
 }
 
+.HDTdynamic{
+  transition:  0.2s ease-in-out;
+}
 
 .HDT.condensed .MuiDataGrid-row,
 .HDT.condensed .MuiDataGrid-row .MuiDataGrid-cell{
@@ -1199,9 +1201,11 @@ status
   display: flex;  
   justify-content: end;
 }
-/* .HDT.errorSetTable.shortFooter.noPage p{
-  display: none;
-} */
+
+.HDT.condensed .MuiDataGrid-virtualScrollerContent{
+  height: max-content!important;
+  min-height: 50px!important;
+}
 
 .HDT .thead-dark th{
   background: none!important;
