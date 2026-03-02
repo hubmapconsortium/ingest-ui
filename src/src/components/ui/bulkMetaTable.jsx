@@ -14,32 +14,23 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from "@mui/material/Alert";
 import {ingest_api_upload_bulk_metadata} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
+import {genColWidth} from './tableBuilder.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
 import LoadingButton from "@mui/lab/LoadingButton";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 // import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
-import {
-  COLUMN_DEF_BULK_SAMPLES, 
-  COLUMN_DEF_BULK_DONORS, 
-  COLUMN_DEF_BULK_ERRORS, 
-  COLUMN_DEF_BULK_SAMPLES_SUCCESS,
-  COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
 // lodash removed (not used)
 
 export function BulkMetaTable({ type,onDataChange }) {
   let [pageErrors, setPageErrors] = useState(null);
+  let [file, setFile] = useState(null);
   let [fileData,setFileData] = useState({
     file: null,
     uploaded:false,
     group: JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "",
     rows:[],
-    regValidation:{
-      success:[],
-      error:[],
-      errorMessages:[],
-    }
   });
   let [bulkMetaValidationErrors, setBulkMetaValidationErrors] = useState([]);
   let [bulkMetaRows, setBulkMetaRows] = useState([]);
@@ -77,7 +68,7 @@ export function BulkMetaTable({ type,onDataChange }) {
         captured:false,
         uploaded:false,
         rows:[],
-        success:[],
+        success:false,
       });
     
       Papa.parse(newFile, {
@@ -85,7 +76,7 @@ export function BulkMetaTable({ type,onDataChange }) {
         skipEmptyLines: true,
         header: true,
         complete: data => {
-          console.debug('%c◉ data ', 'color:#00ff7b', data.data);
+          console.debug('%c◉PAPA COMPLESE data ', 'color:#00ff7b', data.data);
           // If none of the file fields are accounted for in expected columns, don't set the table data
           let detectedFields = data?.meta?.fields || [];
           console.debug(data?.meta?.fields, columns.map(c => c.field));
@@ -100,17 +91,21 @@ export function BulkMetaTable({ type,onDataChange }) {
             setColumns(mappedColumns);
           }
           setBulkMetaRows(data.data);
+          // console.debug('%c◉ newFile ', 'color:#00ff7b', newFile);
+          setFile(newFile);
           setFileData({...fileData, 
+            file: newFile,
             rows: (data.data),
             captured: true,
           });
-          console.debug('%c◉ parsed fileData ', 'background:#E096FF', fileData, bulkMetaRows, data?.data);
-
+          setLoaders((prev) => ({ ...prev, uploadTable: false }));
+          console.debug('%c◉ parsed fileData ', 'background:#E096FF', fileData, newFile, bulkMetaRows, data?.data);
         }
       });
       
     } else {
       //console.debug("No Data??");
+      setLoaders((prev) => ({ ...prev, uploadTable: false }));
     }
   }
 
@@ -130,20 +125,23 @@ export function BulkMetaTable({ type,onDataChange }) {
   }, []);
 
   function handleFileUpload(){
-    let newFile = fileData.file;
+    console.debug('%c◉ fileData ', 'color:#0033FF', fileData, file);
+    setLoaders((prev) => ({ ...prev, uploadTable: true }));
+    let newFile = file;
     let data = fileData.rows;
     console.debug('%c◉ handleFileUpload newFile ',  'color:#fff; background:#0033FF;', newFile, data);
     ingest_api_upload_bulk_metadata(toTitleCase(type), newFile)
       .then((res) => {
+        console.debug('%c◉ res ', ' background:#0033FF;', res);
         if(res.status >= 200 && res.status < 300){
           console.debug('%c◉ RES ACCEPTED ', 'color:#0033FF');
             setFileData({
             ...fileData,
             uploaded: true,
-            success: data
+            success: true
           });
-        }else if(res?.error?.response?.data?.data){
-          let respSet = res?.error?.response?.data?.data
+        }else if(res?.error?.response?.data?.data || res?.error){
+          let respSet = res?.error?.response?.data?.data || res?.error
           console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
           try{
             const obj = respSet || {};
@@ -157,6 +155,7 @@ export function BulkMetaTable({ type,onDataChange }) {
             // Replace validation errors with the normalized set
             setBulkMetaValidationErrors(errorSet)
             highlightTableErrors(errorSet);
+            
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
@@ -229,7 +228,14 @@ export function BulkMetaTable({ type,onDataChange }) {
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
-          
+  
+        }else if(res?.error){
+          setPageErrors((prevValues) => ({
+            ...prevValues,
+            'bulkMeta': "Please Review the following validation errors and re-upload your file.",
+          }))
+
+            
         }else{
           setPageErrors((prevValues) => ({
             ...prevValues,
@@ -242,14 +248,8 @@ export function BulkMetaTable({ type,onDataChange }) {
         let showGroupCheck = calcRegDisabled();
         if(userGroups.length > 1 && showGroupCheck === true ){
           console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
-          setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
+          // setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
         } 
-      })
-      .then(() => {
-        setFileData({
-          ...fileData,
-          uploaded: true 
-        });
       })
       .catch(() => {
         //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
@@ -265,11 +265,10 @@ export function BulkMetaTable({ type,onDataChange }) {
       captured:false,
       uploaded:false,
       rows:[],
-      success:[],
+      success:false,
     })
   }
 
-  
 
   function highlightTableErrors(errorSet){
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
@@ -366,15 +365,19 @@ export function BulkMetaTable({ type,onDataChange }) {
 
   function renderSuccesTable(){
     return (<>
-      <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{ borderRadius: "4px 4px 0px 0px", background: "linear-gradient(180deg, #585E7A 0%, #444A65 100%) !important" }}>
-        <strong>Success:</strong> The following rows registered successfully!
+      {/* <Alert variant="filled" severity="info" className="mt-4 mb-0" sx={{ borderRadius: "4px 4px 0px 0px", background: "linear-gradient(180deg, #585E7A 0%, #444A65 100%) !important" }}> */}
+        {/* <strong>Success:</strong> The following rows registered successfully! */}
+      {/* </Alert> */}
+
+      <Alert className="my-2 successAlert" sx={{ borderRadius: "4px 4px 0px 0px" }}>
+        <Box><strong>Success:</strong> The following rows were Uploaded successfully!</Box>
       </Alert>
       <div className={"associationTableWrap associatedBulkMetaTable successWrap"} style={{ width: "100%" }}>
         <DataGrid
           className='HDT shortFooter successReg w-100'
-          rows={fileData?.success.map((row, idx) => ({ id: idx, "row": idx+1, ...row }))}
+          rows={fileData?.rows.map((row, idx) => ({ id: idx, "row": idx+1, ...row }))}
           getRowId={(row) => row.uuid || row.id}
-          columns={columns}
+          columns={columns.slice(0,5)}
           loading={loaders.uploadTable}
           density="compact"
           logLevel="info"
@@ -421,7 +424,7 @@ export function BulkMetaTable({ type,onDataChange }) {
     )}
 
     {/* Reg Success Table */}
-    {(fileData?.uploaded) && (
+    {(fileData?.success) && (
       <>
       <FormControl className="w-100">
         {renderSuccesTable()}  
@@ -430,10 +433,10 @@ export function BulkMetaTable({ type,onDataChange }) {
     )}
     
     {/* Upload Field/zone */}
-  
+    
       <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
         <Box className="w-100" sx={{display:"flex", justifyContent: "space-between"}}>
-          {/* {fileData.uploaded === false && (<> */}
+          {fileData.uploaded === false && (<>
             <Box className="" sx={{display:"flex"}} >
               <input
                 accept=".tsv, .csv"
@@ -449,7 +452,7 @@ export function BulkMetaTable({ type,onDataChange }) {
                 <Button
                   variant="contained"
                   size="large"
-                  disabled={!fileData?.captured}
+                  disabled={loaders.uploadTable || !fileData.captured}
                   color="primary"
                   fullWidth
                   onClick={() => {
@@ -481,6 +484,7 @@ export function BulkMetaTable({ type,onDataChange }) {
                 </FormControl>
               </Box>
             </Box>
+          </>)}
         </Box>
 
         <Box className="float-left" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"right"}} > 

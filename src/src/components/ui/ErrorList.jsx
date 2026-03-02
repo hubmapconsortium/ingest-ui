@@ -6,7 +6,7 @@ export default function ErrorList({ errors, onHover, onRowClick }) {
   if (!Array.isArray(errors)) return null;
 
   return (
-    <Box className="renderErrorList">
+    <Box className="renderErrorList" id="bulkErrorList">
       {errors.map((item, i) => {
         let rowStart;
         if (item?.row) {

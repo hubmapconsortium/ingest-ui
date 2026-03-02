@@ -336,7 +336,7 @@ export const COLUMN_DEF_BULK_SAMPLES = [
   {
     field: "source_id",
     headerName: "Source Id",
-    flex: 0.6,
+    minWidth: 140,
     renderCell: (params: ValueFormatterParams) => (
       <Button
         fullWidth
@@ -502,6 +502,14 @@ export const COLUMN_DEF_BULK_DONORS_SUCCESS = [
 
 function nullCell() {
   return <Typography variant="caption" sx={{color:"#dedede",}}>N/A </Typography>
+}
+
+export function genColWidth(label,  baseWidth=150){ {
+  if(label.length > 15){
+    return baseWidth + (label.length - 15) * 3
+  }else{
+    return baseWidth
+  }
 }
 
 function entityIconsBasic(entity_type){
