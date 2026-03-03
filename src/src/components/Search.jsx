@@ -1,8 +1,6 @@
 import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
 
-// import { DataGrid } from '@material-ui/data-grid';
-
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
 

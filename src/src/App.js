@@ -7,7 +7,7 @@ import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
 import LinearProgress from '@mui/material/LinearProgress';
-import {Alert} from '@material-ui/lab';
+import Alert from "@mui/material/Alert";
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -38,9 +38,6 @@ import { gateway_api_status } from "./service/gateway_service";
 // DEVtools
 import {SpeedDialTooltipOpen} from './components/ui/devTools';
 
-// The legacy form loaders
-import {RenderMetadata} from "./components/metadata";
-
 // The New Forms
 import {Search} from "./components/Search";
 import {DonorForm} from "./components/forms/Donors";
@@ -53,6 +50,7 @@ import {EPICollectionForm} from "./components/forms/Epicollections";
 
 // Bulk Forms
 import {BulkEntityForm} from "./components/forms/BulkEntity";
+import {BulkMetaForm} from "./components/forms/BulkMeta";
 
 // 404
 import NotFound from "./components/404";
@@ -769,10 +767,10 @@ export function App(){
                     <Route path="/bulk/samples" exact element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
                     
                     <Route path="/metadata">
-                      <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                      <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
-                      <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
-                      <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+                      <Route index element={<BulkMetaForm reportError={reportError} type="block" />} />
+                      <Route path='block' element={ <BulkMetaForm reportError={reportError} type='block'/>}/>
+                      <Route path='section' element={ <BulkMetaForm reportError={reportError} type='section'/>}/>
+                      <Route path='suspension' element={ <BulkMetaForm reportError={reportError} type='suspension'/>}/>
                     </Route>
 
                     {/* 404 */}
