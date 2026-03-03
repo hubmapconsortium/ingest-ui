@@ -14,7 +14,7 @@ import { ContributorsTable } from "../ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "../ui/formParts";
 import { EPICollectionFormFields, EPICollectionFieldSet } from "../ui/fields/EPICollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../../service/entity_api";
-import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../../service/ingest_api";
+import {ingest_api_publish_collection,ingest_api_allowable_edit_states,ingest_api_dataset_submit, } from "../../service/ingest_api";
 import { validateRequired } from "../../utils/validators";
 
 export const EPICollectionForm = (props) => {
@@ -24,7 +24,7 @@ export const EPICollectionForm = (props) => {
   const [entityData, setEntityData] = useState();
   let [loading, setLoading] = useState({
     page: true,
-    button: {save: false, publish: false, }
+    button: {save: false, publish: false, process: false}
   });
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
@@ -243,6 +243,54 @@ export const EPICollectionForm = (props) => {
     }
   };
 
+  const handleProcess = (e) => {
+    e.preventDefault();
+    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: true } }));
+    let processForm = {
+      title: formValues.title,
+      description: formValues.description,
+      dataset_uuids: bulkSelection.data.map(d => d.uuid), 
+      ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
+      ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
+    }
+    let data = processForm;
+    ingest_api_dataset_submit(entityData.uuid, JSON.stringify(data))
+      .then((response) => {
+          if (response.status < 300) {
+            props.onUpdated(response.results);
+          } else { 
+            // @TODO: Update on the API's end to hand us a Real error back, not an error wrapped in a 200 
+            var statusText = "";
+            // console.debug("err", response, response.error);
+            if(response.err){
+              statusText = response.err.response.status+" "+response.err.response.statusText;
+            }else if(response.error){
+              statusText = response.error.response.status+" "+response.error.response.statusText;
+            }
+            var submitErrorResponse="Uncaptured Error";
+            if(response.err && response.err.response.data ){
+              submitErrorResponse = response.err.response.data 
+            }
+            if(response.error && response.error.response.data ){
+              submitErrorResponse = response.error.response.data 
+            }
+            setSnackbarController({
+              open: true,
+              message: "Process Error - "+statusText+" "+submitErrorResponse,
+              status: "error"
+            });
+          }
+        })
+        .catch((error) => {
+          setSnackbarController({
+            open: true,
+            message: "Process Error - "+error.toString(),
+            status: "error"
+          });
+          setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, process: false } }));
+        });
+  }
+
 
   const handlePublish = (e) => {
     e.preventDefault();
@@ -286,6 +334,16 @@ export const EPICollectionForm = (props) => {
         type="submit">
         Save
       </LoadingButton>
+      {uuid && (
+        <LoadingButton
+          loading={loading.button.process}
+          name="process"
+          onClick={(e) => handleProcess(e)}
+          variant="contained"
+          className="m-2">
+          Process
+        </LoadingButton>
+      )}
       {permissions.has_admin_priv && uuid && (
         <LoadingButton
           variant="contained"
