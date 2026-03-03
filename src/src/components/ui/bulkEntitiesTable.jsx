@@ -491,7 +491,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
 
     let dataGridContainer = document.querySelector('.associatedBulkEntityTable');
     let selectedRow = dataGridContainer.querySelector(`[aria-rowindex="${target}" ]`);
-    selectedRow?.setAttribute('data-selected', 'true').classList.add('Mui-selected');
+    if(selectedRow){
+      selectedRow?.setAttribute('data-selected', 'true').classList.add('Mui-selected');
+    }
     e.target.setAttribute('data-selected', 'true');
     // console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
