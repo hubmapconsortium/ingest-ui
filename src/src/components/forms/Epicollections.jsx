@@ -74,7 +74,7 @@ export const EPICollectionForm = (props) => {
                 uuids: entityData.datasets.map(obj => obj.uuid),
                 data: entityData.datasets
               });
-              ingest_api_allowable_edit_states(uuid)
+              ingest_api_allowable_edit_states(entityData.uuid)
                 .then((response) => {
                   let permissionSet = response.results;
                   if (entityData?.doi_url || entityData?.registered_doi){

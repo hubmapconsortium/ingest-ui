@@ -24,11 +24,9 @@ import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-
 import {BuildError} from "./utils/error_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
-import {SpeedDialTooltipOpen} from './components/ui/formParts';
 import {OrganDetails} from './components/ui/icons';
 import {ValidateLocalStoreValue} from './utils/validators';
 import {sortGroupsByDisplay,adminStatusValidation} from "./service/user_service";
@@ -37,9 +35,11 @@ import {ubkg_api_get_dataset_type_set,ubkg_api_get_organ_type_set, ubkg_api_get_
 import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_api';
 import { gateway_api_status } from "./service/gateway_service";
 
+// DEVtools
+import {SpeedDialTooltipOpen} from './components/ui/devTools';
+
 // The legacy form loaders
 import {RenderMetadata} from "./components/metadata";
-import {RenderBulk} from "./components/bulk";
 
 // The New Forms
 import {Search} from "./components/Search";
@@ -51,6 +51,10 @@ import {DatasetForm} from "./components/forms/Datasets";
 import {CollectionForm} from "./components/forms/Collections";
 import {EPICollectionForm} from "./components/forms/Epicollections";
 
+// Bulk Forms
+import {BulkEntityForm} from "./components/forms/BulkEntity";
+
+// 404
 import NotFound from "./components/404";
 
 export function App(){
@@ -65,9 +69,6 @@ export function App(){
   var[authStatus, setAuthStatus] = useState(false);
   var[unregStatus, setUnregStatus] = useState(false);
   var[allGroups, setAllGroups] = useState(null);
-  var[showFullError, setShowFullError] = useState(false);
-  
-  var[userDev, setUserDev] = useState(true);
   var[adminStatus, setAdminStatus] = useState(false);
   var[APIErrQueue, setAPIErrQueue] = useState([]);
 
@@ -82,9 +83,6 @@ export function App(){
   var[errorInfo,setErrorInfo] = useState("");
   var[errorInfoShow,setErrorInfoShow] = useState(false);
   var[errorDetail, setErrorDetail] = useState({});
-
-  // API Error Bits 
-  var[showFullError, setShowFullError] = useState(false);
 
   const APIErrorTip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
 
@@ -163,11 +161,10 @@ export function App(){
     // @TODO: Maybe we can shuffle all of these 'Loading' bits into their own component to clean this up?
     // Load organs into LocalStorage if need be
     // Which will be after every new login 
-    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons")){
+    if(!localStorage.getItem("organs") || !localStorage.getItem("organ_icons") || localStorage.getItem("organ_icons") === "{}" ){
       ubkg_api_get_organ_type_set()
         .then((res) => {
           loadCount() // the Organ step
-          // lets also save the organ-image mapping
           if(res !== undefined){
             localStorage.setItem("organs",JSON.stringify(res));
             localStorage.setItem("organ_icons", JSON.stringify(OrganDetails()));
@@ -193,7 +190,6 @@ export function App(){
 
     // The Full RUI details for Organs
     if(!localStorage.getItem("organs_full")){
-      let tip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
       ubkg_api_get_organs_full()
         .then((res) => {
           if (res === undefined){
@@ -460,9 +456,6 @@ export function App(){
     window.location.reload();
   };
   
-  function handleCancel(){
-    navigate("/");
-  }
   const onClose = () => {
     navigate("/");
   }
@@ -772,8 +765,8 @@ export function App(){
                     <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
                     <Route path="/epicollection/:uuid" element={<EPICollectionForm onUpdated={(response) => updateSuccess(response)} />} />
 
-                    <Route path="/bulk/donors" exact element={<RenderBulk reportError={reportError} bulkType="donors" />} />
-                    <Route path="/bulk/samples" exact element={<RenderBulk reportError={reportError} bulkType="samples" />} />
+                    <Route path="/bulk/donors" exact element={<BulkEntityForm reportError={reportError} bulkType="donor" />} />
+                    <Route path="/bulk/samples" exact element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
                     
                     <Route path="/metadata">
                       <Route index element={<RenderMetadata reportError={reportError} type="block" />} />

@@ -1,5 +1,5 @@
 body {
-  font-family: 'Inter Variable',"Helvetica", "sans-serif";
+  font-family: 'Inter var',"Helvetica", "sans-serif";
 }
 #header {
   margin-bottom: 20px;
@@ -16,14 +16,18 @@ body {
 
 body {
   background-color: #ebebeb;
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
 }
 
 
-/* Inter Variable Font override */
+/* Inter var Font override */
 /* Avoids having to muck about ThemeProvider nonsense */
-#root{
-  font-family: 'Inter Variable', sans-serif!important;
+/* #root{
+  font-family: 'Inter var', sans-serif!important;
+} */
+ :root { font-family: 'Inter', sans-serif; }
+@supports (font-variation-settings: normal) {
+  :root { font-family: 'Inter var', sans-serif; }
 }
 .MuiPaper-root,
 .MuiTypography-root,
@@ -34,7 +38,7 @@ body {
 .MuiInputLabel-root,
 .MuiButtonBase-root,
 .MuiDataGrid-main {
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
 }
 :root {
   --HBM_Smoke: #F4F4F4;
@@ -46,6 +50,8 @@ body {
   --HBM_BrightBlueCLPlus: #97CDF610;
   --HBM_DarkBlue: #444A65;
   --HBM_DarkBlueCL: #444A6560;
+  --HBM_DarkBlueAlt: #585E7A;
+  --HBM_DarkBlueAltCL: #444A6520;  
   --HBM_Lavender: #9AA0BC;
   --HBM_LavenderCL: #9AA0BC20;
   --HBM_Red: #96909A;
@@ -84,8 +90,6 @@ body {
     background-color: var(--HBM_Lavender)!important;  
     color: var(--HBM_Smoke)!important;
 }
-
-
 
 .tooltip {
   width: 250px;
@@ -523,7 +527,7 @@ a:not([href]).ttip {
 
 .table-hdr-fmt {
   font-size: 0.95rem;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
 }
@@ -552,13 +556,13 @@ a:not([href]).ttip {
 
 .portal-jss116 {
   font-size: 0.95rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.5;
 }
 .portal-alert-text {
   font-size: 0.7rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
   color: red;
@@ -566,14 +570,14 @@ a:not([href]).ttip {
 
 .portal-label {
   font-size: 1.2rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: bold;
   line-height: 1.5;
 }
 
 .portal-jss120 {
   font-size: 2.3rem;
-  font-family: "Inter Variable", Helvetica, Arial, sans-serif;
+  font-family: "Inter var", Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.2;
 }
@@ -603,7 +607,7 @@ a:not([href]).ttip {
   padding: 16px;
   font-size: 0.8rem;
   text-align: left;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.43;
   /*border-bottom: 1px solid rgba(224, 224, 224, 1);*/
@@ -763,7 +767,7 @@ select#groups {
 
 .portal-jss117 {
   font-size: 0.8rem;
-  font-family: Inter Variable, Helvetica, Arial, sans-serif;
+  font-family: Inter var, Helvetica, Arial, sans-serif;
   font-weight: 300;
   line-height: 1.66;
 }
@@ -990,21 +994,16 @@ status
 /* --- HuBMAP Dark Table (HDT) Styles --- */
 .MuiDataGrid-main,
 .MuiTableCell-head {
-  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
 }
 
-.associationTableWrap{
-    width: 100%;
-    border: 3px solid #444a65;
-    border-radius: 10px 10px 4px 4px;
-}
 .SearchGridWrap{
   border: 3px solid #444a65 !important;
   border-radius: 0 0 4px 4px !important;
 }
 .HDT .MuiDataGrid-toolbarContainer {
   /* background: #444a65!important ; */
-  background: linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
   border-bottom: 1px solid #ffffff35;
 }
 .HDT .MuiDataGrid-row:hover {
@@ -1019,16 +1018,195 @@ status
   border: 3px solid #444a65 !important;
   border-radius: 0 0 4px 4px !important;
 }
+.associationTableWrap.errorSetWrap{
+  border: 3px solid #C40000 ;
+  background:#ffe6e6 !important;
+  border-radius:4px 4px 0px 0px!important;
+}
+.associationTableWrap.errorSetWrap.regErrorTable{
+  border-radius:0px 0px 4px 4px!important;
+  border-color:#C40000;
+}
+/* .associationTableWrap.successWrap{
+  border-radius:0px 0px 4px 4px!important;
+  border-color:#444a65;
+} */
+.associationTableWrap.successWrap{
+  border-radius: 4px !important;
+  /* border-color: #12B10C; */
+}
+/* 
+.associationTableWrap.successWrap .HDT {
+  border: 1px solid #0ecd3a;
+}  */
+.associationTableWrap.successWrap .HDT .MuiDataGrid-virtualScroller{
+  border:3px solid #12B10C50;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root{
+  background:#1bad0f;
+  box-shadow: 0px 1px 1px 1px #03167a50;
+  border: 1px solid #00000030;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row .MuiButtonBase-root:hover{
+  background:#50d845;
+  box-shadow: 0px 1px 1px 1px #03167a70;
+  border: 1px solid #00000050;
+  transition:0.2s ease-out;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row{
+  background:#D2EBD1;
+}
+.associationTableWrap.successWrap .HDT .MuiDataGrid-row:nth-child(even){
+  background:#D7F5D5;
+}
+.successAlertWrap {
+  margin: 10px auto 20px auto;
+}
+.successAlertWrap .successAlert{
+  border:1px solid #12973255;
+  box-shadow: 0 1px 7px #BCF1D5;
+  border-radius:10px!important;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, #3B8C4F20 0%,  #50d84530 100%) 
+}
+.successAlertWrap .successAlert strong{
+  color: #129732;
+}
+
+
+.HDT.errorFrame{
+  border:1px solid #9A0A4B;
+  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) ;
+  border-radius:4px;
+  /* border-radius:0px 0px 4px 4px; */
+  padding:4px;
+  margin-bottom: 6px;
+}
+.HDT.errorFrame div{
+  /* background: #FADDDD!important; */
+  padding: 4px;
+  /* border-radius:4px; */
+  border-radius:0px 0px 4px 4px!important;
+  /* margin: 2px 0px; */
+  
+}
+/* .HDT.errorFrame .preamble{
+  
+} */
+
+.HDT.errorFrame .MuiBox-root:not(.errListRow){
+  /* border:1px solid #444a65; */
+  background: #ffe6e6;
+  padding:2px 4px;
+} 
+
+.HDT.errorFrame .errorListWrap{
+  padding:10px 2px 2px 4px;
+  background: #ffe6e6!important;
+}
+.HDT.errorFrame .errorFrameDetail{
+  background: #FADDDD!important;
+  padding: 10px 4px 4px 4px;
+  border-radius:4px 4px 0px 0px !important;
+  border-bottom: 1px solid #f00f0020;
+}
+.HDT.errorFrame .errorFrameDetail span{
+  line-height: 1em;
+}
+
+.HDT div[data-cell-error="true"] button{
+  border:1px solid #ff0000;
+  background-color: #FF4949!important;
+}
+.HDT div[data-error="true"] div[data-error="true"]{
+  transition:0.1s ease-out;
+}
+.HDT .MuiDataGrid-row[data-spotlight="true"]:not([data-selected="true"]){
+  background-color: #F8CECE!important;
+  transition:  0.2s ease-in-out;
+}
+.HDT div[data-error="true"] div[data-error="true"]:hover{
+  z-index: 9999;
+  border:1px solid #ff0000;
+  background-color: #FF4949!important;
+  transition: 0.2s ease-in-out;
+}
+
+.HDTdynamic{
+  transition:  0.2s ease-in-out;
+}
+
+.HDT.condensed .MuiDataGrid-row,
+.HDT.condensed .MuiDataGrid-row .MuiDataGrid-cell{
+  /* max-height: 30px!important; */
+  min-height: 34px!important;
+  border:0px;
+}
+.HDT.condensed .MuiDataGrid-row{
+  border-bottom: 1px solid #00000020;
+}
+
+.HDT .MuiDataGrid-cell[data-spotlight="true"]{
+  z-index: 9999;
+  box-shadow: 0px 0px 8px 1px #FF7373;
+  border:1px solid #9A0A4B;
+  background-color: #FF4949!important;
+  transition:0.2s ease-in-out;
+}
+
+.HDT.errorFrame div[data-spotlight="true"]:not([data-selected="true"]){
+  box-shadow:inset 0px 0px 1px 1px #f56e6e;
+  /* border: 1px solid #ff0000; */
+  transition: 0.2s ease-in-out;
+  background: #ff000020 !important;
+}
+.rowLimitClass.error{
+  color:#c30d0d;
+}
+
 /* Column headers and footers */
-.HDT .MuiDataGrid-columnHeaders,
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
+.HDT .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
-  background: linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) !important;
+  background: linear-gradient(180deg,  #585E7A 0%,  #444a65 100%) !important;
   border-color: #454d55!important;
   color: #fff !important;
   min-height: 35px;
 }
+.HDT.errorSetTable.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-footerContainer,
+.HDT.errorSetTable .thead-dark{
+  background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
+  border-color: #C40000!important;
+}
+.HDT.successReg.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-footerContainer,
+.HDT.successReg .thead-dark{
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
+  border-color: #585E7A!important;
+}
+.HDT.errorSetTable.shortFooter{
+  border-radius: 0px !important;
+}
+.HDT .pagelessFooter{
+  /* display: none; */
+  background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
+  border-top: 2px solid #444A65;
+  color:#ffffffd9;
+  padding:10px;
+  display: flex;  
+  justify-content: end;
+}
+
+.HDT.condensed .MuiDataGrid-virtualScrollerContent{
+  height: max-content!important;
+  min-height: 50px!important;
+}
+
 .HDT .thead-dark th{
   background: none!important;
 }
@@ -1057,18 +1235,60 @@ status
 .HDTWrap .MuiTableRow-head th.MuiTableCell-head {
   border-right: 1px solid #ffffff35;
 }
-.HDT .MuiDataGrid-row[data-error],
-.HDT .MuiDataGrid-row[data-error]:hover,
+.HDT .MuiDataGrid-row .rowNum{
+  font-size: 0.8em;
+  color: #00000060;
+}
+.HDT .MuiDataGrid-row[data-error] .rowNum{
+  font-weight: bolder;
+  color: #E13434;
+}
+.HDT .MuiDataGrid-row[data-error]:not([data-selected="true"]){
+  background: #ffe6e6;
+  border-top: inset 1px solid #FCCDCD;
+  border-bottom: inset 1px solid #FCCDCD;
+}
+.HDT .MuiDataGrid-row[data-error]:hover{
+  background: #FFD8D8;
+}
+.HDT .MuiDataGrid-row[data-error].Mui-selected{
+  /* background-color: #9A0A4B; */
+  background:linear-gradient(200deg, #FFB2B9 20%,  #FA5858 150%)!important;
+  border: 1px solid #FF0033 ;
+  /* color: #fff !important; */
+  transition:  0.2s ease-in-out;
+  outline: 0px;
+} 
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error],
+.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error]:hover {
+  background: #FF7B7B;
+  /* border: 0px solid #E13434; */
+  color:#fff;
+  font-weight: 400;
+  /* margin-top: -2px; */
+  outline-width: 0px;
+  /* border-right:1px solid #3A3838; */
+}
+
+.HDT .errIcon{
+  position: relative;
+  float: left;
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+  margin-left: 10px;
+}
+/* 
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
-  background: #FF000019;
-}
-.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error],
-.HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-error]:hover {
-  border: 1px solid #FF000019;
-}
+  border: 1px solid #ffe6e6;
+} */
 .HDT .MuiDataGrid-row .MuiDataGrid-cell {
   border-right: 1px solid #444a6507;
+}
+.HDT .MuiDataGrid-row .MuiDataGrid-cell:focus {
+  outline-width: 0px;
+  /* outline-color:#FF4949; */
 }
 .HDT .MuiDataGrid-row .MuiDataGrid-cell:last-child,
 .HDTWrap .MuiTableRow-head th.MuiTableCell-head:last-child,
@@ -1084,33 +1304,87 @@ status
 .HDT .MuiDataGrid-toolbarContainer button,
 .HDT .MuiDataGrid-footerContainer p  {
   color: #fff;
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
+}
+.HDT .MuiDataGrid-footerContainer .MuiSelect-select  {
+  background-color: #444a65;
 }
 .HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
-/* Contributors table cell font size */
 .HDT .MuiDataGrid-cellContent {
-  font-family: 'Inter Variable', sans-serif!important;
+  font-family: 'Inter var', sans-serif!important;
   /* font-size: 0.8rem; */
 } 
-.MuiPopover-paper:not(#IndividualMenu) ul[role=listbox].MuiMenu-list{
-  padding: 0px !important;
-  background-color: #444a65!important;
-  border: 1px solid #708090!important;
-  border-top: 1px solid #444a65!important;
-}
-.MuiTablePagination-toolbar  div.MuiTablePagination-select{
-  background-color: #444a65!important;
-}
-ul.MuiMenu-list li[class*="MuiTablePagination-menuItem"]{
-  padding: 0px 2px !important;
-  color:#ffffff;
-  font-family: 'Inter Variable', sans-serif!important;
-  border: 1px solid #444a6590!important;
-}
 
 
+/* Bulk Error List */
+.errListRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  background: #ffe6e6;
+  padding: 5px 10px;
+  border-bottom: 1px solid #00000030;
+}
+.errListRow span.bulk-error-chip {
+  font-weight: bolder;
+  color: #AA0000;
+  background: rgba(255, 34, 0, 0.125);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #AA000075;
+  font-size: 0.85em;
+  box-shadow: 1px 1px #00000020;
+}
+.errListRow span.bulk-error-chip:hover {
+  box-shadow: 1px 2px #AA000040;
+  cursor: default;
+}
+.errListRow[data-selected="true"],
+.errListRow[data-selected="true"]:hover{
+  background:linear-gradient(200deg, #FFB2B9 20%,  #FA5858 150%)!important;
+  /* transition:  0.2s ease-in-out; */
+  color: #fff !important;
+}
+.errListRow[data-selected="true"] span.bulk-error-chip {
+  /* border:1px solid #fff; */
+  color:#FFF1F2;
+  background: #FF0037;
+}
+
+.bulkTSVUp {
+  width: 100%;
+  margin: 2px auto 30px auto;
+  padding: 1em;
+  border: 1px solid #bbbbbb40;
+  background-color: #bbbbbb30;
+  transition: border-color .25s ease-in-out;
+  border-radius: 10px;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
+  font-size: 0.85em;
+  &::file-selector-button{
+    padding: 10px;
+    border-width: 0;
+    border-radius: 10px;
+    background-color: hsl(210 70% 40%);
+    background-image: linear-gradient(rgb(88, 94, 122) 0%, rgb(68, 74, 101) 100%);
+    color: hsl(210 40% 90%);
+    transition: all .25s ease-in-out;
+    cursor: pointer;
+    margin-right: 1em;
+  }
+  &:hover {
+  border-color: #1F66AD20;
+  background-color: #bbbbbb40;
+  &::file-selector-button{  
+    background-color: #1F66AD;
+    background-image: linear-gradient(#1F66AD 0%, rgb(68, 74, 101) 100%);
+    }
+  }
+}
 
 #revert_tooltip{
   background-color: #fff!important;
@@ -1160,11 +1434,11 @@ ul.MuiMenu-list li[class*="MuiTablePagination-menuItem"]{
   white-space:nowrap; 
   text-overflow:ellipsis;
 } 
-/* Brute Force Inter Variable Fix / Death To Roboto */
-/* all of the manual overrides to force Inter Variable over Roboto */
+/* Brute Force Inter var Fix / Death To Roboto */
+/* all of the manual overrides to force Inter var over Roboto */
 .bulk-table,
 .bulk-table tr td{
-  font-family: Inter Variable, Helvetica, Arial, sans-serif!important;
+  font-family: Inter var, Helvetica, Arial, sans-serif!important;
 } 
 
 /* Icon ROtations */
