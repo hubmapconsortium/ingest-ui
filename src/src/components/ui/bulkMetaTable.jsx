@@ -53,7 +53,7 @@ export function BulkMetaTable({ type,onDataChange }) {
     dimSpotlight();
     console.debug('%c◉handleFileGrab Grabbing file ', 'color:#00ff7b');
     setBulkMetaValidationErrors([])
-    highlightTableErrors("clear");
+    // highlightTableErrors("clear");
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
     
     var grabbedFile = e.target.files[0];
@@ -140,21 +140,22 @@ export function BulkMetaTable({ type,onDataChange }) {
             uploaded: true,
             success: true
           });
+        }else if(res.status >= 399 && res.status < 500){
+          setBulkMetaValidationErrors([{
+              "name": "Too Many",
+              "error": res?.error?.response?.data?.error,
+            }])
         }else if(res?.error?.response?.data?.data || res?.error){
           let respSet = res?.error?.response?.data?.data || res?.error
           console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
           try{
-            const obj = respSet || {};
-            const errorsArray = Object.keys(obj)
-              .sort((a, b) => Number(a) - Number(b))
-              .map(k => ({ column: "", error: obj[k], row: "" }));
-            // Keep the raw array for now
+            const obj = res?.error?.response?.data?.error
+            const errorsArray = res?.error?.response?.data?.error.split(", ").map((err, index) => ({
+              "name": `Error ${index + 1}`,
+              "error": err.trim(),
+            }));
+            console.debug('%c◉ errorsArray ', 'color:#00ff7b', errorsArray);
             setBulkMetaValidationErrors(errorsArray)
-            let errorSet = TableErrorRowProcessing(errorsArray)
-            console.debug('%c◉ TableErrorRowProcessing errorSet ', 'background:#0033FF', respSet);
-            // Replace validation errors with the normalized set
-            setBulkMetaValidationErrors(errorSet)
-            highlightTableErrors(errorSet);
             
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
@@ -414,6 +415,27 @@ export function BulkMetaTable({ type,onDataChange }) {
      
   }
 
+  function renderErrorFrame(){
+    return (
+      <Box className="HDT errorFrame mt-4" >
+        <Box className="errorFrameDetail" >
+          <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-2 errIcon red'/>
+          <Typography className='preamble' variant='overline'> 
+            The following errors were encountered when trying to upload your data. Please review the messages below and try again.
+          </Typography>
+        </Box>
+        <ErrorList
+            errors={bulkMetaValidationErrors}
+          />
+        {/* <Box sx={{background:"#FFE8E8"}} >
+          {bulkMetaValidationErrors && bulkMetaValidationErrors.length > 0 && (
+            <Typography variant="caption"> {JSON.stringify(bulkMetaValidationErrors)} </Typography> 
+          )}
+        </Box> */}
+      </Box>
+    );
+  }
+
   return (<>
 
     {/* Main Upload Table */}
@@ -430,6 +452,11 @@ export function BulkMetaTable({ type,onDataChange }) {
         {renderSuccesTable()}  
       </FormControl>
     </>
+    )}
+
+    {/* Fail Message */}
+    {(bulkMetaValidationErrors && bulkMetaValidationErrors.length > 0) && (
+      renderErrorFrame()
     )}
     
     {/* Upload Field/zone */}
