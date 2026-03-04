@@ -128,3 +128,20 @@ export function sortObjectByValues(obj) {
   entries.sort((a, b) => a[1].localeCompare(b[1]));
   return entries;
 }
+
+export function buildInUberonLink(organs) {
+  let uberon_url_base = "http://purl.obolibrary.org/obo/"
+  let fma_url_base = "http://purl.org/sig/ont/fma/fma"
+  for (let organ of organs) {
+      if (!organ['organ_uberon']) continue
+      const [organ_code_type, organ_code] = organ['organ_uberon'].split(':');
+      if (organ_code_type.includes("UBERON")) {
+          organ["uberon_url"] = uberon_url_base + (organ_code_type + "_" + organ_code);
+      } else {
+        console.debug('%c◉ FMA Found: ', 'color:#00ff7b', organ, fma_url_base + organ_code);
+          organ["uberon_url"] = fma_url_base + organ_code;
+      }
+      console.debug('%c◉ organ["uberon_url"] ', 'color:#00ff7b', organ["uberon_url"]);
+  }
+  return organs
+}
