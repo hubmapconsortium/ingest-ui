@@ -1,7 +1,7 @@
 import React,{useEffect,useState,useMemo} from "react";
 import { useLocation } from 'react-router-dom';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
-// import { DataGrid } from '@material-ui/data-grid';
+
 import {SAMPLE_CATEGORIES} from "../constants";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
