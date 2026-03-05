@@ -53,6 +53,7 @@ import {EPICollectionForm} from "./components/forms/Epicollections";
 
 // Bulk Forms
 import {BulkEntityForm} from "./components/forms/BulkEntity";
+import {BulkMetaForm} from "./components/forms/BulkMeta";
 
 // 404
 import NotFound from "./components/404";
@@ -770,7 +771,7 @@ export function App(){
                     
                     <Route path="/metadata">
                       <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                      <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
+                      <Route path='block' element={ <BulkMetaForm reportError={reportError} type='block'/>}/>
                       <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
                       <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
                     </Route>

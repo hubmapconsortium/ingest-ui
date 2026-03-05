@@ -1140,7 +1140,7 @@ status
 .HDT.condensed .MuiDataGrid-row,
 .HDT.condensed .MuiDataGrid-row .MuiDataGrid-cell{
   /* max-height: 30px!important; */
-  min-height: 34px!important;
+  /* min-height: 34px!important; */
   border:0px;
 }
 .HDT.condensed .MuiDataGrid-row{
@@ -1262,12 +1262,9 @@ status
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error],
 .HDT .MuiDataGrid-row[data-error] .MuiDataGrid-cell[data-cell-error]:hover {
   background: #FF7B7B;
-  /* border: 0px solid #E13434; */
   color:#fff;
   font-weight: 400;
-  /* margin-top: -2px; */
   outline-width: 0px;
-  /* border-right:1px solid #3A3838; */
 }
 
 .HDT .errIcon{
