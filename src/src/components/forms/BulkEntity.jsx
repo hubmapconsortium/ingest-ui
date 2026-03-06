@@ -9,6 +9,7 @@ import {BulkEntitiesTable} from '../ui/bulkEntitiesTable';
 
 export const BulkEntityForm = (props) => {
   const [pageErrors] = useState(null);
+  let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+props.bulkType.toLowerCase()+"-bulk-reg.html"
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "", 
@@ -26,7 +27,8 @@ export const BulkEntityForm = (props) => {
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
-            To bulk register multiple {props.bulkType.toLowerCase()}s at one time, upload a tsv file here in the format specified by the example file provided at the footer of the table below. Include one line per {props.bulkType.toLowerCase()} to register. <br />{toTitleCase(props.bulkType)} metadata must be provided separately. <br />
+            To bulk register multiple {props.bulkType.toLowerCase()}s at one time, upload a tsv file here in the format specified by this <a href={`https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-${props.bulkType.toLowerCase()}-registrations.tsv`} target='_blank' rel="noreferrer">Example TSV File</a>. Include one line per {props.bulkType.toLowerCase()} to register. {toTitleCase(props.bulkType)} metadata must be provided separately. <br />
+            See the <a href={docs} target="_blank">{toTitleCase(props.bulkType)} Bulk Registration</a> page for further details.<br/>
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>
