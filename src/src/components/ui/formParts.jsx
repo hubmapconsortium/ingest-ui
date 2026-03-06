@@ -18,7 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -390,10 +390,11 @@ function topHeader(entityData, entityType, subType){
     newTitle = `Bulk Registration for ${type}s`
   }
   
-  
-
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
+      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
+        {returnCreationActionDetail(entityData.creation_action)}
+      </Box>)}
       <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
       {entityData.status && (<>
         <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>   
@@ -413,7 +414,6 @@ function topHeader(entityData, entityType, subType){
         }
       </>)}
 
-
       {entityData.priority_project_list	 && (
         <Typography variant="caption" sx={{display: "inline-block"}}>
           <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
@@ -426,7 +426,7 @@ function topHeader(entityData, entityType, subType){
           <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
             <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
           </svg> {organ_types[entityData.organ]}
-                    </Typography>
+        </Typography>
       )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
@@ -1015,6 +1015,55 @@ export function ParsePreflightString(s) {
   }
   return [obj];
 }
+
+function renderCreationActionIcon(action){
+  switch(action){
+    case "Create Dataset Activity":
+      return <FontAwesomeIcon icon={faCube} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "Multi Assay Split":
+      return <FontAwesomeIcon icon={faDiagramProject} />;
+    case "Central Process":
+      return <FontAwesomeIcon icon={faCodeMerge} />;
+    default:
+      return null;
+  }
+}
+function returnCreationActionDetail(creation_action){
+  let label;
+  switch(creation_action){
+    case "Create Dataset Activity":
+      label = "Is a Primary Dataset";
+      break;
+    case "External Process":
+      label = "Is an EPIC Dataset";
+      break;
+    case "Multi Assay Split":
+      label = "Is a Multi-Assay Split Dataset";
+      break;
+    case "Central Process":
+      label = "Is a Central Process Dataset";
+      break;
+    default:
+      label = creation_action;
+  }
+  return (
+    <Tooltip
+      placement="bottom-start" 
+      title={
+        <Box> 
+          <Typography variant="caption">
+          {label}
+          </Typography><br />
+        </Box>}>
+        <Typography variant='caption' sx={{marginLeft: "5px"}} >{renderCreationActionIcon(creation_action)}</Typography>
+    </Tooltip>
+  )
+}
+  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){
