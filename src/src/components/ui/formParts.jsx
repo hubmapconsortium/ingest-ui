@@ -392,9 +392,6 @@ function topHeader(entityData, entityType, subType){
   
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
-      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
-        {returnCreationActionDetail(entityData.creation_action)}
-      </Box>)}
       <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
       {entityData.status && (<>
         <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>   
@@ -466,6 +463,9 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
+      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
+        {returnCreationActionDetail(entityData.creation_action)}
+      </Box>)}
       <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
