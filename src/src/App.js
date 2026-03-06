@@ -25,6 +25,7 @@ import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import {BuildError} from "./utils/error_helper";
+import {buildInUberonLink} from "./utils/string_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
 import {OrganDetails} from './components/ui/icons';
@@ -194,8 +195,9 @@ export function App(){
             setAPIErrQueue((prev) => [...prev,[`API Error - UBKG: Organ Details`, `Unable to load Organ Detail res from UBKG. ${APIErrorTip}`],
             ]);
           }else{
-            localStorage.setItem("organs_full", JSON.stringify(res));
-            let RUIOrgans = res  
+            let processedOrgans = buildInUberonLink(res);
+            localStorage.setItem("organs_full", JSON.stringify(processedOrgans));
+            let RUIOrgans = processedOrgans  
               .filter(org => org.rui_supported)
               .map(org => org.rui_code);
             localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
