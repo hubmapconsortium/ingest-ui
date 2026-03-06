@@ -337,6 +337,7 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     field: "source_id",
     headerName: "Source Id",
     flex: 0.6,
+    minWidth: 150,
     renderCell: (params: ValueFormatterParams) => (
       <Button
         fullWidth
