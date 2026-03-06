@@ -1,4 +1,3 @@
-import {useNavigate} from "react-router-dom";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
@@ -23,24 +22,21 @@ import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircl
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
+import MenuItem from '@mui/material/MenuItem';
 import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
 import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
-import {tsToDate, toTitleCase} from "../../utils/string_helper";
+import {tsToDate} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
-import SpeedDial from '@mui/material/SpeedDial';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import OfflineBoltIcon from '@mui/icons-material/OfflineBolt';
-import DynamicFormIcon from '@mui/icons-material/DynamicForm';
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
-import SwipeLeftAltIcon from '@mui/icons-material/SwipeLeftAlt';
-import SwipeRightAltIcon from '@mui/icons-material/SwipeRightAlt';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
+import {toTitleCase} from "../../utils/string_helper";
+import {OrganIcons} from "../ui/icons";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -51,6 +47,8 @@ export const FormHeader = (props) => {
   // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
+  let subType = entityType === "Bulk" ? entityData[2] : null;
+  console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
@@ -61,7 +59,7 @@ export const FormHeader = (props) => {
           <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
         </Grid>
       )}
-      {topHeader(entityData, entityType)}
+      {topHeader(entityData, entityType,subType)}
       {infoPanels(entityData,permissions,globusURL)}
     </Grid>
   )
@@ -257,13 +255,14 @@ export function prefillFormValuesFromUrl(setFormValues, setSnackbarController) {
 // Not yet in use Modal similar to the one in the legacy forms that prompts for your group if you have multiple groups
 // Considering switching back to this, saving for now
 export function GroupModal ({
-    submitWithGroup,
-    showGroupSelect,
+    selectionAction,
+    open,
     closeGroupModal
   }){
     let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
+    let [selectedGroup, setSelectedGroup] = userGroups.find(g => g.selected)?.displayname || "";  
     return (
-       <Dialog aria-labelledby="group-dialog" open={showGroupSelect}>
+       <Dialog aria-labelledby="group-dialog" open={open}>
         <DialogTitle >
           You currently have multiple group assignments, Please select a primary group for submission
         </DialogTitle>
@@ -271,7 +270,9 @@ export function GroupModal ({
           <select
             name="selected_group"
             id="selected_group"
-            className="form-control">
+            value={selectedGroup}
+            className="form-control"
+            onChange={(event)=> setSelectedGroup(event.target.value)}>
             {userGroups
               .filter((g) => g.data_provider)  // only show those designated as data providers
               .map(g => {
@@ -285,13 +286,13 @@ export function GroupModal ({
          </DialogContent>
            <DialogActions>
             <Button
-            className="btn btn-primary mr-1"
-            onClick={() => submitWithGroup()}>
-            Submit
+              className="btn btn-primary mr-1"
+              onClick={(e,selectedGroup) => selectionAction(e,selectedGroup)}>
+              Submit
           </Button>
           <Button
            variant="outlined"
-            onClick={() => closeGroupModal()}>
+            onClick={(e) => closeGroupModal(e)}>
             Cancel
           </Button>          
           </DialogActions>
@@ -320,19 +321,18 @@ function noteWrap(note){
 
 // Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
 export function StatusBadge(status){
-  console.debug('%c◉ StatusBadge status ', 'color:#00ff7b', StatusBadge, status, status.status, typeof status);
   if (typeof status !== "string" && status.status){
     status = status.status.toString() ;
   }
   return (
-    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status?.toUpperCase()} size="small" />
+    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
   )
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-function newBadge(type){
-  // console.debug('%c◉ newBadge ', 'color:#00ff7b', type);
-  let newBadgeStyle = {
+export function NewBadge(type){
+  // console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
+  let NewBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
     color: "white",
@@ -343,7 +343,7 @@ function newBadge(type){
     verticalAlign: "super",
   }
   return (  
-    <Chip style={newBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
@@ -377,26 +377,7 @@ function revisionLinksTime(entityData){
   </>)
 }
 
-function revisionLinksPoint(entityData){
-  return(<>
-    {entityData.next_revision_uuid &&(
-      <Typography 
-        variant="caption" 
-        className="tiltRightIcon" 
-        sx={{display: "inline-block", width: "100%"}}> 
-         This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.next_revision_uuid}> next version</a> </strong><SwipeRightAltIcon />
-      </Typography>   
-    )}
-    {entityData.previous_revision_uuid &&(
-      <Typography 
-        className="tiltLeftIcon"
-        variant="caption" 
-        sx={{display: "inline-block", width: "100%"}}>
-          This  {entityData.entity_type} has a <strong><a target="_blank" href={ entityData.entity_type+"/"+entityData.previous_revision_uuid}> previous version </a> </strong> <SwipeLeftAltIcon />  
-      </Typography>   
-    )}
-  </>)
-}
+
 
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType, subType){
@@ -429,6 +410,9 @@ function topHeader(entityData, entityType, subType){
           </>)
         }
       </>)}
+      {entityData.creation_action}
+      
+
       {entityData.priority_project_list	 && (
         <Typography variant="caption" sx={{display: "inline-block"}}>
           <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
@@ -436,7 +420,18 @@ function topHeader(entityData, entityType, subType){
             : entityData.priority_project_list?.[0]}
         </Typography>   
       )}
+      {entityData.organ	 && (
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong> 
+          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+            <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
+          </svg> {organ_types[entityData.organ]}
+                    </Typography>
+      )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
+      {entityData.creation_action && (<>
+      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Creation action:</strong> </Typography>
+        <Typography variant='caption'>{entityData.creation_action}</Typography>
+      </>)}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
       {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
@@ -446,8 +441,8 @@ function topHeader(entityData, entityType, subType){
   ) : (
     <React.Fragment>
       <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
-        {newBadge(entityData[1],"new")}
-        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}> Registering a new {entityType}</h3>
+        {NewBadge(type,"new")}
+        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{newTitle}</h3>
       </Grid>
         
       {entityData[1] === "Upload" && (
@@ -467,12 +462,51 @@ function infoPanels(entityData,permissions,globusURL){
   let HIPPATypes = ["Donor","Sample","Upload"];
   const type = entityData?.entity_type ?? entityData?.[1];
   const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
+  console.debug('%c◉ type ', 'color:#00ff7b', type);
+  if (type === "Bulk"){
+    permissions = {has_write_priv: true, has_admin_priv: true}; // Permissions do not really apply for the Bulk Uploader
+  }
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
-        {returnCreationActionDetail(entityData.creation_action)}
-      </Box>)}
+      {entityData.creation_action && (<>
+        {entityData.creation_action === "Create Dataset Activity" && (
+          <Tooltip
+            placement="bottom-start" 
+            title={
+              <Box>
+                <Typography variant="caption">
+                Is a Primary Dataset
+                </Typography><br />
+              </Box>}>
+              <Typography variant='caption' sx={{marginLeft: "5px"}} ><FontAwesomeIcon icon={faCube}/></Typography>
+          </Tooltip>
+        )}
+        {entityData.creation_action === "External Process" && (
+          <Tooltip
+            placement="bottom-start" 
+            title={
+              <Box>
+                <Typography variant="caption">
+                Is an EPIC Dataset
+                </Typography><br />
+              </Box>}>
+              <Typography variant='caption'  sx={{marginLeft: "5px"}} ><FontAwesomeIcon icon={faStar}/></Typography>
+          </Tooltip>
+        )}
+        {entityData.creation_action === "External Process" && (
+          <Tooltip
+            placement="bottom-start" 
+            title={
+              <Box>
+                <Typography variant="caption">
+                {entityData.creation_action}
+                </Typography><br />
+              </Box>}>
+              <Typography variant='caption'  sx={{marginLeft: "5px"}} ><FontAwesomeIcon icon={faDiagramProject}/></Typography>
+          </Tooltip>
+        )}
+      </>)}
       <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
@@ -542,56 +576,44 @@ function infoPanels(entityData,permissions,globusURL){
   )
 }
 
-// Looks at the Bulk Selector Table and returns an array of  all Hubmap IDs
-// Used in HandleCopyFormUrl to populate source_list
-function getHubmapIDsFromBulkTable() {
-  const wrapper = document.getElementById('bulkTableWrapper');
-  if (!wrapper) return [];
-  const table = wrapper.querySelector('table');
-  if (!table) return [];
-  // Select all first-column <a> elements in table rows
-  const idLinks = table.querySelectorAll('tbody tr td:first-child a');
-  // console.log("idLinks",idLinks);
-  return Array.from(idLinks).map(a => a.textContent.trim());
-}
-
 export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submitting, handleSubmitAction}){
-      return (
-          <Dialog
-            sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
-            maxWidth="xs" 
-            aria-labelledby="submit-dialog" 
-            open={showSubmitModal}>
-            <DialogContent>
-              <h4>Preparing to Submit</h4>
-              <div>  Has all data for this dataset been <br/>
-                1	&#41; validated locally, and  <br/>
-                2	&#41; uploaded to the globus folder?</div>
-           </DialogContent>
-             <DialogActions>
-             <LoadingButton 
-                loading={submitting} 
-                sx={{width:"150px"}} 
-                loadingIndicator="Submitting..." 
-                variant="outlined" 
-                onClick={ (e) => handleSubmitAction(e)}>
-              Submit
-             </LoadingButton>
-            <Button
-              className="btn btn-secondary"
-              onClick={() => setIsSubmitModalOpen(false)}>
-              Cancel
-            </Button>          
-            </DialogActions>
-          </Dialog>
-      
-      );
-    }
+    return (
+        <Dialog
+          sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
+          maxWidth="xs" 
+          aria-labelledby="submit-dialog" 
+          open={showSubmitModal}>
+          <DialogContent>
+            <h4>Preparing to Submit</h4>
+            <div>  Has all data for this dataset been <br/>
+              1	&#41; validated locally, and  <br/>
+              2	&#41; uploaded to the globus folder?</div>
+          </DialogContent>
+            <DialogActions>
+            <LoadingButton 
+              loading={submitting} 
+              sx={{width:"150px"}} 
+              loadingIndicator="Submitting..." 
+              variant="outlined" 
+              onClick={ (e) => handleSubmitAction(e)}>
+            Submit
+            </LoadingButton>
+          <Button
+            className="btn btn-secondary"
+            onClick={() => setIsSubmitModalOpen(false)}>
+            Cancel
+          </Button>          
+          </DialogActions>
+        </Dialog>
+    
+    );
+  }
 
 // Returns a select menu of the User's dataprovider groups
 // Possibly Deprecating with move of GroupsSelector into modal or Field managers
-export function UserGroupSelectMenu(formValues){
+export function UserGroupSelectMenu(formValues, menu){
   let userGroups = JSON.parse(localStorage.getItem("userGroups"));
+  console.debug('%c◉ menu ', 'color:#00ff7b', menu);
   if(formValues.group_name){
     return(
       <option value={formValues.group_uuid}>
@@ -601,11 +623,20 @@ export function UserGroupSelectMenu(formValues){
   }else{
     let menuArray = [];
     for(let group of userGroups){
-      menuArray.push(
-        <option key={group.uuid} value={group.uuid}>
-          {group.shortname}
-        </option>
-      );
+      if(menu===true){
+        menuArray.push(
+          <MenuItem key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </MenuItem>
+        );
+      }else{
+        menuArray.push(
+          <option key={group.uuid} value={group.uuid}>
+            {group.shortname}
+          </option>
+        );
+      }
+      
     }
     return menuArray;
   } 
@@ -771,14 +802,7 @@ export function CombinedWholeEntityOptions({
   restrictions,
   embedded
   }){
-  let coreList = {
-    donor: "Donor" ,
-    sample: "Sample",
-    dataset: "Dataset", 
-    upload: "Data Upload",
-    publication: "Publication",
-    collection: "Collection"
-  }
+  
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
   // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);
@@ -788,31 +812,31 @@ export function CombinedWholeEntityOptions({
     });
     // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
-        <FormControl size="small" sx={{width:"100%"}}>
-          {embedded && (
-            <InputLabel htmlFor="entity_type">Type</InputLabel>
-          )}
-          {!embedded && (
-            <Box className="searchFieldLabel" id="SearchLabelType" >
-              <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
-              <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
-            </Box>
-          )}
-          
-          <Select 
-            native 
-            fullWidth
-            label="Type"
-            id="entity_type"
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
-            name="entity_type"
-            value={formFilters.entity_type}
-            onChange={(e) => handleInputChange(e)}
-            disabled={restrictions && restrictions.entityType?true:false}>
-            <CombinedEmbeddedEntityOptions />
-          </Select>
+      <FormControl size="small" sx={{width:"100%"}}>
+        {embedded && (
+          <InputLabel htmlFor="entity_type">Type</InputLabel>
+        )}
+        {!embedded && (
+          <Box className="searchFieldLabel" id="SearchLabelType" >
+            <BubbleChartIcon sx={{marginRight:"5px",marginTop:"-4px", fontSize:"1.1em" }} />
+            <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
+          </Box>
+        )}
         
-        </FormControl>
+        <Select 
+          native 
+          fullWidth
+          label="Type"
+          id="entity_type"
+          sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize:"0.9em", }}
+          name="entity_type"
+          value={formFilters.entity_type}
+          onChange={(e) => handleInputChange(e)}
+          disabled={restrictions && restrictions.entityType?true:false}>
+          <CombinedEmbeddedEntityOptions />
+        </Select>
+      
+      </FormControl>
     )
   }catch(error){
     let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;
@@ -820,70 +844,6 @@ export function CombinedWholeEntityOptions({
     return (<Typography> ERROR: {error.toString()} </Typography>)
   }  
 };
-
-// Gathers all of the Input fields on the page Plus some other data to generate a pre-fill URL
-export function HandleCopyFormUrl() {
-  // e.preventDefault();
-  const url = new URL(window.location.origin + window.location.pathname);
-  let formValues = document.querySelectorAll("input, textarea, select");
-  // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
-  Object.entries(formValues).forEach(([key, value]) => {
-    // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
-    if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
-      url.searchParams.set(value.id, value.value);
-    }
-    else if (value.type === "checkbox" && value.checked ) {
-      url.searchParams.set(value.id, value.checked === true ? "true" : "false");
-    }
-  });
-  let sourceTable = getHubmapIDsFromBulkTable();
-  if (sourceTable.length > 0) {
-    url.searchParams.set("source_list", sourceTable.join(","));
-  }
-  navigator.clipboard.writeText(url.toString())
-    .then(() => {
-      // setSnackMessage("Form URL copied to clipboard!");
-      // setShowSnack(true)
-    })
-    .catch(() => {
-      // setSnackMessage("Form URL Failed to copy to clipboard!");
-      // setShowSnack(true)
-    });
-}
-
-// The SpeedDial tool being used for quick actions like Copy Form URL & Create Dataset (Admin quick access)
-export function SpeedDialTooltipOpen() {
-  let navigate = useNavigate();
-  const actions = [
-    { icon: <DynamicFormIcon />, name: 'Copy Form Prefil URL', action: (e) => HandleCopyFormUrl(e) },
-    { icon: <TableChartIcon />, name: 'Create Dataset', action: () => navigate(`/new/datasetAdmin`) },
-  ];
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  return (
-    <Box sx={{ height: 320, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', top: "80px", right: 0 }}>
-      <SpeedDial
-        ariaLabel="SpeedDial basic example"
-        sx={{ position: 'absolute', top: 0, right: 16,/*  background:"#0080d009", borderRadius:"1.2em"*/ }}
-        icon={<OfflineBoltIcon />}
-        direction={"down"}>
-        {actions.map((action) => (
-          <SpeedDialAction
-            key={action.name}
-            icon={action.icon}
-            onClick={() => action.action ? action.action() : alert(action.name)}
-            slotProps={{
-              tooltip: {
-                title: action.name,
-              },
-            }}
-          />
-        ))}
-      </SpeedDial>
-    </Box>
-  );
-}
 
 // Returns a Feedback Dialog Modal for displaying Warnings, Errors, etc
 export function FeedbackDialog( { 
@@ -1112,39 +1072,39 @@ function renderCreationActionIcon(action){
     default:
       return null;
   }
-}
-function returnCreationActionDetail(creation_action){
-  let label;
-  switch(creation_action){
-    case "Create Dataset Activity":
-      label = "Is a Primary Dataset";
-      break;
-    case "External Process":
-      label = "Is an EPIC Dataset";
-      break;
-    case "Multi Assay Split":
-      label = "Is a Multi-Assay Split Dataset";
-      break;
-    case "Central Process":
-      label = "Is a Central Process Dataset";
-      break;
-    default:
-      label = creation_action;
+
+  function returnCADetail(entityData){
+
+    let label;
+    switch(entityData.creation_action){
+      case "Create Dataset Activity":
+        label = "Is a Primary Dataset";
+        break;
+      case "External Process":
+        label = "Is an EPIC Dataset";
+        break;
+      case "Multi Assay Split":
+        label = "Is a M ";
+        break;
+      case "Central Process":
+        label = "Is a Central Process Dataset";
+        break;
+      default:
+        label = entityData.creation_action;
+    }
+    return (
+      <Tooltip
+        placement="bottom-start" 
+        title={
+          <Box>
+            <Typography variant="caption">
+            Is a Primary Dataset
+            </Typography><br />
+          </Box>}>
+          <Typography variant='caption' sx={{marginLeft: "5px"}} >{renderCreationActionIcon(entityData.creation_action)}</Typography>
+      </Tooltip>
+    )
   }
-  return (
-    <Tooltip
-      placement="bottom-start" 
-      title={
-        <Box> 
-          <Typography variant="caption">
-          {label}
-          </Typography><br />
-        </Box>}>
-        <Typography variant='caption' sx={{marginLeft: "5px"}} >{renderCreationActionIcon(creation_action)}</Typography>
-    </Tooltip>
-  )
-}
-  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){
