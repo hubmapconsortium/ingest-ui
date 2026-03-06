@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare, faD} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -27,7 +27,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Tooltip from '@mui/material/Tooltip';
 import React from "react";
 import {SAMPLE_CATEGORIES} from "../../constants";
-import {tsToDate} from "../../utils/string_helper";
+import {tsToDate, toTitleCase} from "../../utils/string_helper";
 import HIPPA from "./HIPPA";
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
@@ -320,11 +320,12 @@ function noteWrap(note){
 
 // Returns a Chip / Badge with status text and color based on status (using badgeClass for class)
 export function StatusBadge(status){
+  console.debug('%c◉ StatusBadge status ', 'color:#00ff7b', StatusBadge, status, status.status, typeof status);
   if (typeof status !== "string" && status.status){
     status = status.status.toString() ;
   }
   return (
-    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status.toUpperCase()} size="small" />
+    <Chip sx={{fontWeight: "bold", fontVariant:"all-small-caps"}} className={badgeClass(status)} label={status?.toUpperCase()} size="small" />
   )
 }
 
@@ -398,8 +399,16 @@ function revisionLinksPoint(entityData){
 }
 
 // The TopLeftmost part of the Form Header 
-function topHeader(entityData, entityType){  
-
+function topHeader(entityData, entityType, subType){
+  let type = entityType
+  let organ_types = JSON.parse(localStorage.getItem("organs"));
+  let newTitle = "Registering a new "+type
+  if (entityType === "Bulk"){
+    console.debug('%c◉ SETTYPE ', 'color:#00ff7b', subType, type);
+    type = subType ? toTitleCase(subType) : "Entity"
+    newTitle = `Bulk Registration for ${type}s`
+  }
+  
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
       <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
@@ -420,8 +429,6 @@ function topHeader(entityData, entityType){
           </>)
         }
       </>)}
-
-
       {entityData.priority_project_list	 && (
         <Typography variant="caption" sx={{display: "inline-block"}}>
           <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
@@ -463,6 +470,9 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
+      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
+        {returnCreationActionDetail(entityData.creation_action)}
+      </Box>)}
       <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
@@ -1086,6 +1096,55 @@ export function ParsePreflightString(s) {
   }
   return [obj];
 }
+
+function renderCreationActionIcon(action){
+  switch(action){
+    case "Create Dataset Activity":
+      return <FontAwesomeIcon icon={faCube} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "Multi Assay Split":
+      return <FontAwesomeIcon icon={faDiagramProject} />;
+    case "Central Process":
+      return <FontAwesomeIcon icon={faCodeMerge} />;
+    default:
+      return null;
+  }
+}
+function returnCreationActionDetail(creation_action){
+  let label;
+  switch(creation_action){
+    case "Create Dataset Activity":
+      label = "Is a Primary Dataset";
+      break;
+    case "External Process":
+      label = "Is an EPIC Dataset";
+      break;
+    case "Multi Assay Split":
+      label = "Is a Multi-Assay Split Dataset";
+      break;
+    case "Central Process":
+      label = "Is a Central Process Dataset";
+      break;
+    default:
+      label = creation_action;
+  }
+  return (
+    <Tooltip
+      placement="bottom-start" 
+      title={
+        <Box> 
+          <Typography variant="caption">
+          {label}
+          </Typography><br />
+        </Box>}>
+        <Typography variant='caption' sx={{marginLeft: "5px"}} >{renderCreationActionIcon(creation_action)}</Typography>
+    </Tooltip>
+  )
+}
+  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){
