@@ -3,7 +3,8 @@ import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {
   DataGrid, 
-  useGridApiRef} from "@mui/x-data-grid";
+  useGridApiRef,
+  GridToolbar} from "@mui/x-data-grid";
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from '@mui/material/MenuItem';
@@ -89,7 +90,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   // Handle file upload and parse bulkEntity
   function handleFileGrab(e) {
     dimSpotlight();
-    console.debug('%c◉ Grabbing file ', 'color:#00ff7b');
+    // - [autoSHH] console.debug('%c◉ Grabbing file ', 'color:#00ff7b');
     setBulkEntityValidationErrors([])
     highlightTableErrors("clear");
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
@@ -112,7 +113,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         skipEmptyLines: true,
         header: true,
         complete: data => {
-          console.debug('%c◉ data ', 'color:#00ff7b', data.data);
+          // - [autoSHH] console.debug('%c◉ data ', 'color:#00ff7b', data.data);
           // If none of the file fields are accounted for in expected columns, don't set the table data
           let fileCols = data.meta.fields || [];
           let expectedCols = columns.map(col => col.field);
@@ -125,7 +126,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             registered: false,
           });
           handleFileUpload(newFile);
-          console.debug('%c◉ fileData ', 'color:#00ff7b', fileData, fileData.rows);
+          // - [autoSHH] console.debug('%c◉ fileData ', 'color:#00ff7b', fileData, fileData.rows);
         }
       });
       
@@ -162,7 +163,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           });
         }else if(res?.error?.response?.data?.data){ 
           let respSet = res?.error?.response?.data?.data
-          console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
+          // - [autoSHH] console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
           try{
             const obj = respSet || {};
             const errorsArray = Object.keys(obj)
@@ -171,15 +172,14 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             // Keep the raw array for now
             setBulkEntityValidationErrors(errorsArray)
             let errorSet = TableErrorRowProcessing(errorsArray)
-            console.debug('%c◉ TableErrorRowProcessing errorSet ', 'background:#0033FF', respSet);
             // Replace validation errors with the normalized set
             setBulkEntityValidationErrors(errorSet)
             highlightTableErrors(errorSet);
           }catch(error){
-            console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
+            // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
         }else if(res?.res?.response?.data){
-          console.debug('%c◉ .res?.response?.data Errors ', 'background:#0033FF', );
+          // - [autoSHH] console.debug('%c◉ .res?.response?.data Errors ', 'background:#0033FF', );
           let errorSet = res.res.response.data.description
           if(res?.res?.response?.data?.code === 406 && typeof res?.res?.response?.data?.description?.description === 'string'){
             // THis might just be a metadata issue
@@ -215,7 +215,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
-            console.debug('%c◉ Nonrow ', 'background:#0033FF', );
+            // - [autoSHH] console.debug('%c◉ Nonrow ', 'background:#0033FF', );
             try{
               setBulkEntityValidationErrors([{
                 "column": "",
@@ -223,7 +223,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "row": ""
               }])
             }catch(error){
-              console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
+              // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
             //  IVT Row by Row Error Handling
@@ -236,20 +236,20 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
           }
-          console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
+          // - [autoSHH] console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
           setPageErrors((prevValues) => ({
             ...prevValues,
             'bulkEntity': "Please Review the following validation errors and re-upload your file.",
           }))
         }else if(res?.error?.response?.data?.error){ // 400 / too many
-          console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
+          // - [autoSHH] console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
           try{
             setBulkEntityValidationErrors([{
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
           }catch(error){
-            console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
+            // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
           
         }else{
@@ -265,7 +265,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         setLoaders((prev) => ({ ...prev, uploadTable: false, }));
         let showGroupCheck = calcRegDisabled();
         if(userGroups.length > 1 && showGroupCheck === true ){
-          console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
+          // - [autoSHH] console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
           setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
         } 
         
@@ -274,7 +274,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         let outerTable = document.getElementsByClassName("HDTdynamic")
         if(newHeight > 350){ newHeight = 300; console.log("2Big")}
         outerTable[0].setAttribute("style", `height: ${newHeight+100}px!important;`);
-        console.debug('%c◉ outerTable.style.height ', 'color:#00ff7b', outerTable[0]);
+        // console.debug('%c◉ outerTable.style.height ', 'color:#00ff7b', outerTable[0]);
       })          
       
       .catch(() => {
@@ -283,12 +283,12 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function handleTriggerUpload() {
-    console.debug('%c◉ handleTriggerUpload', 'color:#4000FF');
+    // - [autoSHH] console.debug('%c◉ handleTriggerUpload', 'color:#4000FF');
     document.getElementById('uploadBulk').click();
   }
 
   function handleFileWipe() {
-    console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
+    // - [autoSHH] console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
     setBulkEntityRows([]);
     setFileData({
       file:null,
@@ -300,11 +300,11 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function handleRegister(){
-    console.debug('%c◉ HANDLE REGISTER ', 'color:#00ff7b', fileData );
+    // - [autoSHH] console.debug('%c◉ HANDLE REGISTER ', 'color:#00ff7b', fileData );
 
     setLoaders((prev) => ({ ...prev, registration: true }));
     let fileRef = {"temp_id":fileData.temp_id,"group_uuid":fileData.group ? fileData.group : (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}
-    console.debug('%c◉ fileRef ', 'color:#00ff7b', fileRef);
+    // - [autoSHH] console.debug('%c◉ fileRef ', 'color:#00ff7b', fileRef);
     try{
       ingest_api_bulk_entities_register(type, fileRef)
       .then((resp) => {
@@ -317,13 +317,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         }else{
           serverResp = resp;
         }
-        console.debug('%c◉ serverResp ', 'color:#00ff7b', serverResp);
+        // - [autoSHH] console.debug('%c◉ serverResp ', 'color:#00ff7b', serverResp);
         if(resp.status && resp.status === 201 && resp.results){
           var respData = resp.results.data;
-          console.debug("respData",respData);
+          // - [autoSHH] console.debug("respData",respData);
           var dataRows = [];
           for (var [, value] of Object.entries(respData)) {
-            console.debug("value",value);
+            // - [autoSHH] console.debug("value",value);
             dataRows.push(value);
           }
           setBulkEntityRows(dataRows.length > 0 ? dataRows : [])
@@ -342,18 +342,47 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         } else if (
           (resp.response && resp.response.status && resp.response.status === 504) ||
           (resp.error && resp.error.response && resp.error.response.status === 504)) {
-          console.debug('%c⊙504', 'color:#ff005d' );
+          // - [autoSHH] console.debug('%c⊙504', 'color:#ff005d' );
           ParseRegErrorFrame(resp);
         } else if (
           (resp.response && resp.response.status && resp.response.status === 500) ||
           (resp.error && resp.error.response && resp.error.response.status === 500)) {
-          console.debug('%c⊙500', 'color:#ff005d' );
-          var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
-          setPageErrors({ status: 'server', message: 'Registration Failure', detail: grabFullError });
-          console.debug('handleErrorCompiling', grabFullError);
+          // - [autoSHH] console.debug('%c⊙500', 'color:#ff005d' );
+          // We'll also get a 500 if all rows are bad, so check for that first 
+          if(serverResp.data.status === "Failure - None of the Entities Created Successfully"){
+            let rawErrorSet = serverResp.data.data || {};
+            // - [autoSHH] console.debug('%c◉ errorSet ', 'color:#00ff7b', rawErrorSet);
+            // Convert the keyed error object into a normalized array of error rows
+            const entries = Object.entries(rawErrorSet || {}).sort((a, b) => Number(a[0]) - Number(b[0]));
+            const errorArray = entries.map(([key, val], i) => {
+              const rowIndex = Number(key);
+              return {
+                row: rowIndex,
+                error: val?.error,
+                listIndex: rowIndex - 1,
+                id: `err-${i}`,
+              };
+            });
+            // - [autoSHH] console.debug('%c◉ errorArray ', 'color:#00ff7b', errorArray);
+            setBulkEntityValidationErrors(errorArray);
+            setFileData({
+              ...fileData,
+              registered: true,
+              regValidation:{
+                success: [],
+                error: errorArray,
+                errorMessages: errorArray.map(e => e.error),
+              },
+            });
+
+          }else{
+            var grabFullError = {status:serverResp.data.status,data:serverResp.data.data}
+            setPageErrors({ status: 'server', message: 'Registration Failure', detail: grabFullError });
+            // - [autoSHH] console.debug('handleErrorCompiling', grabFullError);
+          }
         }else if (resp.results && resp.results.data && resp.status === 207) {
         // Partial Success
-          console.debug('%c⊙207', 'color:#f4d006' );
+          // - [autoSHH] console.debug('%c⊙207', 'color:#f4d006' );
           const entries = Object.entries(resp.results.data || {});
           let redoEntries = [];
           const errRows = entries
@@ -373,13 +402,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 listIndex: rowIndex-1,
               };
             });
-            console.debug('%c◉ errRows ', 'color:#00ff7b', errRows);
+            // - [autoSHH] console.debug('%c◉ errRows ', 'color:#00ff7b', errRows);
           // Keep success rows intact (original response objects)
           const successRows = entries
             .filter(([, val]) => !(val && val.error))
             .map(([, val]) => val);
-          console.debug('%c◉ errRows ', 'background:#00ff7b', errRows);
-          console.debug('%c◉ successRows ', 'background:#00ff7b', successRows);
+          // - [autoSHH] console.debug('%c◉ errRows ', 'background:#00ff7b', errRows);
+          // - [autoSHH] console.debug('%c◉ successRows ', 'background:#00ff7b', successRows);
           setBulkEntityRows(successRows.length > 0 ? successRows : [])
           setFileData({
             ...fileData,
@@ -408,14 +437,14 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       });       
     }catch(error){
       setPageErrors({ submit_error: error, error_status: true, error_message_detail: parseErrorMessage(error), error_message: 'Error' });
-      console.debug("SUBMIT error", error)
+      // - [autoSHH] console.debug("SUBMIT error", error)
       setLoaders(prev => ({ ...prev, registration: false }));
     }
     
   }
 
   function highlightTableErrors(errorSet){
-    console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
+    // - [autoSHH] console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
       for (const error of errorSet) {
@@ -441,7 +470,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       try{
         dimSpotlight();
       }catch(err){
-        console.debug('highlightTableErrors clear error', err);
+        // - [autoSHH] console.debug('highlightTableErrors clear error', err);
       }
     }
   }
@@ -482,7 +511,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function setSelectionTableRow(e, item, target){
-    console.debug('%c◉ setSelectionTableRow ', 'color:#00ff7b', setSelectionTableRow);
+    // - [autoSHH] console.debug('%c◉ setSelectionTableRow ', 'color:#00ff7b', setSelectionTableRow);
     let oldSelected = document.querySelectorAll('[data-selected]'); 
     oldSelected.forEach(el => el.removeAttribute('data-selected')); 
     oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
@@ -499,17 +528,15 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   }
 
   function setSelectionListRow(e, item, target){
-    console.debug('%c◉ setSelectionListRow ', 'color:#00ff7b', e, item, target );
+    // - [autoSHH] console.debug('%c◉ setSelectionListRow ', 'color:#00ff7b', e, item, target );
     let oldSelected = document.querySelectorAll('[data-selected]'); 
     oldSelected.forEach(el => el.removeAttribute('data-selected')); 
     oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
     // we only wanna run this if we're not being selected by the row already, check event
-    console.debug('%c◉ setSelectionListRow e ', 'color:#00ff7b', e);
+    // - [autoSHH] console.debug('%c◉ setSelectionListRow e ', 'color:#00ff7b', e);
     let selectedRow = document.getElementById(`errListRow-${target}`);
     selectedRow?.setAttribute('data-selected', 'true');
   }
-
-  // Error list renderer moved to ErrorList component
 
   function renderErrorFrame(){
     return (
@@ -526,13 +553,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               <FontAwesomeIcon icon={faFileCircleXmark} color="red" className='mr-2 red' /> Additionally, no valid columns were found in the uploaded file, so no data can be displayed. Please ensure your file matches the expected format.  
             </Typography>
           )}
+          {fileData.registered && (
+            <Typography className='preamble' variant='caption' > 
+              <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-2 red' />
+              &nbsp;The following rows were not accepted; Please review validation messages and try again. 
+            </Typography>
+          )}
         </Box>
-        {fileData.registered && (
-          <Typography className='preamble'> 
-            <FontAwesomeIcon icon={faExclamationTriangle} color="red" className='mr-2 red' />
-            The following rows were not accepted; Please review validation messages and try again. 
-          </Typography>
-        )}
         <Box className="errorListWrap">
           <ErrorList
             errors={bulkEntityValidationErrors}
@@ -621,6 +648,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
+          slots={{ toolbar: GridToolbar }} 
           density="compact"
           logLevel="info"
           hideFooterSelectedRowCount
@@ -666,7 +694,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           }} 
         />
       </div>
-      {(fileData?.uploaded && fileData?.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && (
+      {(fileData?.uploaded && !fileData?.registered) && bulkEntityValidationErrors && bulkEntityValidationErrors.length > 0 && (
           <>{renderErrorFrame()}</>
         )}
     </>)
@@ -695,7 +723,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     )}
 
     {/* Reg Success Table */}
-    {(fileData?.uploaded && fileData?.registered) && (
+    {(fileData?.uploaded && fileData?.registered && fileData?.regValidation?.success && fileData?.regValidation?.success.length > 0) && (
       <>
       <FormControl className="w-100">
         {renderSuccesTable()}  
@@ -726,63 +754,62 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             className="bulkTSVUp"/>
         </Box>
       )}
-
-        <Box className="w-100">
-          <Box className="float-left" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"left"}}>
-            <Collapse in={loaders.showGroupSelect}>
-              <FormControl size="small">
-                <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
-                  Group
-                </InputLabel>
-                <Select
-                  id="group_uuid"
-                  label="Group"
-                  onChange={(e)=>setFileData(prev => ({ ...prev, group: e.target.value }))}
-                  sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px", fontSize:"0.8em" }}
-                  value={fileData.group || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
-                  {userGroups && userGroups.map((group, index) => (
-                    <MenuItem sx={{fontSize:"0.7em"}} key={(group.uuid)+"-i"+index} value={group.uuid}>{group.shortname}</MenuItem>
-                  ))}
-                </Select> 
-                <Typography variant="caption" color={"#444a65"}>
-                  You are a member of multiple Data Provider groups. <br /> 
-                  Please Select which one to apply.
-                </Typography>
-              </FormControl>
-            </Collapse>
-          </Box>
-          <Box className="float-right" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"right"}} > 
-            {!fileData.registered && (
-              <LoadingButton
-                disabled={calcRegDisabled()}
-                variant="outlined"
-                sx={{float:"right"}}
-                size="large" 
-                loadingIndicator={<CircularProgress color="inherit" size={16} />}
-                color="primary"
-                loading={loaders.registration}
-                onClick={handleRegister}
-                loadingPosition="start"
-                startIcon={<FontAwesomeIcon icon={faUpload} />}
-                rel="noreferrer">
-                Register
-              </LoadingButton>
-            )}
-            {fileData.registered && (
-              <Button
-                variant="contained"
-                size="large"
-                color="primary"
-                onClick={() => {
-                  window.location.reload();
-                }}
-                startIcon={<FontAwesomeIcon icon={faRepeat} />}>
-                Restart
-              </Button>
-            )}
-          </Box>
-        </Box>      
-      </Box>
+      <Box className="w-100">
+        <Box className="float-left" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"left"}}>
+          <Collapse in={loaders.showGroupSelect}>
+            <FormControl size="small">
+              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+                Group
+              </InputLabel>
+              <Select
+                id="group_uuid"
+                label="Group"
+                onChange={(e)=>setFileData(prev => ({ ...prev, group: e.target.value }))}
+                sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px", fontSize:"0.8em" }}
+                value={fileData.group || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
+                {userGroups && userGroups.map((group, index) => (
+                  <MenuItem sx={{fontSize:"0.7em"}} key={(group.uuid)+"-i"+index} value={group.uuid}>{group.shortname}</MenuItem>
+                ))}
+              </Select> 
+              <Typography variant="caption" color={"#444a65"}>
+                You are a member of multiple Data Provider groups. <br /> 
+                Please Select which one to apply.
+              </Typography>
+            </FormControl>
+          </Collapse>
+        </Box>
+        <Box className="float-right" sx={{display:"inline-block", minWidth:"150px", mr:2, float:"right"}} > 
+          {!fileData.registered && (
+            <LoadingButton
+              disabled={calcRegDisabled()}
+              variant="outlined"
+              sx={{float:"right"}}
+              size="large" 
+              loadingIndicator={<CircularProgress color="inherit" size={16} />}
+              color="primary"
+              loading={loaders.registration}
+              onClick={handleRegister}
+              loadingPosition="start"
+              startIcon={<FontAwesomeIcon icon={faUpload} />}
+              rel="noreferrer">
+              Register
+            </LoadingButton>
+          )}
+          {fileData.registered && (
+            <Button
+              variant="contained"
+              size="large"
+              color="primary"
+              onClick={() => {
+                window.location.reload();
+              }}
+              startIcon={<FontAwesomeIcon icon={faRepeat} />}>
+              Restart
+            </Button>
+          )}
+        </Box>
+      </Box>      
+    </Box>
 
     {/* Page Errors */}
     {pageErrors && (
