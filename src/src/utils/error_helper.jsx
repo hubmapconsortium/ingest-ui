@@ -155,17 +155,17 @@ export const tableColumns = (d = '"') => [{
 
 
 export function parseErrorMessage(err) {
-console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
-var formattingMessage = err;
-try { 
-  if(err["error"]){
-    console.debug('%c⊙', 'color:#00ff7b', "err has err" );
+  console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
+  var formattingMessage = err;
+  try { 
+    if(err["error"]){
+      console.debug('%c⊙', 'color:#00ff7b', "err has err" );
       formattingMessage = err["error"].split(":");   // parse out the : which separates the error number and message
     }else if(err.data){
       console.debug('%c⊙ErrData', 'color:#00ff7b', err.data );
     }
     // console.log('parseErrorMessageerror ', l, (1)[1])\
-    console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
+    // console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
      return formattingMessage
   } catch {
     console.debug('%c⊙parseErrorMessage CATCH', 'color:#ff005d', err );
@@ -175,7 +175,9 @@ try {
 
 export const ParseRegErrorFrame = (errResp) => {
   var parsedError;
-  
+  if( typeof err === "object" && typeof errResp[0] === "object"){
+    console.debug('%c◉ OBK ERR FOUND ', 'color:#00ff7b', );
+  }
   if(errResp.results && errResp.results.data && errResp.results.data.data){
     parsedError = parseErrorMessage(errResp.results.data.data);
   }else if(errResp.results && errResp.results.data){
@@ -235,31 +237,50 @@ export function TableErrorRowProcessing(errorsArray){
       trimMsg = trimMsg.replace(/sample type/ig, "sample_category")
       // console.debug('%c◉ rowMatch ', 'color:#00ff7b', rowMatch);
       const eRow = (rowMatch ? parseInt(rowMatch[1], 10) : null) + 1;
-      
   
       // Consolidated regex patterns — try each in order and return on first match
-      const patterns = [
+      // See def validate_samples in app.py on ingest-api for source of these patterns
+      // https://github.com/hubmapconsortium/ingest-api/blob/29470ffe4e4521e8c57724d27b672d48ecc9cef9/src/app.py#L3117
+      const samplePatterns = [
+        // Is Isnt To be or not 
         // [COL] is a required header
         { name: 'requiredMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+a\s+required\s+header\b/i },
-        // [COL] value Must Be
-        { name: 'valueMustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+value\s+must\b/i },
-        // [COL] field must  
-        { name: 'fieldMustMatch', regex: /\b([A-Za-z0-9_]+)\s+field\s+must\b/i },
+        // [COL] is a required filed
+        { name: 'requiredFieldMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+a\s+required\s+field\b/i },
+        // [COL] field is not blank
+        { name: 'blankCheck', regex: /\b([A-Za-z0-9_]+)\s+field\s+is\s+not\s+blank,\b/i },
+        // [COL] is not a valid
+        { name: 'notValidMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+not\s+a\s+valid\b/i },
+        // [COL] is not an accepted field
+        { name: 'notAcceptedMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+not\s+an\s+accepted\s+field\b/i },
+        
+        // Musts
         // [COL] must be 
         { name: 'mustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+must\b/i },
+        // [COL] field must  
+        { name: 'fieldMustMatch', regex: /\b([A-Za-z0-9_]+)\s+field\s+must\b/i },
+        // [COL] value Must Be
+        { name: 'valueMustBeMatch', regex: /\b([A-Za-z0-9_]+)\s+value\s+must\b/i },
+        // [COL] must either be of the format
+        { name: 'formatMatch', regex: /\b([A-Za-z0-9_]+)\s+must\s+either\s+be\s+of\s+the\s+format\b/i },
+        // [COL] must be fewer than
+        { name: 'fewerThanMatch', regex: /\b([A-Za-z0-9_]+)\s+must\s+be\s+fewer\s+than\b/i },
+        
+        // Can Nots 
         // [COL] can not be
         { name: 'canNotBeMatch', regex: /\b([A-Za-z0-9_]+)\s+can\s+not\s+be\b/i },
         // [COL] cannot be
         { name: 'canNotBeConjMatch', regex: /\b([A-Za-z0-9_]+)\s+cannot\s+be\b/i },
-        // [COL] field is not blank
-        { name: 'blankCheck', regex: /\b([A-Za-z0-9_]+)\s+field\s+is\s+not\s+blank,\b/i },
-        // [COL] is not an accepted field
-        { name: 'notAcceptedMatch', regex: /\b([A-Za-z0-9_]+)\s+is\s+not\s+an\s+accepted\s+field\b/i },
+
+        // Misc
+        // verify [COL] exists
+        { name: 'verifyColMatch', regex: /\b([A-Za-z0-9_]+)\s+exists\b/i },
         // [COL] field
         { name: 'fieldMatch', regex: /\b([A-Za-z0-9_]+)\s+field\b/i },
+        
       ];
 
-      for (const p of patterns) {
+      for (const p of samplePatterns) {
         const m = trimMsg.match(p.regex);
         if (m) {
           // console.dir('%c◉ ' + p.name + ' ', 'color:#00ff7b', m);
