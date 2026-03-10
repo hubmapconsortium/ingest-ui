@@ -4,6 +4,15 @@ import Typography from '@mui/material/Typography';
 
 export default function ErrorList({ errors, onHover, onRowClick }) {
   if (!Array.isArray(errors)) return null;
+  
+  function onHoverHandler(params) {
+    if (!onHover) return;
+    onHover(params);
+  }
+  function onRowClickHandler(params) {
+    if (!onRowClick) return;
+    onRowClick(params);
+  }
 
   return (
     <Box className="renderErrorList">
@@ -30,9 +39,9 @@ export default function ErrorList({ errors, onHover, onRowClick }) {
             className={'errListRow'}
             data-column={item?.column}
             data-target={target}
-            onMouseEnter={(e) => onHover(e, item)}
+            onMouseEnter={(e) => onHoverHandler({ event: e, item })}
             onClick={(e) => {
-              onRowClick(e, item, item?.row);
+              onRowClickHandler({ event: e, item, row: item?.row });
               // const el = document.getElementById(target);
             }}
             key={i}>
