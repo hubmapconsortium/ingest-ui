@@ -469,9 +469,10 @@ export const DatasetForm = (props) => {
   }
 
   const buttonEngine = () => {
+    // SEE https://docs.google.com/spreadsheets/d/1y0q0JVS_KcXjOIhuNJKFZskwc99byiBqPcP5jNK1Gvk/edit?gid=1355693033#gid=1355693033 for logic rules 
     return (<>
       <Box sx={{ textAlign: "right" }}>
-        {/* NEW, INVALID, REOPENED, ERROR, SUBMITTED */}
+        {/* SAVE new*/}
         {!uuid && (
           <LoadingButton
             variant="contained"
@@ -483,10 +484,11 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
+        {/* REVERT */}
         {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
-        {/* NEW, SUBMITTED */}
+        {/*PROCESS */}
         {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (entityData.isPrimary || entityData.isEpic) && (
           <LoadingButton
             loading={loading.button.process}
@@ -497,7 +499,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic )&& (["new", "submitted"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -507,6 +509,7 @@ export const DatasetForm = (props) => {
             Submit for Testing
           </LoadingButton>
         )}
+        {/* SUBMIT */}
         {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
           <LoadingButton
             loading={loading.button.submit}
@@ -517,6 +520,7 @@ export const DatasetForm = (props) => {
             Submit
           </LoadingButton>
         )}
+        {/* VALIDATE */}
         {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published", "processing"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.validate}
@@ -527,6 +531,7 @@ export const DatasetForm = (props) => {
             Validate
           </LoadingButton>
         )}
+        {/* SAVE  Changes*/}
         {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "QA"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && entityData.status === "QA")) && (
           <LoadingButton
             loading={loading.button.save}
@@ -537,6 +542,7 @@ export const DatasetForm = (props) => {
             Save
           </LoadingButton>
         )}
+        {/* CANCEL */}
         <LoadingButton
           variant="contained"
           className="m-2"
