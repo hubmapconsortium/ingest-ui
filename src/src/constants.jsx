@@ -91,6 +91,7 @@ export const ES_SEARCHABLE_FIELDS = [
   "computed_lab_id_type.keyword",
   "created_by_user_displayname",
   "created_by_user_email",
+  "creation_action",
   "data_access_level",
   "dataset_info.keyword",
   "dataset_type.keyword",
