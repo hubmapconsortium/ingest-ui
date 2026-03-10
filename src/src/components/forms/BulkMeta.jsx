@@ -14,6 +14,8 @@ export const BulkMetaForm = (props) => {
     message: "", 
     status: "info"
   });
+  let tsvURL = `https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-${props.type.toLowerCase()}/latest/sample-${props.type.toLowerCase()}.tsv`
+  let docURL = `https://hubmapconsortium.github.io/ingest-validation-tools/sample-${props.type.toLowerCase()}/current/`
 
   const [tsvFile] = useState(null);
   let [TMError, setTMError] = useState(false);
@@ -26,8 +28,7 @@ export const BulkMetaForm = (props) => {
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
-            To bulk register section metadata, upload your tsv file here. Please refer to the format specified in this <a href={`
-              https://hubmapconsortium.github.io/ingest-validation-tools/${props.type.toLowerCase()}-section/current/`} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href="https://docs.google.com/document/d/1lfgiDGbyO4K4Hz1FMsJjmJd9RdwjShtJqFYNwKpbcZY/edit?tab=t.0#heading=h.d6xf2xeysl78" target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
+            To bulk register section metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>
