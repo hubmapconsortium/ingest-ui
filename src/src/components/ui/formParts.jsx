@@ -330,12 +330,12 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-export function NewBadge(type){
-  // console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
+export function NewBadge(type){ 
+  console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
   let NewBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
-    color: "white",
+    color: "#ffffff!important",
     padding: "4px",
     fontSize: "1.2rem!important",
     height: "auto",
@@ -343,7 +343,7 @@ export function NewBadge(type){
     verticalAlign: "super",
   }
   return (  
-    <Chip style={NewBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} sx={{color:"#ffffff!important"}} className={ "newBadge " + badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
