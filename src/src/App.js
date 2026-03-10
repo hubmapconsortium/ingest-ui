@@ -7,7 +7,7 @@ import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
 import LinearProgress from '@mui/material/LinearProgress';
-import {Alert} from '@material-ui/lab';
+import Alert from "@mui/material/Alert";
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
