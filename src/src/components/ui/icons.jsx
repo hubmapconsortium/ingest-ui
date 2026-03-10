@@ -92,6 +92,7 @@ export function OrganIcons(organ){
     "BR": `${BASE_ICON_URL}brain`,
     "BV": `${BASE_ICON_URL}blood`,
     "HT": `${BASE_ICON_URL}heart`,
+    "ID": `${BASE_ICON_URL}spinal-cord`, // intervertebral-disc, spinal-cord placeholder 
     "LA": `${BASE_ICON_URL}larynx`,
     "LB": `${BASE_ICON_URL}extrapulmonary-bronchus`,
     "LE": `${BASE_ICON_URL}eye`,
