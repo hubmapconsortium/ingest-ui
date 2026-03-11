@@ -37,6 +37,8 @@ export const BulkMetaForm = (props) => {
       {/* Wizard */}
       <BulkMetaTable 
         tsvfile={tsvFile}
+        tsvURL={tsvURL}
+        docURL={docURL}
         type={props.type}
         // columns={columns}
         onDataChange ={({data, errors})=>{

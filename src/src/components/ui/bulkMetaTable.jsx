@@ -23,7 +23,7 @@ import LoadingButton from "@mui/lab/LoadingButton";
 import Button from "@mui/material/Button";
 // lodash removed (not used)
 
-export function BulkMetaTable({ type,onDataChange }) {
+export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
   let [pageErrors, setPageErrors] = useState(null);
   let [file, setFile] = useState(null);
   let [fileData,setFileData] = useState({
@@ -41,7 +41,7 @@ export function BulkMetaTable({ type,onDataChange }) {
     RUIRender:null,
   });
   const spotlightTimeoutRef = useRef(null);
-  let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
+  
   let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
 
   // Column Management 
@@ -358,7 +358,7 @@ export function BulkMetaTable({ type,onDataChange }) {
       </div>
       <Box className="">
         <Typography variant='caption'>
-          Please refer to the <a href={docs} target='_blank' rel="noreferrer">Bulk {type} file schema information</a>, and this <a href={`https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-${type.toLowerCase()}-registrations.tsv`} target='_blank' rel="noreferrer">Example TSV File</a>
+          Please refer to the <a href={docURL} target='_blank' rel="noreferrer">Bulk {type} file schema information</a>, and this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>
         </Typography>
       </Box>
     </>);
