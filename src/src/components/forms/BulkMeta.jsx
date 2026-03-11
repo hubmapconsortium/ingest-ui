@@ -21,14 +21,14 @@ export const BulkMetaForm = (props) => {
   let [TMError, setTMError] = useState(false);
   return(
     <Box>
-      <Grid container className="mb-3 mt-3" >
-        <Grid item xs={4} className="topHeader" > 
+      <Grid container className="mb-3 mt-3" spacing={1} >
+        <Grid item lassName="topHeader" > 
             {NewBadge(props.type,"new")}
             <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.type)}s`}<br/></h3>
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
-            To bulk register section metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
+            To bulk register {props.type} metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>
