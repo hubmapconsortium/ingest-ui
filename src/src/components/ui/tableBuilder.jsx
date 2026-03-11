@@ -584,7 +584,7 @@ function renderStatusAccess(params: ValueFormatterParams) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
   if (params.value[0]==="status") {
     return (
-      <StatusBadge status={params.value}/>
+      <StatusBadge status={params.value[1].toString()}/>
     )
   }else{
     return (params.value[1])

@@ -140,6 +140,7 @@ export const DatasetForm = (props) => {
             } else {
               const entityData = response.results;
               entityData.isPrimary = response.results.creation_action === "Create Dataset Activity" ? true : false; 
+              entityData.isEpic = response.results.creation_action === "External Process" ? true : false; 
               setEntityData(entityData);
               setForm({
                 lab_dataset_id: entityData.lab_dataset_id,
@@ -488,7 +489,7 @@ export const DatasetForm = (props) => {
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/*PROCESS */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && entityData.isPrimary && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (entityData.isPrimary || entityData.isEpic) && (
           <LoadingButton
             loading={loading.button.process}
             name="process"
@@ -498,8 +499,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {/* SUBMIT FOR TESTING */}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && entityData.isPrimary && (["new","invalid","error","submitted","published"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
