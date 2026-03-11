@@ -1,4 +1,3 @@
-
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
 
@@ -293,4 +292,56 @@ export function TableErrorRowProcessing(errorsArray){
       }
   });
   return errorSet;
+}
+
+export function ParseBadJSON(jsonString) {
+  let trimmed = jsonString.slice(1, -1);
+  // Split on '}, {' and add braces back, then replace 'value "" fails' with 'empty value fails'
+  let arr = trimmed.split(/},\s*{/).map((s, i, allArr) => {
+    let objStr = (i === 0 ? s + '}' : '{' + s + '}');
+    // If last element and ends with '}}', trim to '}'
+    if (i === allArr.length - 1 && objStr.endsWith('}}')) {
+      objStr = objStr.replace(/}}+$/, '}');
+    }
+    // Replace 'value "" fails' with 'empty value fails'
+    objStr = objStr.replace(/value "" fails/g, 'empty value fails');
+    // Escape inner double quotes in value fields (e.g., value "gallons" fails)
+    objStr = objStr.replace(/value "([^"]+)" fails/g, (match, p1) => {
+      return 'value \\"' + p1 + '\\" fails';
+    });
+    return objStr;
+  });
+  console.log(arr);
+  let arrArray = [];
+  arr.forEach(objStr => {
+    if (objStr.includes('empty value fails because of error "missingRequired"')) {
+      // Parse the string to get column and row
+      let colMatch = objStr.match(/"column"\s*:\s*"([^"]+)"/);
+      let rowMatch = objStr.match(/"row"\s*:\s*(\d+)/);
+      arrArray.push({
+        column: colMatch ? colMatch[1] : '',
+        error: 'An Empty value is not allowed',
+        row: rowMatch ? parseInt(rowMatch[1], 10) : null
+      });
+    } else {
+      // Try to parse the string as JSON
+      try {
+        // Strip out all escaped double quotes before parsing
+        let cleanStr = objStr.replace(/\\"/g, '');
+        // Remove quotes around error value in 'fails because of error "..."'
+        cleanStr = cleanStr.replace(/fails because of error "([^"]+)"/g, 'fails because of error $1');
+        // Remove unescaped newlines and carriage returns (control characters)
+        cleanStr = cleanStr.replace(/[\r\n]+/g, ' ');
+        console.debug('%c◉ Cleaned JSON string: ', 'color:#00ff7b', cleanStr);
+        let obj = JSON.parse(cleanStr);
+        arrArray.push(obj);
+      } catch (e) {
+        // Fallback: add as raw string
+        console.debug('%c◉ JSON Parse row fail: ', 'color:#00ff7b', e, objStr);
+        arrArray.push({ error: objStr });
+      }
+    }
+  });
+  console.log(arrArray);
+  return arrArray; 
 }
