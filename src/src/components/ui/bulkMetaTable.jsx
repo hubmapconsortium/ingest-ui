@@ -148,14 +148,25 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
         }else if(res?.error?.response?.data?.data || res?.error){
           let respSet = res?.error?.response?.data?.data || res?.error
           console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
+          
           try{
-            const obj = res?.error?.response?.data?.error
-            const errorsArray = res?.error?.response?.data?.error.split(", ").map((err, index) => ({
-              "name": `Error ${index + 1}`,
-              "error": err.trim(),
-            }));
+            const obj = res?.error?.response?.data?.error;
+            console.debug('%c◉ OBJ ', 'color:#FF00BF', obj);
+            const errorsRaw = res?.error?.response?.data?.error.split(", ");
+            const errorsArray = errorsRaw.map((err, index) => {
+              let errorMsg = err.trim();
+              if (index === 0 && errorMsg.startsWith("Errors occurred during validation.")) {
+                errorMsg = errorMsg.replace(/^Errors occurred during validation\./, '').trim();
+              }
+              return {
+                "name": `Error ${index + 1}`,
+                "error": errorMsg,
+              };
+            });
             console.debug('%c◉ errorsArray ', 'color:#00ff7b', errorsArray);
-            setBulkMetaValidationErrors(errorsArray)
+            setBulkMetaValidationErrors(errorsArray);
+
+
             
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
