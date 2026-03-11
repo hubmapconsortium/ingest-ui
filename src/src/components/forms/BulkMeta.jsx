@@ -14,6 +14,8 @@ export const BulkMetaForm = (props) => {
     message: "", 
     status: "info"
   });
+  let tsvURL = `https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-${props.type.toLowerCase()}/latest/sample-${props.type.toLowerCase()}.tsv`
+  let docURL = `https://hubmapconsortium.github.io/ingest-validation-tools/sample-${props.type.toLowerCase()}/current/`
 
   const [tsvFile] = useState(null);
   let [TMError, setTMError] = useState(false);
@@ -26,7 +28,7 @@ export const BulkMetaForm = (props) => {
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
-            To bulk register multiple {props.type.toLowerCase()}s at one time, upload a tsv file here in the format specified by the example file provided at the footer of the table below. Include one line per {props.type.toLowerCase()} to register. <br />{toTitleCase(props.type)} metadata must be provided separately. <br />
+            To bulk register section metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>

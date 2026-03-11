@@ -1473,3 +1473,7 @@ status
     border: 1px solid rgba(13, 110, 253, 15%);
     transition: 290ms ease-in-out;
 }
+
+.newBadge .MuiSvgIcon-root{
+  color:#ffffff!important;
+}
