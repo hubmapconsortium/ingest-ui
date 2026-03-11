@@ -36,7 +36,7 @@ import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_ap
 import { gateway_api_status } from "./service/gateway_service";
 
 // DEVtools
-import {SpeedDialTooltipOpen} from './components/ui/devTools';
+import {SpeedDialTooltipOpen, ServerSight} from './components/ui/devTools';
 
 // The New Forms
 import {Search} from "./components/Search";
@@ -817,8 +817,12 @@ export function App(){
         </div>
       </div>
       {localStorage.getItem("info") && JSON.parse(localStorage.getItem("info")).email === "JJW118@pitt.edu" && (
-        <SpeedDialTooltipOpen />
+        <>
+          <SpeedDialTooltipOpen />
+          <ServerSight />
+        </>
       )}
+
     </React.Fragment>
   );
   

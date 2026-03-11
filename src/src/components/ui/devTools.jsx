@@ -114,3 +114,55 @@ export function HandleCopyFormUrl() {
       // setShowSnack(true)
     });
 }
+
+
+export function ServerSight(){
+  let serverEnv = process.env.REACT_APP_NODE_ENV || "default";
+  if (!["local", "development", "test"].includes(serverEnv)) return null; // Don't render in production environment
+  let colors ={
+    "local": ["#3300FF","#143FFF"],
+    "development": ["#FF08A9","#FF00D0"],
+    "test": ["#00FFFB","#00FFBF"],
+    "default": ["#00ff7b","#00b386"]
+  }
+  let colorset = colors[serverEnv] || colors["default"];
+  if (process.env.NODE_ENV !== "development") return null; // Only render in dev environment
+  return(
+    <Box sx={{width:"100%", position:"fixed", bottom:0, left:0, zIndex:9999, display:"flex", justifyContent:"center", pointerEvents:"none"}}  >
+
+      <Box sx={{background:"#ffffff", border: `1px solid ${colorset[0]}`, opacity: 0.3, position: "fixed", bottom: 0, left:0, width: "auto",height:"auto", borderRadius: "10px", margin:"10px", padding:"1px"}}> 
+        <Box sx={{background:`linear-gradient(to bottom, ${colorset[0]} 0%, ${colorset[1]} 100%)`, border: `1px solid ${colorset[0]}`, borderRadius: "10px"}}> 
+          <Typography variant="caption" sx={{fontSize:"0.5em", padding:"10px", color:"#ffffff", verticalAlign:"middle"}}>
+            {process.env.REACT_APP_NODE_ENV.toString()}
+          </Typography>
+        </Box>
+      </Box>
+
+      
+
+      <Box sx={{background:"#ffffff", border: "1px solid #3300FF", opacity: 0.3, position: "fixed", bottom: 0, right:0, width: "auto",height:"auto", borderRadius: "10px", margin:"10px", padding:"1px"}}> 
+        <Box sx={{background:"linear-gradient(to bottom, #3300FF 0%, #143FFF 100%)", border: "1px solid #3300FF", borderRadius: "10px"}}> 
+          <Typography variant="caption" sx={{fontSize:"0.5em", padding:"10px", color:"#ffffff", verticalAlign:"middle"}}>
+            <strong>I:</strong>{(() => {
+              const url = process.env.REACT_APP_DATAINGEST_API_URL;
+              if (url === "https://ingest-api.dev.hubmapconsortium.org") return "D";
+              if (url === "https://ingest-api.test.hubmapconsortium.org") return "T";
+              return "?";
+            })()} <strong>E:</strong>{(() => {
+              const url = process.env.REACT_APP_ENTITY_API_URL;
+              if (url === "https://entity-api.dev.hubmapconsortium.org") return "D";
+              if (url === "https://entity-api.test.hubmapconsortium.org") return "T";
+              return "?";
+            })()} <strong>S:</strong>{(() => {
+              const url = process.env.REACT_APP_SEARCH_API_URL;
+              if (url === "https://search-api.dev.hubmapconsortium.org/v3") return "D";
+              if (url === "https://search-api.test.hubmapconsortium.org/v3") return "T";
+              return "?";
+            })()}
+          </Typography>
+        </Box>
+      </Box>
+
+    </Box>
+  )
+}
