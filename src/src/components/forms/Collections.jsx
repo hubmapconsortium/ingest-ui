@@ -73,7 +73,7 @@ export const CollectionForm = (props) => {
                 uuids: entityData.datasets.map(obj => obj.uuid),
                 data: entityData.datasets
               });
-              ingest_api_allowable_edit_states(entityData.uuid)
+              ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   let permissionSet = response.results;
                   if (entityData?.doi_url || entityData?.registered_doi){

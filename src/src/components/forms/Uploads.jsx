@@ -168,7 +168,7 @@ export const UploadForm = (props) => {
                   setGlobusPath(response.results);
                 }) //Nothing's wrong if this fails; no need to catch
 
-              ingest_api_allowable_edit_states(entityData.uuid)
+              ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   setPermissions(response.results);
                   if(entityData.data_access_level === "public"){
