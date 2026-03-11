@@ -13,6 +13,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import UpdateIcon from '@mui/icons-material/Update';
 import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -369,7 +370,7 @@ function revisionLinksTime(entityData){
         onClick={() => window.open(type+"/"+entityData.previous_revision_uuid, "_blank")}
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
-        sx={{display: "inline-block", width: "100%"}}>
+        sx={{display: "inline-block", width: "100%", marginTop: "5px"}} >
         <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
       </Typography> 
@@ -460,13 +461,17 @@ function infoPanels(entityData,permissions,globusURL){
   if (type === "Bulk"){
     permissions = {has_write_priv: true, has_admin_priv: true}; // Permissions do not really apply for the Bulk Uploader
   }
+  let linkBuffers = "0px"
+  if (entityData.creation_action && (entityData.next_revision_uuid || entityData.previous_revision_uuid)){
+    linkBuffers = "5px"
+  }
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && (<Box sx={{position: "absolute", top:"0px", right:"0px",}}> 
-        {returnCreationActionDetail(entityData.creation_action)}
+      {entityData.creation_action && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
       </Box>)}
-      <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
+      <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
       {globusURL&& (
@@ -1032,36 +1037,51 @@ function renderCreationActionIcon(action){
       return null;
   }
 }
-function returnCreationActionDetail(creation_action){
+
+function toggleCollapse(current) {
+  console.debug('%c◉  toggleCollapse', 'color:#00ff7b', current);
+  return !current;
+}
+
+function ReturnCreationActionDetail({ creation_action }) {
+  const [openCollapse, setOpenCollapse] = React.useState(false);
   let label;
-  switch(creation_action){
+  switch (creation_action) {
     case "Create Dataset Activity":
-      label = "Is a Primary Dataset";
+      label = "This is a Primary Dataset";
       break;
     case "External Process":
-      label = "Is an EPIC Dataset";
+      label = "This is an EPIC Dataset";
       break;
     case "Multi Assay Split":
-      label = "Is a Multi-Assay Split Dataset";
+      label = "This is a Multi-Assay Split Dataset";
       break;
     case "Central Process":
-      label = "Is a Central Process Dataset";
+      label = "This is a Central Process Dataset";
       break;
     default:
       label = creation_action;
   }
+  function setCollapse(state) {
+    setOpenCollapse(state);
+  }
   return (
-    <Tooltip
-      placement="bottom-start" 
-      title={
-        <Box> 
-          <Typography variant="caption">
-          {label}
-          </Typography><br />
-        </Box>}>
-        <Typography variant='caption' sx={{marginLeft: "5px"}} >{renderCreationActionIcon(creation_action)}</Typography>
-    </Tooltip>
-  )
+    <Box sx={{ display: "flex", flexDirection: "row", position: "absolute", top:"-15px", right:"-15px", color: "#dddddd", overflow: "hidden", whiteSpace: "nowrap"}}>
+      <Collapse
+        in={openCollapse === true ? true : false} 
+        orientation="horizontal"
+        easing="ease-out">
+        <Typography variant="caption">{label}</Typography>
+      </Collapse>
+      <Typography
+        variant="caption"
+        onMouseEnter={() => setCollapse(true)}
+        onMouseLeave={() => setCollapse(false)}
+        sx={{ marginLeft: "5px" }}>
+        {renderCreationActionIcon(creation_action)}
+      </Typography>
+    </Box>
+  );
 }
   
 
