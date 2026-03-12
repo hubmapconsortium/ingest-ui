@@ -13,12 +13,13 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import UpdateIcon from '@mui/icons-material/Update';
 import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -330,12 +331,12 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-export function NewBadge(type){
-  // console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
+export function NewBadge(type){ 
+  console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
   let NewBadgeStyle = {
     "&&": {color: "#ffffff!important"} ,
     fontWeight: "bold",
-    color: "white",
+    color: "#ffffff!important",
     padding: "4px",
     fontSize: "1.2rem!important",
     height: "auto",
@@ -343,7 +344,7 @@ export function NewBadge(type){
     verticalAlign: "super",
   }
   return (  
-    <Chip style={NewBadgeStyle} className={badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} sx={{color:"#ffffff!important"}} className={ "newBadge " + badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
@@ -369,7 +370,7 @@ function revisionLinksTime(entityData){
         onClick={() => window.open(type+"/"+entityData.previous_revision_uuid, "_blank")}
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
-        sx={{display: "inline-block", width: "100%"}}>
+        sx={{display: "inline-block", width: "100%", marginTop: "5px"}} >
         <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
       </Typography> 
@@ -390,8 +391,6 @@ function topHeader(entityData, entityType, subType){
     newTitle = `Bulk Registration for ${type}s`
   }
   
-  
-
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
       <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
@@ -413,7 +412,6 @@ function topHeader(entityData, entityType, subType){
         }
       </>)}
 
-
       {entityData.priority_project_list	 && (
         <Typography variant="caption" sx={{display: "inline-block"}}>
           <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
@@ -426,7 +424,7 @@ function topHeader(entityData, entityType, subType){
           <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
             <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
           </svg> {organ_types[entityData.organ]}
-                    </Typography>
+        </Typography>
       )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Group: </strong> {entityData.group_name}</Typography>
@@ -463,10 +461,17 @@ function infoPanels(entityData,permissions,globusURL){
   if (type === "Bulk"){
     permissions = {has_write_priv: true, has_admin_priv: true}; // Permissions do not really apply for the Bulk Uploader
   }
+  let linkBuffers = "0px"
+  if (entityData.creation_action && (entityData.next_revision_uuid || entityData.previous_revision_uuid)){
+    linkBuffers = "5px"
+  }
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      <Box sx={{position: "absolute", right: "0px", top: "0px", textAlign: "right"}}>
+      {entityData.creation_action && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
+      </Box>)}
+      <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
       {globusURL&& (
@@ -1015,6 +1020,70 @@ export function ParsePreflightString(s) {
   }
   return [obj];
 }
+
+function renderCreationActionIcon(action){
+  switch(action){
+    case "Create Dataset Activity":
+      return <FontAwesomeIcon icon={faCube} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "Multi Assay Split":
+      return <FontAwesomeIcon icon={faDiagramProject} />;
+    case "Central Process":
+      return <FontAwesomeIcon icon={faCodeMerge} />;
+    default:
+      return null;
+  }
+}
+
+function toggleCollapse(current) {
+  console.debug('%c◉  toggleCollapse', 'color:#00ff7b', current);
+  return !current;
+}
+
+function ReturnCreationActionDetail({ creation_action }) {
+  const [openCollapse, setOpenCollapse] = React.useState(false);
+  let label;
+  switch (creation_action) {
+    case "Create Dataset Activity":
+      label = "This is a Primary Dataset";
+      break;
+    case "External Process":
+      label = "This is an EPIC Dataset";
+      break;
+    case "Multi Assay Split":
+      label = "This is a Multi-Assay Split Dataset";
+      break;
+    case "Central Process":
+      label = "This is a Central Process Dataset";
+      break;
+    default:
+      label = creation_action;
+  }
+  function setCollapse(state) {
+    setOpenCollapse(state);
+  }
+  return (
+    <Box sx={{ display: "flex", flexDirection: "row", position: "absolute", top:"-15px", right:"-15px", color: "#dddddd", overflow: "hidden", whiteSpace: "nowrap"}}>
+      <Collapse
+        in={openCollapse === true ? true : false} 
+        orientation="horizontal"
+        easing="ease-out">
+        <Typography variant="caption">{label}</Typography>
+      </Collapse>
+      <Typography
+        variant="caption"
+        onMouseEnter={() => setCollapse(true)}
+        onMouseLeave={() => setCollapse(false)}
+        sx={{ marginLeft: "5px" }}>
+        {renderCreationActionIcon(creation_action)}
+      </Typography>
+    </Box>
+  );
+}
+  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){

@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import FormData from "form-data";
+import { entity_api_get_entity} from "./entity_api";
 
 var globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 const options = {headers: {Authorization: "Bearer " + globalToken,
@@ -105,7 +106,27 @@ export function ingest_api_all_groups(auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states(uuid) { 
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states`;
+  // Check if uuid is actually a hubmap IP HBM833.TXNK.968 vs 8cd8f3031cd80afa423a7951214c1bb6
+  let isHBM = /^HBM\d+\.\w+\.\d+$/.test(uuid);
+  console.debug('%c◉ ingest_api_allowable_edit_states UUID ', 'color:#00ff7b', uuid);
+  if(isHBM){
+    entity_api_get_entity(uuid)
+    .then((response) => {
+      console.debug('%c◉ ingest_api_allowable_edit_states UUID response ', 'color:#00ff7b', response.results.uuid);
+      let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${response?.results?.uuid}/allowable-edit-states`;
+      return ingest_api_return_edit_states(url,options)
+    })
+    .catch((error) => {
+      return {error}
+    });
+  }else{
+    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states`;
+    return ingest_api_return_edit_states(url,options)
+  }
+
+};
+
+export function ingest_api_return_edit_states(url,options) {
   return axios 
     .get(url,options)
       .then(res => {
@@ -119,7 +140,7 @@ export function ingest_api_allowable_edit_states(uuid) {
           return {error}
         }
       });
-};
+}
 
 /*
  * Get whether a user can update the selected entity data Regardless of Current Status
@@ -439,18 +460,18 @@ export function ingest_api_notify_slack(data) {
  *
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile) { 
-  // console.debug('%c⭗', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
+  console.debug('%c⭗ ingest_api_upload_bulk_metadata', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
   const options = {headers: { Authorization: "Bearer " + globalToken,"Content-Type": "multipart/form-data"}};
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
   formData.append('sub_type', type)
   formData.append('validate_uuids', 1)
-  // console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
+  console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`;
   // console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios 
-    .put(url,formData,options)
+    .put(url,formData,{headers: {Authorization: `Bearer ${globalToken}`,"Content-Type": "multipart/form-data"}})
     .then(res => {
       // console.debug("ingest_api_upload_bulk_metadata",res);
         let results = res.data;

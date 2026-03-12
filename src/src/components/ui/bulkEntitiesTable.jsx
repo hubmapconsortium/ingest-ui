@@ -492,13 +492,13 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     const hasUndefinedErrRow = cleanTargets.some((el) => el?.id === 'errListRow-undefined');
     
     if (!hasUndefinedErrRow) {
-      cleanTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
+      cleanTargets.forEach(el => el?.setAttribute('data-spotlight', 'true')); 
       // Add bonus row highlight on table when spotlit
       let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
       errorRow?.setAttribute('data-spotlight', 'true');
     }
     setTimeout(() => {
-      cleanTargets.forEach(el => el.removeAttribute('data-spotlight', 'true'));
+      cleanTargets.forEach(el => el?.removeAttribute('data-spotlight', 'true'));
     }, 4000);
 
   }

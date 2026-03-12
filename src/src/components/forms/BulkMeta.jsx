@@ -5,39 +5,41 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import {NewBadge,SnackbarFeedback} from "../ui/formParts";
-import {BulkEntitiesTable} from '../ui/bulkEntitiesTable';
+import {BulkMetaTable} from '../ui/bulkMetaTable';
 
-export const BulkEntityForm = (props) => {
+export const BulkMetaForm = (props) => {
   const [pageErrors] = useState(null);
-  let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+props.bulkType.toLowerCase()+"-bulk-reg.html"
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "", 
     status: "info"
   });
+  let tsvURL = `https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-${props.type.toLowerCase()}/latest/sample-${props.type.toLowerCase()}.tsv`
+  let docURL = `https://hubmapconsortium.github.io/ingest-validation-tools/sample-${props.type.toLowerCase()}/current/`
 
   const [tsvFile] = useState(null);
   let [TMError, setTMError] = useState(false);
   return(
     <Box>
-      <Grid container className="mb-3 mt-3" spacing={1}>
-        <Grid item className="topHeader" > 
-            {NewBadge(props.bulkType,"new")}
-            <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.bulkType)}s`}<br/></h3>
+      <Grid container className="mb-3 mt-3" spacing={1} >
+        <Grid item lassName="topHeader" > 
+            {NewBadge(props.type,"new")}
+            <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.type)}s`}<br/></h3>
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
-            To bulk register multiple {props.bulkType.toLowerCase()}s at one time, upload a tsv file here in the format specified by this <a href={`https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-${props.bulkType.toLowerCase()}-registrations.tsv`} target='_blank' rel="noreferrer">Example TSV File</a>. Include one line per {props.bulkType.toLowerCase()} to register. {toTitleCase(props.bulkType)} metadata must be provided separately. <br />
-            See the <a href={docs} target="_blank">{toTitleCase(props.bulkType)} Bulk Registration</a> page for further details.<br/>
+            To bulk register {props.type} metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
           </Typography>
         </Grid>
       </Grid>
 
       {/* Wizard */}
-      <BulkEntitiesTable 
+      <BulkMetaTable 
         tsvfile={tsvFile}
-        type={props.bulkType}
+        tsvURL={tsvURL}
+        docURL={docURL}
+        type={props.type}
         // columns={columns}
         onDataChange ={({data, errors})=>{
           console.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);

@@ -90,7 +90,7 @@ export const DonorForm = (props) => {
                 group_uuid: entityData.group_uuid,
                 group_name: entityData.group_name
               });
-              ingest_api_allowable_edit_states(entityData.uuid)
+              ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   if(entityData.data_access_level === "public"){
                     setPermissions({

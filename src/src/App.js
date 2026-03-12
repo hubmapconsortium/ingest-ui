@@ -7,7 +7,7 @@ import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
 import LinearProgress from '@mui/material/LinearProgress';
-import {Alert} from '@material-ui/lab';
+import Alert from "@mui/material/Alert";
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -25,6 +25,7 @@ import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import {BuildError} from "./utils/error_helper";
+import {buildInUberonLink} from "./utils/string_helper";
 import {Navigation} from "./Nav";
 import Result from "./components/ui/result";
 import {OrganDetails} from './components/ui/icons';
@@ -36,10 +37,7 @@ import {ingest_api_all_groups,ingest_api_users_groups} from './service/ingest_ap
 import { gateway_api_status } from "./service/gateway_service";
 
 // DEVtools
-import {SpeedDialTooltipOpen} from './components/ui/devTools';
-
-// The legacy form loaders
-import {RenderMetadata} from "./components/metadata";
+import {SpeedDialTooltipOpen, ServerSight} from './components/ui/devTools';
 
 // The New Forms
 import {Search} from "./components/Search";
@@ -53,6 +51,7 @@ import {EPICollectionForm} from "./components/forms/Epicollections";
 
 // Bulk Forms
 import {BulkEntityForm} from "./components/forms/BulkEntity";
+import {BulkMetaForm} from "./components/forms/BulkMeta";
 
 // 404
 import NotFound from "./components/404";
@@ -196,8 +195,9 @@ export function App(){
             setAPIErrQueue((prev) => [...prev,[`API Error - UBKG: Organ Details`, `Unable to load Organ Detail res from UBKG. ${APIErrorTip}`],
             ]);
           }else{
-            localStorage.setItem("organs_full", JSON.stringify(res));
-            let RUIOrgans = res  
+            let processedOrgans = buildInUberonLink(res);
+            localStorage.setItem("organs_full", JSON.stringify(processedOrgans));
+            let RUIOrgans = processedOrgans  
               .filter(org => org.rui_supported)
               .map(org => org.rui_code);
             localStorage.setItem("RUIOrgans", JSON.stringify(RUIOrgans));
@@ -769,10 +769,10 @@ export function App(){
                     <Route path="/bulk/samples" exact element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
                     
                     <Route path="/metadata">
-                      <Route index element={<RenderMetadata reportError={reportError} type="block" />} />
-                      <Route path='block' element={ <RenderMetadata reportError={reportError} type='block'/>}/>
-                      <Route path='section' element={ <RenderMetadata reportError={reportError} type='section'/>}/>
-                      <Route path='suspension' element={ <RenderMetadata reportError={reportError} type='suspension'/>}/>
+                      <Route index element={<BulkMetaForm reportError={reportError} type="block" />} />
+                      <Route path='block' element={ <BulkMetaForm reportError={reportError} type='block'/>}/>
+                      <Route path='section' element={ <BulkMetaForm reportError={reportError} type='section'/>}/>
+                      <Route path='suspension' element={ <BulkMetaForm reportError={reportError} type='suspension'/>}/>
                     </Route>
 
                     {/* 404 */}
@@ -819,8 +819,12 @@ export function App(){
         </div>
       </div>
       {localStorage.getItem("info") && JSON.parse(localStorage.getItem("info")).email === "JJW118@pitt.edu" && (
-        <SpeedDialTooltipOpen />
+        <>
+          <SpeedDialTooltipOpen />
+          <ServerSight />
+        </>
       )}
+
     </React.Fragment>
   );
   
