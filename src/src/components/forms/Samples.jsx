@@ -164,8 +164,9 @@ export const SampleForm = (props) => {
             }
 
             // Permissions
-            ingest_api_allowable_edit_states(entityData.uuid)
-              .then((response) => {
+            ingest_api_allowable_edit_states(entityData.uuid || uuid)
+            .then((response) => {
+                console.debug('%c◉ entityData.uuidingest_api_allowable_edit_states ', 'color:#00ff7b',entityData, entityData.uuid);
                 // console.debug('%c◉ ingest_api_allowable_edit_states RESPONSE ', 'color:#00ff7b', response);
                 const updatedPermissions = {
                   ...response.results,

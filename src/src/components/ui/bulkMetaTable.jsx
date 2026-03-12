@@ -16,14 +16,14 @@ import {ingest_api_upload_bulk_metadata} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import {genColWidth} from './tableBuilder.jsx';
 import ErrorList from './ErrorList';
-import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
+import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing, ParseBadJSON} from '../../utils/error_helper.jsx';
 import LoadingButton from "@mui/lab/LoadingButton";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 // import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import Button from "@mui/material/Button";
 // lodash removed (not used)
 
-export function BulkMetaTable({ type,onDataChange }) {
+export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
   let [pageErrors, setPageErrors] = useState(null);
   let [file, setFile] = useState(null);
   let [fileData,setFileData] = useState({
@@ -41,7 +41,7 @@ export function BulkMetaTable({ type,onDataChange }) {
     RUIRender:null,
   });
   const spotlightTimeoutRef = useRef(null);
-  let docs ="https://docs.hubmapconsortium.org/bulk-registration/"+type.toLowerCase()+"-bulk-reg.html"
+  
   let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
 
   // Column Management 
@@ -148,14 +148,70 @@ export function BulkMetaTable({ type,onDataChange }) {
         }else if(res?.error?.response?.data?.data || res?.error){
           let respSet = res?.error?.response?.data?.data || res?.error
           console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
+          
           try{
-            const obj = res?.error?.response?.data?.error
-            const errorsArray = res?.error?.response?.data?.error.split(", ").map((err, index) => ({
-              "name": `Error ${index + 1}`,
-              "error": err.trim(),
-            }));
+            const obj = res?.error?.response?.data?.error;
+            console.debug('%c◉ OBJ ', 'color:#FF00BF', obj, typeof obj);
+            let errorsArray = [];
+            const validationPrefix = "Errors occurred during validation. Error validating metadata: ";
+            if (typeof obj === "string" && obj.startsWith(validationPrefix)) {
+
+
+              // Extract the array between [ and ]
+              const arrayMatch = obj.match(/\[(.*)\]/s);
+              if (arrayMatch) {
+                let arrayStr = arrayMatch[0];
+                console.debug('%c◉ Extracted Array String ', 'color:#00ff7b', arrayStr);  
+                // Convert Python-style single quotes to double quotes for JSON parsing
+                arrayStr = arrayStr.replace(/'/g, '"');
+                
+                try {
+                  const parsed = JSON.parse(arrayStr);
+                  console.debug('%c◉ Parsed Errors Array ', 'color:#00ff7b', parsed);
+                  errorsArray = parsed.map((errObj, index) => ({
+                    name: `Error ${index + 1}`,
+                    ...errObj
+                  }));
+                } catch (e) {
+                  console.debug('%c◉ JSON Parse Error ', 'color:#FF006A', e);
+                  // Possibly chock full of unquoted keys or other JSON no-nos, so use the arrArray we built with regex parsing
+                  try {
+                    let cleansedArray = ParseBadJSON(arrayStr);
+                    console.debug('%c◉ Cleansed Errors Array ', 'color:#00ff7b', cleansedArray);
+                    errorsArray = cleansedArray.map((errObj, index) => ({
+                      name: `Error ${index + 1}`,
+                      ...errObj
+                    }));
+                  }catch(parseError){
+                    console.debug('%c◉ ParseBadJSON Error ', 'color:#FF006A', parseError);
+                    // Fallback: treat as a single error string if all parsing fails
+                    errorsArray = [{ name: "Error", error: obj }];
+                  }
+                }
+              } else {
+                console.debug('%c◉ No Array Found in Error String ', 'color:#FF006A');
+                // Fallback: treat as a single error string
+                errorsArray = [{ name: "Error", error: obj }];
+              }
+            } else {
+              console.debug('%c◉ Error String does not match expected format ', 'color:#FF006A');
+              // Default: split by comma and process as before
+              const errorsRaw = obj.split(", ");
+              errorsArray = errorsRaw.map((err, index) => {
+                let errorMsg = err.trim();
+                if (index === 0 && errorMsg.startsWith("Errors occurred during validation.")) {
+                  errorMsg = errorMsg.replace(/^Errors occurred during validation\./, '').trim();
+                }
+                return {
+                  name: `Error ${index + 1}`,
+                  error: errorMsg,
+                };
+              });
+            }
             console.debug('%c◉ errorsArray ', 'color:#00ff7b', errorsArray);
-            setBulkMetaValidationErrors(errorsArray)
+            setBulkMetaValidationErrors(errorsArray);
+
+
             
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
@@ -358,7 +414,7 @@ export function BulkMetaTable({ type,onDataChange }) {
       </div>
       <Box className="">
         <Typography variant='caption'>
-          Please refer to the <a href={docs} target='_blank' rel="noreferrer">Bulk {type} file schema information</a>, and this <a href={`https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-${type.toLowerCase()}-registrations.tsv`} target='_blank' rel="noreferrer">Example TSV File</a>
+          Please refer to the <a href={docURL} target='_blank' rel="noreferrer">Bulk {type} file schema information</a>, and this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>
         </Typography>
       </Box>
     </>);

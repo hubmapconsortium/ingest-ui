@@ -168,7 +168,7 @@ export const DatasetForm = (props) => {
                 setReadOnlySources(true);
               }
 
-              ingest_api_allowable_edit_states(entityData.uuid)
+              ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   if (entityData.data_access_level === "public") {
                     setReadOnlySources(true);

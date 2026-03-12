@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import FormData from "form-data";
+import { entity_api_get_entity} from "./entity_api";
 
 var globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 const options = {headers: {Authorization: "Bearer " + globalToken,
@@ -105,7 +106,27 @@ export function ingest_api_all_groups(auth) {
  * return:  { status, results}
  */
 export function ingest_api_allowable_edit_states(uuid) { 
-  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states`;
+  // Check if uuid is actually a hubmap IP HBM833.TXNK.968 vs 8cd8f3031cd80afa423a7951214c1bb6
+  let isHBM = /^HBM\d+\.\w+\.\d+$/.test(uuid);
+  console.debug('%c◉ ingest_api_allowable_edit_states UUID ', 'color:#00ff7b', uuid);
+  if(isHBM){
+    entity_api_get_entity(uuid)
+    .then((response) => {
+      console.debug('%c◉ ingest_api_allowable_edit_states UUID response ', 'color:#00ff7b', response.results.uuid);
+      let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${response?.results?.uuid}/allowable-edit-states`;
+      return ingest_api_return_edit_states(url,options)
+    })
+    .catch((error) => {
+      return {error}
+    });
+  }else{
+    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${uuid}/allowable-edit-states`;
+    return ingest_api_return_edit_states(url,options)
+  }
+
+};
+
+export function ingest_api_return_edit_states(url,options) {
   return axios 
     .get(url,options)
       .then(res => {
@@ -119,7 +140,7 @@ export function ingest_api_allowable_edit_states(uuid) {
           return {error}
         }
       });
-};
+}
 
 /*
  * Get whether a user can update the selected entity data Regardless of Current Status
