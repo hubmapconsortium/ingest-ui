@@ -1027,13 +1027,20 @@ function renderCreationActionIcon(action){
       return <FontAwesomeIcon icon={faCube} />;
     case "External Process":
       return <FontAwesomeIcon icon={faStar} />;
-    case "Multi-Assay Split":
+    case "External Process":
+      return <FontAwesomeIcon icon={faStar} />;
+    case "Multi Assay Split":
       return <FontAwesomeIcon icon={faDiagramProject} />;
     case "Central Process":
       return <FontAwesomeIcon icon={faCodeMerge} />;
     default:
       return null;
   }
+}
+
+function toggleCollapse(current) {
+  console.debug('%c◉  toggleCollapse', 'color:#00ff7b', current);
+  return !current;
 }
 
 function ReturnCreationActionDetail({ creation_action }) {
@@ -1046,14 +1053,14 @@ function ReturnCreationActionDetail({ creation_action }) {
     case "External Process":
       label = "This is an EPIC Dataset";
       break;
-    case "Multi-Assay Split":
+    case "Multi Assay Split":
       label = "This is a Multi-Assay Split Dataset";
       break;
     case "Central Process":
       label = "This is a Central Process Dataset";
       break;
     default:
-      label = `This is a ${creation_action} Dataset`;
+      label = creation_action;
   }
   function setCollapse(state) {
     setOpenCollapse(state);
