@@ -198,6 +198,7 @@ export const DonorForm = (props) => {
         protocol_url: formValues.protocol_url,
         description: formValues.description,
       }
+      console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm, uuid);
       if(uuid){
         // We're in Edit mode
         entity_api_update_entity(uuid,JSON.stringify(cleanForm))
@@ -262,10 +263,10 @@ export const DonorForm = (props) => {
         )}
         {uuid && uuid.length > 0 && permissions.has_write_priv && (
           <LoadingButton 
-            loading={isProcessing} 
-            variant="contained" 
-            className="m-2 updateButton" 
-            type="submit">
+          loading={isProcessing} 
+          variant="contained" 
+          className="m-2 updateButton" 
+          onClick={(e) => handleSubmit(e)}>
             Update
           </LoadingButton>
         )}
