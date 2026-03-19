@@ -4,3 +4,6 @@ Dockerfile
 # Ignore itself
 .dockerignore
 
+# Ignore the config file
+src/.env
+
