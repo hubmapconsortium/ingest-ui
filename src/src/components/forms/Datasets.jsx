@@ -499,7 +499,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published", "qa"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
