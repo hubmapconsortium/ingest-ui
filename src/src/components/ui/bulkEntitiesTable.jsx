@@ -4,7 +4,14 @@ import Box from '@mui/material/Box';
 import {
   DataGrid, 
   useGridApiRef,
-  GridToolbar} from "@mui/x-data-grid";
+  GridToolbar,
+  useGridApiContext,
+  GridToolbarContainer,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
+  GridToolbarDensitySelector,
+} from "@mui/x-data-grid";
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from '@mui/material/MenuItem';
@@ -632,6 +639,30 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     </>);
   }
 
+  function CustomToolbarExportAllRows() {
+    const apiRefLocal = useGridApiContext();
+    const apiInst = apiRefLocal && apiRefLocal.current ? apiRefLocal.current : apiRefLocal;
+    const handleExportAll = () => {
+      const api = apiInst;
+      if (!api) return;
+      const models = api.getRowModels ? api.getRowModels() : new Map();
+      const ids = Array.from(models.keys());
+      if (api.exportDataAsCsv) {
+        api.exportDataAsCsv({ getRowsToExport: () => ids });
+      }
+    };
+    return (
+      <GridToolbarContainer>
+        <GridToolbarColumnsButton />
+        <GridToolbarFilterButton />
+        <GridToolbarDensitySelector />
+        <Button size="small" onClick={handleExportAll} sx={{ ml: 1 }} startIcon={<SaveAltIcon />}>
+          Export All
+        </Button>
+      </GridToolbarContainer>
+    );
+  }
+
   function renderSuccesTable(){
     let successRows = fileData?.regValidation?.success || [];
     return (<Box>
@@ -648,7 +679,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
-          slots={{ toolbar: GridToolbar }} 
+          slots={{ toolbar: CustomToolbarExportAllRows }} 
           density="compact"
           logLevel="info"
           hideFooterSelectedRowCount
