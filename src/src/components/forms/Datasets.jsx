@@ -74,14 +74,14 @@ export const DatasetForm = (props) => {
       id: "lab_dataset_id",
       label: "Lab Name or ID",
       helperText: "An identifier used locally by the data provider.",
-      required: true,
+      required: false,
       type: "text"
     },
     {
       id: "description",
       label: "Description",
       helperText: "",
-      required: true,
+      required: false,
       type: "textarea"
     },
     {
@@ -225,7 +225,9 @@ export const DatasetForm = (props) => {
     setErrorMessages([]);
     let errors = 0;
     let e_messages = [];
-    let requiredFields = ["lab_dataset_id", "description", "contains_human_genetic_sequences", "dt_select", "group_uuid"];
+
+    const requiredFields = (formFields || []).filter(f => f.required).map(f => f.id).filter(Boolean);
+    
     let newFormErrors = {};
     for (let field of requiredFields) {
       if (!validateRequired(form[field])) {
