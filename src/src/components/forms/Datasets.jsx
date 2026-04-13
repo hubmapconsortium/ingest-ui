@@ -14,7 +14,7 @@ import { FormHeader, TaskAssignment } from "../ui/formParts";
 import { DatasetFormFields } from "../ui/fields/DatasetFormFields";
 import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
-import { validateRequired } from "../../utils/validators";
+import { validateRequired, matchingList } from "../../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../../service/entity_api";
 
 import { 
@@ -141,6 +141,8 @@ export const DatasetForm = (props) => {
               const entityData = response.results;
               entityData.isPrimary = response.results.creation_action === "Create Dataset Activity" ? true : false; 
               entityData.isEpic = response.results.creation_action === "External Process" ? true : false; 
+              entityData.isComponent = response.results.creation_action === "Multi-Assay Split" ? true : false; 
+              entityData.isProcessed = response.results.creation_action === "Central Process" ? true : false; 
               setEntityData(entityData);
               setForm({
                 lab_dataset_id: entityData.lab_dataset_id,
@@ -164,7 +166,7 @@ export const DatasetForm = (props) => {
                 data: entityData.direct_ancestors
               });
               // Set the Bulk Table to read only if the Dataset is not in a modifiable state
-              if (entityData.creation_action === "Multi-Assay Split" || entityData.creation_action === "Central Process"){
+              if (entityData.isComponent || entityData.isProcessed){
                 setReadOnlySources(true);
               }
 
@@ -277,14 +279,18 @@ export const DatasetForm = (props) => {
     if (validateForm()) {
       setLoading(prevVals => ({ ...prevVals, processing: true }));
       let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
+      let oldAncestors = entityData.direct_ancestors.map(obj => obj.uuid);
+      const arraysHaveSameContent = matchingList(selectedUUIDs, oldAncestors);
+
       let cleanForm = {
         lab_dataset_id: form.lab_dataset_id,
         contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
         description: form.description,
         dataset_info: form.dataset_info,
-        direct_ancestor_uuids: selectedUUIDs,
+        // direct_ancestor_uuids: selectedUUIDs,
         ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
-        ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task})
+        ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task}),
+        ...(!arraysHaveSameContent(selectedUUIDs, oldAncestors) && {direct_ancestor_uuids: selectedUUIDs})
       };
       // console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
