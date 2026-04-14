@@ -49,7 +49,7 @@ export const FormHeader = (props) => {
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
   let subType = entityType === "Bulk" ? entityData[2] : null;
-  console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
+  // console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
