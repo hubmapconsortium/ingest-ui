@@ -57,9 +57,9 @@ import {BulkMetaForm} from "./components/forms/BulkMeta";
 import NotFound from "./components/404";
 
 // doglogs
-import { datadogRum } from '@datadog/browser-rum';
-import { reactPlugin } from '@datadog/browser-rum-react';
-
+// import { datadogRum } from '@datadog/browser-rum';
+// import { reactPlugin } from '@datadog/browser-rum-react';
+import { datadogLogs } from '@datadog/browser-logs'
 
 export function App(){
   let navigate = useNavigate();
@@ -90,26 +90,32 @@ export function App(){
 
   const APIErrorTip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
 
-  datadogRum.init({
-    applicationId: `${process.env.REACT_APP_DATADOG_APP_ID}` ,
+  // datadogRum.init({
+  //   applicationId: `${process.env.REACT_APP_DATADOG_APP_ID}` ,
+  //   clientToken: `${process.env.REACT_APP_DATADOG_CLIENT_TOKEN}`,
+  //   site: 'datadoghq.com',
+  //   service: 'Ingest UI',
+  //   env: 'env:local:galah',
+  //   version: '0.0.0.1',
+  //   allowedTracingUrls: [
+  //     // "localhost:8585",
+  //     // Matches any subdomain of my-api-domain.com, such as https://foo.my-api-domain.com
+  //     // /^https:\/\/[^\/]+\.my-api-domain\.com/,
+  //     // You can also use a function for advanced matching:
+  //     (url) => url.startsWith("http://localhost:8585/")
+  //   ],
+  //   sessionSampleRate: 100,
+  //   sessionReplaySampleRate: 20,
+  //   trackResources: true,
+  //   trackUserInteractions: true,
+  //   trackLongTasks: true,
+  //   plugins: [reactPlugin({ router: false })],
+  // })
+  datadogLogs.init({
     clientToken: `${process.env.REACT_APP_DATADOG_CLIENT_TOKEN}`,
     site: 'datadoghq.com',
-    service: 'Ingest UI',
-    env: 'env:local:galah',
-    version: '0.0.0.1',
-    allowedTracingUrls: [
-      // "localhost:8585",
-      // Matches any subdomain of my-api-domain.com, such as https://foo.my-api-domain.com
-      // /^https:\/\/[^\/]+\.my-api-domain\.com/,
-      // You can also use a function for advanced matching:
-      (url) => url.startsWith("http://localhost:8585/")
-    ],
+    forwardErrorsToLogs: true,
     sessionSampleRate: 100,
-    sessionReplaySampleRate: 20,
-    trackResources: true,
-    trackUserInteractions: true,
-    trackLongTasks: true,
-    plugins: [reactPlugin({ router: false })],
   })
 
   window.onstorage = (event) => {
@@ -541,6 +547,7 @@ export function App(){
   // Error Query Bits
   function reportError(error, details){
     console.debug('%c⭗', 'color:#ff005d', "APP reportError", error, details);
+    datadogLogs.logger.error('APP reportError', { team: 'myTeam', error: error, details: details?details:"n/a" });
     if(details){
       setErrorDetail(details);
     }
