@@ -56,6 +56,12 @@ import {BulkMetaForm} from "./components/forms/BulkMeta";
 // 404
 import NotFound from "./components/404";
 
+// doglogs
+// import { datadogRum } from '@datadog/browser-rum';
+// import { reactPlugin } from '@datadog/browser-rum-react';
+import { datadogLogs } from '@datadog/browser-logs';
+import { installAxiosDoglog, installGlobalAxiosErrorLogger } from './utils/axiosDoglog';
+
 export function App(){
   let navigate = useNavigate();
   // @todo: trim how many need to actually be hooks / work with the state
@@ -88,8 +94,31 @@ export function App(){
   window.onstorage = (event) => {
     console.log("onstorage Storage Event!", event);
   };
-
   useEffect(() => {
+    datadogLogs.init({
+      applicationId: `${process.env.REACT_APP_DATADOG_APP_ID}` ,
+      clientToken: `${process.env.REACT_APP_DATADOG_CLIENT_TOKEN}`,
+      site: 'datadoghq.com',
+      host:`TEST:G`,
+      // host:`${process.env.REACT_APP_DD_HOST}`,
+      service: 'site:ingest_ui:logged',
+      env: process.env.REACT_APP_NODE_ENV === 'local' ? 'env:local:galah' : `env:${process.env.REACT_APP_NODE_ENV}`,
+      version: process.env.npm_package_version,
+      sessionSampleRate: 100,
+      forwardErrorsToLogs: true,
+      trackingConsent: 'granted'
+    });
+    // Do not override global.console.error here; doglog handles console.error centrally.
+    try{ installAxiosDoglog(); }catch(e){ console.warn('installAxiosDoglog failed', e); }
+    try{ installGlobalAxiosErrorLogger(); }catch(e){ console.warn('installGlobalAxiosErrorLogger failed', e); }
+    
+    // window.addEventListener("error", function (event) {
+    //   console.log('%c◉  ', 'background:#FF006A; color:#fff', event);
+    //   // datadogLogs.logger.error(...args)
+    // })
+    // throw new Error("TEST")
+
+
     // in your react app useEffect hook call the following
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
     const bannerUrl = `${process.env.REACT_APP_URL}` + '/assets/liveBanner.json?v='+t;
@@ -110,7 +139,7 @@ export function App(){
     
       })
       .catch(error => { 
-        console.error('There was a problem with the fetch operation:', error);
+        // console.error('There was a problem with the fetch operation:', error);
       })
 
     gateway_api_status()
@@ -290,7 +319,8 @@ export function App(){
         }
       }));
     }
-    
+        // throw new Error("Test error");
+
     // User Loading Bits Now
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
@@ -430,8 +460,10 @@ export function App(){
       // console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
       reportError(error);
     }
+
+    // throw new Error("Testing Error Capture"); 
     
-  
+  // datadogLogs.logger.debug("TEST")
   }, []);
 
   function purgeStorage(){
