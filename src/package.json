@@ -22,7 +22,7 @@
     "axios": "0.30.2",
     "bootstrap": "^5.2.0-beta1",
     "dayjs": "^1.11.13",
-    "dompurify": "^3.2.4",
+    "dompurify": "^3.4.0",
     "elastic-builder": "^2.16.0",
     "env-cmd": "^10.1.0",
     "formik": "^2.2.9",
