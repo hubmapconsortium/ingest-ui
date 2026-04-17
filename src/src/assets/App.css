@@ -1474,6 +1474,9 @@ status
     transition: 290ms ease-in-out;
 }
 
+.newBadge {
+  font-family: 'Inter var', Helvetica, Arial, sans-serif!important;
+}
 .newBadge .MuiSvgIcon-root{
   color:#ffffff!important;
 }

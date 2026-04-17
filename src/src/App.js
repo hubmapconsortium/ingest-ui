@@ -1,6 +1,6 @@
 import *as React from "react";
 import {useEffect,useState} from "react";
-import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
+import {Route,Routes,useLocation,useNavigate, Navigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
 import Login from './components/ui/login';
@@ -499,6 +499,7 @@ export function App(){
 
   // Success SNack Response
   function updateSuccess(entity){
+    console.debug('%c◉  updateSuccess', 'color:#00ff7b', entity);
     // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
     setSnackMessage(entity.message ? entity.message : "Entity Updated Successfully!");
     setShowSnack(true)
@@ -742,6 +743,16 @@ export function App(){
                     <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+
+                    {/* Redirect plural top-level pages to the root Search with entity_type query */}
+                    <Route path="/donors" element={<Navigate to="/?entity_type=donor" replace />} />
+                    <Route path="/samples" element={<Navigate to="/?entity_type=sample" replace />} />
+                    <Route path="/publications" element={<Navigate to="/?entity_type=publication" replace />} />
+                    <Route path="/collections" element={<Navigate to="/?entity_type=collection" replace />} />
+                    <Route path="/epicollections" element={<Navigate to="/?entity_type=epicollection" replace />} />
+                    <Route path="/datasets" element={<Navigate to="/?entity_type=dataset" replace />} />
+                    <Route path="/uploads" element={<Navigate to="/?entity_type=upload" replace />} />
+
 
                     <Route path="/new">
                       <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
