@@ -1311,7 +1311,7 @@ status
 }
 .HDT .MuiDataGrid-cellContent {
   font-family: 'Inter var', sans-serif!important;
-  /* font-size: 0.8rem; */
+  font-weight: 350;
 } 
 
 

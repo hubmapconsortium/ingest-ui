@@ -37,7 +37,7 @@ import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
-import {OrganIcons} from "../ui/icons";
+import {OrganIcons, CreationActionIcon} from "../ui/icons";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -1054,20 +1054,21 @@ export function ParsePreflightString(s) {
   return [obj];
 }
 
-function renderCreationActionIcon(action){
-  switch(action){
-    case "Create Dataset Activity":
-      return <FontAwesomeIcon icon={faCube} />;
-    case "External Process":
-      return <FontAwesomeIcon icon={faStar} />;
-    case "Multi-Assay Split":
-      return <FontAwesomeIcon icon={faDiagramProject} />;
-    case "Central Process":
-      return <FontAwesomeIcon icon={faCodeMerge} />;
-    default:
-      return null;
-  }
-}
+// function CreationActionIcon(action){
+//   switch(action){
+//     case "Create Dataset Activity":
+//       return <FontAwesomeIcon icon={faCube} />;
+//     case "External Process":
+//       return <FontAwesomeIcon icon={faStar} />;
+//     case "Multi-Assay Split":
+//       return <FontAwesomeIcon icon={faDiagramProject} />;
+//     case "Central Process":
+//       return <FontAwesomeIcon icon={faCodeMerge} />;
+//     default:
+//       return null;
+//   }
+// }
+
 
 function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
@@ -1104,7 +1105,7 @@ function ReturnCreationActionDetail({ creation_action }) {
         onMouseEnter={() => setCollapse(true)}
         onMouseLeave={() => setCollapse(false)}
         sx={{ marginLeft: "5px" }}>
-        {renderCreationActionIcon(creation_action)}
+        {CreationActionIcon(creation_action)}
       </Typography>
     </Box>
   );
