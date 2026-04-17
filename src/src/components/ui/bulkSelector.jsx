@@ -67,7 +67,7 @@ export function BulkSelector({
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
 
-  // console.debug('%c◉ title ', 'color:#00ff7b', title);
+  console.debug('%c◉ readOnlyState ', 'color:#00ff7b', readOnlyState, readOnly);
   // console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
   // Sync sourcesData with prop changes
   useEffect(() => {
