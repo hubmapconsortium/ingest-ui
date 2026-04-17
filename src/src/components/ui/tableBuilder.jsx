@@ -11,6 +11,8 @@ import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import PublicOffIcon from '@mui/icons-material/PublicOff';
+import PublicIcon from '@mui/icons-material/Public';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
@@ -58,6 +60,11 @@ export const COLUMN_DEF_DATASET = [
   { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
+  { field: 'creation_action', headerName: 'Creation Action',
+    renderCell: (params: ValueFormatterParams) => (
+      <Typography sx={{color:"#00000020"}}>{params.value}</Typography>
+    )
+  },
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
   {
     field: 'status', headerName: 'Submission Status', width: 200,

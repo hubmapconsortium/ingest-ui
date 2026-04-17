@@ -92,7 +92,7 @@ export function App(){
   useEffect(() => {
     // in your react app useEffect hook call the following
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
-    const bannerUrl = `${process.env.REACT_APP_URL}` + '/assets/liveBanner.json?v='+t;
+    const bannerUrl = `${process.env.REACT_APP_URL}/assets/liveBanner.json?v=${t}`;
     console.debug('%c◉ bannerUrl ', 'color:#00ff7b', bannerUrl);
     fetch(bannerUrl) 
       .then(response => { 
@@ -414,8 +414,6 @@ export function App(){
         ],
       ])
     }
-    
-
 
     function loadCount(){
       loadCounter++;
@@ -445,7 +443,7 @@ export function App(){
     localStorage.removeItem('userGroups');
   };
 
-  function Logout(e){
+  function Logout(){
     setIsLoggingOut(true);
     purgeStorage();
     window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
@@ -475,7 +473,7 @@ export function App(){
       }
     }
     if(event && event==="raw"){
-      var lowerTarget = event.toLowerCase();
+      lowerTarget = event.toLowerCase();
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
@@ -506,8 +504,7 @@ export function App(){
     onClose();
   }
 
-  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
-  const{search} = useLocation();
+  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
 
