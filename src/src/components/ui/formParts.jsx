@@ -534,12 +534,16 @@ function infoPanels(entityData,permissions,globusURL){
       
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
         // They might not have write access but not because of data_access_level
-        <Alert severity="warning" 
-          iconMapping={{warning: <VpnLockIcon style={{fontSize: "2em"}} />}}
+        <Alert 
+          severity="warning" 
+          iconMapping={{warning: <VpnLockIcon  />}}
           sx={{
             minWidth: "100%",
             padding: "10px",
-            border:"1px solid #33000008"
+            border:"1px solid #33000008",
+            '& .MuiAlert-message': {
+              fontSize:"0.8em"
+            }
           }}>This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
@@ -553,14 +557,18 @@ function infoPanels(entityData,permissions,globusURL){
         </Typography>
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
+        
         <Alert  
           variant="caption" 
           severity="info" 
           sx={{
             color: "rgba(0, 0, 0, 0.38)",
-            minWidth: "100%", 
-            margin: "0px",
-            padding: "0px",
+            minWidth: "100%",
+            padding: "10px",
+            border:"1px solid #33000008",
+            '& .MuiAlert-message': {
+              fontSize:"0.8em"
+            }
           }}
           iconMapping={{
             warning: <UpdateDisabledIcon style={{fontSize: "2em"}} />

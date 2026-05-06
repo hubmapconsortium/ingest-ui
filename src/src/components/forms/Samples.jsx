@@ -15,6 +15,7 @@ import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
+import Popover from '@mui/material/Popover';
 import LinearProgress from "@mui/material/LinearProgress";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Tooltip from '@mui/material/Tooltip';
@@ -28,6 +29,8 @@ import Snackbar from '@mui/material/Snackbar';
 import Checkbox from '@mui/material/Checkbox';
 import FemaleIcon from '@mui/icons-material/Female';
 import MaleIcon from '@mui/icons-material/Male';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCopy, faMicroscope} from "@fortawesome/free-solid-svg-icons";
 import {GridLoader} from "react-spinners";
 import {
   entity_api_get_entity,
@@ -97,6 +100,8 @@ export const SampleForm = (props) => {
   });
   let[formErrors, setFormErrors] = useState({
   });
+  const sourceInputRef = React.useRef(null);
+  const [sourcePopoverPos, setSourcePopoverPos] = useState(null);
   const organMenu = useMemo(() => {
     return Object.keys(organ_types)
       .sort((a, b) => organ_types[a].localeCompare(organ_types[b]))
@@ -106,6 +111,43 @@ export const SampleForm = (props) => {
         </option>
       ));
   }, [organ_types]);
+
+  const handleSourceClick = (e) => {
+    // if disabled (editing existing), do nothing
+    if (uuid) return;
+    // Only show the popover if there's already a value in the Source ID field.
+    const hasSourceValue = (sourceEntity && sourceEntity.hubmap_id) || (formValues && formValues.direct_ancestor_uuid);
+    if (!hasSourceValue) {
+      // no source set yet — open the embedded search immediately
+      setOpenSearch(true);
+      return;
+    }
+    // record mouse position for anchor (guard against missing event)
+    const pos = e ? { mouseX: e.clientX + 2, mouseY: e.clientY + 8 } : { mouseX: 0, mouseY: 0 };
+    setSourcePopoverPos(pos);
+  };
+
+  const handleCloseSourcePopover = () => setSourcePopoverPos(null);
+
+  const handleReselectSource = () => {
+    handleCloseSourcePopover();
+    setOpenSearch(true);
+  };
+
+  const handleCopySource = async () => {
+    handleCloseSourcePopover();
+    const text = sourceEntity ? sourceEntity.hubmap_id : (formValues.direct_ancestor_uuid || "");
+    if (!text) {
+      setSnackbarController({ open: true, message: "No Source ID to copy", status: "info" });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setSnackbarController({ open: true, message: `Copied ${text} to clipboard`, status: "success" });
+    } catch (err) {
+      setSnackbarController({ open: true, message: `Unable to copy`, status: "error" });
+    }
+  };
 
   let [RUIManagerObject, setRUIManagerObject] = useState({
     details: {
@@ -716,10 +758,11 @@ export const SampleForm = (props) => {
           <FormControl sx={{width: '100%'}} >
             <InputLabel sx={{marginTop: "0px"}} htmlFor="direct_ancestor_uuid" style={{marginTop: "13px"}}>Source ID * </InputLabel>
             <FilledInput
+              inputRef={sourceInputRef}
               id="direct_ancestor_uuid"
               value={sourceEntity ? sourceEntity.hubmap_id : ""}
               error={formErrors.direct_ancestor_uuid ? true : false}
-              onClick={() => setOpenSearch(uuid ? false : true)}
+              onClick={(e) => handleSourceClick(e)}
               disabled={uuid?true:false}
               // focused={"true"}
               // InputLabelProps={{shrink: ((uuid || (formValues?.direct_ancestor_uuid)) ? true:false)}}
@@ -727,16 +770,70 @@ export const SampleForm = (props) => {
               small={"true"}
               endAdornment={
                 <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Select a Source Entity"
-                    disabled={uuid?true:false}
-                    onClick={() => setOpenSearch(true)}
-                    edge="end">
-                    {<SearchIcon />}
-                  </IconButton>
+                    <IconButton
+                      aria-label="Select a Source Entity"
+                      disabled={uuid?true:false}
+                      onClick={(e) => handleSourceClick(e)}
+                      edge="end">
+                      {<SearchIcon />}
+                    </IconButton>
                 </InputAdornment>}/>
             <FormHelperText id="sourceIDHelp" className="mb-3">{"The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from. "+(formErrors.direct_ancestor_uuid ? formErrors.direct_ancestor_uuid : "")}
             </FormHelperText>
+              <Popover
+                open={Boolean(sourcePopoverPos)}
+                onClose={handleCloseSourcePopover}
+                anchorReference="anchorPosition"
+                anchorPosition={sourcePopoverPos ? { top: sourcePopoverPos.mouseY, left: sourcePopoverPos.mouseX } : undefined}
+                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                PaperProps={{
+                  sx: {
+                    backgroundColor: '#444a65',
+                    color: '#fff',
+                    borderRadius: '30px',
+                    p: 0.5,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                    border:"2px solid #ffffff50"
+                  }
+                }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 0.5, minWidth: 120, maxHeight:12, }}>
+                  <Button
+                    size="small"
+                    startIcon={<FontAwesomeIcon icon={faMicroscope} style={{ fontSize: '0.6rem', width: '12px', height: '12px' }} />}
+                    onClick={handleReselectSource}
+                    sx={{
+                      color: '#ffffff90',
+                      fontSize:"0.8em",
+                      textTransform: 'none',
+                      justifyContent: 'center',
+                      px: 2,
+                      py: 0.5,
+                      borderRadius: '0',
+                      borderRight:"1px solid #ffffff40",
+                      maxHeight:"12px",
+                      '&:hover': { color: '#fff' }
+                    }}>
+                    Reselect
+                  </Button>
+                  <Button
+                    size="small"
+                    startIcon={<FontAwesomeIcon icon={faCopy} style={{ fontSize: '0.6rem', width: '12px', height: '12px' }} />}
+                    onClick={handleCopySource}
+                    sx={{
+                      color: '#ffffff90',
+                      fontSize:"0.8em",
+                      textTransform: 'none',
+                      justifyContent: 'center',
+                      px: 2,
+                      py: 0.5,
+                      maxHeight:"12px",
+                      borderRadius: '0',
+                      '&:hover': { color: '#fff' }
+                    }}>
+                    Copy
+                  </Button>
+                </Box>
+              </Popover>
           </FormControl>
 
           {sourceEntity && sourceEntity.uuid && ( 
