@@ -1,0 +1,17 @@
+
+> ingest-ui@2.6.63 start
+> react-scripts start
+
+Starting the development server...
+
+Compiled successfully!
+
+You can now view ingest-ui in the browser.
+
+  Local:            http://localhost:8585
+  On Your Network:  http://10.4.119.74:8585
+
+Note that the development build is not optimized.
+To create a production build, use npm run build.
+
+webpack compiled successfully

@@ -91,13 +91,10 @@ export function ValidateLocalhost(){
   return isLocalhost;
 }
 
-export function matchingList(a,b){
-  const arraysHaveSameContent = (a, b) => {
-    const aSet = new Set(a || []);
-    const bSet = new Set(b || []);
-    if (aSet.size !== bSet.size) return false;
-    for (let v of aSet) if (!bSet.has(v)) return false;
-    return true;
-  };
-  return arraysHaveSameContent
+export function matchingList(a, b) {
+  const aSet = new Set(a || []);
+  const bSet = new Set(b || []);
+  if (aSet.size !== bSet.size) return false;
+  for (let v of aSet) if (!bSet.has(v)) return false;
+  return true;
 }

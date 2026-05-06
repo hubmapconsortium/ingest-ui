@@ -479,6 +479,7 @@ function topHeader(entityData, entityType, subType){
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
   console.debug('%c◉ infoPanels ', 'color:#00ff7b', entityData,permissions,globusURL);
+  console.debug('%c◉ Creation Action:  ', 'color:#00ff7b', entityData.creation_action, typeof entityData.creation_action);
   let HIPPATypes = ["Donor","Sample","Upload"];
   const type = entityData?.entity_type ?? entityData?.[1];
   const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
@@ -493,8 +494,8 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && (<Box > 
-        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
+      {entityData.creation_action && entityData.creation_action !== "" && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />{entityData.creation_action}
       </Box>)}
 
       <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>

@@ -112,13 +112,6 @@ export function App(){
     try{ installAxiosDoglog(); }catch(e){ console.warn('installAxiosDoglog failed', e); }
     try{ installGlobalAxiosErrorLogger(); }catch(e){ console.warn('installGlobalAxiosErrorLogger failed', e); }
     
-    // window.addEventListener("error", function (event) {
-    //   console.log('%c◉  ', 'background:#FF006A; color:#fff', event);
-    //   // datadogLogs.logger.error(...args)
-    // })
-    // throw new Error("TEST")
-
-
     // in your react app useEffect hook call the following
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
     const bannerUrl = `${process.env.REACT_APP_URL}/assets/liveBanner.json?v=${t}`;

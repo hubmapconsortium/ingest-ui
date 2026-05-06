@@ -34,7 +34,7 @@ export default class StandardErrorBoundary extends React.Component {
         // console.debug('%c⊙WRAPPER ERRCHECK ', 'color:#00ff7b', ":",this.state,this.state.hasError,this.props );
         // if an error occurred
         if (this.state.hasError) {
-            console.debug('%c⭗ Has Error Confirmed', 'color:#ff005d',typeof this.state.error  );
+            console.debug('%c⭗ Has Error Confirmed', 'color:#ff005d', typeof this.state.error);
             return <ErrorPage errorValue={this.state.error}/>;
         } else {
             // default behavior

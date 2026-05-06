@@ -141,9 +141,9 @@ export function OrganIcons(organ){
 }
 
 export function CreationActionIcon(action){
-  action = action.action
-  // let lcv = action.toLowerCase()
-  switch(action){
+  // Accept either a string or an object like { action: '...' } or { creation_action: '...' }
+  const act = typeof action === 'string' ? action : (action && (action.action || action.creation_action)) || '';
+  switch (act) {
     case "Create Dataset Activity":
       console.log('%c◉ Create Dataset Activity Found',  'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCube} />);
@@ -157,7 +157,7 @@ export function CreationActionIcon(action){
       console.log('%c◉ Central Process Found',  'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCodeMerge} />);
     default:
-      return ("NOTHING FOUND");
+      return null;
   }
 }
 
