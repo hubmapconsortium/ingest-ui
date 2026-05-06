@@ -1311,7 +1311,7 @@ status
 }
 .HDT .MuiDataGrid-cellContent {
   font-family: 'Inter var', sans-serif!important;
-  /* font-size: 0.8rem; */
+  font-weight: 350;
 } 
 
 
@@ -1474,6 +1474,9 @@ status
     transition: 290ms ease-in-out;
 }
 
+.newBadge {
+  font-family: 'Inter var', Helvetica, Arial, sans-serif!important;
+}
 .newBadge .MuiSvgIcon-root{
   color:#ffffff!important;
 }

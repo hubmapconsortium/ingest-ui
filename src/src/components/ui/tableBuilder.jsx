@@ -2,16 +2,23 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
+import { CreationActionIcon } from "./icons";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { StatusBadge } from "./formParts";
 import Link from "@mui/material/Link";
+import Tooltip from '@mui/material/Tooltip';
 import Button from "@mui/material/Button";
 import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import PublicOffIcon from '@mui/icons-material/PublicOff';
+import PublicIcon from '@mui/icons-material/Public';
 import PersonIcon from '@mui/icons-material/Person';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import HttpsIcon from '@mui/icons-material/Https';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
 // @TODO: Move into TableBuilder (Since these aren't very well constant but dynamically generated) under /ui
@@ -54,29 +61,95 @@ export const COLUMN_DEF_SAMPLE = [
 
 // DATASET COLUMNS
 export const COLUMN_DEF_DATASET = [
-  { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
-  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200},
-  { field: 'group_name', headerName: 'Group Name', width: 200},
-  { field: 'created_by_user_email', headerName: 'Created By', width: 210},
-  { field: 'data_access_level', headerName: 'Access Level', width: 150},
-  {
-    field: 'status', headerName: 'Submission Status', width: 200,
-    renderCell: (params: ValueFormatterParams) => (
-        <StatusBadge status={params.value}/>
-      )
+  { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180,
+    renderCell: params =>{
+      return <Typography sx={{fontWeight:'350', fontSize:'1em'}}>{params.value} </Typography>
+    }
+   },
+  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200,
+    renderCell: params =>{
+      if (!params?.lab_dataset_id || params?.lab_dataset_id === "" || params?.lab_dataset_id === null) {
+        return nullCell();
+        // return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else{
+        return <Typography >{params?.lab_dataset_id} </Typography>
+      }
+    }
+  },
+  { field: 'group_name', headerName: 'Group Name', width: 200,
+    renderCell: params =>{
+      return <Typography sx={{fontWeight:'325', fontSize:'1em', textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap"}}>{params.value} </Typography>
+    },
+  },
+  { field: 'created_by_user_email', headerName: 'Created By', width: 190,
+    renderCell: params =>{
+      return <Typography sx={{fontWeight:'300', fontSize:'1em', textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap"}}>{params.value} </Typography>
+    },
+  },
+  { field: 'creation_action', headerName: 'Creation Action', width: 170,
+    renderCell: params => {
+      return <Typography variant="caption" sx={{color:"#00000060"}}> <CreationActionIcon action={params.value.toString()} /> {params.value}</Typography> ;
+    }
+  },
+  { field: 'data_access_level', headerName: 'Access Level', width: 115,
+    renderCell: params => {
+      if (params.value === "public") {
+        return  (
+          <Tooltip title="Public" placement="top" slotProps={{
+                  popper: {
+                    modifiers: [{
+                      name: 'offset',
+                      options: {
+                        offset: [0, -13],
+                      }
+                    }],
+                  }
+                }}>
+              <PublicIcon sx={{ color: "#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#536e55", }  }}   />
+          </Tooltip>
+          
+        );
+        // return <Skeleton sx={nullRowBarStyle} animation={false} />
+      }else{
+        return (
+          <Tooltip title="Private" placement="top" slotProps={{
+                  popper: {
+                    modifiers: [{
+                      name: 'offset',
+                      options: {
+                        offset: [0, -13],
+                      }
+                    }],
+                  }
+                }}>
+              <DoNotDisturbIcon sx={{color:"#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#6e535e" }  }} />
+          </Tooltip>
+        );
+      }
+    }
+  },{
+    field: 'status', headerName: 'Submission Status', width: 160,
+    renderCell: params => {
+        return <StatusBadge status={params.value}/>;
+      }
+  },{
+    field: 'dataset_type', headerName: 'Dataset Type', width: 170, hide: true,renderCell: params => {
+      return (
+        <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}> {params.value}</Typography>                 
+      );
+    }
   },{
     field: 'uuid', headerName: 'Data', width: 100,
-    renderCell: (params: ValueFormatterParams) => (
-      <React.Fragment>
-        <button
-          className='btn btn-link'
+    renderCell: params => {
+      return (
+        <Button
+          className='btn `btn-link'
           onClick={() => handleDataClick(params.value)}>
           <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
-        </button>                         
-        </React.Fragment>
-      )
-  },{
-    field: 'dataset_type', hide: true,},
+        </Button>                         
+      );
+    }
+  }
 ];
 
 // DATASET COLUMNS FOR THE UPLOADS VIEW / MINIFIED

@@ -1,6 +1,6 @@
 import *as React from "react";
 import {useEffect,useState} from "react";
-import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
+import {Route,Routes,useLocation,useNavigate, Navigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
 import Login from './components/ui/login';
@@ -121,7 +121,7 @@ export function App(){
 
     // in your react app useEffect hook call the following
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
-    const bannerUrl = `${process.env.REACT_APP_URL}` + '/assets/liveBanner.json?v='+t;
+    const bannerUrl = `${process.env.REACT_APP_URL}/assets/liveBanner.json?v=${t}`;
     console.debug('%c◉ bannerUrl ', 'color:#00ff7b', bannerUrl);
     fetch(bannerUrl) 
       .then(response => { 
@@ -444,8 +444,6 @@ export function App(){
         ],
       ])
     }
-    
-
 
     function loadCount(){
       loadCounter++;
@@ -477,7 +475,7 @@ export function App(){
     localStorage.removeItem('userGroups');
   };
 
-  function Logout(e){
+  function Logout(){
     setIsLoggingOut(true);
     purgeStorage();
     window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
@@ -507,7 +505,7 @@ export function App(){
       }
     }
     if(event && event==="raw"){
-      var lowerTarget = event.toLowerCase();
+      lowerTarget = event.toLowerCase();
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
@@ -531,14 +529,14 @@ export function App(){
 
   // Success SNack Response
   function updateSuccess(entity){
+    console.debug('%c◉  updateSuccess', 'color:#00ff7b', entity);
     // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
     setSnackMessage(entity.message ? entity.message : "Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
   }
 
-  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
-  const{search} = useLocation();
+  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
 
@@ -774,6 +772,16 @@ export function App(){
                     <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+
+                    {/* Redirect plural top-level pages to the root Search with entity_type query */}
+                    <Route path="/donors" element={<Navigate to="/?entity_type=donor" replace />} />
+                    <Route path="/samples" element={<Navigate to="/?entity_type=sample" replace />} />
+                    <Route path="/publications" element={<Navigate to="/?entity_type=publication" replace />} />
+                    <Route path="/collections" element={<Navigate to="/?entity_type=collection" replace />} />
+                    <Route path="/epicollections" element={<Navigate to="/?entity_type=epicollection" replace />} />
+                    <Route path="/datasets" element={<Navigate to="/?entity_type=dataset" replace />} />
+                    <Route path="/uploads" element={<Navigate to="/?entity_type=upload" replace />} />
+
 
                     <Route path="/new">
                       <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
