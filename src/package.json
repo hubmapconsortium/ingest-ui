@@ -32,6 +32,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@eslint/js": "^9.21.0",
+    "datadog-ci": "^1.42.0",
     "cypress": "^13.3.0",
     "eslint": "^8.57.1",
     "eslint-config-standard": "^17.1.0",
@@ -54,6 +55,9 @@
     "build": "react-scripts build",
     "build:compat": "NODE_OPTIONS='--trace-deprecation' react-scripts build",
     "build:tags": "env-cmd -f envs/env.tags react-scripts build",
+    "build:sourcemaps": "GENERATE_SOURCEMAP=true react-scripts build",
+    "upload-sourcemaps": "node ./scripts/upload-sourcemaps.js",
+    "upload-sourcemaps:dry-run": "node ./scripts/upload-sourcemaps.js --dry-run",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "cypress:open": "cypress open"

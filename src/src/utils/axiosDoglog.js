@@ -3,6 +3,9 @@ import { ddLog } from './doglog';
 
 let _axiosDoglog_installed = false;
 
+// Set a reasonable client-side timeout (ms). Can be overridden with REACT_APP_AXIOS_TIMEOUT_MS
+axios.defaults.timeout = parseInt(process.env.REACT_APP_AXIOS_TIMEOUT_MS || '10000', 10);
+
 // shared monitored bases for both scoped and global interceptors
 const _monitoredBases = [
   process.env.REACT_APP_UBKG_API_URL,
@@ -76,10 +79,17 @@ export function installAxiosDoglog(){
         };
         try{ meta.request_data = cfg.data }catch(e){}
         try{ meta.response_data = error?.response?.data }catch(e){}
-        // console.error('%c◉ AXIOS Error Captured', meta);
-        // console.error(`message: 'AXIOS Error Captured', meta: ${JSON.stringify(meta)}, stack: ${error?.stack}, error: ${error}`);
-        // console.error(`message: ${error?.message || 'axios error'}, ;
-        ddLog('error', error?.message || 'axios error', { axios_error: meta, stack: error?.stack });
+        // send structured log and attach returned log id to the error for tracing
+        try{
+          // attach an explicit error.kind for axios-originated logs
+          const ddMeta = { axios_error: meta, stack: error?.stack };
+          try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch(e){}
+          const logId = ddLog('error', error?.message || 'axios error', ddMeta);
+          if(logId){
+            try{ error.__dd_log_id = logId; }catch(e){}
+            try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch(e){}
+          }
+        }catch(e){ /* ignore ddLog failures */ }
       }catch(e){
         try{ console.warn('axiosDoglog logging failed', e); }catch(_){}
       }
@@ -137,7 +147,16 @@ export function installGlobalAxiosErrorLogger(){
         });
         if(!matched){
           // Global logging for any axios error with richer metadata
-          ddLog('error', error?.message || 'axios global error', { axios_error: meta, stack: error?.stack });
+          try{
+            // attach explicit error.kind for global axios logs
+            const ddMeta = { axios_error: meta, stack: error?.stack };
+            try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch(e){}
+            const logId = ddLog('error', error?.message || 'axios global error', ddMeta);
+            if(logId){
+              try{ error.__dd_log_id = logId; }catch(e){}
+              try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch(e){}
+            }
+          }catch(e){ /* ignore ddLog failures */ }
         }
       }catch(e){
         try{ console.warn('global axios error logger failed', e); }catch(_){}
