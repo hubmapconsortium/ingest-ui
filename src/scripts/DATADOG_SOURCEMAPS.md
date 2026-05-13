@@ -35,7 +35,7 @@ Notes
 - Ensure the `--minified-path-prefix` matches the path shown in browser error stack frame URLs (e.g. `/static/js` or a full CDN URL). Incorrect prefix may prevent mapping.
 - The helper script is `scripts/upload-sourcemaps.js` and uses `npx datadog-ci` under the hood. `datadog-ci` is added as a dev dependency.
 - If you prefer to call `datadog-ci` directly in CI, the equivalent command is:
-
+- disabled till npm 404 fix https://github.com/DataDog/datadog-ci/issues/1073
 ```bash
-npx datadog-ci sourcemaps upload build/static/js --service <service> --release-version <version> --minified-path-prefix <prefix> --env <env> --site <site>
+# npx datadog-ci sourcemaps upload build/static/js --service <service> --release-version <version> --minified-path-prefix <prefix> --env <env> --site <site>
 ```

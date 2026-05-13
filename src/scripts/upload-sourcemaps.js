@@ -54,6 +54,9 @@ const baseArgs = [
 ];
 if (dry) baseArgs.push('--dry-run');
 
-run('npx', ['datadog-ci', ...baseArgs], {});
+// Need to sort out datadog ci npm 404 Complication
+// https://github.com/DataDog/datadog-ci/issues/1073
+// Submit New bug if necessary, related to AWS sitch
+// run('npx', ['datadog-ci', ...baseArgs], {});
 
-console.log('\nDone.');
+console.log('\nNot Run, see coments. Sorry bout that...');
