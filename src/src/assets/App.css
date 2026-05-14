@@ -920,14 +920,11 @@ svg.invalid {
   color: #fff!important;
   background-color: #9933cc!important;
 }
-.badge-incomplete {
+.badge-incomplete, 
+.badge-approval {
   background-color: rgb(255, 193, 7)!important;
   color: rgb(33, 37, 41)!important;
 }
-
-status
-
-
 
 /* Blue: QA, Submitted, REORGANIZED 
 // Green: PUBLISHED, VALID 

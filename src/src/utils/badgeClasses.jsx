@@ -29,6 +29,9 @@ export function getPublishStatusColor(status, itemID) {
         case "QA":
           badge_class = "badge-info";
           break;
+        case "APPROVAL":
+          badge_class = "badge-yellow";
+          break;
         case "LOCKED":
           badge_class = "badge-secondary";
           break;
@@ -62,6 +65,10 @@ export function getPublishStatusColor(status, itemID) {
     }
 }
 
+export function badgeClass(status, itemID) {
+  return getPublishStatusColor(status, itemID);
+}
+
 export function StatusList() {
   return([
     "NEW",
@@ -70,6 +77,7 @@ export function StatusList() {
     "VALID",
     "INVALID",
     "QA",
+    "APPROVAL",
     "LOCKED",
     "PROCESSING",
     "PUBLISHED",

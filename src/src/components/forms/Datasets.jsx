@@ -507,7 +507,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published", "qa"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published", "qa", "approval"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -540,7 +540,7 @@ export const DatasetForm = (props) => {
           </LoadingButton>
         )}
         {/* SAVE  Changes*/}
-        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "QA"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && entityData.status === "QA")) && (
+        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "qa", "approval"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && ["qa", "approval"].includes((entityData.status || "").toLowerCase()))) && (
           <LoadingButton
             loading={loading.button.save}
             name="save"
