@@ -13,6 +13,44 @@ const options = {
     },
   };
 
+const SEARCH_API_TIMEOUT_MS = parseInt(
+  process.env.REACT_APP_SEARCH_API_TIMEOUT_MS || process.env.REACT_APP_AXIOS_TIMEOUT_MS || "6000",
+  10
+);
+
+const searchRequestOptions = {
+  ...options,
+  timeout: SEARCH_API_TIMEOUT_MS,
+};
+
+function parseSearchError(error) {
+  const status = error?.response?.status;
+  const isNetworkOrCors = !error?.response;
+
+  if (isNetworkOrCors) {
+    return {
+      status: 0,
+      message:
+        "Unable to reach Search API. This is often a CORS or network issue. Please try again shortly.",
+      raw: error,
+    };
+  }
+
+  const responseData = error?.response?.data;
+  const backendMsg =
+    responseData?.message ||
+    responseData?.error ||
+    responseData?.detail ||
+    error?.message ||
+    "Search request failed.";
+
+  return {
+    status,
+    message: backendMsg,
+    raw: error,
+  };
+}
+
 /*
  * Auth Validation  method
  *
@@ -22,7 +60,7 @@ const options = {
 export function api_validate_token(){
   let payload = search_api_filter_es_query_builder("test", 1, 1);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
     .then((res) => {
       return {status: res.status};
     } )
@@ -39,7 +77,7 @@ export function api_validate_token(){
 export function api_search(params){
   let payload = search_api_filter_es_query_builder(params, 0, 100);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
     .then((res) => {
       let hits = res.data.hits.hits;
 
@@ -63,7 +101,7 @@ export function api_search(params){
 export function api_search2(params, auth, from, size, fields){
   let payload = search_api_filter_es_query_builder(params, from, size, fields);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
     .then((res) => {
       // console.debug("API api_search2 res", res);
       let hits = res.data.hits.hits;
@@ -80,7 +118,7 @@ export function api_search2(params, auth, from, size, fields){
       };
     } )
     .catch((error) => {
-      return {error};
+      return {error: parseSearchError(error)};
     } );
 }
 
@@ -294,7 +332,7 @@ export function search_api_es_query_ids(IDs,types,colFields){
 
   // console.debug('%c◉ requestBody ', 'color:#00ff7b', requestBody.toJSON());
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), options)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), searchRequestOptions)
     .then((res) => {
       // console.debug("API api_search2 res", res);
       // console.debug('%c◉ res ', 'color:#00ff7b', res);

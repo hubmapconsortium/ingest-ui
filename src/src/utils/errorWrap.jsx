@@ -21,9 +21,10 @@ export default class StandardErrorBoundary extends React.Component {
     // defines what to do when an error gets caught
     componentDidCatch(error, errorInfo) {
         // log the error
-        console.debug('%c❌ ERROR WRAP | ', 'color:#ff005d',error,errorInfo);
+        // console.debug('%c❌ ERROR WRAP | ', 'color:#ff005d',error,errorInfo);
         // console.log("Error caught!");
-        // console.error(error);
+        console.error(error?error:"Uncaptured",errorInfo?errorInfo:"No additional info");
+        // console.error('%c❌ ERROR WRAP | ', 'color:#ff005d',error?error:"Uncaptured",errorInfo?errorInfo:"No additional info");
         // console.error(errorInfo);
 
         // record the error in an APM tool...
@@ -33,7 +34,7 @@ export default class StandardErrorBoundary extends React.Component {
         // console.debug('%c⊙WRAPPER ERRCHECK ', 'color:#00ff7b', ":",this.state,this.state.hasError,this.props );
         // if an error occurred
         if (this.state.hasError) {
-            console.debug('%c⭗ Has Error Confirmed', 'color:#ff005d',typeof this.state.error  );
+            console.debug('%c⭗ Has Error Confirmed', 'color:#ff005d', typeof this.state.error);
             return <ErrorPage errorValue={this.state.error}/>;
         } else {
             // default behavior
