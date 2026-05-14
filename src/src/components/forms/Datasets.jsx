@@ -300,7 +300,11 @@ export const DatasetForm = (props) => {
         entity_api_update_entity(uuid, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
-              props.onUpdated(response.results);
+              console.log(response, entityData.hubmap_id)
+              // The update request on Dataset of d1491af82e213e28ba6a5712ec205337 has been accepted, the backend may still be processing
+              // need to replace string between "Dataset of" and "has been accepted" with entityData.humbap_id
+              let message= `The update request for Dataset ${entityData.hubmap_id}  has been accepted; the backend may still be processing`
+              props.onUpdated({message:message});
             } else {
               setPageErrors(response);
               setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: false } }));

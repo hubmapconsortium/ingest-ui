@@ -195,8 +195,9 @@ export function EmbeddedSearch({
       if(response.error){
         console.debug('%c◉ Error on Search ', 'color:#C800FF', response.error);
         setErrorState(true)
-        setError(response.error)
+        setError(response.error?.message || "Unable to reach Search API.")
         setTableLoading(false);
+        return;
       }
       if (response.total > 0 && response.status === 200) {
         let colDefs;

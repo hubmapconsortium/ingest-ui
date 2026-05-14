@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { styled } from '@mui/material/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,13 +12,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import {getPublishStatusColor} from "./badgeClasses";
 import ReactTooltip from "react-tooltip";
-import Popover from '@mui/material/Popover';
-import InputLabel from '@mui/material/InputLabel';
+// removed unused imports Popover and InputLabel
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {entity_api_update_entity} from '../service/entity_api';
-import {useNavigate,Routes,Route,Link,useLocation,} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const RevertFeature = (props) => {
   const navigate = useNavigate();
@@ -42,7 +40,7 @@ export const RevertFeature = (props) => {
     setRStatus(event.target.value);
   };
 
-  const handleStatusSet = (e) => {
+  const handleStatusSet = () => {
     setSubmittingUpdate(true);
     entity_api_update_entity(
       uuid, 
@@ -127,7 +125,7 @@ export const RevertFeature = (props) => {
             <LoadingButton
               className=""
               loading={submittingUpdate}
-              onClick={(e) => handleStatusSet(e) }
+              onClick={handleStatusSet}
               variant="outlined">
               Revert
             </LoadingButton>          

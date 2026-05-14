@@ -1,6 +1,6 @@
 import *as React from "react";
 import {useEffect,useState} from "react";
-import {Route,Routes,useLocation,useNavigate} from "react-router-dom";
+import {Route,Routes,useLocation,useNavigate, Navigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
 import Login from './components/ui/login';
@@ -16,10 +16,8 @@ import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {faExclamationTriangle,faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
@@ -56,11 +54,19 @@ import {BulkMetaForm} from "./components/forms/BulkMeta";
 // 404
 import NotFound from "./components/404";
 
+// doglogs
+// import { datadogRum } from '@datadog/browser-rum';
+// import { reactPlugin } from '@datadog/browser-rum-react';
+import { installAxiosDoglog, installGlobalAxiosErrorLogger } from './utils/axiosDoglog';
+import { initDoglog, ddLog } from './utils/doglog';
+import APIAlertHandler from "./components/ui/APIAlertHandler";
+
 export function App(){
   let navigate = useNavigate();
   // @todo: trim how many need to actually be hooks / work with the state
   var[expiredKey,setExpiredKey] = useState(false);
   var[loginError,setLoginError] = useState("");
+  var[loginErrorCause,setLoginErrorCause] = useState(null);
   var[successDialogRender, setSuccessDialogRender] = useState(false);
   var[snackMessage, setSnackMessage] = useState("");
   var[showSnack, setShowSnack] = useState(false);
@@ -85,14 +91,46 @@ export function App(){
 
   const APIErrorTip = "Please refresh the page or try logging out and back in. If this error persists, contact help@hubmapconsortium.org"
 
+  function setLoginErrorWithLog(message, cause){
+    setLoginError(message || "");
+    setLoginErrorCause(cause || null);
+  }
+
   window.onstorage = (event) => {
     console.log("onstorage Storage Event!", event);
   };
 
   useEffect(() => {
-    // in your react app useEffect hook call the following
+    if(!loginError) return;
+    try{
+      const errorObj = loginErrorCause instanceof Error ? loginErrorCause : undefined;
+      const causeMeta = loginErrorCause && !(loginErrorCause instanceof Error)
+        ? loginErrorCause
+        : undefined;
+      const ddMeta = {
+        source: 'auth.login_error',
+        auth: { login_error: loginError },
+        cause: causeMeta,
+      };
+      if(errorObj){
+        try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch(e){}
+      }
+      ddLog('error', loginError, ddMeta);
+    }catch(e){
+      console.warn('loginError ddLog failed', e);
+    }
+  }, [loginError, loginErrorCause]);
+  
+  useEffect(() => {
+    // Initialize centralized doglog (avoids double-init and ensures consistent context)
+    try{ initDoglog(); }catch(e){ console.warn('initDoglog failed', e); }
+    // Do not override global.console.error here; doglog handles console.error centrally.
+    try{ installAxiosDoglog(); }catch(e){ console.warn('installAxiosDoglog failed', e); }
+    try{ installGlobalAxiosErrorLogger(); }catch(e){ console.warn('installGlobalAxiosErrorLogger failed', e); }
+    
+    // Banner
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds
-    const bannerUrl = `${process.env.REACT_APP_URL}` + '/assets/liveBanner.json?v='+t;
+    const bannerUrl = `${process.env.REACT_APP_URL}/assets/liveBanner.json?v=${t}`;
     console.debug('%c◉ bannerUrl ', 'color:#00ff7b', bannerUrl);
     fetch(bannerUrl) 
       .then(response => { 
@@ -110,7 +148,7 @@ export function App(){
     
       })
       .catch(error => { 
-        console.error('There was a problem with the fetch operation:', error);
+        // console.error('There was a problem with the fetch operation:', error);
       })
 
     gateway_api_status()
@@ -290,11 +328,13 @@ export function App(){
         }
       }));
     }
-    
+        // throw new Error("Test error");
+
     // User Loading Bits Now
     try{
       if(localStorage.getItem("info")){ // Cant depend on this, might get wiped on a purge call?
         // Validate our Token
+        console.debug('%c◉ API Validate token ', 'color:#00ff7b', );
         api_validate_token(JSON.parse(localStorage.getItem("info")).groups_token)
           .then((results) => {
             loadCount() // the API token step
@@ -313,9 +353,10 @@ export function App(){
                 
                 // setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
               }else if(results.error.response.data.error && results.error.response.status !==401){
-                setLoginError(results.error.response.data.error );
+                setLoginErrorWithLog(results.error.response.data.error, results.error);
               }else{
-                setLoginError("API Key Error");
+                console.error("Error Validating Token", results.error);
+                setLoginErrorWithLog("Error Validating Token", results.error);
               }
             }else if(!results.error){
               // console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
@@ -341,7 +382,7 @@ export function App(){
                         // Added status check if/when we begin getting 401s directly
                         // console.log("Non-active login");
                         setExpiredKey(true);
-                        loadFailed(res);
+                          loadFailed("Auth Login Error", res);
                       }else if(res.status === 200){
                         // console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
@@ -355,7 +396,7 @@ export function App(){
                       }
                     })
                     .catch((err) => {
-                      loadFailed(err)
+                      loadFailed("User Group Data Error", err);
                     })
                 }else{
                   // we already have user groups
@@ -377,22 +418,33 @@ export function App(){
                         setAllGroups(allGroups);  
                       })
                       .catch((err) => {
-                        loadFailed(err)
+                        loadFailed("All Groups Data Error", err);
                       })
                   }catch(error){
-                    loadFailed(error)
+                    loadFailed("All Groups Data Error", error);
                   }
                 }else{
                   // we already have groups
                 }
               }
               catch(error){  
-                loadFailed(error)
+                loadFailed("All Groups Data Error", error);
               }
               loadCount()  // the All Groups step
 
             }else{
               setExpiredKey(true);
+              // try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch(e){}
+
+              setLoginErrorWithLog("Unable to validate your session due to a network/CORS issue. Please try again later. If the problem persists, contact help@hubmapconsortium.org", results.error);
+              // DD_LOGS.logger.error('API Error - Search API', { kind: 'auth', env: 'dev', user_id: info?.user_id || 'unknown' }
+              setAPIErrQueue((prev) => [...prev,[
+                  "API Error - Search API",
+                  `Unable to reach Search API during session validation. ${APIErrorTip}`,
+                  results.error?.message || results.error,
+                ],
+              ]);
+              
             }
           })
           .catch((err) => {
@@ -414,8 +466,6 @@ export function App(){
         ],
       ])
     }
-    
-
 
     function loadCount(){
       loadCounter++;
@@ -426,12 +476,18 @@ export function App(){
       }
     }
   
-    function loadFailed(error){
-      // console.debug('%c⭗ APP loadFailed', 'color:#ff005d', "", loadCounter, error );
+    function loadFailed(error,errorTitle, errorDetail){
       reportError(error);
+      console.debug('%c◉ errorTitle, error, errorDetail ',  'color:#00ff7b', errorTitle, error, errorDetail);
+      let ddMeta = {source: 'LocalStorage.login_error',auth: { login_error: loginError },cause: null,};
+
+      try{ ddMeta.error = { kind: 'auth', message: error.message, stack: error.stack }; }catch(e){}
+      // DD_LOGS.logger.error('API Error - Search API', { kind: 'auth', env: 'dev', user_id: info?.user_id || 'unknown' }
+     ddLog(errorTitle, error, ddMeta);
     }
-    
-  
+  }, []);
+
+  useEffect(() => {
   }, []);
 
   function purgeStorage(){
@@ -445,16 +501,11 @@ export function App(){
     localStorage.removeItem('userGroups');
   };
 
-  function Logout(e){
+  function Logout(){
     setIsLoggingOut(true);
     purgeStorage();
     window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
   };  
-  
-  function closeExpiredSnack(){
-    setExpiredKey(false)
-    window.location.reload();
-  };
   
   const onClose = () => {
     navigate("/");
@@ -475,7 +526,7 @@ export function App(){
       }
     }
     if(event && event==="raw"){
-      var lowerTarget = event.toLowerCase();
+      lowerTarget = event.toLowerCase();
       if(event.ctrlKey || event.metaKey){
         window.open(target,'_blank')
       }else{
@@ -499,14 +550,14 @@ export function App(){
 
   // Success SNack Response
   function updateSuccess(entity){
+    console.debug('%c◉  updateSuccess', 'color:#00ff7b', entity);
     // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
     setSnackMessage(entity.message ? entity.message : "Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
   }
 
-  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );  
-  const{search} = useLocation();
+  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
 
@@ -523,105 +574,22 @@ export function App(){
       errString = JSON.stringify(BuildError(error.results), Object.getOwnPropertyNames(BuildError(error.results)))
     }
     setErrorInfo(errString);
+    console.error(errString, error);
     setErrorShow(true);
     throw(error || "Unknown Error?");
-  }
-
-  // API Error bits
-  function renderAPIError(){
-    let baseChevronStyle = {
-      cursor: "pointer",
-      color: "#fff",
-      transition: "transform 200ms ease-in-out",
-      height: "0.6em",
-      marginLeft: "-3px",
-      paddingBottom: "2px",
-    };
-
-    const APIErrorItem = ({ err, idx }) => {
-      const [open, setOpen] = useState(false);
-      const title = err && err[0] ? err[0] : "API Error";
-      const details = err && err[1] ? err[1] : "";
-      const extra = err && err[2] ? err[2] : null;
-      const hidePrefix = err && err[3] ? err[3] : false;
-
-      const closeThisAlert = () => {
-        setAPIErrQueue((prev) => prev.filter((_, i) => i !== idx));
-      };
-
-      return (
-        <Alert
-          key={idx}
-          className="APIAlertCell"
-          variant="filled"
-          severity="error"
-          icon={<SyncProblemIcon />}
-          sx={{ mb: 1 }}
-          action={
-            <IconButton
-              size="small"
-              aria-label={`close-alert-${idx}`}
-              color="inherit"
-              onClick={closeThisAlert}>
-              <FontAwesomeIcon icon={faTimes} />
-            </IconButton>
-          }>
-          {!hidePrefix && <>{title}</>}
-          {extra && <>&nbsp; {extra}</>}
-          &nbsp;| Render full error details?
-          <ArrowForwardIosIcon
-            onClick={() => setOpen(!open)}
-            sx={
-              open
-                ? { ...baseChevronStyle, transform: "rotate(90deg)" }
-                : baseChevronStyle
-            }
-          />
-          <Collapse in={open}>{details}</Collapse>
-        </Alert>
-      );
-    };
-
-    return (
-      <Box
-        className="ErrorPanel mb-2"
-        sx={() => ({
-          '& .APIAlertCell': 
-          APIErrQueue.length > 1 ? {
-            borderTopLeftRadius: 0,
-            borderTopRightRadius: 0,
-          }:{},
-          '& .APIAlertCell:first-of-type': 
-            APIErrQueue.length > 1 ? {
-              borderTopLeftRadius: "0.375rem",
-              borderTopRightRadius: "0.375rem",
-              borderBottomLeftRadius: 0,
-              borderBottomRightRadius: 0,
-            }:{},
-          '& .APIAlertCell:not(:last-of-type)': 
-          APIErrQueue.length > 1 ? {
-            borderBottomLeftRadius: 0,
-            borderBottomRightRadius: 0,
-          } : {},
-        })}
-      >
-        {APIErrQueue.map((err, idx) => (
-          <APIErrorItem err={err} idx={idx} key={idx} />
-        ))}
-      </Box>
-    );
   }
 
   return(
     <React.Fragment>
       <div className={"App pb-3 env-"+process.env.REACT_APP_NODE_ENV }>
-        <Snackbar
+        {/* Specific to Expired key */}
+        {/* <Snackbar
           open={expiredKey}
           anchorOrigin={{vertical: 'top', horizontal: 'center'}}
-          // autoHideDuration={6000}
-          onClose={() => closeExpiredSnack()}>
-          <Alert variant="filled" severity="error">{loginError}</Alert>
-        </Snackbar>
+          onClose={() => setExpiredKey(false)}>
+          <Alert variant="filled" severity="error" onClose={() => {}}>{loginError}</Alert>
+        </Snackbar> */}
+
         <Navigation 
           login={authStatus} 
           isLoggingOut={isLoggingOut}
@@ -714,7 +682,7 @@ export function App(){
           
             {APIErrQueue.length > 0 && (
               <>
-                {renderAPIError()}
+                <APIAlertHandler APIErrQueue={APIErrQueue} setAPIErrQueue={setAPIErrQueue} />
               </>
             )}
 
@@ -742,6 +710,16 @@ export function App(){
                     <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
                     <Route path="/login" element={<Login />} />
                     <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
+
+                    {/* Redirect plural top-level pages to the root Search with entity_type query */}
+                    <Route path="/donors" element={<Navigate to="/?entity_type=donor" replace />} />
+                    <Route path="/samples" element={<Navigate to="/?entity_type=sample" replace />} />
+                    <Route path="/publications" element={<Navigate to="/?entity_type=publication" replace />} />
+                    <Route path="/collections" element={<Navigate to="/?entity_type=collection" replace />} />
+                    <Route path="/epicollections" element={<Navigate to="/?entity_type=epicollection" replace />} />
+                    <Route path="/datasets" element={<Navigate to="/?entity_type=dataset" replace />} />
+                    <Route path="/uploads" element={<Navigate to="/?entity_type=upload" replace />} />
+
 
                     <Route path="/new">
                       <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>

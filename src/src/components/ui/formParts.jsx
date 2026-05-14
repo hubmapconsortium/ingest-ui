@@ -37,7 +37,7 @@ import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
-import {OrganIcons} from "../ui/icons";
+import {OrganIcons, CreationActionIcon} from "../ui/icons";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -53,12 +53,15 @@ export const FormHeader = (props) => {
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
+  console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
   return (
     <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
-      {entityData[0] !== "new" && (
-        <Grid item xs={12} className="topHeader" > 
-          <h3 style={{marginLeft: "-2px"}}>{IconSelection(entityType)} {entityType} Information</h3>
-        </Grid>
+      {entityData[0] !== "new" && (<>
+          <Typography sx={{display: "inline-block", marginBottom: "-5px"}} variant='caption'>{entityType}</Typography>
+          <Grid item xs={12} className="topHeader" > 
+            <span style={{fontSize: "1.6em", marginLeft: "-2px"}}>{IconSelection(entityType)}</span><Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}>{entityData.hubmap_id} </Typography>
+          </Grid>
+        </>
       )}
       {topHeader(entityData, entityType,subType)}
       {infoPanels(entityData,permissions,globusURL)}
@@ -72,6 +75,8 @@ export function IconSelection(entity_type,status){
   let newSX={"&&": {color: status?"white":""}}
   switch
   (entity_type && entity_type.toLowerCase()){
+    case "new":
+      return null
     case "donor":
       return <PersonIcon style={style} sx={newSX} />
     case "sample":
@@ -331,20 +336,40 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-export function NewBadge(type){ 
+export function NewBadge(type, mini){ 
   console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
-  let NewBadgeStyle = {
-    "&&": {color: "#ffffff!important"} ,
-    fontWeight: "bold",
-    color: "#ffffff!important",
-    padding: "4px",
-    fontSize: "1.2rem!important",
-    height: "auto",
-    display: "inlineTable",
-    verticalAlign: "super",
+  let NewBadgeStyle 
+  let newBadgeSX={
+    color:"#ffffff!important"
+  }
+  if (mini){
+    NewBadgeStyle = {
+      fontFamily: "'Inter var', Helvetica, sans-serif!important",
+      "&&": {color: "#ffffff!important", verticalAlign: "middle"} ,
+      // fontWeight: "bold",
+      color: "#ffffff!important",
+      padding: "2px",
+      // fontWeight: "bold",
+      fontWeight: "520",
+      fontSize: "0.7rem!important",
+      height: "auto",
+      display: "inline-block",
+      verticalAlign: "baseline"
+    }
+  }else{
+    NewBadgeStyle = {
+      "&&": {color: "#ffffff!important"} ,
+      fontWeight: "bold",
+      color: "#ffffff!important",
+      padding: "4px",
+      fontSize: "1.2rem!important",
+      height: "auto",
+      display: "inlineTable",
+      verticalAlign: "super"
+    }
   }
   return (  
-    <Chip style={NewBadgeStyle} sx={{color:"#ffffff!important"}} className={ "newBadge " + badgeClass("NEW")} icon={IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} className={ "newBadge " + badgeClass("NEW")} icon={mini ? null : IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
 
@@ -393,7 +418,6 @@ function topHeader(entityData, entityType, subType){
   
   return entityData[0] !== "new" ? (
     <Grid item xs={6} className="entityDataHead" >
-      <Typography><strong>HuBMAP ID:</strong> {entityData.hubmap_id}</Typography>
       {entityData.status && (<>
         <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>   
         {entityData.pipeline_message ? (
@@ -436,8 +460,8 @@ function topHeader(entityData, entityType, subType){
   ) : (
     <React.Fragment>
       <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
-        {NewBadge(type,"new")}
-        <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{newTitle}</h3>
+      <Typography variant='h4' sx={{fontWeight:300, display: "inline-block", fontSize: "1em"}}> Registering a&nbsp;</Typography>{NewBadge(null, true)}   <br />
+        <Typography sx={{fontWeight:300, display: "inline-block", fontSize: "1.4em"}}>{IconSelection(entityType)}</Typography> <Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}> {type} </Typography>
       </Grid>
         
       {entityData[1] === "Upload" && (
@@ -454,6 +478,8 @@ function topHeader(entityData, entityType, subType){
 
 // The Rightmost part of the Form Header
 function infoPanels(entityData,permissions,globusURL){
+  console.debug('%c◉ infoPanels ', 'color:#00ff7b', entityData,permissions,globusURL);
+  console.debug('%c◉ Creation Action:  ', 'color:#00ff7b', entityData.creation_action, typeof entityData.creation_action);
   let HIPPATypes = ["Donor","Sample","Upload"];
   const type = entityData?.entity_type ?? entityData?.[1];
   const isEPICollection = type === "EPICollection" || String(type).toLowerCase() === "epicollection";
@@ -468,12 +494,14 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && (<Box > 
-        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
+      {entityData.creation_action && entityData.creation_action !== "" && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />{entityData.creation_action}
       </Box>)}
+
       <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
+
       {globusURL&& (
         <Alert 
           severity="info" 
@@ -495,17 +523,27 @@ function infoPanels(entityData,permissions,globusURL){
           </Typography>
         </Alert>
       )}
-      {permissions.has_write_priv && HIPPATypes.includes(entityData.entity_type) &&(
-        <HIPPA />
-      )}
+
+      {permissions.has_write_priv && 
+        ( 
+          (entityData[0] === "new" && HIPPATypes.includes(entityData[1])) ||
+          (HIPPATypes.includes(entityData.entity_type))
+        ) && 
+        (<HIPPA />)
+      }
+      
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
         // They might not have write access but not because of data_access_level
-        <Alert severity="warning" 
-          iconMapping={{warning: <VpnLockIcon style={{fontSize: "2em"}} />}}
+        <Alert 
+          severity="warning" 
+          iconMapping={{warning: <VpnLockIcon  />}}
           sx={{
             minWidth: "100%",
             padding: "10px",
-            border:"1px solid #33000008"
+            border:"1px solid #33000008",
+            '& .MuiAlert-message': {
+              fontSize:"0.8em"
+            }
           }}>This entity is no longer editable. It was locked when it became publicly
           acessible when data associated with it was published.
         </Alert>
@@ -519,14 +557,18 @@ function infoPanels(entityData,permissions,globusURL){
         </Typography>
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
+        
         <Alert  
           variant="caption" 
           severity="info" 
           sx={{
             color: "rgba(0, 0, 0, 0.38)",
-            minWidth: "100%", 
-            margin: "0px",
-            padding: "0px",
+            minWidth: "100%",
+            padding: "10px",
+            border:"1px solid #33000008",
+            '& .MuiAlert-message': {
+              fontSize:"0.8em"
+            }
           }}
           iconMapping={{
             warning: <UpdateDisabledIcon style={{fontSize: "2em"}} />
@@ -1021,20 +1063,21 @@ export function ParsePreflightString(s) {
   return [obj];
 }
 
-function renderCreationActionIcon(action){
-  switch(action){
-    case "Create Dataset Activity":
-      return <FontAwesomeIcon icon={faCube} />;
-    case "External Process":
-      return <FontAwesomeIcon icon={faStar} />;
-    case "Multi-Assay Split":
-      return <FontAwesomeIcon icon={faDiagramProject} />;
-    case "Central Process":
-      return <FontAwesomeIcon icon={faCodeMerge} />;
-    default:
-      return null;
-  }
-}
+// function CreationActionIcon(action){
+//   switch(action){
+//     case "Create Dataset Activity":
+//       return <FontAwesomeIcon icon={faCube} />;
+//     case "External Process":
+//       return <FontAwesomeIcon icon={faStar} />;
+//     case "Multi-Assay Split":
+//       return <FontAwesomeIcon icon={faDiagramProject} />;
+//     case "Central Process":
+//       return <FontAwesomeIcon icon={faCodeMerge} />;
+//     default:
+//       return null;
+//   }
+// }
+
 
 function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
@@ -1071,7 +1114,7 @@ function ReturnCreationActionDetail({ creation_action }) {
         onMouseEnter={() => setCollapse(true)}
         onMouseLeave={() => setCollapse(false)}
         sx={{ marginLeft: "5px" }}>
-        {renderCreationActionIcon(creation_action)}
+        {CreationActionIcon(creation_action)}
       </Typography>
     </Box>
   );
