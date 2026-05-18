@@ -89,22 +89,6 @@ export function Search({
 
   const [searchState, dispatchSearchState] = useReducer(searchReducer, initialSearchState);
 
-  // dynamic table sizing: compute remaining viewport height so the table fills it
-  const tableWrapperRef = useRef(null);
-  const [tableHeight, setTableHeight] = useState(null);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const calc = () => {
-      if (!tableWrapperRef.current) return;
-      const top = tableWrapperRef.current.getBoundingClientRect().top;
-      const avail = Math.max(200, Math.floor(window.innerHeight - top - 24));
-      setTableHeight(avail);
-    };
-    calc();
-    window.addEventListener('resize', calc);
-    return () => window.removeEventListener('resize', calc);
-  }, [searchFiltersState, advancedSearch, pageSize]);
-
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
@@ -550,7 +534,7 @@ export function Search({
     // console.debug('%c◉ columnFilters ', 'color:#00ff7b', searchState.colDef);
 
     return (
-      <Box sx={{ flex: '1 1 auto', minHeight: 0, width: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <Box style={{height: 590, width: "100%" , position: "relative"}}>
         <Box className="sourceShade" sx={{
           opacity: searchState.loading ? 1 : 0,
           backgroundColor: "#444a65",
@@ -571,23 +555,20 @@ export function Search({
         }}>
           <GridLoader size="2px" color="white" width="30px" /> Loading ...
         </Box>
-        <Box sx={{ flex: '1 1 auto', minHeight: 0 }}>
-          <DataGrid
-            sx={{
-              height: '100%',
-              minHeight: 0,
-              '.MuiTablePagination-select': {
-                background: '#eee',
-              },
-              '.MuiTablePagination-displayedRows': {
-                marginTop: '1em',
-                marginBottom: '1em'
-              },
-              '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
-                marginTop: '1em',
-                marginBottom: '1em'
-              }
-            }}
+        <DataGrid
+          sx={{
+            '.MuiTablePagination-select': {
+              'background': '#eee',
+            },
+            '.MuiTablePagination-displayedRows': {
+              'marginTop': '1em',
+              'marginBottom': '1em'
+            },
+            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
+              'marginTop': '1em',
+              'marginBottom': '1em'
+            }
+          }}
           id="SearchDataGrid"
           className="SearchGridWrap HDT "
           columnBuffer={2}
@@ -614,7 +595,6 @@ export function Search({
             // },
           }}
         />
-        </Box>
       </Box>
     );
   }
@@ -779,9 +759,11 @@ export function Search({
                       border: "thick double solid #ccc",
                       width: "100%"
                     }}>
+
                     {renderStatusControls()}
                   </Box>
                 </Grid>
+
               </Grid>
                 
             </Collapse>
