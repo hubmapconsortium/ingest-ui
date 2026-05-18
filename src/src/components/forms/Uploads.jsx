@@ -379,7 +379,7 @@ export const UploadForm = (props) => {
 
         case "Save":
           // console.debug('%c◉ Save ', 'color:#00ff7b');
-          entity_api_update_entity(uuid,JSON.stringify(cleanForm))
+          entity_api_update_entity(entityData.hubmap_id,JSON.stringify(cleanForm))
             .then((response) => {
               processResults(response);
             })

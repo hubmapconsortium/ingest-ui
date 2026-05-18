@@ -598,6 +598,7 @@ export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submit
             <DialogActions>
             <LoadingButton 
               loading={submitting} 
+              name="submit_modal"
               sx={{width:"150px"}} 
               loadingIndicator="Submitting..." 
               variant="outlined" 

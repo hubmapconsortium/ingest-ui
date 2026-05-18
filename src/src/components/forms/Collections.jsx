@@ -192,7 +192,7 @@ export const CollectionForm = (props) => {
           ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }
         console.debug('%c◉ updateForm ', 'color:#00ff7b', updateForm);
-        entity_api_update_entity(uuid, JSON.stringify(updateForm))
+        entity_api_update_entity(entityData.hubmap_id, JSON.stringify(updateForm))
           .then((response) => {
             setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status < 300) {

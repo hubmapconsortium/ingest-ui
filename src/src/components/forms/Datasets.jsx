@@ -290,14 +290,14 @@ export const DatasetForm = (props) => {
         // direct_ancestor_uuids: selectedUUIDs,
         ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
         ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task}),
-        ...(!arraysHaveSameContent(selectedUUIDs, oldAncestors) && {direct_ancestor_uuids: selectedUUIDs})
+        ...(!arraysHaveSameContent && {direct_ancestor_uuids: selectedUUIDs})
       };
       // console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
         let target = e.target.name;
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, [target]: true } }));
-        // console.log("handleSave", target);
-        entity_api_update_entity(uuid, JSON.stringify(cleanForm))
+        // We get a hubmap ID back for the success message if we provide it at the startt
+        entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
               console.log(response, entityData.hubmap_id)
@@ -320,8 +320,6 @@ export const DatasetForm = (props) => {
         cleanForm.group_uuid = group_uuid;
         cleanForm.dataset_type = form.dt_select
         cleanForm.group_uuid = form.group_uuid
-        // console.log(form, form.contains_human_genetic_sequences);
-        // console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm);
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {
