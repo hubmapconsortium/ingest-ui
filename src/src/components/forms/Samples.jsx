@@ -378,7 +378,7 @@ export const SampleForm = (props) => {
     if(validateForm()){
       if(uuid){
         // We're in Edit mode
-        entity_api_update_entity(uuid,JSON.stringify(sampleFormData))
+        entity_api_update_entity(entityData.hubmap_id,JSON.stringify(sampleFormData))
           .then((response) => {
             if(response.status === 200){
               props.onUpdated(response.results);
