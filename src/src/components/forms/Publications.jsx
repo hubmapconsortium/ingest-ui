@@ -410,7 +410,7 @@ export const PublicationForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() !== "new" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
           <LoadingButton
             loading={buttonLoading['submit']}
             onClick={(e) => handleSubmit(e)}
