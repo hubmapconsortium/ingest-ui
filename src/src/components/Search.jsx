@@ -281,7 +281,11 @@ export function Search({
       "newTable"
     ).then((response) => {
         if(response.error){
-          errorReporting(response.error)
+          errorReporting(response.error);
+          setErrorState(true);
+          setError(response.error?.message || "Unable to reach Search API.");
+          dispatchSearchState({ type: "SET", payload: { loading: false } });
+          return;
         }
         if (response.total > 0 && response.status === 200) {
           let colDefs;
@@ -738,11 +742,10 @@ export function Search({
                   {renderTargetField()}
                 </Grid>
                 <Grid item xs={6} sx={{padding: "4px"}}>
-                  <Box className="searchFieldLabel" id="SearchLabelGroiup" >
+                  <Box className="searchFieldLabel" id="SearchLabelGroup" >
                     <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                     <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
                   </Box>
-
                   <Box 
                     sx={{
                       display: 'flex',

@@ -5,7 +5,12 @@ import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
+import PublicOffIcon from '@mui/icons-material/PublicOff';
+import PublicIcon from '@mui/icons-material/Public';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+
 
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
@@ -133,6 +138,46 @@ export function OrganIcons(organ){
   let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg"
   // console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
   return iconURL
+}
+
+export function CreationActionIcon(action){
+  // Accept either a string or an object like { action: '...' } or { creation_action: '...' }
+  const act = typeof action === 'string' ? action : (action && (action.action || action.creation_action)) || '';
+  switch (act) {
+    case "Create Dataset Activity":
+      console.log('%c◉ Create Dataset Activity Found',  'background:#8b6eff; color:#fff');
+      return (<FontAwesomeIcon icon={faCube} />);
+    case "External Process":
+      console.log('%c◉ External Process Found',  'background:#8b6eff; color:#fff');
+      return (<FontAwesomeIcon icon={faStar} />);
+    case "Multi-Assay Split":
+      console.log('%c◉ Multi-Assay Split Found',  'background:#8b6eff; color:#fff');
+      return (<FontAwesomeIcon icon={faDiagramProject} />);
+    case "Central Process":
+      console.log('%c◉ Central Process Found',  'background:#8b6eff; color:#fff');
+      return (<FontAwesomeIcon icon={faCodeMerge} />);
+    default:
+      return null;
+  }
+}
+
+// export function ReturnCreationActionIcon(creation_action) {
+
+// }
+
+
+export function AccessLevelIcon(level){
+  console.debug('%c◉ AccessLevelIcon ', 'color:#487cff', level);
+  switch(level){
+    case "Public":
+      return <PublicIcon />;
+    case "Private":
+      return <PublicOffIcon />;
+    case "Restricted":
+      return <PersonIcon />;
+    default:
+      return null;
+  }
 }
 
 export function RUIIcon(size,color){

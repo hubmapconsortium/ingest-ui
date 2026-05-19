@@ -90,7 +90,6 @@ export function toPlural(str) {
 
 export function stripHTML(str) {
   // Currently only being used in the UBKG API service, to handle responses that return raw HTML instead
-  const regexForStripHTML = /<([^</> ]+)[^<>]*?>[^<>]*?<\/\1> */gi;
   try { 
     let stripContent = DOMPurify(str);
     // stripContent = stripContent.replaceAll(regexForStripHTML, '');

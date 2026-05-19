@@ -69,8 +69,8 @@ export const RenderPageError = (errorObj) => {
 
 export const getErrorList = (details) => {
     console.debug('%c⊙ getErrorList', 'color:#00ff7b', details);
-    let data = []
-    let {code, description, name} = details.code ? details : {code: 500, description: details.message, name: "Truncated Error:"}
+    let data = [];
+    let {description, name} = details.code ? details : { description: details.message, name: "Truncated Error:" };
     try {
         let keyedErrors
         if(description){
@@ -152,7 +152,6 @@ export const tableColumns = (d = '"') => [{
     }
 ]
 
-
 export function parseErrorMessage(err) {
   console.debug('%c⊙parseErrorMessage', 'color:#00ff7b', err );
   var formattingMessage = err;
@@ -185,23 +184,19 @@ export const ParseRegErrorFrame = (errResp) => {
     parsedError = parseErrorMessage(errResp.results.data);
   }else if(errResp.status && errResp.data){
     parsedError = parseErrorMessage(errResp.data);
-  }else{
-    let regErrorSet ={}
-    if(errResp.err && errResp.err.response.data){
-      regErrorSet = errResp.err.response.data 
-    }else if(errResp.error && errResp.error.response.data){
-      regErrorSet = errResp.error.response.data 
-    }else if(errResp.data){
-      regErrorSet = errResp 
-    }else{
-      regErrorSet = errResp
+  } else {
+    let regErrorSet = {};
+    if (errResp.err && errResp.err.response.data) {
+      regErrorSet = errResp.err.response.data;
+    } else if (errResp.error && errResp.error.response.data) {
+      regErrorSet = errResp.error.response.data;
+    } else if (errResp.data) {
+      regErrorSet = errResp;
+    } else {
+      regErrorSet = errResp;
     }
-    // var errRows = regErrorSet.data;
-    var errRows = regErrorSet.map(g => {
-      return g.message
-    })
     var errMessage = regErrorSet.status;
-    parsedError=errResp;
+    parsedError = errResp;
   }
 
   this.handleErrorCompiling(parsedError); // Error Array's set in that not here
@@ -217,7 +212,6 @@ export const ParseRegErrorFrame = (errResp) => {
   this.setState({loading:false,}, () => {   
   });
 }
-
 
 export function TableErrorRowProcessing(errorsArray){
   // console.debug('%c◉ TableErrorRowProcessing ', 'color:#00ff7b', errorsArray);
