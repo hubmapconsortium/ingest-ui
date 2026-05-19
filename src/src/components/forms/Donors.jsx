@@ -201,7 +201,7 @@ export const DonorForm = (props) => {
       console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm, uuid);
       if(uuid){
         // We're in Edit mode
-        entity_api_update_entity(uuid,JSON.stringify(cleanForm))
+        entity_api_update_entity(entityData.hubmap_id,JSON.stringify(cleanForm))
           .then((response) => {
             if(response.status === 200){
               props.onUpdated(response.results);

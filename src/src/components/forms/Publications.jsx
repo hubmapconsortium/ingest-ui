@@ -9,6 +9,7 @@ import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import { useNavigate, useParams } from "react-router-dom";
+import {RevertFeature} from "../../utils/revertModal";
 import {
   entity_api_get_entity,
   entity_api_get_globus_url,
@@ -27,7 +28,7 @@ import {
   validateSingleProtocolIODOI
 } from "../../utils/validators";
 import { BulkSelector } from "../ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback} from "../ui/formParts";
+import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback, RenderSubmitModal} from "../ui/formParts";
 import { PublicationFormFields, PublicationFieldSet } from "../ui/fields/PublicationFormFields";
 
 export const PublicationForm = (props) => {
@@ -49,6 +50,7 @@ export const PublicationForm = (props) => {
     process: false,
     save: false,
     submit: false,
+    innerSubmit:false,
   });
   var [formValues, setFormValues] = useState({
     title: "",
@@ -74,6 +76,8 @@ export const PublicationForm = (props) => {
     message: "", 
     status: "info"
   });
+
+  let [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
   const { uuid } = useParams();
 
@@ -306,9 +310,13 @@ export const PublicationForm = (props) => {
               setPageErrors(error);
             });
         } else if (e.target.name === "submit") { // Submit
-          entity_api_update_entity(uuid, JSON.stringify(cleanForm))
+          setIsSubmitModalOpen(true)
+        } else if ( e.target.name === "submit_modal") {
+          setIsSubmitModalOpen(false);
+          cleanForm.status = "Submitted"
+          entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
             .then((response) => {
-              if (response.status < 300) {
+              if (response.status < 300) {  
                 var ingestURL = process.env.REACT_APP_URL + "/publication/" + uuid
                 var slackMessage = { "message": "Publication has been submitted (" + ingestURL + ")" }
                 ingest_api_notify_slack(slackMessage)
@@ -326,7 +334,7 @@ export const PublicationForm = (props) => {
               }
             })
         } else if (e.target.name === "save") { // Save
-          entity_api_update_entity(uuid, JSON.stringify(cleanForm))
+          entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status === 200) {
                 props.onUpdated(response.results);
@@ -383,6 +391,10 @@ export const PublicationForm = (props) => {
   const buttonEngine = () => {
     return (
       <Box sx={{ textAlign: "right" }}>
+        {/* REVERT */}
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
+          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+        )}
         <LoadingButton
           variant="contained"
           className="m-2"
@@ -410,7 +422,7 @@ export const PublicationForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() !== "new" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
           <LoadingButton
             loading={buttonLoading['submit']}
             onClick={(e) => handleSubmit(e)}
@@ -495,10 +507,16 @@ export const PublicationForm = (props) => {
               ))}
             </Alert>
           )}
-
+          
           {buttonEngine()}
         </form>
-
+        {uuid && entityData.status.toLowerCase() === "new" && (
+          <RenderSubmitModal
+            showSubmitModal={isSubmitModalOpen}
+            setIsSubmitModalOpen={setIsSubmitModalOpen}
+            submitting={buttonLoading['innerSubmit']}
+            handleSubmitAction={handleSubmit}/>
+        )}
         {pageErrors && (
           <Alert variant="filled" severity="error">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}

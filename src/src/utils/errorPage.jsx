@@ -14,25 +14,25 @@ export default function ErrorPage(props) {
     // var {message,stack,fileName,lineNumber,columnNumber} = props.errorValue;
     console.debug('%c⊙ErrorPage Props: ', 'color:#00ff7b', props );
     var errorObject = {
-        message:props.errorValue.message ?  props.errorValue.message : "Error: No Message Included",
-        stack:props.errorValue.stack ?  props.errorValue.stack : "No Stack Trace Available",
-        fileName:props.errorValue.fileName ?  props.errorValue.fileName : "No File Name Available",
-        lineNumber:props.errorValue.lineNumber ?  props.errorValue.lineNumber : "No Line Number Available",
-        columnNumber:props.errorValue.columnNumber ?  props.errorValue.columnNumber : "No Column Number Available",
-    }
+        message: props.errorValue.message ? props.errorValue.message : "Error: No Message Included",
+        stack: props.errorValue.stack ? props.errorValue.stack : "No Stack Trace Available",
+        fileName: props.errorValue.fileName ? props.errorValue.fileName : "No File Name Available",
+        lineNumber: props.errorValue.lineNumber ? props.errorValue.lineNumber : "No Line Number Available",
+        columnNumber: props.errorValue.columnNumber ? props.errorValue.columnNumber : "No Column Number Available",
+    };
     // var jsonERR = toJSON(errorObject);
     // var mapDerails = new Map(JSON.parse(jsonERR));
     return (
         <div className={"error-page p-1"}>
 
-            <Box  sx={{ 
+            <Box sx={{
                 backgroundColor: 'white',
-                width:          '100%', 
-                '& span, h2':   {display:'inline-block',
-                padding:"5px",} }}>
+                width: '100%',
+                '& span, h2': { display: 'inline-block', padding: "5px" }
+            }}>
                 
                 <Grid container className='p-2'>
-                    <Grid item xs={12} className="mb-4" sx={{backgroundColor:'#dc3545',color:          "#fff",width:'100%',padding:1, }}>
+                    <Grid item xs={12} className="mb-4" sx={{ backgroundColor: '#dc3545', color: "#fff", width: '100%', padding: 1 }}>
                         <Typography variant="h2" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="body" >Something's gone wrong...</Typography>
                     </Grid>
                     <Grid item xs={7} className="mb-4">
@@ -47,13 +47,13 @@ export default function ErrorPage(props) {
                     }}>
                         <Typography variant='h5' gutterBottom>Error: </Typography>
                         {errorObject.message && errorObject.message.length>0 && (
-                            <Box sx={{width:'100%', fontSize:'1.8em',  padding:1,marginBottom:2, backgroundColor:'white', color:"#dc3545"}}>
+                            <Box sx={{width:'100%', fontSize:'1.8em', padding:1,marginBottom:2, backgroundColor:'white', color:"#dc3545"}}>
                                 {errorObject.message} <br/>
                                 <Typography ><strong>File:</strong> {errorObject.fileName}  </Typography> 
                                 <Typography ><strong>Line Number:</strong> {errorObject.lineNumber} | <strong>Column Number:</strong> {errorObject.columnNumber} |</Typography> 
                             </Box>
                         )}
-                        <Typography variant='h5'gutterBottom>View Stack Trace:<IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ChevronRightIcon /></IconButton> </Typography>
+                        <Typography variant='h5' gutterBottom>View Stack Trace:<IconButton color="error" size="small" onClick={() => setErrorInfoShow(!errorInfoShow)}> <ChevronRightIcon /></IconButton> </Typography>
                         <Collapse in={errorInfoShow} sx={{backgroundColor:'white', color:"#dc3545", padding:"3em"}}>
                             <Typography variant="subtitle1">
                             {errorObject.stack}

@@ -3,8 +3,7 @@ body {
 }
 #header {
   margin-bottom: 20px;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
   background-color: #444a65;
 }
 
@@ -58,6 +57,7 @@ body {
   --HBM_Green: #919491;
   --HBM_Red: #C51162;
 }
+
 /* @TODO: https://blog.jim-nielsen.com/2021/css-relative-colors/ */
 .HBM_BlueButton{
     background: linear-gradient(180deg, var(--HBM_BrightBlueCL) 0%,  var(--HBM_DarkBlueCL) 100%);
@@ -270,6 +270,10 @@ caption {
   /*Temp fix for modal tables that are too tall. 
   Replace with responsive solution next*/
   height: 400px;
+}
+
+.MuiPaper-elevation.MuiAlert-filled{
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
 
 #SourceIDSearch td,
@@ -1311,7 +1315,7 @@ status
 }
 .HDT .MuiDataGrid-cellContent {
   font-family: 'Inter var', sans-serif!important;
-  /* font-size: 0.8rem; */
+  font-weight: 350;
 } 
 
 
@@ -1474,6 +1478,31 @@ status
     transition: 290ms ease-in-out;
 }
 
+.newBadge {
+  font-family: 'Inter var', Helvetica, Arial, sans-serif!important;
+}
 .newBadge .MuiSvgIcon-root{
   color:#ffffff!important;
+}
+
+/* Short bounce-up animation for alert close + snappy enter */
+.api-alert-wrap {
+  display: block;
+}
+
+/* Snappy entrance with a tiny overshoot */
+.api-alert-wrap.enter {
+  animation: api-alert-enter 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.api-alert-wrap.exit {
+  /* slight 'fall in' then quick pop-out for tactile feel */
+  animation: api-alert-exit 160ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+@keyframes api-alert-exit {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  30% { opacity: 1; transform: translateY(6px) scale(1.02); }
+  65% { opacity: 1; transform: translateY(-12px) scale(0.99); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.985); }
 }
