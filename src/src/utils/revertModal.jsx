@@ -98,7 +98,7 @@ export const RevertFeature = (props) => {
               </Alert>
             )}
             <Typography >
-              Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
+              Choose a status to revert this <span className="text-da nger">{type}</span> to, then click <code>[Revert]</code> to apply your changes <br /> &nbsp;
             </Typography>
             
             <FormControl fullWidth>
@@ -119,7 +119,8 @@ export const RevertFeature = (props) => {
           </DialogContent>
           <DialogActions>
             <Button
-              className="btn btn-primary mr-1"
+              variant="outlined"
+              className="mr-1"
               onClick={handleClose}>
               Close
             </Button>
@@ -127,7 +128,7 @@ export const RevertFeature = (props) => {
               className=""
               loading={submittingUpdate}
               onClick={handleStatusSet}
-              variant="outlined">
+              variant="contained">
               Revert
             </LoadingButton>          
           </DialogActions>
