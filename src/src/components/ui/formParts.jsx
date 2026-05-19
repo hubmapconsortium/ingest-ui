@@ -448,21 +448,24 @@ function infoPanels(entityData,permissions,globusURL){
       {globusURL&& (
         <Alert 
           severity="info" 
-          sx={{ width: "100%", marginBottom:"15px", border:"1px solid #00003305" }}
-          iconMapping={{info: <OpenInNewIcon style={{fontSize: "2em"}} />}}>
-          <Typography className="pb-1">
-            <strong><big>
-              <a href={globusURL}
-                target='_blank'
-                rel='noopener noreferrer'>   
-                  {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
-                    <>Open data repository {" "}</>
-                  )}
-                  {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
-                    <>To add or modify data files go to the data repository {" "}</>
-                  )}
-              </a>
-            </big></strong>
+          sx={{ 
+            width: "100%", 
+            padding: "10px",
+            margin: "10px auto",
+            border:"1px solid #00003305", 
+          }}
+          iconMapping={{info: <OpenInNewIcon />}}>
+          <Typography className="" sx={{ fontSize: "0.9rem", fontWeight:"700" }}>
+            <a href={globusURL}
+              target='_blank'
+              rel='noopener noreferrer'>   
+                {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
+                  <>Open data repository {" "}</>
+                )}  
+                {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
+                  <>To add or modify data files, go to the data repository {" "}</>
+                )}
+            </a>
           </Typography>
         </Alert>
       )}
@@ -506,9 +509,11 @@ function infoPanels(entityData,permissions,globusURL){
           severity="info" 
           sx={{
             color: "rgba(0, 0, 0, 0.38)",
+            background:"#00000006",
             minWidth: "100%",
             padding: "10px",
-            border:"1px solid #33000008",
+            margin: "10px auto",
+            border:"1px solid #00000020",
             '& .MuiAlert-message': {
               fontSize:"0.8em"
             }
