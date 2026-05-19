@@ -38,6 +38,7 @@ import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
 import {OrganIcons, CreationActionIcon} from "../ui/icons";
+import { badgeClass } from "../../utils/badgeClasses";
 
 // The header on all of the Forms (The top bit)
 export const FormHeader = (props) => {
@@ -96,65 +97,7 @@ export function IconSelection(entity_type,status){
   }
 }
 
-// Returns the badge class associated with provided status
-export function badgeClass(status){
-  // console.debug('%c◉ badgeClass status ', 'color:#00ff7b', status);
-  var badge_class = "";
-  if(status=== undefined || !status){
-    badge_class = "badge-danger";
-    // console.log("No Status Value for this unit ");
-  }else{
-	switch (status.toUpperCase()){
-    case "NEW":
-      badge_class = "badge-purple";
-      break;
-    case "REOPENED":
-      badge_class = "badge-purple";
-      break;
-    case "REORGANIZED":
-      badge_class = "badge-info";
-      break;
-    case "VALID":
-      badge_class = "badge-success";
-      break;
-    case "INVALID":
-      badge_class = "badge-danger";
-      break;
-    case "QA":
-      badge_class = "badge-info";
-      break;
-    case "LOCKED":
-      badge_class = "badge-secondary";
-      break;
-    case "PROCESSING":
-      badge_class = "badge-secondary";
-      break;
-    case "PUBLISHED":
-      badge_class = "badge-success";
-      break;
-    case "UNPUBLISHED":
-      badge_class = "badge-light";
-      break;
-    case "DEPRECATED":
-      break;
-    case "ERROR":
-      badge_class = "badge-danger";
-      break;
-    case "HOLD":
-      badge_class = "badge-dark";
-      break;
-    case "SUBMITTED":
-      badge_class = "badge-info";
-      break;
-    case "INCOMPLETE":
-      badge_class = "badge-incomplete";
-          break;
-        default:
-          break;
-    }
-    return badge_class;
-  }
-}
+// `badgeClass` is now provided by the canonical utils module `badgeClasses`.
 
 // Admin Tool for Assigning Tasks to Groups to Entities
 export function TaskAssignment({
@@ -494,10 +437,10 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && entityData.creation_action !== "" && (<Box > 
-        <ReturnCreationActionDetail creation_action={entityData.creation_action} />{entityData.creation_action}
+      { entityData.creation_action && entityData.creation_action !== "" && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
       </Box>)}
-
+        
       <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
@@ -576,8 +519,6 @@ function infoPanels(entityData,permissions,globusURL){
           You do not have permission to modify this item.
         </Alert>
       )}
-      {/* <Box sx={{textAlign: "right"  }}>
-      </Box> */}
     </Grid>
   )
 }
@@ -1084,6 +1025,9 @@ function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
   let label;
   switch (creation_action) {
+    case "Create Publication Activity":
+      label = "This is a Publication";
+      break;
     case "Create Dataset Activity":
       label = "This is a Primary Dataset";
       break;

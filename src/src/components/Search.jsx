@@ -23,8 +23,9 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import {CombinedWholeEntityOptions,badgeClass} from "./ui/formParts";
+import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
+import {badgeClass} from "../utils/badgeClasses";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import {toTitleCase} from "../utils/string_helper";
@@ -422,6 +423,7 @@ export function Search({
   function renderStatusControls() {
     let colorMap = {  
       "QA": '#17a2b8', 
+      "Approval": '#f5e537', 
       "Submitted": '#17a2b8', 
       "Reorganized": '#17a2b8', 
       "Published": '#0ecd3a', 
@@ -432,7 +434,7 @@ export function Search({
       "Incomplete": '#ffc107', 
       "New": '#9933cc', 
     }
-    let statusOptions = ["Published", "QA", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
+    let statusOptions = ["Published", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
     return(<> 
       {statusOptions.map((status, i) => {
         const isSelected = chipSelect.includes(status);
