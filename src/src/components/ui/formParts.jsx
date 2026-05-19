@@ -437,10 +437,10 @@ function infoPanels(entityData,permissions,globusURL){
 
   return (
     <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      {entityData.creation_action && entityData.creation_action !== "" && (<Box > 
-        <ReturnCreationActionDetail creation_action={entityData.creation_action} />{entityData.creation_action}
+      { entityData.creation_action && entityData.creation_action !== "" && (<Box > 
+        <ReturnCreationActionDetail creation_action={entityData.creation_action} />
       </Box>)}
-
+        
       <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
@@ -519,8 +519,6 @@ function infoPanels(entityData,permissions,globusURL){
           You do not have permission to modify this item.
         </Alert>
       )}
-      {/* <Box sx={{textAlign: "right"  }}>
-      </Box> */}
     </Grid>
   )
 }
@@ -1027,6 +1025,9 @@ function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
   let label;
   switch (creation_action) {
+    case "Create Publication Activity":
+      label = "This is a Publication";
+      break;
     case "Create Dataset Activity":
       label = "This is a Primary Dataset";
       break;
