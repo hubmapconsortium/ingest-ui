@@ -76,7 +76,7 @@ export const COLUMN_DEF_DATASET = [
           return nullCell();
         }
         return (
-          <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "4px", backgroundColor: "#f0f0f0", fontFamily:"monospace", borderRadius:"10px"}}>{params.row?.lab_dataset_id || params.row?.lab_tissue_sample_id || params.row?.lab_donor_id}</Typography>
+          <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "4px", backgroundColor: "#f0f0f0", fontFamily:"monospace", borderRadius:"6px"}}>{params.row?.lab_dataset_id || params.row?.lab_tissue_sample_id || params.row?.lab_donor_id}</Typography>
         )
       }
   },
