@@ -72,7 +72,7 @@ export const RevertFeature = (props) => {
         // border="#000000"
         effect='solid'>
         <p sx={{ color: "black!important", maxWidth: "160px", fontSize: "inherent"}}>
-          Revert this <span sx={{color: 'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
+          Revert this <span sx={{color: 'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='qa' className={ 'badge '+getPublishStatusColor('APPROVAL')}>Approval</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
       </ReactTooltip>
       <Button variant="contained" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
       <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open ? open.toString() : false} fullWidth={true} maxWidth={"sm"}>
@@ -98,7 +98,7 @@ export const RevertFeature = (props) => {
               </Alert>
             )}
             <Typography >
-              Choose a status to revert this <span className="text-da nger">{type}</span> to, then click [Revert] to apply your changes
+              Choose a status to revert this <span className="text-da nger">{type}</span> to, then click <code>[Revert]</code> to apply your changes <br /> &nbsp;
             </Typography>
             
             <FormControl fullWidth>
@@ -111,6 +111,7 @@ export const RevertFeature = (props) => {
               <MenuItem value={"Valid"}>Valid</MenuItem>
               <MenuItem value={"Invalid"}>Invalid</MenuItem>
               <MenuItem value={"QA"}>QA</MenuItem>
+              <MenuItem value={"Approval"}>Approval</MenuItem>
               <MenuItem value={"Submitted"}>Submitted</MenuItem>
               <MenuItem value={"Incomplete"}>Incomplete</MenuItem>
               </Select>
@@ -118,7 +119,8 @@ export const RevertFeature = (props) => {
           </DialogContent>
           <DialogActions>
             <Button
-              className="btn btn-primary mr-1"
+              variant="outlined"
+              className="mr-1"
               onClick={handleClose}>
               Close
             </Button>
@@ -126,7 +128,7 @@ export const RevertFeature = (props) => {
               className=""
               loading={submittingUpdate}
               onClick={handleStatusSet}
-              variant="outlined">
+              variant="contained">
               Revert
             </LoadingButton>          
           </DialogActions>

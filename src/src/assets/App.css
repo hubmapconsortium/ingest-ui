@@ -924,14 +924,14 @@ svg.invalid {
   color: #fff!important;
   background-color: #9933cc!important;
 }
-.badge-incomplete {
+.badge-incomplete{
   background-color: rgb(255, 193, 7)!important;
   color: rgb(33, 37, 41)!important;
 }
-
-status
-
-
+.badge-yellow {
+  background-color: #f5e537!important;
+  color: white!important;
+}
 
 /* Blue: QA, Submitted, REORGANIZED 
 // Green: PUBLISHED, VALID 
@@ -1463,11 +1463,11 @@ status
 }
   
   .hoverRise {
-    background: #eeeeee20;
+    background: #eeeeee40;
     text-decoration: none;
     padding: 3px 5px;
     border-radius: 10px;
-    border: 1px solid rgba(13, 110, 253, 3%);
+    border: 1px solid #aaaaaa30;
   }
   
   .hoverRiseContainer:hover .hoverRise {

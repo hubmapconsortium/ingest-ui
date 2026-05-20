@@ -165,9 +165,6 @@ export function ingest_api_allowable_edit_states_statusless(uuid) {
  *
  */
 export function ingest_api_create_dataset(data) { 
-  // console.debug("ingest_api_create_dataset", data);
-  
-
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/datasets`;
   return axios 
      .post(url, data, options)

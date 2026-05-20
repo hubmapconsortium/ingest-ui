@@ -23,8 +23,9 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import {CombinedWholeEntityOptions,badgeClass} from "./ui/formParts";
+import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
+import {badgeClass} from "../utils/badgeClasses";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import {toTitleCase} from "../utils/string_helper";
@@ -52,6 +53,7 @@ export function Search({
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
   var [chipSelect, setChipSelect] = useState([]);
+  var [chipExclude, setChipExclude] = useState([]);
   var [pulseMap, setPulseMap] = useState({});
   // rename local state to avoid shadowing the incoming prop 'initialSearchFilters'
   var [searchFiltersState, setSearchFiltersState] = useState(initialSearchFilters);
@@ -144,6 +146,18 @@ export function Search({
         if (statusList.length > 0) {
           setChipSelect(statusList);
           paramsObj.status = statusList;
+        }
+      }
+      // excluded status (does not include) may be provided as `status_not`
+      const statusNotParams = params.getAll('status_not');
+      if (statusNotParams && statusNotParams.length > 0) {
+        const statusNotList = statusNotParams
+          .flatMap((s) => s.split(','))
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (statusNotList.length > 0) {
+          setChipExclude(statusNotList);
+          paramsObj.status_not = statusNotList;
         }
       }
 
@@ -407,14 +421,26 @@ export function Search({
 
   function statusFilter(e, status){
     console.debug('%c◉ e ', 'color:#00ff7b', e, status);
-    // Toggle selection using React state so the component re-renders immediately
-    setChipSelect((prev) => {
-      if (!Array.isArray(prev)) return [status];
-      if (prev.includes(status)) {
-        return prev.filter((item) => item !== status);
-      }
-      return [...prev, status];
-    });
+    // Cycle: not selected -> included -> excluded -> not selected
+    if (chipSelect.includes(status)) {
+      // included -> move to excluded
+      setChipSelect((prev) => prev.filter((item) => item !== status));
+      setChipExclude((prev) => {
+        if (!Array.isArray(prev)) return [status];
+        if (prev.includes(status)) return prev;
+        return [...prev, status];
+      });
+    } else if (chipExclude.includes(status)) {
+      // excluded -> remove exclusion (back to unselected)
+      setChipExclude((prev) => prev.filter((item) => item !== status));
+    } else {
+      // unselected -> include
+      setChipSelect((prev) => {
+        if (!Array.isArray(prev)) return [status];
+        if (prev.includes(status)) return prev;
+        return [...prev, status];
+      });
+    }
     // trigger one-shot pulse animation
     setPulseMap((prev) => ({...prev, [status]: true}));
   }
@@ -422,6 +448,7 @@ export function Search({
   function renderStatusControls() {
     let colorMap = {  
       "QA": '#17a2b8', 
+      "Approval": '#f5e537', 
       "Submitted": '#17a2b8', 
       "Reorganized": '#17a2b8', 
       "Published": '#0ecd3a', 
@@ -432,10 +459,11 @@ export function Search({
       "Incomplete": '#ffc107', 
       "New": '#9933cc', 
     }
-    let statusOptions = ["Published", "QA", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
+    let statusOptions = ["Published", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
     return(<> 
       {statusOptions.map((status, i) => {
         const isSelected = chipSelect.includes(status);
+        const isExcluded = chipExclude.includes(status);
         const baseBorder = `1px solid ${colorMap[status]}`;
         const hoverGlow = (c) => `0 0 4px ${c}44`;
         const activeGlow = (c) => `0 0 4px ${c}99`;
@@ -497,12 +525,25 @@ export function Search({
           };
         }
 
+        const sxExcluded = {
+          fontSize: '0.7rem',
+          margin: '3px',
+          backgroundColor: '#e6e6e6',
+          color: '#666',
+          textDecoration: 'line-through',
+          textDecorationColor: '#999',
+          border: '1px solid #cfcfcf',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: '#dcdcdc',
+          },
+        };
         return (
           <Chip
             key={i}
             variant={isSelected ? 'filled' : 'outlined'}
-            sx={isSelected ? sxSelected : sxUnselected}
-            className={isSelected ? badgeClass(status) : 'statusChipUnselected'}
+            sx={isSelected ? sxSelected : isExcluded ? sxExcluded : sxUnselected}
+            className={isSelected ? badgeClass(status) : isExcluded ? 'statusChipExcluded' : 'statusChipUnselected'}
             label={status.toUpperCase()}
             size="small"
             onClick={(e) => statusFilter(e, status)}
@@ -874,6 +915,16 @@ export function Search({
     } 
     if(chipSelect.length > 0){
       params["status"] = chipSelect;
+      url.searchParams.set('status', chipSelect.join(','));
+    }
+    if (chipExclude.length > 0) {
+      params["status_not"] = chipExclude;
+      url.searchParams.set('status_not', chipExclude.join(','));
+    } else {
+      url.searchParams.delete('status_not');
+    }
+    if (chipSelect.length === 0) {
+      url.searchParams.delete('status');
     }
     
     // If we're not in a special mode, push URL to window

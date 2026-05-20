@@ -9,7 +9,7 @@ import PublicOffIcon from '@mui/icons-material/PublicOff';
 import PublicIcon from '@mui/icons-material/Public';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 
 
 // @TODO: Strip the Status/Style wrapping back into where its being used &
@@ -141,12 +141,13 @@ export function OrganIcons(organ){
 }
 
 export function CreationActionIcon(action){
-  // Accept either a string or an object like { action: '...' } or { creation_action: '...' }
-  const act = typeof action === 'string' ? action : (action && (action.action || action.creation_action)) || '';
-  switch (act) {
+  switch (action) {
     case "Create Dataset Activity":
       console.log('%c◉ Create Dataset Activity Found',  'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCube} />);
+    case "Create Publication Activity":
+      console.log('%c◉ Create Publication Activity Found',  'background:#8b6eff; color:#fff');
+      return (<FontAwesomeIcon icon={faNewspaper} />);
     case "External Process":
       console.log('%c◉ External Process Found',  'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faStar} />);
@@ -160,11 +161,6 @@ export function CreationActionIcon(action){
       return null;
   }
 }
-
-// export function ReturnCreationActionIcon(creation_action) {
-
-// }
-
 
 export function AccessLevelIcon(level){
   console.debug('%c◉ AccessLevelIcon ', 'color:#487cff', level);
