@@ -98,7 +98,7 @@ export function api_search(params){
     } );
 }
 
-export function api_search2(params, auth, from, size, fields){
+export function api_search2(params, from, size, fields){
   let payload = search_api_filter_es_query_builder(params, from, size, fields);
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)

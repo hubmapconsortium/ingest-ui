@@ -17,6 +17,7 @@ import TextField from '@mui/material/TextField';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -26,6 +27,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
+import SaveAsIcon from '@mui/icons-material/SaveAs';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
@@ -74,6 +76,16 @@ export function Search({
     // if parent provided initial filters, treat like URL-driven initial search
     urlParamsAppliedRef.current = true;
   }
+
+  // Saved searches (persisted in localStorage)
+  var [savedSearches, setSavedSearches] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    } catch (e) {
+      return [];
+    }
+  });
+  var [saveName, setSaveName] = useState("");
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -358,7 +370,6 @@ export function Search({
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
-      JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
       pageSize,
       fieldSearchSet,
@@ -514,6 +525,61 @@ export function Search({
     }
     // trigger one-shot pulse animation
     setPulseMap((prev) => ({...prev, [status]: true}));
+  }
+
+  // Saved-search helpers
+  function saveCurrentSearch() {
+    try {
+      const name = (saveName || "").trim();
+      if (!name) return;
+      const params = Object.assign({}, formFilters || {});
+      // include status selections
+      params.status = Array.isArray(chipSelect) ? chipSelect : [];
+      params.status_not = Array.isArray(chipExclude) ? chipExclude : [];
+      // persist
+      const filtered = savedSearches.filter((s) => s.name !== name);
+      const newList = [...filtered, { name: name, params: params }];
+      setSavedSearches(newList);
+      localStorage.setItem("savedSearches", JSON.stringify(newList));
+      setSaveName("");
+    } catch (err) {
+      console.debug('Error saving search', err);
+    }
+  }
+
+  function applySavedSearch(item) {
+    if (!item || !item.params) return;
+    const p = item.params;
+    // Update form fields and chips
+    setFormFilters((prev) => ({ ...(prev || {}), ...(p || {}) }));
+    setChipSelect(Array.isArray(p.status) ? p.status : []);
+    setChipExclude(Array.isArray(p.status_not) ? p.status_not : []);
+    // Build URL and push
+    const url = new URL(window.location);
+    // Clear current search params
+    url.search = "";
+    Object.keys(p).forEach((k) => {
+      const v = p[k];
+      if (Array.isArray(v)) {
+        if (v.length) url.searchParams.set(k, v.join(','));
+      } else if (v !== undefined && v !== null && v !== "") {
+        url.searchParams.set(k, v);
+      }
+    });
+    window.history.pushState({}, "", url);
+    setSearchFiltersState(p);
+    lastAppliedFiltersRef.current = p;
+    setFieldsChanged(false);
+  }
+
+  function deleteSavedSearch(name) {
+    try {
+      const newList = savedSearches.filter((s) => s.name !== name);
+      setSavedSearches(newList);
+      localStorage.setItem("savedSearches", JSON.stringify(newList));
+    } catch (err) {
+      console.debug('Error deleting saved search', err);
+    }
   }
 
   function renderStatusControls() {
@@ -763,30 +829,125 @@ export function Search({
               );
             })}
           </Select>
-          <Box sx={{display: 'flex', justifyContent: 'flex-start', flexDirection: 'row', mt: 1}}>
-
-            <Box>
-              <Typography variant="caption"> </Typography>
+          <Grid container spacing={1} sx={{mt: 1}}>
+            <Grid item xs={12} sx={{display: 'flex', alignItems: 'center'}}>
               <Button
                 startIcon={<SwapVertIcon />}
                 className="HBM_DarkBlueButton"
-                size="small" sx={{color:"#ffffff", fontSize: "0.6rem", textTransform: "none"}} 
-                title={sortDir === 'asc' ? 'Invert sort (currently ascending)' : 'Invert sort (currently descending)'} onClick={(e) => {
+                size="small"
+                sx={{color: "#ffffff", fontSize: "0.6rem", textTransform: "none"}}
+                title={sortDir === 'asc' ? 'Invert sort (currently ascending)' : 'Invert sort (currently descending)'}
+                onClick={(e) => {
                   const newDir = sortDir === 'asc' ? 'desc' : 'asc';
                   setSortDir(newDir);
                   setFormFilters((prev) => ({...prev, sort_dir: newDir}));
-                  // update URL and trigger a search
                   const url = new URL(window.location);
                   url.searchParams.set('sort_dir', newDir);
                   window.history.pushState({}, "", url);
                   setPage(0);
                   setSearchFiltersState((prev) => ({...(prev || {}), sort_dir: newDir}));
-                }}>
+                }}
+              >
                 Sort: {sortDir === 'asc' ? 'Ascending' : 'Descending'}
               </Button>
-            </Box>
+            </Grid>
 
-          </Box>
+            <Grid item xs={12}>
+                <Box className="searchFieldLabel" id="SearchLabelGroup" >
+                  <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+                  <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
+                </Box>
+                <Box sx={{display: 'flex', gap: 1, alignItems: 'center', width: '100%'}}>
+                  
+                {savedSearches.length === 0 ? (
+                  <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
+                ) : (
+                  savedSearches.map((s, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        position: 'relative',
+                        // on hover, reveal the delete half (it will overlap the apply button)
+                        '&:hover .savedDelete': { width: 36, opacity: 1,  },
+                      }}>
+                      <Chip
+                        size="small"
+                        clickable
+                        onClick={() => applySavedSearch(s)}
+                        className="savedApply"
+                        label={s.name}
+                        sx={{
+                          textTransform: 'none',
+                          background: "linear-gradient(180deg, #9AA0BC ,  #585E7A )",
+                          color: '#fff',
+                          borderRadius: '16px',
+                          fontSize: '0.85rem',
+                          height: 20,
+                          p: 0.4,
+                          mr: 0,
+                          boxShadow: '0 0 4px rgba(0,0,0,0.04)',
+                          border: '1px solid #585E7A',
+                          zIndex:2,
+                          transition: 'color 10ms cubic-bezier(.2,.8,.2,1), border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 160ms ease, transform 200ms cubic-bezier(.2,.9,.3,1)',
+                          '&:hover': {background: "linear-gradient(180deg, #9AA0BC ,  #9098bc )",color:'#fff', borderColor: '#97CDF6', boxShadow: '0 6px 12px rgba(0,0,0,0.06)', },
+                        }}
+                      />
+
+                      <Button
+                        size="small"
+                        onClick={() => deleteSavedSearch(s.name)}
+                        className="savedDelete"
+                        sx={{
+                          // start hidden but present for animation; it will overlap the apply button when visible
+                          width: 0,
+                          height:"20px",
+                          opacity: 0,
+                          transform: 'translateX(-6px)',
+                          overflow: 'hidden',
+                          ml: '-9px',
+                          borderRadius: '40px',
+                          bgcolor: '#e53935',
+                          border: '1px solid #ffffff70',
+                          color: '#fff',
+                          minWidth: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'width 240ms cubic-bezier(.2,.9,.3,1), opacity 180ms ease, transform 200ms ease, background-color 120ms ease',
+                          '&:hover': { bgcolor: '#d32f2f' },
+                          zIndex: 1,
+                        }}
+                        aria-label={`delete-${s.name}`}>
+                        <DeleteIcon sx={{height: '0.7em', width: '0.7em', marginLeft:"13px",}} />
+                      </Button>
+                    </Box>
+                  ))
+                )}
+                
+                </Box>
+
+              <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1}}>
+
+                  <Box>
+                    {/* <Typography sx={{flex:0.7}}>Save the current search as:</Typography> */}
+                    <TextField
+                      size="small"
+                      placeholder="Label & save as"
+                      value={saveName}
+                      onChange={(e) => setSaveName(e.target.value)}
+                      sx={{backgroundColor: '#fff', borderRadius: '10px', flex: 1, }}
+                      inputProps={{ 'aria-label': 'saved-search-name' }}
+                    />
+                    <Button size="small" variant="contained" className="HBM_DarkBlueButton" onClick={saveCurrentSearch} sx={{whiteSpace: 'nowrap'}}>Save</Button>
+                  </Box>
+
+              </Box>
+
+
+            </Grid>
+          </Grid>
         </Box>
       </FormControl>
     )
