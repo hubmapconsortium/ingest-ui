@@ -291,13 +291,17 @@ export function search_api_filter_es_query_builder(
     }
   }
 
+  // Allow client to request a sort field and direction via fields.sort_field and fields.sort_dir
+  const sortField = (fields && fields["sort_field"]) ? fields["sort_field"] : "last_modified_timestamp";
+  const sortDir = (fields && fields["sort_dir"]) ? fields["sort_dir"] : "asc";
+
   if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1 && !hasWildcard){
     console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", fields );
     requestBody
       .query(boolQuery)
       .from(from)
       .size(1)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort(sortField, sortDir))
       .source(colFields)
       .trackTotalHits(true);
   } else {
@@ -305,7 +309,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(size)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort(sortField, sortDir))
       .source(colFields)
       .trackTotalHits(true);
   }

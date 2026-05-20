@@ -25,7 +25,7 @@ const dry = args.includes('--dry-run');
 
 const releaseVersion = process.env.DD_VERSION || process.env.RELEASE || getGitShaShort() || require('../package.json').version;
 const service = process.env.DD_SERVICE || process.env.npm_package_name || 'ingest-ui';
-const envName = process.env.DD_ENV || process.env.NODE_ENV || 'production';
+const envName = 'local'
 const site = process.env.DATADOG_SITE || 'datadoghq.com';
 const apiKey = process.env.DATADOG_API_KEY;
 const minifiedPathPrefix = process.env.DD_MINIFIED_PATH_PREFIX || '/static/js';
@@ -47,8 +47,6 @@ const baseArgs = [
   releaseVersion,
   '--minified-path-prefix',
   minifiedPathPrefix,
-  '--env',
-  envName,
   '--site',
   site,
 ];
@@ -57,6 +55,7 @@ if (dry) baseArgs.push('--dry-run');
 // Need to sort out datadog ci npm 404 Complication
 // https://github.com/DataDog/datadog-ci/issues/1073
 // Submit New bug if necessary, related to AWS sitch
-// run('npx', ['datadog-ci', ...baseArgs], {});
+console.log(baseArgs)
+run('npx', ['datadog-ci', ...baseArgs], {});
 
-console.log('\nNot Run, see coments. Sorry bout that...');
+console.log('\nNot Run, see coments. Sorry bout that...\n');

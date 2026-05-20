@@ -28,6 +28,8 @@ import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
+import IconButton from '@mui/material/IconButton';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -63,8 +65,11 @@ export function Search({
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
+  var [sortDir, setSortDir] = useState("asc");
   const [ctrlPressed, setCtrlPressed] = useState(false);
   const urlParamsAppliedRef = useRef(false);
+  const lastAppliedFiltersRef = useRef(null);
+  var [fieldsChanged, setFieldsChanged] = useState(false);
   if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
     // if parent provided initial filters, treat like URL-driven initial search
     urlParamsAppliedRef.current = true;
@@ -135,6 +140,14 @@ export function Search({
       if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
       if (paramsObj.entity_type) newForm.entity_type = paramsObj.entity_type;
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
+      // sort direction may be provided as sort or sort_dir
+      if (paramsObj.sort_dir) {
+        newForm.sort_dir = paramsObj.sort_dir;
+        setSortDir(paramsObj.sort_dir);
+      } else if (paramsObj.sort) {
+        newForm.sort_dir = paramsObj.sort;
+        setSortDir(paramsObj.sort);
+      }
 
       // status may be repeated or comma-separated
       const statusParams = params.getAll('status');
@@ -164,6 +177,9 @@ export function Search({
       setFormFilters(newForm);
       // trigger the search effect by setting the searchFiltersState
       setSearchFiltersState(paramsObj);
+      // record that these filters were just applied so we can detect changes
+      lastAppliedFiltersRef.current = paramsObj;
+      setFieldsChanged(false);
       // reset pagination to first page
       setPage(0);
       // Do we need to open the Advanced Fields view?
@@ -175,6 +191,61 @@ export function Search({
       // ignore URL parse errors for now
     }
   }, [location.search]);
+
+  // Watch for changes to form fields compared to the last-applied filters
+  useEffect(() => {
+    const normalize = (o) => {
+      if (!o) return "";
+      try {
+        const copy = {};
+        Object.keys(o)
+          .sort()
+          .forEach((k) => {
+            const v = o[k];
+            if (Array.isArray(v)) {
+              copy[k] = [...v].slice().sort();
+            } else if (v && typeof v === 'object') {
+              copy[k] = JSON.stringify(v);
+            } else if (v === undefined || v === null) {
+              copy[k] = "";
+            } else {
+              copy[k] = String(v);
+            }
+          });
+        return JSON.stringify(copy);
+      } catch (err) {
+        return JSON.stringify(o);
+      }
+    };
+
+    const last = lastAppliedFiltersRef.current;
+    const current = Object.assign({}, formFilters || {}, {
+      status: Array.isArray(chipSelect) ? chipSelect : [],
+      status_not: Array.isArray(chipExclude) ? chipExclude : [],
+    });
+    const lastNorm = normalize(last);
+    const curNorm = normalize(current);
+    const changed = lastNorm !== curNorm;
+    setFieldsChanged(changed);
+  }, [formFilters, chipSelect, chipExclude]);
+
+  // Initialize baseline so the highlight is disabled on initial page load
+  useEffect(() => {
+    // If we already recorded applied filters (URL or initial), don't override
+    if (lastAppliedFiltersRef.current) return;
+    // If component was loaded with initialSearchFilters, treat that as applied
+    if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
+      lastAppliedFiltersRef.current = initialSearchFilters;
+      setFieldsChanged(false);
+      return;
+    }
+    // If URL params were applied, those code paths set lastAppliedFiltersRef already.
+    if (urlParamsAppliedRef.current) return;
+
+    // Otherwise, use the current formFilters as the baseline so the underline starts hidden
+    lastAppliedFiltersRef.current = formFilters || {};
+    setFieldsChanged(false);
+  }, []);
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
@@ -692,6 +763,30 @@ export function Search({
               );
             })}
           </Select>
+          <Box sx={{display: 'flex', justifyContent: 'flex-start', flexDirection: 'row', mt: 1}}>
+
+            <Box>
+              <Typography variant="caption"> </Typography>
+              <Button
+                startIcon={<SwapVertIcon />}
+                className="HBM_DarkBlueButton"
+                size="small" sx={{color:"#ffffff", fontSize: "0.6rem", textTransform: "none"}} 
+                title={sortDir === 'asc' ? 'Invert sort (currently ascending)' : 'Invert sort (currently descending)'} onClick={(e) => {
+                  const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+                  setSortDir(newDir);
+                  setFormFilters((prev) => ({...prev, sort_dir: newDir}));
+                  // update URL and trigger a search
+                  const url = new URL(window.location);
+                  url.searchParams.set('sort_dir', newDir);
+                  window.history.pushState({}, "", url);
+                  setPage(0);
+                  setSearchFiltersState((prev) => ({...(prev || {}), sort_dir: newDir}));
+                }}>
+                Sort: {sortDir === 'asc' ? 'Ascending' : 'Descending'}
+              </Button>
+            </Box>
+
+          </Box>
         </Box>
       </FormControl>
     )
@@ -822,15 +917,33 @@ export function Search({
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
-              <Button 
-                className="m-1 HBM_DarkBlueButton"
-                size="large"
-                sx={{width: "70%",}}
-                startIcon={<SearchIcon />}
-                onClick={(e) => handleSearchClick(e)}
-                variant="contained">
-                Search
-              </Button>
+              <Box sx={{width: '70%', position: 'relative', display: 'inline-block'}}>
+                <Button 
+                  className={"m-1 HBM_DarkBlueButton" + (fieldsChanged ? " highlight" : "")}
+                  size="large"
+                  sx={{width: "100%"}}
+                  startIcon={<SearchIcon />}
+                  onClick={(e) => handleSearchClick(e)}
+                  variant="contained">
+                  Search
+                </Button>
+                <Box
+                  aria-hidden
+                  sx={{
+                    height: '2px',
+                    position: 'absolute',
+                    left: 5,
+                    right: 0,
+                    bottom: -2,
+                    background: 'linear-gradient(90deg,#97cdf6, #90c1ea)',
+                    borderRadius: '2px',
+                    transformOrigin: 'left center',
+                    width: fieldsChanged ? '99%' : '0%',
+                    transition: 'width 260ms cubic-bezier(.2,.9,.3,1)',
+                    boxShadow: fieldsChanged ? '0 0 8px #97cdf6' : 'none'
+                  }}
+                />
+              </Box>
            </Grid>
           </Grid>
         </form>
@@ -859,6 +972,8 @@ export function Search({
     // Setting searchFiltersState to null causes the main effect to run the
     // default search (it treats falsy state as the default {entity_type: 'DonorSample'})
     setSearchFiltersState(null);
+    lastAppliedFiltersRef.current = null;
+    setFieldsChanged(false);
   }
 
   function handleSearchClick(event,reset) {
@@ -904,6 +1019,14 @@ export function Search({
     } else {
       url.searchParams.delete("group_uuid");
     }
+
+    // include sort direction if present
+    if (formFilters.sort_dir) {
+      params["sort_dir"] = formFilters.sort_dir;
+      url.searchParams.set('sort_dir', formFilters.sort_dir);
+    } else {
+      url.searchParams.delete('sort_dir');
+    }
     
     if (entityType && entityType !== "----" && entityType !== "DonorSample") {
       // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
@@ -932,6 +1055,9 @@ export function Search({
     document.title = "HuBMAP Ingest Portal Search"
     // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
+    // record last-applied filters so we can detect subsequent changes
+    lastAppliedFiltersRef.current = params;
+    setFieldsChanged(false);
   };
 
   return renderView();

@@ -79,6 +79,12 @@ body {
 .HBM_DarkBlueButton:hover{
     background-color: var(--HBM_BrightBlue)!important;
 }
+.HBM_DarkBlueButton.highlight{
+    background-color: var(--HBM_BrightBlue)!important;
+}
+.HBM_DarkBlueButton.highlight:hover{
+    background-color: #c1e2fa!important;
+}
 .HBM_DarkButton{
     background: linear-gradient(180deg, var(--HBM_BrightBlueCL) 0%,  var(--HBM_DarkBlueCL) 100%);
     background-color: var(--HBM_BrightBlueCLPlus)!important;  
