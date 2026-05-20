@@ -212,6 +212,15 @@ export function search_api_filter_es_query_builder(
     );
   }
 
+  // Excluded status: allow client to specify statuses to NOT include
+  if (fields["status_not"]) {
+    console.debug('%c◉ EXCLUDE STATUS ', 'color:#ff8800', fields["status_not"]);
+    let notQueryString = fields["status_not"].join(" OR ");
+    boolQuery.mustNot(
+      esb.matchQuery("status", notQueryString)
+    );
+  }
+
   // keywords handling: preserve HBM exact-match behavior, otherwise use
   // multiMatch for non-wildcard keywords. Wildcard keywords are handled
   // after this block by adding a queryStringQuery as a MUST so other
