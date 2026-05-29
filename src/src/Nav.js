@@ -12,9 +12,17 @@ import MenuItem from '@mui/material/MenuItem'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LoadingButton from '@mui/lab/LoadingButton'
 import {ingest_api_users_groups} from './service/ingest_api';
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import AddBoxIcon from '@mui/icons-material/AddBox'
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
+import DashboardIcon from '@mui/icons-material/Dashboard'
 
 export const Navigation = (props) => {
   // let navigate = useNavigate();
+  const theme = useTheme();
+  const isSmall = useMediaQuery('(max-width:1170px)');
   // If we're here because we tried making a new Dataset from the old url, show the warning popup 
   let[routingMessage, setRoutingMessage] = React.useState(window.location.pathname === "/new/dataset" ? ["Registering individual datasets is currently disabled.","/new/upload"] : null);
   let[userDataGroups, setUserDataGroups] = React.useState(JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null)
@@ -97,8 +105,9 @@ export const Navigation = (props) => {
           <Button
             target="_blank"
             href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
-            className="flat-link " >
-              Data Ingest Board
+            className="flat-link "
+            aria-label="Data Ingest Board">
+              { isSmall ? <DashboardIcon /> : 'Data Ingest Board' }
           </Button>
         </span>
       </React.Fragment>
@@ -118,8 +127,9 @@ export const Navigation = (props) => {
           aria-controls={open ? 'IndividualMenu' : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          onClick={(e) => handleClick(e)}>
-          { label.toString() }
+          onClick={(e) => handleClick(e)}
+          aria-label={label}>
+          { isSmall ? renderSectionIcon(label) : label.toString() }
         </Button>
         <Menu
           id="IndividualMenu"
@@ -136,6 +146,14 @@ export const Navigation = (props) => {
         </Menu>
       </React.Fragment>
     )
+  }
+
+  function renderSectionIcon(label){
+    const key = (label || '').toString().toLowerCase()
+    if(key.includes('individual')) return <AddBoxIcon />
+    if(key.includes('bulk')) return <LibraryAddIcon />
+    if(key.includes('upload') || key.includes('metadata') || key.includes('sample')) return <UploadFileIcon />
+    return <AddBoxIcon />
   }
   
   function renderMenuButton(to, label, index){

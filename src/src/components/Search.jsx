@@ -32,6 +32,7 @@ import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -934,13 +935,29 @@ export function Search({
                     {/* <Typography sx={{flex:0.7}}>Save the current search as:</Typography> */}
                     <TextField
                       size="small"
-                      placeholder="Label & save as"
+                      placeholder="Save Current Search As..."
                       value={saveName}
                       onChange={(e) => setSaveName(e.target.value)}
-                      sx={{backgroundColor: '#fff', borderRadius: '10px', flex: 1, }}
+                      sx={{
+                        marginTop:"10px",
+                        backgroundColor: '#fff', 
+                        borderRadius: '10px', 
+                        flex: 1,
+                         "& .MuiInputBase-input": { fontSize: 10, height: 4, padding: 1 }
+                      }}
+                      // sx={{backgroundColor: '#fff', borderRadius: '10px', flex: 1, height:"18px"}}
                       inputProps={{ 'aria-label': 'saved-search-name' }}
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position="end">
+                              <SaveAsIcon />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
                     />
-                    <Button size="small" variant="contained" className="HBM_DarkBlueButton" onClick={saveCurrentSearch} sx={{whiteSpace: 'nowrap'}}>Save</Button>
+                    {/* <Button size="small" sx={{height:"10px"}} variant="contained" className="HBM_DarkBlueButton" onClick={saveCurrentSearch} sx={{whiteSpace: 'nowrap'}}>Save</Button> */}
                   </Box>
 
               </Box>
