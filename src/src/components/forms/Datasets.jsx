@@ -495,7 +495,7 @@ export const DatasetForm = (props) => {
           </LoadingButton>
         )}
         {/* REVERT */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted"].includes(entityData.status.toLowerCase())) && (
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         {/*PROCESS */}
@@ -509,7 +509,7 @@ export const DatasetForm = (props) => {
             Process
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published", "qa", "approval"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published","retracted", "qa", "approval"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.submitFT}
             onClick={(e) => handleSubmitForTesting(e)}
@@ -531,7 +531,7 @@ export const DatasetForm = (props) => {
           </LoadingButton>
         )}
         {/* VALIDATE */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published", "processing"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted", "processing"].includes(entityData.status.toLowerCase())) && (
           <LoadingButton
             loading={loading.button.validate}
             onClick={(e) => handleValidateEntity(e)}
@@ -542,7 +542,7 @@ export const DatasetForm = (props) => {
           </LoadingButton>
         )}
         {/* SAVE  Changes*/}
-        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published", "qa", "approval"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && ["qa", "approval"].includes((entityData.status || "").toLowerCase()))) && (
+        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published","retracted", "qa", "approval"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && ["qa", "approval"].includes((entityData.status || "").toLowerCase()))) && (
           <LoadingButton
             loading={loading.button.save}
             name="save"
