@@ -942,8 +942,14 @@ svg.invalid {
 #statusSelectionSection .badge-Approval .MuiChip-label{
   color: #b7ac2a!important;
 }
+#statusSelectionSection .badge-Approval.MuiChip-filled .MuiChip-label{
+  color: #6b630a!important;
+}
 #statusSelectionSection .badge-Incomplete .MuiChip-label{
   color: #c29204!important;
+}
+#statusSelectionSection .badge-Incomplete.MuiChip-filled .MuiChip-label{
+  color: #6d5304!important;
 }
 
 /* Blue: QA, Submitted, REORGANIZED 
