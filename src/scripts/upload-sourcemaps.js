@@ -25,7 +25,7 @@ const dry = args.includes('--dry-run');
 
 const releaseVersion = process.env.DD_VERSION || process.env.RELEASE || getGitShaShort() || require('../package.json').version;
 const service = process.env.DD_SERVICE || process.env.npm_package_name || 'ingest-ui';
-const envName = 'local'
+const envName = process.env.DD_ENV || process.env.NODE_ENV || 'production';
 const site = process.env.DATADOG_SITE || 'datadoghq.com';
 const apiKey = process.env.DATADOG_API_KEY;
 const minifiedPathPrefix = process.env.DD_MINIFIED_PATH_PREFIX || '/static/js';
