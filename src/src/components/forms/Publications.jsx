@@ -131,6 +131,11 @@ export const PublicationForm = (props) => {
                     });
                   }
                   setPermissions(response.results);
+                    // Even if we're an admin,if the entity's been retracted then No Edits.
+                    // Period.
+                    if (entityData.status.toLowerCase() === "retracted") {
+                      setPermissions(prevVals => ({ ...prevVals, has_write_priv: false }));
+                    }
                 })
                 .catch((error) => {
                   setPageErrors(error);
