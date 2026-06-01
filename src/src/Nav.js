@@ -261,8 +261,7 @@ export const Navigation = (props) => {
                 height="40"
                 className="d-inline-block align-top"
                 id="MenuLogo"
-                alt="HuBMAP logo"
-              />
+                alt="HuBMAP logo"/>
             </a>
           </Typography>
           {userDataGroups && userDataGroups.length > 0 && userDataGroups !=="Non-active login" && (

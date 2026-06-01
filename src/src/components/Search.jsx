@@ -1,11 +1,7 @@
 import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
-
-// import { DataGrid } from '@material-ui/data-grid';
-
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
-
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from '@mui/material/Chip';
@@ -17,11 +13,13 @@ import TextField from '@mui/material/TextField';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
+import GradeIcon from '@mui/icons-material/Grade';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
@@ -96,6 +94,10 @@ export function Search({
     }
   });
   var [saveName, setSaveName] = useState("");
+  const [saveSectionOpen, setSaveSectionOpen] = useState(false);
+  const [savedSnack, setSavedSnack] = useState({ open: false, message: '', severity: 'info' });
+
+  const closeSavedSnack = () => setSavedSnack({ open: false, message: '', severity: 'info' });
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -673,6 +675,15 @@ export function Search({
       setSavedSearches(newList);
       localStorage.setItem("savedSearches", JSON.stringify(newList));
       setSaveName("");
+      setSaveSectionOpen(false);
+      try {
+        setSavedSnack({ open: true, message: 'Search Values Saved to Local Storage. Select at any time to apply.', severity: 'success' });
+        setTimeout(() => {
+          closeSavedSnack();
+        }, 3000);
+      } catch (e) {
+        // ignore
+      }
     } catch (err) {
       console.debug('Error saving search', err);
     }
@@ -681,33 +692,40 @@ export function Search({
   function applySavedSearch(item) {
     if (!item || !item.params) return;
     const p = item.params;
-    // Update form fields and chips
-    setFormFilters((prev) => ({ ...(prev || {}), ...(p || {}) }));
+    // Only populate the form fields and chips from the saved search.
+    // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
+    setFormFilters(p || {});
     setChipSelect(Array.isArray(p.status) ? p.status : []);
     setChipExclude(Array.isArray(p.status_not) ? p.status_not : []);
-    // Build URL and push
-    const url = new URL(window.location);
-    // Clear current search params
-    url.search = "";
-    Object.keys(p).forEach((k) => {
-      const v = p[k];
-      if (Array.isArray(v)) {
-        if (v.length) url.searchParams.set(k, v.join(','));
-      } else if (v !== undefined && v !== null && v !== "") {
-        url.searchParams.set(k, v);
-      }
-    });
-    window.history.pushState({}, "", url);
-    setSearchFiltersState(p);
-    lastAppliedFiltersRef.current = p;
-    setFieldsChanged(false);
+    // Indicate that form fields differ from last-applied filters so Save/Search UI updates
+    setFieldsChanged(true);
+    // Show feedback snackbar
+    try {
+      setSavedSnack({ open: true, message: 'Saved Values loaded successfully. Please click Search to apply changes', severity: 'info' });
+      setTimeout(() => {
+        closeSavedSnack();
+      }, 3000);
+    } catch (e) {
+      // ignore
+    }
   }
 
   function deleteSavedSearch(name) {
+    const savedName = typeof name === 'string' ? name : name?.name;
+    if (!savedName) return;
     try {
-      const newList = savedSearches.filter((s) => s.name !== name);
+      const newList = savedSearches.filter((s) => s.name !== savedName);
       setSavedSearches(newList);
       localStorage.setItem("savedSearches", JSON.stringify(newList));
+      // show snackbar indicating success
+      try {
+        setSavedSnack({ open: true, message: `Saved Search ${savedName} was successfully deleted.`, severity: 'success' });
+        setTimeout(() => {
+          closeSavedSnack();
+        }, 3000);
+      } catch (e) {
+        // ignore
+      }
     } catch (err) {
       console.debug('Error deleting saved search', err);
     }
@@ -964,112 +982,133 @@ export function Search({
           </Select>
           <Grid container spacing={1} sx={{mt: 1}}>
             <Grid item xs={12}>
-                <Box className="searchFieldLabel" id="SearchLabelGroup" >
-                  <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-                  <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
-                </Box>
-                <Box sx={{display: 'flex', gap: 1, alignItems: 'center', width: '100%'}}>
-                  
-                {savedSearches.length === 0 ? (
-                  <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
-                ) : (
-                  savedSearches.map((s, i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        position: 'relative',
-                        // on hover, reveal the delete half (it will overlap the apply button)
-                        '&:hover .savedDelete': { width: 36, opacity: 1,  },
-                      }}>
-                      <Chip
-                        size="small"
-                        clickable
-                        onClick={() => applySavedSearch(s)}
-                        className="savedApply"
-                        label={s.name}
-                        sx={{
-                          textTransform: 'none',
-                          background: "linear-gradient(180deg, #9AA0BC ,  #585E7A )",
-                          color: '#fff',
-                          borderRadius: '16px',
-                          fontSize: '0.85rem',
-                          height: 20,
-                          p: 0.4,
-                          mr: 0,
-                          boxShadow: '0 0 4px rgba(0,0,0,0.04)',
-                          border: '1px solid #585E7A',
-                          zIndex:2,
-                          transition: 'color 10ms cubic-bezier(.2,.8,.2,1), border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 160ms ease, transform 200ms cubic-bezier(.2,.9,.3,1)',
-                          '&:hover': {background: "linear-gradient(180deg, #9AA0BC ,  #9098bc )",color:'#fff', borderColor: '#97CDF6', boxShadow: '0 6px 12px rgba(0,0,0,0.06)', },
-                        }}
-                      />
-
-                      <Button
-                        size="small"
-                        onClick={() => deleteSavedSearch(s.name)}
-                        className="savedDelete"
-                        sx={{
-                          // start hidden but present for animation; it will overlap the apply button when visible
-                          width: 0,
-                          height:"20px",
-                          opacity: 0,
-                          transform: 'translateX(-6px)',
-                          overflow: 'hidden',
-                          ml: '-9px',
-                          borderRadius: '40px',
-                          bgcolor: '#e53935',
-                          border: '1px solid #ffffff70',
-                          color: '#fff',
-                          minWidth: 0,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'width 240ms cubic-bezier(.2,.9,.3,1), opacity 180ms ease, transform 200ms ease, background-color 120ms ease',
-                          '&:hover': { bgcolor: '#d32f2f' },
-                          zIndex: 1,
-                        }}
-                        aria-label={`delete-${s.name}`}>
-                        <DeleteIcon sx={{height: '0.7em', width: '0.7em', marginLeft:"13px",}} />
-                      </Button>
-                    </Box>
-                  ))
-                )}
-                
-                </Box>
-
-              <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1}}>
-
-                  <Box>
-                    {/* <Typography sx={{flex:0.7}}>Save the current search as:</Typography> */}
-                    <TextField
+              <Box className="searchFieldLabel" id="SearchLabelGroup" >
+                <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+                <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
+              </Box>
+              <Box sx={{display: 'flex', gap: 1, alignItems: 'center', width: '100%'}}> 
+              {savedSearches.length === 0 ? (
+                <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
+              ) : (
+                savedSearches.map((s, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      position: 'relative',
+                    }}>
+                    <Chip
                       size="small"
-                      placeholder="Save Current Search As..."
-                      value={saveName}
-                      onChange={(e) => setSaveName(e.target.value)}
+                      clickable
+                      onClick={(e) => { e.stopPropagation(); applySavedSearch(s); }}
+                      className="savedApply"
+                      onDelete={() => deleteSavedSearch(s.name)}
+                      label={s.name}
                       sx={{
-                        marginTop:"10px",
-                        backgroundColor: '#fff', 
-                        borderRadius: '10px', 
-                        flex: 1,
-                         "& .MuiInputBase-input": { fontSize: 10, height: 4, padding: 1 }
-                      }}
-                      // sx={{backgroundColor: '#fff', borderRadius: '10px', flex: 1, height:"18px"}}
-                      inputProps={{ 'aria-label': 'saved-search-name' }}
-                      slotProps={{
-                        input: {
-                          startAdornment: (
-                            <InputAdornment position="end">
-                              <SaveAsIcon />
-                            </InputAdornment>
-                          ),
+                        background: 'linear-gradient(180deg, #eceff3 0%, #d7dde5 100%)',
+                        color: '#3d4652',
+                        borderRadius: '999px',
+                        height: 24,
+                        px: 1.25,
+                        mr: 0,
+                        border: '1px solid #b7c0cb',
+                        minWidth: 'auto',
+                        lineHeight: 1,
+                        transition: 'background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease',
+                        '& .MuiChip-deleteIcon': {
+                          color: '#8a95a3',
+                          transition: 'color 140ms ease, transform 140ms ease, opacity 140ms ease',
+                        },
+                        '& .MuiChip-deleteIcon:hover': {
+                          color: '#e53935',
+                          transform: 'scale(1.08)',
+                        },
+                        '&:hover': {
+                          background: 'linear-gradient(180deg, #f6f8fa 0%, #d9e0e8 100%)',
+                          color:'#232a33',
+                          borderColor: '#95a3b3',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
                         },
                       }}
                     />
-                    {/* <Button size="small" sx={{height:"10px"}} variant="contained" className="HBM_DarkBlueButton" onClick={saveCurrentSearch} sx={{whiteSpace: 'nowrap'}}>Save</Button> */}
                   </Box>
+                ))
+              )}
+              <Snackbar
+                open={savedSnack.open}
+                autoHideDuration={3000}
+                onClose={closeSavedSnack}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              >
+                <Alert onClose={closeSavedSnack} severity={savedSnack.severity} sx={{ width: '100%' }}>
+                  {savedSnack.message}
+                </Alert>
+              </Snackbar>
+              </Box>
 
+              <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, width: '100%'}}>
+                <Box sx={{ width: '100%' }}>
+                  <Typography
+                    variant="caption"
+                    onClick={() => setSaveSectionOpen((prev) => !prev)}
+                    sx={{
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      userSelect: 'none',
+                    }}
+                  >
+                    Save current search as....
+                    {saveSectionOpen ? <KeyboardArrowUpIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                  </Typography>
+                  <Collapse in={saveSectionOpen} timeout={220} unmountOnExit>
+                    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
+                      <TextField
+                        size="small"
+                        className="savedSearchField"
+                        placeholder="Save Current Search As..."
+                        value={saveName}
+                        onChange={(e) => setSaveName(e.target.value)}
+                        sx={{
+                          backgroundColor: '#fff',
+                          borderRadius: '10px',
+                          width: '100%',
+                          maxWidth: 360,
+                          "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
+                        }}
+                        inputProps={{ 'aria-label': 'saved-search-name' }}
+                      />
+                      <Button
+                        size="small"
+                        variant="contained"
+                        className="HBM_DarkBlueButton saveSearchInline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          saveCurrentSearch();
+                        }}
+                        disabled={!saveName.trim()}
+                        startIcon={<SaveAsIcon />}
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          minWidth: 72,
+                          height: 24,
+                          px: 1,
+                          borderRadius: '999px',
+                          boxShadow: 'none',
+                          fontSize: '0.68rem',
+                          lineHeight: 1,
+                          flexShrink: 0,
+                        }}
+                        aria-label="save-current-search-inline">
+                        Save
+                      </Button>
+                    </Box>
+                  </Collapse>
+                </Box>
               </Box>
 
 
@@ -1209,6 +1248,7 @@ export function Search({
               <Box sx={{width: '70%', position: 'relative', display: 'inline-block'}}>
                 <Button 
                   className={"m-1 HBM_DarkBlueButton" + (fieldsChanged ? " highlight" : "")}
+                  id="applySearchButton"
                   size="large"
                   sx={{width: "100%"}}
                   startIcon={<SearchIcon />}

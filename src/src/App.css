@@ -111,6 +111,12 @@ body {
   display: inline-block;
 }
 
+#MenuLogo{
+  width: 100%;
+  height: auto;
+  max-height: 40px;
+}
+
 #MenuLeft {
   float: left;
 }
@@ -1442,6 +1448,18 @@ svg.invalid {
   border-color: #f44336;
   background:#f44336!important;
 
+}
+
+.savedSearchField{
+  z-index: 1;
+}
+.saveSearch{
+  width: 95%;
+  margin-left: auto!important;
+  margin-right: auto!important;
+  margin-top: -15px !important;
+  z-index: 0;
+  padding-top: 10px!important;
 }
 
 /* Coloring for a field in error on parts not wrapped */
