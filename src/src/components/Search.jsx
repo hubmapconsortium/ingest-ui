@@ -69,6 +69,15 @@ export function Search({
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
   var [sortDir, setSortDir] = useState("asc");
+  const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsNarrow(window.innerWidth < 775);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [ctrlPressed, setCtrlPressed] = useState(false);
   const urlParamsAppliedRef = useRef(false);
   const lastAppliedFiltersRef = useRef(null);
@@ -290,6 +299,127 @@ export function Search({
 
   // memoized csv options object for DataGrid toolbar
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
+
+  // compact locale text (icon-only) for narrow screens
+  const compactLocaleText = useMemo(() => ({
+    toolbarColumns: '',
+    toolbarColumnsLabel: '',
+    toolbarFilters: '',
+    toolbarFiltersLabel: '',
+    toolbarDensity: '',
+    toolbarDensityLabel: '',
+    toolbarExport: '',
+    toolbarExportLabel: '',
+    toolbarExportCSV: '',
+    toolbarExportPrint: '',
+  }), []);
+
+  // Custom toolbar that injects the Sort button into the GridToolbar without affecting layout
+  function CustomToolbar(props) {
+    // hide/show textual labels by directly mutating toolbar button text when needed
+    React.useEffect(() => {
+      try {
+        const toolbar = document.querySelector('#SearchDataGrid .MuiDataGrid-toolbarContainer');
+        if (!toolbar) return;
+        const buttons = toolbar.querySelectorAll('button.MuiButton-root');
+        buttons.forEach((btn) => {
+          // skip our custom sort control (has this class)
+          if (btn.classList.contains('HBM_DarkBlueButton')) return;
+          if (isNarrow) {
+            if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
+            const iconEl = btn.querySelector('.MuiButton-startIcon') || btn.querySelector('svg');
+            if (iconEl) {
+              btn.innerHTML = iconEl.outerHTML;
+            } else {
+              // fallback: remove text nodes
+              btn.childNodes.forEach((n) => { if (n.nodeType === Node.TEXT_NODE) n.textContent = ''; });
+            }
+          } else {
+            if (btn.dataset.origHtml) {
+              btn.innerHTML = btn.dataset.origHtml;
+              delete btn.dataset.origHtml;
+            }
+          }
+        });
+      } catch (e) {
+        // silent
+      }
+    }, [isNarrow]);
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          position: 'relative',
+          '& .MuiDataGrid-toolbarContainer': {
+            // ensure toolbar spans full width
+            width: '100%',
+          },
+          // responsive tweaks: icon-only toolbar when narrow
+          '@media (max-width:775px)': {
+            '& .MuiDataGrid-toolbarContainer button.MuiButton-root': {
+              minWidth: 40,
+              paddingLeft: 6,
+              paddingRight: 6,
+            },
+            // hide textual label content next to icons (covers multiple MUI versions)
+            '& .MuiDataGrid-toolbarContainer button.MuiButton-root .MuiButton-startIcon + *': { display: 'none' },
+            '& .MuiDataGrid-toolbarContainer button.MuiButton-root .MuiButton-label': { display: 'none' },
+            '& .MuiDataGrid-toolbarContainer button.MuiButton-root .MuiButton-startIcon': { display: 'inline-flex', marginRight: 0 },
+          },
+        }}
+      >
+        <GridToolbar {...props} />
+        {isNarrow ? (
+          <IconButton
+            aria-label={sortDir === 'asc' ? 'Invert sort (ascending)' : 'Invert sort (descending)'}
+            onClick={() => {
+              const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+              setSortDir(newDir);
+              setFormFilters((prev) => ({ ...prev, sort_dir: newDir }));
+              const url = new URL(window.location);
+              url.searchParams.set('sort_dir', newDir);
+              window.history.pushState({}, '', url);
+              setPage(0);
+              setSearchFiltersState((prev) => ({ ...(prev || {}), sort_dir: newDir }));
+            }}
+            sx={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: '#fff', zIndex: 3 }}
+          >
+            <SwapVertIcon />
+          </IconButton>
+        ) : (
+          <Button
+            startIcon={<SwapVertIcon />}
+            className="HBM_DarkBlueButton"
+            size="small"
+            sx={{
+              color: '#ffffff',
+              fontSize: '0.6rem',
+              textTransform: 'none',
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 3,
+              minWidth: 120,
+            }}
+            title={sortDir === 'asc' ? 'Invert sort (currently ascending)' : 'Invert sort (currently descending)'}
+            onClick={() => {
+              const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+              setSortDir(newDir);
+              setFormFilters((prev) => ({ ...prev, sort_dir: newDir }));
+              const url = new URL(window.location);
+              url.searchParams.set('sort_dir', newDir);
+              window.history.pushState({}, '', url);
+              setPage(0);
+              setSearchFiltersState((prev) => ({ ...(prev || {}), sort_dir: newDir }));
+            }}
+          >
+            Sort: {sortDir === 'asc' ? 'Ascending' : 'Descending'}
+          </Button>
+        )}
+      </Box>
+    );
+  }
 
   // stable handlers
   const handleTableCellClickDefault = useCallback((params, event, details) => {
@@ -764,7 +894,8 @@ export function Search({
           paginationMode="server"
           rowCount={searchState.rowCount}
           rows={searchState.dataRows}
-          slots={{ toolbar: GridToolbar }}
+          localeText={isNarrow ? compactLocaleText : undefined}
+          slots={{ toolbar: CustomToolbar }}
           slotProps={{
             toolbar: {
               csvOptions
@@ -831,28 +962,6 @@ export function Search({
             })}
           </Select>
           <Grid container spacing={1} sx={{mt: 1}}>
-            <Grid item xs={12} sx={{display: 'flex', alignItems: 'center'}}>
-              <Button
-                startIcon={<SwapVertIcon />}
-                className="HBM_DarkBlueButton"
-                size="small"
-                sx={{color: "#ffffff", fontSize: "0.6rem", textTransform: "none"}}
-                title={sortDir === 'asc' ? 'Invert sort (currently ascending)' : 'Invert sort (currently descending)'}
-                onClick={(e) => {
-                  const newDir = sortDir === 'asc' ? 'desc' : 'asc';
-                  setSortDir(newDir);
-                  setFormFilters((prev) => ({...prev, sort_dir: newDir}));
-                  const url = new URL(window.location);
-                  url.searchParams.set('sort_dir', newDir);
-                  window.history.pushState({}, "", url);
-                  setPage(0);
-                  setSearchFiltersState((prev) => ({...(prev || {}), sort_dir: newDir}));
-                }}
-              >
-                Sort: {sortDir === 'asc' ? 'Ascending' : 'Descending'}
-              </Button>
-            </Grid>
-
             <Grid item xs={12}>
                 <Box className="searchFieldLabel" id="SearchLabelGroup" >
                   <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
