@@ -724,10 +724,11 @@ export function Search({
       "Error": '#dc004e', 
       "Invalid": '#dc004e', 
       "Processing": '#424242', 
+      "Retracted": '#424242', 
       "Incomplete": '#ffc107', 
       "New": '#9933cc', 
     }
-    let statusOptions = ["Published", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
+    let statusOptions = ["Published", "Retracted", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
     return(<> 
       {statusOptions.map((status, i) => {
         const isSelected = chipSelect.includes(status);
@@ -811,7 +812,7 @@ export function Search({
             key={i}
             variant={isSelected ? 'filled' : 'outlined'}
             sx={isSelected ? sxSelected : isExcluded ? sxExcluded : sxUnselected}
-            className={isSelected ? badgeClass(status) : isExcluded ? 'statusChipExcluded' : 'statusChipUnselected'}
+            className={"badge-"+status+" "+ (isSelected ? badgeClass(status) : isExcluded ? 'statusChipExcluded' : 'statusChipUnselected')}
             label={status.toUpperCase()}
             size="small"
             onClick={(e) => statusFilter(e, status)}
@@ -1168,6 +1169,7 @@ export function Search({
                     <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
                   </Box>
                   <Box 
+                    id="statusSelectionSection"
                     sx={{
                       display: 'flex',
                       justifyContent: 'center',

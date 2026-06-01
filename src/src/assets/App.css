@@ -916,6 +916,11 @@ svg.invalid {
   color: white!important;
 }
 
+.badge-retracted {
+  background-color: #424242!important;
+  color: white!important;
+}
+
 .badge-danger {
   background-color: rgb(220, 0, 78)!important;
   color: white!important;
@@ -931,6 +936,20 @@ svg.invalid {
 .badge-yellow {
   background-color: #f5e537!important;
   color: white!important;
+}
+
+/* Specific to the white-bg chips in the Status Selection Section of the Advanced Search Tools */
+#statusSelectionSection .badge-Approval .MuiChip-label{
+  color: #b7ac2a!important;
+}
+#statusSelectionSection .badge-Approval.MuiChip-filled .MuiChip-label{
+  color: #6b630a!important;
+}
+#statusSelectionSection .badge-Incomplete .MuiChip-label{
+  color: #c29204!important;
+}
+#statusSelectionSection .badge-Incomplete.MuiChip-filled .MuiChip-label{
+  color: #6d5304!important;
 }
 
 /* Blue: QA, Submitted, REORGANIZED 

@@ -47,15 +47,20 @@ const baseArgs = [
   releaseVersion,
   '--minified-path-prefix',
   minifiedPathPrefix,
-  '--site',
-  site,
+  // note: newer datadog-ci releases don't accept `--site`; provide via env
 ];
 if (dry) baseArgs.push('--dry-run');
 
+// Some datadog-ci versions removed the `--env` option. Provide the
+// environment via `DD_ENV` instead and pass API key + site through env.
+const runEnv = {
+  DATADOG_API_KEY: apiKey || process.env.DATADOG_API_KEY,
+  DD_ENV: envName,
+  DATADOG_SITE: site,
+};
+
 // Need to sort out datadog ci npm 404 Complication
 // https://github.com/DataDog/datadog-ci/issues/1073
-// Submit New bug if necessary, related to AWS sitch
-console.log(baseArgs)
-run('npx', ['datadog-ci', ...baseArgs], {});
+run('npx', ['datadog-ci', ...baseArgs], runEnv);
 
-console.log('\nNot Run, see coments. Sorry bout that...\n');
+// console.log('\nNot Run, see coments. Sorry bout that...');
