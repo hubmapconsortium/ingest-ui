@@ -66,15 +66,19 @@ export const COLUMN_DEF_DATASET = [
       return <Typography sx={{fontWeight:'350', fontSize:'1em'}}>{params.value} </Typography>
     }
    },
-  { field: 'lab_dataset_id', headerName: 'Lab Name/ID', width: 200,
-    renderCell: params =>{
-      if (!params?.lab_dataset_id || params?.lab_dataset_id === "" || params?.lab_dataset_id === null) {
-        return nullCell();
-        // return <Skeleton sx={nullRowBarStyle} animation={false} />
-      }else{
-        return <Typography >{params?.lab_dataset_id} </Typography>
+  { field: 'lab_dataset_id', 
+    headerName: 'Lab Name/ID', 
+    width: 200,
+    valueGetter: getLabId,
+    renderCell: params => {
+        console.debug('%c◉ lab_dataset_id ', 'background:#00ff7b, color:#000000', params.row['lab_dataset_id']);
+        if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
+          return nullCell();
+        }
+        return (
+          <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "4px", backgroundColor: "#f0f0f0", fontFamily:"monospace", borderRadius:"6px"}}>{params.row?.lab_dataset_id || params.row?.lab_tissue_sample_id || params.row?.lab_donor_id}</Typography>
+        )
       }
-    }
   },
   { field: 'group_name', headerName: 'Group Name', width: 200,
     renderCell: params =>{
