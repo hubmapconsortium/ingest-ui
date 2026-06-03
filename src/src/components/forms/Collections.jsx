@@ -75,10 +75,10 @@ export const CollectionForm = (props) => {
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  let permissionSet = response.results;
-                  if (entityData?.doi_url || entityData?.registered_doi){
-                    permissionSet.has_write_priv = false
-                  }
+                  const permissionSet = {
+                    ...response.results,
+                    ...((entityData?.doi_url || entityData?.registered_doi) && { has_write_priv: false }),
+                  };
                   setPermissions(permissionSet);
                 })
                 .catch((error) => {

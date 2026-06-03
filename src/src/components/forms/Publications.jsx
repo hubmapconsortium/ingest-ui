@@ -124,17 +124,11 @@ export const PublicationForm = (props) => {
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  if (entityData.data_access_level === "public") {
-                    setPermissions({
-                      has_write_priv: false,
-                    });
-                  }
-                  setPermissions(response.results);
-                    // Even if we're an admin,if the entity's been retracted then No Edits.
-                    // Period.
-                    if (entityData.status.toLowerCase() === "retracted") {
-                      setPermissions(prevVals => ({ ...prevVals, has_write_priv: false }));
-                    }
+                  const updatedPermissions = {
+                    ...response.results,
+                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                  };
+                  setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
                   setPageErrors(error);

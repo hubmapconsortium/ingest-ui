@@ -172,19 +172,17 @@ export const DatasetForm = (props) => {
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  if (entityData.data_access_level === "public") {
+                  const updatedPermissions = {
+                    ...response.results,
+                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                  };
+                  if (entityData.data_access_level === "public" || updatedPermissions.has_write_priv === false) {
                     setReadOnlySources(true);
-                    setPermissions({ has_write_priv: false });
                   }
-                  if(response.results.has_write_priv === false){
-                    setReadOnlySources(true);
-                  }
-                  setPermissions(response.results);
-                  // Even if we're an admin,if the entity's been retracted then No Edits.
-                  // Period.
                   if (entityData.status.toLowerCase() === "retracted") {
-                    setPermissions(prevVals => ({ ...prevVals, has_write_priv: false }));
+                    updatedPermissions.has_write_priv = false;
                   }
+                  setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
                   // console.error(error);

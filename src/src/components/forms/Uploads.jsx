@@ -170,12 +170,11 @@ export const UploadForm = (props) => {
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  setPermissions(response.results);
-                  if(entityData.data_access_level === "public"){
-                    setPermissions({
-                      has_write_priv: false,
-                    });
-                  }
+                  const updatedPermissions = {
+                    ...response.results,
+                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                  };
+                  setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
                   wrapUp(error)
