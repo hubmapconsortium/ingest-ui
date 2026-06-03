@@ -92,13 +92,11 @@ export const DonorForm = (props) => {
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  if(entityData.data_access_level === "public"){
-                    setPermissions({
-                      has_write_priv: false,
-                    });
-                    
-                  }
-                  setPermissions(response.results);
+                  const updatedPermissions = {
+                    ...response.results,
+                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                  };
+                  setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
                   // console.error("ingest_api_allowable_edit_states ERROR", error);

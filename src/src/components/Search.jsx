@@ -1,11 +1,7 @@
 import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
-import {DataGrid,GridToolbar,GridColDef} from "@mui/x-data-grid";
-
-// import { DataGrid } from '@material-ui/data-grid';
-
+import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
-
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from '@mui/material/Chip';
@@ -17,17 +13,23 @@ import TextField from '@mui/material/TextField';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
+import GradeIcon from '@mui/icons-material/Grade';
 import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
+import SaveAsIcon from '@mui/icons-material/SaveAs';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -43,6 +45,8 @@ import {api_search2} from "../service/search_api";
 import {OrganIcons, EntityIconsBasic} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
+
+const SIMPLE_COLUMNS = ["Donor", "Dataset", "Publication", "Upload", "Collection", "EPICollection"];
  
 export function Search({
   searchFilters: initialSearchFilters,
@@ -63,12 +67,37 @@ export function Search({
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
-  const [ctrlPressed, setCtrlPressed] = useState(false);
+  var [sortDir, setSortDir] = useState("asc");
+  const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsNarrow(window.innerWidth < 775);
+    }
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const urlParamsAppliedRef = useRef(false);
+  const lastAppliedFiltersRef = useRef(null);
+  var [fieldsChanged, setFieldsChanged] = useState(false);
   if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
     // if parent provided initial filters, treat like URL-driven initial search
     urlParamsAppliedRef.current = true;
   }
+
+  // Saved searches (persisted in localStorage)
+  var [savedSearches, setSavedSearches] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("savedSearches") || "[]");
+    } catch (e) {
+      return [];
+    }
+  });
+  var [saveName, setSaveName] = useState("");
+  const [saveSectionOpen, setSaveSectionOpen] = useState(false);
+  const [savedSnack, setSavedSnack] = useState({ open: false, message: '', severity: 'info' });
+
+  const closeSavedSnack = () => setSavedSnack({ open: false, message: '', severity: 'info' });
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -94,7 +123,6 @@ export function Search({
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
-  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection","EPICollection"];
 
   function resultFieldSet() {
     var fieldObjects = [];
@@ -110,20 +138,21 @@ export function Search({
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
   }
-  function errorReporting(error){
+  function errorReporting(){
     // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
 
   // If URL contains search params, prefill form and trigger a search.
   // Listen to location.search so Back/Forward navigation re-applies URL-driven searches.
   const location = useLocation();
+  const locationSearch = location.search;
   const navigate = useNavigate();
   useEffect(() => {
     try {
       // If the component was explicitly given initialSearchFilters, prefer that
       if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) return;
-      if (!location || !location.search) return;
-      const params = new URLSearchParams(location.search);
+      if (!locationSearch) return;
+      const params = new URLSearchParams(locationSearch);
       const entries = Array.from(params.entries());
       if (!entries || entries.length === 0) return;
       urlParamsAppliedRef.current = true;
@@ -135,6 +164,14 @@ export function Search({
       if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
       if (paramsObj.entity_type) newForm.entity_type = paramsObj.entity_type;
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
+      // sort direction may be provided as sort or sort_dir
+      if (paramsObj.sort_dir) {
+        newForm.sort_dir = paramsObj.sort_dir;
+        setSortDir(paramsObj.sort_dir);
+      } else if (paramsObj.sort) {
+        newForm.sort_dir = paramsObj.sort;
+        setSortDir(paramsObj.sort);
+      }
 
       // status may be repeated or comma-separated
       const statusParams = params.getAll('status');
@@ -164,6 +201,9 @@ export function Search({
       setFormFilters(newForm);
       // trigger the search effect by setting the searchFiltersState
       setSearchFiltersState(paramsObj);
+      // record that these filters were just applied so we can detect changes
+      lastAppliedFiltersRef.current = paramsObj;
+      setFieldsChanged(false);
       // reset pagination to first page
       setPage(0);
       // Do we need to open the Advanced Fields view?
@@ -174,7 +214,62 @@ export function Search({
     } catch (err) {
       // ignore URL parse errors for now
     }
-  }, [location.search]);
+  }, [initialSearchFilters, locationSearch]);
+
+  // Watch for changes to form fields compared to the last-applied filters
+  useEffect(() => {
+    const normalize = (o) => {
+      if (!o) return "";
+      try {
+        const copy = {};
+        Object.keys(o)
+          .sort()
+          .forEach((k) => {
+            const v = o[k];
+            if (Array.isArray(v)) {
+              copy[k] = [...v].slice().sort();
+            } else if (v && typeof v === 'object') {
+              copy[k] = JSON.stringify(v);
+            } else if (v === undefined || v === null) {
+              copy[k] = "";
+            } else {
+              copy[k] = String(v);
+            }
+          });
+        return JSON.stringify(copy);
+      } catch (err) {
+        return JSON.stringify(o);
+      }
+    };
+
+    const last = lastAppliedFiltersRef.current;
+    const current = Object.assign({}, formFilters || {}, {
+      status: Array.isArray(chipSelect) ? chipSelect : [],
+      status_not: Array.isArray(chipExclude) ? chipExclude : [],
+    });
+    const lastNorm = normalize(last);
+    const curNorm = normalize(current);
+    const changed = lastNorm !== curNorm;
+    setFieldsChanged(changed);
+  }, [initialSearchFilters, formFilters, chipSelect, chipExclude]);
+
+  // Initialize baseline so the highlight is disabled on initial page load
+  useEffect(() => {
+    // If we already recorded applied filters (URL or initial), don't override
+    if (lastAppliedFiltersRef.current) return;
+    // If component was loaded with initialSearchFilters, treat that as applied
+    if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
+      lastAppliedFiltersRef.current = initialSearchFilters;
+      setFieldsChanged(false);
+      return;
+    }
+    // If URL params were applied, those code paths set lastAppliedFiltersRef already.
+    if (urlParamsAppliedRef.current) return;
+
+    // Otherwise, use the current formFilters as the baseline so the underline starts hidden
+    lastAppliedFiltersRef.current = formFilters || {};
+    setFieldsChanged(false);
+  }, []);
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
@@ -206,6 +301,121 @@ export function Search({
 
   // memoized csv options object for DataGrid toolbar
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
+
+  // compact locale text (icon-only) for narrow screens
+  const compactLocaleText = useMemo(() => ({
+    toolbarColumns: '',
+    toolbarColumnsLabel: '',
+    toolbarFilters: '',
+    toolbarFiltersLabel: '',
+    toolbarDensity: '',
+    toolbarDensityLabel: '',
+    toolbarExport: '',
+    toolbarExportLabel: '',
+    toolbarExportCSV: '',
+    toolbarExportPrint: '',
+  }), []);
+
+  const toolbarButtonSx = {
+    minWidth: 0,
+    width: '100%',
+    justifyContent: 'center',
+    whiteSpace: 'nowrap',
+  };
+
+  const toolbarIconOnlyButtonSx = {
+    minWidth: 0,
+    width: '100%',
+    px: 0.75,
+    justifyContent: 'center',
+    '& .MuiButton-startIcon': {
+      marginRight: 0,
+    },
+    '& .MuiButton-startIcon + *': {
+      display: 'none',
+    },
+  };
+
+  const toolbarItemSx = isNarrow
+    ? { flex: '1 1 0', minWidth: 0, display: 'flex' }
+    : { flex: '0 0 auto', display: 'flex' };
+
+  function handleSortToggle() {
+    const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+    setSortDir(newDir);
+    setFormFilters((prev) => ({ ...prev, sort_dir: newDir }));
+    const url = new URL(window.location);
+    url.searchParams.set('sort_dir', newDir);
+    window.history.pushState({}, '', url);
+    setPage(0);
+    setSearchFiltersState((prev) => ({ ...(prev || {}), sort_dir: newDir }));
+  }
+
+  // Custom toolbar keeps all controls in one responsive row so the sort button shares space evenly.
+  function CustomToolbar(props) {
+    return (
+      <GridToolbarContainer
+        sx={{
+          width: '100%',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          flexWrap: 'nowrap',
+        }}
+      >
+        <Box sx={toolbarItemSx}>
+          <Tooltip title="Columns" arrow>
+            <Box sx={{ width: '100%', display: 'flex' }}>
+              <GridToolbarColumnsButton sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+            </Box>
+          </Tooltip>
+        </Box>
+        <Box sx={toolbarItemSx}>
+          <Tooltip title="Filters" arrow>
+            <Box sx={{ width: '100%', display: 'flex' }}>
+              <GridToolbarFilterButton sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+            </Box>
+          </Tooltip>
+        </Box>
+        <Box sx={toolbarItemSx}>
+          <Tooltip title="Density" arrow>
+            <Box sx={{ width: '100%', display: 'flex' }}>
+              <GridToolbarDensitySelector sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+            </Box>
+          </Tooltip>
+        </Box>
+        <Box sx={toolbarItemSx}>
+          <Tooltip title="Export" arrow>
+            <Box sx={{ width: '100%', display: 'flex' }}>
+              <GridToolbarExport
+                csvOptions={props.csvOptions}
+                sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
+              />
+            </Box>
+          </Tooltip>
+        </Box>
+        <Box sx={toolbarItemSx}>
+          <Tooltip
+            title={sortDir === 'asc' ? 'Toggle sort (currently ascending by Last Modified Date)' : 'Toggle sort (currently descending by Last Modified Date)'}
+            arrow
+          >
+            <Box sx={{ width: '100%', display: 'flex' }}>
+              <Button
+                startIcon={<SwapVertIcon />}
+                color="inherit"
+                variant="text"
+                size="small"
+                onClick={handleSortToggle}
+                sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}>
+                {isNarrow ? '' : `Sort: ${sortDir === 'asc' ? 'Ascending' : 'Descending'}`}
+              </Button>
+            </Box>
+          </Tooltip>
+        </Box>
+      </GridToolbarContainer>
+    );
+  }
 
   // stable handlers
   const handleTableCellClickDefault = useCallback((params, event, details) => {
@@ -240,7 +450,7 @@ export function Search({
       console.debug('%c◉ Init/Url ', 'color:#00ff7b', );
       return;
     }
-    var searchFilterParams = searchFiltersState ? searchFiltersState : {  };
+    var searchFilterParams = searchFiltersState ? searchFiltersState : {};
     // set loading in reducer so results+loading can be updated together on response
     dispatchSearchState({ type: "SET", payload: { loading: true } });
 
@@ -287,7 +497,6 @@ export function Search({
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
-      JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
       pageSize,
       fieldSearchSet,
@@ -302,13 +511,13 @@ export function Search({
         }
         if (response.total > 0 && response.status === 200) {
           let colDefs;
-          console.debug('%c◉ simpleColumns', 'color:#F6FF00', simpleColumns);
+          console.debug('%c◉ simpleColumns', 'color:#F6FF00', SIMPLE_COLUMNS);
           console.debug('%c◉ searchFilterParams.entity_type', 'color:#F6FF00', searchFilterParams.entity_type);
-          console.debug('%c◉ simpleColumns.includes(searchFilterParams.entity_type) ', 'color:#002AFF', simpleColumns.includes(searchFilterParams.entity_type));
+          console.debug('%c◉ simpleColumns.includes(searchFilterParams.entity_type) ', 'color:#002AFF', SIMPLE_COLUMNS.includes(searchFilterParams.entity_type));
           if(searchFilterParams.entity_type === "Epicollection"){
             searchFilterParams.entity_type = "EPICollection";
           }
-          if(simpleColumns.includes(searchFilterParams.entity_type) ){
+          if(SIMPLE_COLUMNS.includes(searchFilterParams.entity_type) ){
             colDefs = columnDefType(searchFilterParams.entity_type);
             console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs, searchFilterParams.entity_type);
           }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
@@ -347,7 +556,7 @@ export function Search({
             dispatchSearchState({ type: "SET", payload: { loading: false } });
           }
       })
-      .catch((error) => {
+      .catch(() => {
         dispatchSearchState({ type: "SET", payload: { loading: false } });
         // errorReport(error)
         //props.reportError(error);
@@ -443,6 +652,77 @@ export function Search({
     }
     // trigger one-shot pulse animation
     setPulseMap((prev) => ({...prev, [status]: true}));
+  }
+
+  // Saved-search helpers
+  function saveCurrentSearch() {
+    try {
+      const name = (saveName || "").trim();
+      if (!name) return;
+      const params = Object.assign({}, formFilters || {});
+      // include status selections
+      params.status = Array.isArray(chipSelect) ? chipSelect : [];
+      params.status_not = Array.isArray(chipExclude) ? chipExclude : [];
+      // persist
+      const filtered = savedSearches.filter((s) => s.name !== name);
+      const newList = [...filtered, { name: name, params: params }];
+      setSavedSearches(newList);
+      localStorage.setItem("savedSearches", JSON.stringify(newList));
+      setSaveName("");
+      setSaveSectionOpen(false);
+      try {
+        setSavedSnack({ open: true, message: 'Search Values Saved to Local Storage. Select at any time to apply.', severity: 'success' });
+        setTimeout(() => {
+          closeSavedSnack();
+        }, 3000);
+      } catch (e) {
+        // ignore
+      }
+    } catch (err) {
+      console.debug('Error saving search', err);
+    }
+  }
+
+  function applySavedSearch(item) {
+    if (!item || !item.params) return;
+    const p = item.params;
+    // Only populate the form fields and chips from the saved search.
+    // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
+    setFormFilters(p || {});
+    setChipSelect(Array.isArray(p.status) ? p.status : []);
+    setChipExclude(Array.isArray(p.status_not) ? p.status_not : []);
+    // Indicate that form fields differ from last-applied filters so Save/Search UI updates
+    setFieldsChanged(true);
+    // Show feedback snackbar
+    try {
+      setSavedSnack({ open: true, message: 'Saved Values loaded successfully. Please click Search to apply changes', severity: 'info' });
+      setTimeout(() => {
+        closeSavedSnack();
+      }, 3000);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function deleteSavedSearch(name) {
+    const savedName = typeof name === 'string' ? name : name?.name;
+    if (!savedName) return;
+    try {
+      const newList = savedSearches.filter((s) => s.name !== savedName);
+      setSavedSearches(newList);
+      localStorage.setItem("savedSearches", JSON.stringify(newList));
+      // show snackbar indicating success
+      try {
+        setSavedSnack({ open: true, message: `Saved Search ${savedName} was successfully deleted.`, severity: 'success' });
+        setTimeout(() => {
+          closeSavedSnack();
+        }, 3000);
+      } catch (e) {
+        // ignore
+      }
+    } catch (err) {
+      console.debug('Error deleting saved search', err);
+    }
   }
 
   function renderStatusControls() {
@@ -627,7 +907,8 @@ export function Search({
           paginationMode="server"
           rowCount={searchState.rowCount}
           rows={searchState.dataRows}
-          slots={{ toolbar: GridToolbar }}
+          localeText={isNarrow ? compactLocaleText : undefined}
+          slots={{ toolbar: CustomToolbar }}
           slotProps={{
             toolbar: {
               csvOptions
@@ -693,6 +974,139 @@ export function Search({
               );
             })}
           </Select>
+          <Grid container spacing={1} sx={{mt: 1}}>
+            <Grid item xs={12}>
+              <Box className="searchFieldLabel" id="SearchLabelGroup" >
+                <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
+                <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
+              </Box>
+              <Box sx={{display: 'flex', gap: 1, alignItems: 'center', width: '100%'}}> 
+              {savedSearches.length === 0 ? (
+                <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
+              ) : (
+                savedSearches.map((s, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      position: 'relative',
+                    }}>
+                    <Chip
+                      size="small"
+                      clickable
+                      onClick={(e) => { e.stopPropagation(); applySavedSearch(s); }}
+                      className="savedApply"
+                      onDelete={() => deleteSavedSearch(s.name)}
+                      label={s.name}
+                      sx={{
+                        // background: 'linear-gradient(180deg, #eceff3 0%, #d7dde5 100%)',
+                        background: 'none', 
+                        color: '#fff',
+                        borderRadius: '999px',
+                        height: 24,
+                        px: 1.25,
+                        mr: 0,
+                        border: '1px solid #b7c0cb',
+                        minWidth: 'auto',
+                        lineHeight: 1,
+                        transition: 'background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease',
+                        '& .MuiChip-deleteIcon': {
+                          color: '#8a95a3',
+                          transition: 'color 140ms ease, transform 140ms ease, opacity 140ms ease',
+                        },
+                        '& .MuiChip-deleteIcon:hover': {
+                          color: '#e53935',
+                          transform: 'scale(1.08)',
+                        },
+                        '&:hover': {
+                          background: 'linear-gradient(180deg, #f6f8fa 0%, #d9e0e8 100%)',
+                          color:'#232a33',
+                          borderColor: '#95a3b3',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                        },
+                      }}
+                    />
+                  </Box>
+                ))
+              )}
+              <Snackbar
+                open={savedSnack.open}
+                autoHideDuration={3000}
+                onClose={closeSavedSnack}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              >
+                <Alert onClose={closeSavedSnack} severity={savedSnack.severity} sx={{ width: '100%' }}>
+                  {savedSnack.message}
+                </Alert>
+              </Snackbar>
+              </Box>
+
+              <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, width: '100%'}}>
+                <Box sx={{ width: '100%' }}>
+                  <Typography
+                    variant="caption"
+                    onClick={() => setSaveSectionOpen((prev) => !prev)}
+                    sx={{
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      userSelect: 'none',
+                    }}>
+                    Save current search as....
+                    {saveSectionOpen ? <KeyboardArrowUpIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                  </Typography>
+                  <Collapse in={saveSectionOpen} timeout={220} unmountOnExit>
+                    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
+                      <TextField
+                        size="small"
+                        className="savedSearchField"
+                        placeholder="Enter a label for your search"
+                        value={saveName}
+                        onChange={(e) => setSaveName(e.target.value)}
+                        sx={{
+                          backgroundColor: '#fff',
+                          borderRadius: '10px',
+                          width: '100%',
+                          maxWidth: 360,
+                          "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
+                        }}
+                        inputProps={{ 'aria-label': 'saved-search-name' }}/>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        className="HBM_DarkBlueButton saveSearchInline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          saveCurrentSearch();
+                        }}
+                        disabled={!saveName.trim()}
+                        startIcon={<SaveAsIcon />}
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          minWidth: 72,
+                          height: 24,
+                          px: 1,
+                          borderRadius: '999px',
+                          boxShadow: 'none',
+                          fontSize: '0.68rem',
+                          lineHeight: 1,
+                          flexShrink: 0,
+                        }}
+                        aria-label="save-current-search-inline">
+                        Save
+                      </Button>
+                    </Box>
+                  </Collapse>
+                </Box>
+              </Box>
+
+
+            </Grid>
+          </Grid>
         </Box>
       </FormControl>
     )
@@ -719,11 +1133,6 @@ export function Search({
     )
   }
 
-  function renderEntityIcon(entity_type){
-    let icon = EntityIconsBasic(entity_type,"5px")
-    return icon;
-  }
-  
   function renderNewFilterControls() {
     return (
 
@@ -740,7 +1149,6 @@ export function Search({
             spacing={0}
             sx={{
               textAlign: "left",
-              background: "#444a65",
               background: "linear-gradient(180deg, #585E7A ,  #444A65 )",
               width: "100%",
               color: "white",
@@ -824,15 +1232,34 @@ export function Search({
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
-              <Button 
-                className="m-1 HBM_DarkBlueButton"
-                size="large"
-                sx={{width: "70%",}}
-                startIcon={<SearchIcon />}
-                onClick={(e) => handleSearchClick(e)}
-                variant="contained">
-                Search
-              </Button>
+              <Box sx={{width: '70%', position: 'relative', display: 'inline-block'}}>
+                <Button 
+                  className={"m-1 HBM_DarkBlueButton" + (fieldsChanged ? " highlight" : "")}
+                  id="applySearchButton"
+                  size="large"
+                  sx={{width: "100%"}}
+                  startIcon={<SearchIcon />}
+                  onClick={(e) => handleSearchClick(e)}
+                  variant="contained">
+                  Search
+                </Button>
+                <Box
+                  aria-hidden
+                  sx={{
+                    height: '2px',
+                    position: 'absolute',
+                    left: 5,
+                    right: 0,
+                    bottom: -2,
+                    background: 'linear-gradient(90deg,#97cdf6, #90c1ea)',
+                    borderRadius: '2px',
+                    transformOrigin: 'left center',
+                    width: fieldsChanged ? '99%' : '0%',
+                    transition: 'width 260ms cubic-bezier(.2,.9,.3,1)',
+                    boxShadow: fieldsChanged ? '0 0 8px #97cdf6' : 'none'
+                  }}
+                />
+              </Box>
            </Grid>
           </Grid>
         </form>
@@ -861,6 +1288,8 @@ export function Search({
     // Setting searchFiltersState to null causes the main effect to run the
     // default search (it treats falsy state as the default {entity_type: 'DonorSample'})
     setSearchFiltersState(null);
+    lastAppliedFiltersRef.current = null;
+    setFieldsChanged(false);
   }
 
   function handleSearchClick(event,reset) {
@@ -869,12 +1298,13 @@ export function Search({
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
     console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    let params = {}; // Will become the searchFilters
+    var entityType;
     if(reset){
       entityType = "DonorSample";
       params["entity_type"] = "DonorSample";
     }
     var group_uuid = formFilters.group_uuid;
-    var entityType;
     if(formFilters.entity_type){
       entityType = formFilters.entity_type;
     }else if(formFilters.organ){
@@ -884,7 +1314,6 @@ export function Search({
     }
     var keywords = formFilters.keywords;
 
-    let params = {}; // Will become the searchFilters
     var url = new URL(window.location); // Only used outside in basic / homepage Mode
 
     if (keywords) {
@@ -905,6 +1334,14 @@ export function Search({
       url.searchParams.set("group_uuid", group_uuid);
     } else {
       url.searchParams.delete("group_uuid");
+    }
+
+    // include sort direction if present
+    if (formFilters.sort_dir) {
+      params["sort_dir"] = formFilters.sort_dir;
+      url.searchParams.set('sort_dir', formFilters.sort_dir);
+    } else {
+      url.searchParams.delete('sort_dir');
     }
     
     if (entityType && entityType !== "----" && entityType !== "DonorSample") {
@@ -934,6 +1371,9 @@ export function Search({
     document.title = "HuBMAP Ingest Portal Search"
     // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
+    // record last-applied filters so we can detect subsequent changes
+    lastAppliedFiltersRef.current = params;
+    setFieldsChanged(false);
   };
 
   return renderView();

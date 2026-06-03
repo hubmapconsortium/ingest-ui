@@ -115,7 +115,6 @@ export const PublicationForm = (props) => {
               });
               entity_api_get_globus_url(entityData.uuid)
                 .then((res) => {
-                  // console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
                   if(res && res.status === 200){
                     setGlobusPath(res.results);
                   }
@@ -125,17 +124,11 @@ export const PublicationForm = (props) => {
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
-                  if (entityData.data_access_level === "public") {
-                    setPermissions({
-                      has_write_priv: false,
-                    });
-                  }
-                  setPermissions(response.results);
-                    // Even if we're an admin,if the entity's been retracted then No Edits.
-                    // Period.
-                    if (entityData.status.toLowerCase() === "retracted") {
-                      setPermissions(prevVals => ({ ...prevVals, has_write_priv: false }));
-                    }
+                  const updatedPermissions = {
+                    ...response.results,
+                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                  };
+                  setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
                   setPageErrors(error);
@@ -362,7 +355,6 @@ export const PublicationForm = (props) => {
             if (response.status === 200) {
               entity_api_get_globus_url(response.results.uuid)
                 .then((res) => {
-                  // console.debug('%c◉ entity_api_get_globus_url:  ', 'color:#E7EEFF;background: #9359FF;padding:200',res);
                   let fullResult = { ...response.results, globus_path: res.results };
                   props.onCreated(fullResult);
                 })

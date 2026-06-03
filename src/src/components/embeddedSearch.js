@@ -185,7 +185,6 @@ export function EmbeddedSearch({
     var fieldSearchSet = resultFieldSet();
     api_search2(
       searchFilterParams,
-      JSON.parse(localStorage.getItem("info")).groups_token,
       page * pageSize,
       pageSize,
       fieldSearchSet,
