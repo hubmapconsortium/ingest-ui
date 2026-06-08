@@ -478,7 +478,7 @@ function infoPanels(entityData,permissions,globusURL){
         (<HIPPA />)
       }
       
-    {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && entityData.status === "Published")) && (
+    {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && ["published","retracted"].includes(entityData.status.toLowerCase()))) && (
         // They might not have write access but not because of data_access_level
         <Alert 
           severity="warning" 

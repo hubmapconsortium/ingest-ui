@@ -131,6 +131,11 @@ export const PublicationForm = (props) => {
                     });
                   }
                   setPermissions(response.results);
+                    // Even if we're an admin,if the entity's been retracted then No Edits.
+                    // Period.
+                    if (entityData.status.toLowerCase() === "retracted") {
+                      setPermissions(prevVals => ({ ...prevVals, has_write_priv: false }));
+                    }
                 })
                 .catch((error) => {
                   setPageErrors(error);
@@ -392,7 +397,7 @@ export const PublicationForm = (props) => {
     return (
       <Box sx={{ textAlign: "right" }}>
         {/* REVERT */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published"].includes(entityData.status.toLowerCase())) && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted"].includes(entityData.status.toLowerCase())) && (
           <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
         )}
         <LoadingButton
@@ -412,7 +417,7 @@ export const PublicationForm = (props) => {
             Save
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && entityData.status.toLowerCase() !== "published" && (
+        {uuid && uuid.length > 0 && permissions.has_admin_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
           <LoadingButton
             loading={buttonLoading['process']}
             name="process"
@@ -432,7 +437,7 @@ export const PublicationForm = (props) => {
             Submit
           </LoadingButton>
         )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() !== "published" && (
+        {uuid && uuid.length > 0 && permissions.has_write_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
           <LoadingButton
             loading={buttonLoading['save'] === true ? true : false}
             name="save"

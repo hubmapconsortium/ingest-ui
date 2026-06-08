@@ -41,6 +41,9 @@ export function getPublishStatusColor(status, itemID) {
         case "PUBLISHED":
           badge_class = "badge-success";
           break;
+        case "RETRACTED":
+          badge_class = "badge-retracted";
+          break;
         case "UNPUBLISHED":
           badge_class = "badge-light";
           break;
@@ -81,6 +84,7 @@ export function StatusList() {
     "LOCKED",
     "PROCESSING",
     "PUBLISHED",
+    "RETRACTED",
     "UNPUBLISHED",
     "DEPRECATED",
     "ERROR",
