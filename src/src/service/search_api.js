@@ -98,8 +98,8 @@ export function api_search(params){
     } );
 }
 
-export function api_search2(params, auth, from, size, fields){
-  let payload = search_api_filter_es_query_builder(params, from, size, fields);
+export function api_search2(params, from, size, fields, searchMode){
+  let payload = search_api_filter_es_query_builder(params, from, size, fields, searchMode);
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
     .then((res) => {
@@ -130,7 +130,8 @@ export function search_api_filter_es_query_builder(
   fields,
   from,
   size,
-  colFields
+  colFields,
+  searchMode
 ) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
@@ -291,13 +292,19 @@ export function search_api_filter_es_query_builder(
     }
   }
 
+  // Keep the original timestamp sort for embedded searches. The main search
+  // view still opts into custom sorting via the `newTable` marker.
+  const allowCustomSort = searchMode === "newTable";
+  const sortField = allowCustomSort && (fields && fields["sort_field"]) ? fields["sort_field"] : "last_modified_timestamp";
+  const sortDir = allowCustomSort && (fields && fields["sort_dir"]) ? fields["sort_dir"] : "asc";
+
   if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1 && !hasWildcard){
     console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", fields );
     requestBody
       .query(boolQuery)
       .from(from)
       .size(1)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort(sortField, sortDir))
       .source(colFields)
       .trackTotalHits(true);
   } else {
@@ -305,7 +312,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(size)
-      .sort(esb.sort("last_modified_timestamp", "asc"))
+      .sort(esb.sort(sortField, sortDir))
       .source(colFields)
       .trackTotalHits(true);
   }
@@ -315,7 +322,7 @@ export function search_api_filter_es_query_builder(
   return requestBody.toJSON();
   
 }
-
+ 
 /*
  * Elasticsearch Special query builder for returning multiple entities by UUID/Hubmap_id
  *
@@ -424,9 +431,6 @@ export function search_api_get_assay_set(scope){
       .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
       .then((res) => {
         let data = res.data;
-        let mapCheck = data.result.map((value) => {
-          return value;
-        } );
         // console.debug("API get_processed_assays data", data, mapCheck);
         return {data};
       } )

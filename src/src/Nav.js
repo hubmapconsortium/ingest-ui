@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {Link, useNavigate} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Alert from "@mui/material/Alert";
 import Box from '@mui/material/Box'
@@ -12,20 +12,56 @@ import MenuItem from '@mui/material/MenuItem'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LoadingButton from '@mui/lab/LoadingButton'
 import {ingest_api_users_groups} from './service/ingest_api';
+import useMediaQuery from '@mui/material/useMediaQuery'
+import AddBoxIcon from '@mui/icons-material/AddBox'
+import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+
+const MENU_SECTIONS = [
+  {
+    key: 'I',
+    label: 'Individual',
+    items: [
+      {to: '/new/donor', label: 'Donor'},
+      {to: '/new/sample', label: 'Sample'},
+      {to: '/new/publication', label: 'Publication'},
+      {to: '/new/collection', label: 'Collection - Dataset'},
+      {to: '/new/EPICollection', label: 'Collection - EPIC'}
+    ]
+  },
+  {
+    key: 'B',
+    label: 'Bulk',
+    items: [
+      {to: '/bulk/donors', label: 'Donors'},
+      {to: '/bulk/samples', label: 'Samples'},
+      {to: '/new/upload', label: 'Data'}
+    ]
+  },
+  {
+    key: 'S',
+    label: 'Upload Sample Metadata',
+    items: [
+      {to: '/metadata/block', label: 'Block'},
+      {to: '/metadata/section', label: 'Section'},
+      {to: '/metadata/suspension', label: 'Suspension'}
+    ]
+  }
+]
+
+const MENU_LOGO = 'https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png'
 
 export const Navigation = (props) => {
-  // let navigate = useNavigate();
+  const isMid = useMediaQuery('(max-width:1199px)');
+  // const isMid = useMediaQuery('(max-width:1170px)');
+  const isSmall = useMediaQuery('(max-width:1080px)');
   // If we're here because we tried making a new Dataset from the old url, show the warning popup 
   let[routingMessage, setRoutingMessage] = React.useState(window.location.pathname === "/new/dataset" ? ["Registering individual datasets is currently disabled.","/new/upload"] : null);
   let[userDataGroups, setUserDataGroups] = React.useState(JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null)
-  let[anchorEl, setAnchorEl] = React.useState({
-    I: null,
-    B: null,
-    S: null
-  })
-  let open_I = Boolean(anchorEl.I)
-  let open_B = Boolean(anchorEl.B)
-  let open_S = Boolean(anchorEl.S)
+  const showMenus = Array.isArray(userDataGroups) && userDataGroups.length > 0 && userDataGroups !== "Non-active login";
+  const [activeMenu, setActiveMenu] = React.useState(null)
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState(null)
 
   const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
@@ -50,92 +86,77 @@ export const Navigation = (props) => {
     }catch(err){
       throw new Error(err)
     }
-  }, [props])
+  }, [])
 
   const handleClick = (menu) => (event) => {
-    setAnchorEl(prevState => ({...prevState, [menu]: event.currentTarget}))
+    setActiveMenu(menu)
+    setMenuAnchorEl(event.currentTarget)
   }
 
   const handleClose = () => {
-    setAnchorEl({I: null, B: null, S: null})
-  }
-
-  const handleChange = (to) => {
-    setAnchorEl({I: null, B: null, S: null})
-    let url = new URL(window.location.href);
-    if(url.pathname === to){
-      setTimeout(() => {
-        window.location.assign(`${process.env.REACT_APP_URL}${to}`);
-      }, 500);    
-    }else{
-      window.location.assign(`${process.env.REACT_APP_URL}${to}`);
-    }
+    setActiveMenu(null)
+    setMenuAnchorEl(null)
   }
 
   function renderMenuButtonBar(){
     return(
       <React.Fragment>
-        {renderMenuSection('Individual', handleClick('I'), open_I, anchorEl.I, [
-          {to: '/new/donor', label: 'Donor'},
-          {to: '/new/sample', label: 'Sample'},
-          // {to: '/new/dataset', label: 'Dataset'},
-          {to: '/new/publication', label: 'Publication'},
-          {to: '/new/collection', label: 'Collection - Dataset'},
-          {to: '/new/EPICollection', label: 'Collection - EPIC'}
-        ])}
-        {renderMenuSection('Bulk', handleClick('B'), open_B, anchorEl.B, [
-          {to: '/bulk/donors', label: 'Donors'},
-          {to: '/bulk/samples', label: 'Samples'},
-          {to: '/new/upload', label: 'Data'}
-        ])}
-        {renderMenuSection('Upload Sample Metadata', handleClick('S'), open_S, anchorEl.S, [
-          {to: '/metadata/block', label: 'Block'},
-          {to: '/metadata/section', label: 'Section'},
-          {to: '/metadata/suspension', label: 'Suspension'}
-        ])}
+        {MENU_SECTIONS.map((section) => (
+          <React.Fragment key={section.key}>
+            {renderMenuSection(section, activeMenu === section.key, menuAnchorEl)}
+          </React.Fragment>
+        ))}
         <span className="board">
           <Button
             target="_blank"
+            sx={isMid ? {fontSize:"0.7em"} : {}}
             href={`${process.env.REACT_APP_INGEST_BOARD_URL}`}
-            className="flat-link " >
-              Data Ingest Board
+            className="flat-link "
+            aria-label="Data Ingest Board">
+              { isSmall ? <DashboardIcon /> : 'Data Ingest Board' }
           </Button>
         </span>
       </React.Fragment>
     )
   };
 
-  function renderMenuSection(label, handleClick, open, anchorEl, items){
-    const IDLabel = label.toString().replace(/\s+/g, '')
-    // @TODO: Investigate High Rerender around this
-    // console.debug('%c◉ anchorEl ', 'color:#00ff7b', anchorEl);
+  function renderMenuSection(section, open, anchorEl){
+    const IDLabel = section.label.toString().replace(/\s+/g, '')
     return(
       <React.Fragment>
         <Button
           id={`${IDLabel}IndividualButton`}
-          // key={`${IDLabel}IndividualButton` + Math.random()}
-          endIcon={<ArrowDropDownIcon />}
-          aria-controls={open ? 'IndividualMenu' : undefined}
+          sx={isMid ? {fontSize:"0.7em"} : {}}
+          aria-controls={open ? `${IDLabel}Menu` : undefined}
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
-          onClick={(e) => handleClick(e)}>
-          { label.toString() }
+          onClick={handleClick(section.key)}
+          aria-label={section.label}>
+          { isSmall ? renderSectionIcon(section.label) : section.label.toString() }
         </Button>
         <Menu
-          id="IndividualMenu"
+          id={`${IDLabel}Menu`}
           className='navMenu'
           anchorEl={anchorEl}
           open={open}
-          onClose={(e) => handleClose(e)}
+          onClose={handleClose}
           MenuListProps={{
-            'aria-labelledby': 'IndividualButton'
+            'aria-labelledby': `${IDLabel}IndividualButton`
           }}>
-          {items.map((item, index) => {
+          {section.items.map((item, index) => {
             return(renderMenuButton(item.to, item.label, index))
           })}
         </Menu>
       </React.Fragment>
     )
+  }
+
+  function renderSectionIcon(label){
+    const key = (label || '').toString().toLowerCase()
+    if(key.includes('individual')) return <AddBoxIcon />
+    if(key.includes('bulk')) return <LibraryAddIcon />
+    if(key.includes('upload') || key.includes('metadata') || key.includes('sample')) return <UploadFileIcon />
+    return <AddBoxIcon />
   }
   
   function renderMenuButton(to, label, index){
@@ -144,7 +165,8 @@ export const Navigation = (props) => {
         key={index}
         className="nav-link"
         component={Link}
-        onClick={() => handleChange(to)} >
+        to={to}
+        onClick={handleClose} >
         {label} 
       </MenuItem>
     )
@@ -193,61 +215,15 @@ export const Navigation = (props) => {
         )}
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h6"
-            noWrap
-            // component="a"
-            href="/"
-            sx={{
-              mr: 2,
-              display: {xs: 'flex', md: 'none'},
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none'
-            }}>
-            <a className="navbar-brand" href="/">
-              <img
-                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                height="40"
-                className="d-inline-block align-top"
-                id="MenuLogo"
-                alt="HuBMAP logo"/>
-            </a>
-          </Typography>
+          {renderLogo({display: {xs: 'flex', md: 'none'}})}
 
-          {userDataGroups && userDataGroups.length > 0 && userDataGroups !=="Non-active login" && (
+          {showMenus && (
             <Box className="menu-bar" sx={{flexGrow: 1, display: {xs: 'flex', md: 'none'}}}>
               {renderMenuButtonBar()}
             </Box>
           )}
-          <Typography
-            variant="h5"
-            noWrap
-            // component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              textAlign: 'left',
-              mr: 2,
-              display: {xs: 'none', md: 'flex'},
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none'
-            }}>
-            <a className="navbar-brand" href="/">
-              <img
-                src="https://hubmapconsortium.org/wp-content/uploads/2020/09/hubmap-type-white250.png"
-                height="40"
-                className="d-inline-block align-top"
-                id="MenuLogo"
-                alt="HuBMAP logo"
-              />
-            </a>
-          </Typography>
-          {userDataGroups && userDataGroups.length > 0 && userDataGroups !=="Non-active login" && (
+          {renderLogo({textAlign: 'left', display: {xs: 'none', md: 'flex'}})}
+          {showMenus && (
             <Box className="menu-bar" sx={{display: {xs: 'none', md: 'flex'}}}>
               {renderMenuButtonBar()}
             </Box>
@@ -262,6 +238,7 @@ export const Navigation = (props) => {
                       {userInfo.email}
                     </Typography>
                     <Button
+                      sx={(isMid || isSmall) ? {fontSize:"0.7em"} : {}}
                       target="_blank"
                       href={`${process.env.REACT_APP_PROFILE_URL}/profile`}
                       // onClick={() => toProfile()}
@@ -273,10 +250,13 @@ export const Navigation = (props) => {
                     <LoadingButton
                       loading={props.isLoggingOut}
                       color='info'
+                      sx={[
+                        (isMid || isSmall) && { fontSize: '0.7em' },
+                        logoutHover && ctrlPressed && { border: '2px solid red' }
+                      ]}
                       onClick={(e) => handleLogout(e)}
                       onMouseEnter={(e) => { setLogoutHover(true); setCtrlPressed(!!(e.ctrlKey || e.metaKey)); window.addEventListener('keydown', handleLogoutKeyDown); window.addEventListener('keyup', handleLogoutKeyUp); }}
-                      onMouseLeave={() => { setLogoutHover(false); setCtrlPressed(false); window.removeEventListener('keydown', handleLogoutKeyDown); window.removeEventListener('keyup', handleLogoutKeyUp); }}
-                      sx={ logoutHover && ctrlPressed ? { border: '2px solid red' } : {} }>
+                      onMouseLeave={() => { setLogoutHover(false); setCtrlPressed(false); window.removeEventListener('keydown', handleLogoutKeyDown); window.removeEventListener('keyup', handleLogoutKeyUp); }}>
                       { (logoutHover && ctrlPressed) ? 'Clear Local Storage' : 'Log Out' }
                     </LoadingButton>
                   </span>
@@ -288,5 +268,31 @@ export const Navigation = (props) => {
         </Toolbar>
       </Container>
     </AppBar>
+  )
+}
+
+function renderLogo(extraSx){
+  return(
+    <Typography
+      component={Link}
+      to="/"
+      variant={extraSx?.display?.md === 'flex' ? 'h5' : 'h6'}
+      noWrap
+      sx={{
+        mr: 2,
+        fontFamily: 'monospace',
+        fontWeight: 700,
+        letterSpacing: '.3rem',
+        color: 'inherit',
+        textDecoration: 'none',
+        ...extraSx
+      }}>
+      <img
+        src={MENU_LOGO}
+        height="40"
+        className="d-inline-block align-top navbar-brand"
+        id="MenuLogo"
+        alt="HuBMAP logo"/>
+    </Typography>
   )
 }

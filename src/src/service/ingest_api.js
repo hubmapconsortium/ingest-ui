@@ -110,7 +110,7 @@ export function ingest_api_allowable_edit_states(uuid) {
   let isHBM = /^HBM\d+\.\w+\.\d+$/.test(uuid);
   console.debug('%c◉ ingest_api_allowable_edit_states UUID ', 'color:#00ff7b', uuid);
   if(isHBM){
-    entity_api_get_entity(uuid)
+    return entity_api_get_entity(uuid)
     .then((response) => {
       console.debug('%c◉ ingest_api_allowable_edit_states UUID response ', 'color:#00ff7b', response.results.uuid);
       let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/entities/${response?.results?.uuid}/allowable-edit-states`;

@@ -60,7 +60,18 @@ export const FormHeader = (props) => {
       {entityData[0] !== "new" && (<>
           <Typography sx={{display: "inline-block", marginBottom: "-5px"}} variant='caption'>{entityType}</Typography>
           <Grid item xs={12} className="topHeader" > 
-            <span style={{fontSize: "1.6em", marginLeft: "-2px"}}>{IconSelection(entityType)}</span><Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}>{entityData.hubmap_id} </Typography>
+            <span style={{
+              fontSize: "1.6em", 
+              verticalAlign: "text-bottom", 
+              direction:"row", 
+              alignItems:"left", 
+              justifyContent:"flex-start",
+                'path': {
+                  verticalAlign: "text-bottom", 
+                  direction:"row", 
+                  alignItems:"left", 
+                },
+            }}>{IconSelection(entityType)}</span><Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}>{entityData.hubmap_id} </Typography>
           </Grid>
         </>
       )}
@@ -72,7 +83,7 @@ export const FormHeader = (props) => {
 
 // Returns a styalized Icon based on the Entity Type & Status 
 export function IconSelection(entity_type,status){  
-  let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
+  let style = {fontSize: "1.5em", verticalAlign: "text-bottom", direction:"row", alignItems:"center", justifyContent:"flex-start"}
   let newSX={"&&": {color: status?"white":""}}
   switch
   (entity_type && entity_type.toLowerCase()){

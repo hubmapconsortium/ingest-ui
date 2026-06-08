@@ -49,9 +49,9 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
   };
 
   return (
-    <div className={`api-alert-wrap ${visible ? 'enter' : 'exit'}`}>
+    <Box className={`api-alert-wrap ${visible ? 'enter' : 'exit'}`}>
       <Alert
-        className="APIAlertCell"
+        className="APIAlertCell mb-1"
         variant="filled"
         severity="error"
         icon={<SyncProblemIcon />}
@@ -80,7 +80,7 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
         />
         <Collapse in={openDetail}>{details}</Collapse>
       </Alert>
-    </div>
+    </Box>
   );
 }
 
