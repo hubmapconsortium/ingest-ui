@@ -42,11 +42,31 @@ import {
   COLUMN_DEF_MIXED,
 } from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
-import {OrganIcons, EntityIconsBasic} from "./ui/icons"
+import {OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const SIMPLE_COLUMNS = ["Donor", "Dataset", "Publication", "Upload", "Collection", "EPICollection"];
+
+const CORE_ENTITY_TYPE_VALUE_MAP = {
+  donor: 'donor',
+  sample: 'sample',
+  dataset: 'dataset',
+  upload: 'upload',
+  'data upload': 'upload',
+  publication: 'publication',
+  collection: 'collection',
+  epicollection: 'epicollection',
+  'epi collection': 'epicollection',
+};
+
+function normalizeEntityTypeValue(rawValue) {
+  if (rawValue === undefined || rawValue === null) return rawValue;
+  const trimmed = String(rawValue).trim();
+  if (!trimmed) return '';
+  const normalized = CORE_ENTITY_TYPE_VALUE_MAP[trimmed.toLowerCase()];
+  return normalized || trimmed;
+}
  
 export function Search({
   searchFilters: initialSearchFilters,
@@ -162,7 +182,11 @@ export function Search({
       const newForm = { ...formFilters };
       if (paramsObj.keywords) newForm.keywords = paramsObj.keywords;
       if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
-      if (paramsObj.entity_type) newForm.entity_type = paramsObj.entity_type;
+      if (paramsObj.entity_type) {
+        const normalizedEntityType = normalizeEntityTypeValue(paramsObj.entity_type);
+        newForm.entity_type = normalizedEntityType;
+        paramsObj.entity_type = normalizedEntityType;
+      }
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
       // sort direction may be provided as sort or sort_dir
       if (paramsObj.sort_dir) {
@@ -660,6 +684,13 @@ export function Search({
       const name = (saveName || "").trim();
       if (!name) return;
       const params = Object.assign({}, formFilters || {});
+      const normalizedEntityType = normalizeEntityTypeValue(params.entity_type || params.entityType);
+      if (normalizedEntityType) {
+        params.entity_type = normalizedEntityType;
+      }
+      if (params.entityType) {
+        delete params.entityType;
+      }
       // include status selections
       params.status = Array.isArray(chipSelect) ? chipSelect : [];
       params.status_not = Array.isArray(chipExclude) ? chipExclude : [];
@@ -686,9 +717,17 @@ export function Search({
   function applySavedSearch(item) {
     if (!item || !item.params) return;
     const p = item.params;
+    const normalizedEntityType = normalizeEntityTypeValue(p.entity_type || p.entityType);
+    const nextFormFilters = {
+      ...p,
+      entity_type: normalizedEntityType || '',
+    };
+    if (nextFormFilters.entityType) {
+      delete nextFormFilters.entityType;
+    }
     // Only populate the form fields and chips from the saved search.
     // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
-    setFormFilters(p || {});
+    setFormFilters(nextFormFilters);
     setChipSelect(Array.isArray(p.status) ? p.status : []);
     setChipExclude(Array.isArray(p.status_not) ? p.status_not : []);
     // Indicate that form fields differ from last-applied filters so Save/Search UI updates
@@ -1305,8 +1344,9 @@ export function Search({
       params["entity_type"] = "DonorSample";
     }
     var group_uuid = formFilters.group_uuid;
-    if(formFilters.entity_type){
-      entityType = formFilters.entity_type;
+    const normalizedEntityType = normalizeEntityTypeValue(formFilters.entity_type || formFilters.entityType);
+    if(normalizedEntityType){
+      entityType = normalizedEntityType;
     }else if(formFilters.organ){
       entityType = formFilters.organ;
     }else if(formFilters.sample_category){
