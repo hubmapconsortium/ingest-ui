@@ -67,6 +67,16 @@ function normalizeEntityTypeValue(rawValue) {
   const normalized = CORE_ENTITY_TYPE_VALUE_MAP[trimmed.toLowerCase()];
   return normalized || trimmed;
 }
+
+function buildDefaultFormFilters() {
+  return {
+    keywords: '',
+    group_uuid: '',
+    entity_type: '',
+    target_field: '',
+    sort_dir: '',
+  };
+}
  
 export function Search({
   searchFilters: initialSearchFilters,
@@ -88,6 +98,7 @@ export function Search({
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
   var [sortDir, setSortDir] = useState("asc");
+  const [hasSearched, setHasSearched] = useState(false);
   const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
 
   useEffect(() => {
@@ -225,6 +236,7 @@ export function Search({
       setFormFilters(newForm);
       // trigger the search effect by setting the searchFiltersState
       setSearchFiltersState(paramsObj);
+      setHasSearched(true);
       // record that these filters were just applied so we can detect changes
       lastAppliedFiltersRef.current = paramsObj;
       setFieldsChanged(false);
@@ -239,6 +251,12 @@ export function Search({
       // ignore URL parse errors for now
     }
   }, [initialSearchFilters, locationSearch]);
+
+  useEffect(() => {
+    if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) {
+      setHasSearched(true);
+    }
+  }, [initialSearchFilters]);
 
   // Watch for changes to form fields compared to the last-applied filters
   useEffect(() => {
@@ -294,6 +312,16 @@ export function Search({
     lastAppliedFiltersRef.current = formFilters || {};
     setFieldsChanged(false);
   }, []);
+
+  const canSaveCurrentSearch = hasSearched && !fieldsChanged;
+  const saveSearchDisabledMessage = "Apply your changes first by clicking \"Search\"";
+
+  useEffect(() => {
+    if (!canSaveCurrentSearch) {
+      setSaveSectionOpen(false);
+    }
+  }, [canSaveCurrentSearch]);
+
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
@@ -683,14 +711,14 @@ export function Search({
     try {
       const name = (saveName || "").trim();
       if (!name) return;
-      const params = Object.assign({}, formFilters || {});
-      const normalizedEntityType = normalizeEntityTypeValue(params.entity_type || params.entityType);
-      if (normalizedEntityType) {
-        params.entity_type = normalizedEntityType;
-      }
-      if (params.entityType) {
-        delete params.entityType;
-      }
+      const params = {
+        ...buildDefaultFormFilters(),
+        keywords: formFilters?.keywords || '',
+        group_uuid: formFilters?.group_uuid || '',
+        entity_type: normalizeEntityTypeValue(formFilters?.entity_type || formFilters?.entityType) || '',
+        target_field: formFilters?.target_field || '',
+        sort_dir: formFilters?.sort_dir || '',
+      };
       // include status selections
       params.status = Array.isArray(chipSelect) ? chipSelect : [];
       params.status_not = Array.isArray(chipExclude) ? chipExclude : [];
@@ -717,14 +745,17 @@ export function Search({
   function applySavedSearch(item) {
     if (!item || !item.params) return;
     const p = item.params;
+    const defaults = buildDefaultFormFilters();
     const normalizedEntityType = normalizeEntityTypeValue(p.entity_type || p.entityType);
     const nextFormFilters = {
-      ...p,
+      ...defaults,
+      keywords: p.keywords || '',
+      group_uuid: p.group_uuid || '',
       entity_type: normalizedEntityType || '',
+      target_field: p.target_field || '',
+      sort_dir: p.sort_dir || '',
     };
-    if (nextFormFilters.entityType) {
-      delete nextFormFilters.entityType;
-    }
+    setSortDir(nextFormFilters.sort_dir || 'asc');
     // Only populate the form fields and chips from the saved search.
     // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
     setFormFilters(nextFormFilters);
@@ -1083,63 +1114,74 @@ export function Search({
 
               <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, width: '100%'}}>
                 <Box sx={{ width: '100%' }}>
-                  <Typography
-                    variant="caption"
-                    onClick={() => setSaveSectionOpen((prev) => !prev)}
-                    sx={{
-                      color: '#fff',
-                      cursor: 'pointer',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      userSelect: 'none',
-                    }}>
-                    Save current search as....
-                    {saveSectionOpen ? <KeyboardArrowUpIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                  </Typography>
-                  <Collapse in={saveSectionOpen} timeout={220} unmountOnExit>
-                    <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
-                      <TextField
-                        size="small"
-                        className="savedSearchField"
-                        placeholder="Enter a label for your search"
-                        value={saveName}
-                        onChange={(e) => setSaveName(e.target.value)}
+                    <>
+                      <Tooltip title={!canSaveCurrentSearch ? saveSearchDisabledMessage : ''} arrow>
+                        <Box component="span" sx={{ display: 'inline-flex' }}>
+                      <Typography
+                        variant="caption"
+                        onClick={() => {
+                          if (!canSaveCurrentSearch) return;
+                          setSaveSectionOpen((prev) => !prev);
+                        }}
                         sx={{
-                          backgroundColor: '#fff',
-                          borderRadius: '10px',
-                          width: '100%',
-                          maxWidth: 360,
-                          "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
-                        }}
-                        inputProps={{ 'aria-label': 'saved-search-name' }}/>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        className="HBM_DarkBlueButton saveSearchInline"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          saveCurrentSearch();
-                        }}
-                        disabled={!saveName.trim()}
-                        startIcon={<SaveAsIcon />}
-                        sx={{
-                          whiteSpace: 'nowrap',
-                          minWidth: 72,
-                          height: 24,
-                          px: 1,
-                          borderRadius: '999px',
-                          boxShadow: 'none',
-                          fontSize: '0.68rem',
-                          lineHeight: 1,
-                          flexShrink: 0,
-                        }}
-                        aria-label="save-current-search-inline">
-                        Save
-                      </Button>
-                    </Box>
-                  </Collapse>
+                          color: canSaveCurrentSearch ? '#fff' : '#c8ced8',
+                          cursor: canSaveCurrentSearch ? 'pointer' : 'not-allowed',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          userSelect: 'none',
+                          opacity: canSaveCurrentSearch ? 1 : 0.75,
+                        }}>
+                        Save current search as....
+                        {saveSectionOpen ? <KeyboardArrowUpIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      </Typography>
+                        </Box>
+                      </Tooltip>
+                      <Collapse in={saveSectionOpen && canSaveCurrentSearch} timeout={220} unmountOnExit>
+                        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
+                          <TextField
+                            size="small"
+                            className="savedSearchField"
+                            placeholder="Enter a label for your search"
+                            value={saveName}
+                            onChange={(e) => setSaveName(e.target.value)}
+                            disabled={!canSaveCurrentSearch}
+                            sx={{
+                              backgroundColor: '#fff',
+                              borderRadius: '10px',
+                              width: '100%',
+                              maxWidth: 360,
+                              "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
+                            }}
+                            inputProps={{ 'aria-label': 'saved-search-name' }}/>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            className="HBM_DarkBlueButton saveSearchInline"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              saveCurrentSearch();
+                            }}
+                            disabled={!canSaveCurrentSearch || !saveName.trim()}
+                            startIcon={<SaveAsIcon />}
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              minWidth: 72,
+                              height: 24,
+                              px: 1,
+                              borderRadius: '999px',
+                              boxShadow: 'none',
+                              fontSize: '0.68rem',
+                              lineHeight: 1,
+                              flexShrink: 0,
+                            }}
+                            aria-label="save-current-search-inline">
+                            Save
+                          </Button>
+                        </Box>
+                      </Collapse>
+                    </>
                 </Box>
               </Box>
 
@@ -1322,6 +1364,7 @@ export function Search({
 
     // Ensure URL-driven guard won't block the default search and reset paging
     urlParamsAppliedRef.current = false;
+    setHasSearched(false);
     setPage(0);
 
     // Setting searchFiltersState to null causes the main effect to run the
@@ -1411,6 +1454,7 @@ export function Search({
     document.title = "HuBMAP Ingest Portal Search"
     // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
+    setHasSearched(true);
     // record last-applied filters so we can detect subsequent changes
     lastAppliedFiltersRef.current = params;
     setFieldsChanged(false);
