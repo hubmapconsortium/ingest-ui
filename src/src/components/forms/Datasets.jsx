@@ -260,41 +260,40 @@ export const DatasetForm = (props) => {
   };
 
   function buildCleanForm() {
-    let selectedUUIDs = bulkSelection.data.map(obj => obj.uuid);
-    let cleanForm = {
+    const selectedUUIDs = (bulkSelection?.data || []).map(obj => obj.uuid);
+
+    const baseForm = {
       lab_dataset_id: form.lab_dataset_id,
       contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
       description: form.description,
       dataset_info: form.dataset_info,
-      direct_ancestor_uuids: selectedUUIDs,
-      ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData?.assigned_to_group_name) && permissions.has_admin_priv) && { assigned_to_group_name: form.assigned_to_group_name }),
-      ...(((form.ingest_task && form.ingest_task !== entityData?.ingest_task) && permissions.has_admin_priv) && { ingest_task: form.ingest_task })
     };
+
     if (!uuid) {
-      cleanForm.group_uuid = form.group_uuid || (localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups"))[0].uuid : "");
-      cleanForm.dataset_type = form.dt_select;
+      return {
+        ...baseForm,
+        direct_ancestor_uuids: selectedUUIDs,
+        group_uuid: form.group_uuid || (localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups"))[0].uuid : ""),
+        dataset_type: form.dt_select,
+      };
     }
-    return cleanForm;
+
+    const oldAncestors = entityData?.direct_ancestors?.map(obj => obj.uuid) || [];
+    const arraysHaveSameContent = matchingList(selectedUUIDs, oldAncestors);
+
+    return {
+      ...baseForm,
+      ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData?.assigned_to_group_name) && permissions.has_admin_priv) && { assigned_to_group_name: form.assigned_to_group_name }),
+      ...(((form.ingest_task && form.ingest_task !== entityData?.ingest_task) && permissions.has_admin_priv) && { ingest_task: form.ingest_task }),
+      ...(!arraysHaveSameContent && { direct_ancestor_uuids: selectedUUIDs }),
+    };
   }
 
   const handleSave = (e) => {
     e.preventDefault();
     if (validateForm()) {
       setLoading(prevVals => ({ ...prevVals, processing: true }));
-      let selectedUUIDs = bulkSelection.data.map((obj) => obj.uuid);
-      let oldAncestors = entityData.direct_ancestors.map(obj => obj.uuid);
-      const arraysHaveSameContent = matchingList(selectedUUIDs, oldAncestors);
-
-      let cleanForm = {
-        lab_dataset_id: form.lab_dataset_id,
-        contains_human_genetic_sequences: (form.contains_human_genetic_sequences === true || form.contains_human_genetic_sequences === "true") ? true : false,
-        description: form.description,
-        dataset_info: form.dataset_info,
-        // direct_ancestor_uuids: selectedUUIDs,
-        ...(((form.assigned_to_group_name && form.assigned_to_group_name !== entityData.assigned_to_group_name) && permissions.has_admin_priv) && {assigned_to_group_name: form.assigned_to_group_name}),
-        ...(((form.ingest_task && form.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: form.ingest_task}),
-        ...(!arraysHaveSameContent && {direct_ancestor_uuids: selectedUUIDs})
-      };
+      const cleanForm = buildCleanForm();
       // console.debug('%c⭗ Data', 'color:#00ff7b', cleanForm);
       if (uuid) {
         let target = e.target.name;
@@ -319,10 +318,7 @@ export const DatasetForm = (props) => {
           });
       } else {
         // If group_uuid is not set, default to first user group
-        let group_uuid = form.group_uuid || (localStorage.getItem("userGroups") ? JSON.parse(localStorage.getItem("userGroups"))[0].uuid : "");
-        cleanForm.group_uuid = group_uuid;
-        cleanForm.dataset_type = form.dt_select
-        cleanForm.group_uuid = form.group_uuid
+        console.debug('%c◉ form ', 'color:#00ff7b', );
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {
@@ -338,6 +334,7 @@ export const DatasetForm = (props) => {
       }
     } else {
       setLoading(prevVals => ({ ...prevVals, button: { process: false, save: false, submit: false }, processing: false }));
+      
     }
   };
 
