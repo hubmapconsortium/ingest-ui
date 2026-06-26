@@ -1,5 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.css';
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import {BrowserRouter} from "react-router-dom";
 //import "./assets/App.css";
 import './index.css';
@@ -7,11 +6,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import App from "./App";
 
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root"));
+
+root.render(
   <BrowserRouter forceRefresh={true}>
       <App />
-  </BrowserRouter>,
-   document.getElementById("root")
+  </BrowserRouter>
 );
 // // If you want your app to work offline and load faster, you can change
 // // unregister() to register() below. Note this comes with some pitfalls.
@@ -19,6 +19,3 @@ ReactDOM.render(
 // serviceWorker.unregister();
 // // <Router>
 //  //</Router>,
-
-
-

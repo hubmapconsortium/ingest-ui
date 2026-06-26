@@ -14,7 +14,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from "@mui/material/Alert";
 import {ingest_api_upload_bulk_metadata} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
-import {genColWidth} from './tableBuilder.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing, ParseBadJSON} from '../../utils/error_helper.jsx';
 import LoadingButton from "@mui/lab/LoadingButton";

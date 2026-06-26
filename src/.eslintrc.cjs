@@ -13,20 +13,39 @@ module.exports = {
         node: true
       },
       files: [
-        ".eslintrc.{js,cjs}"
+        ".eslintrc.{js,cjs}",
+        "vite.config.mjs"
       ],
       parserOptions: {
-        sourceType: "script"
+        sourceType: "module"
+      }
+    },
+    {
+      env: {
+        browser: true,
+        jest: true
+      },
+      files: [
+        "src/**/*.test.{js,jsx}"
+      ],
+      globals: {
+        vi: "readonly"
       }
     }
   ],
   parserOptions: {
     ecmaVersion: "latest",
+    ecmaFeatures: {
+      jsx: true
+    },
     sourceType: "module"
   },
   plugins: [
     "react"
   ],
+  globals: {
+    process: "readonly"
+  },
   rules: {
     // indent: ["warn", 2],
     // "keyword-spacing": ["warn", {
@@ -88,6 +107,7 @@ module.exports = {
     "react/no-unknown-property": 0,
     "react/prop-types": 0, // disable rule
     "react/react-in-jsx-scope": 0,
+    "react/jsx-uses-vars": "error",
     "semi": 0,
     "space-infix-ops": 0,
     "spaced-comment": 0,

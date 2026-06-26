@@ -1,9 +1,8 @@
 import *as React from "react";
 import {useEffect,useState} from "react";
-import {Route,Routes,useLocation,useNavigate, Navigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
-import Login from './components/ui/login';
 import ErrorPage from "./utils/errorPage";
 import StandardErrorBoundary from "./utils/errorWrap";
 import LinearProgress from '@mui/material/LinearProgress';
@@ -25,6 +24,7 @@ import Grid from '@mui/material/Grid';
 import {BuildError} from "./utils/error_helper";
 import {buildInUberonLink} from "./utils/string_helper";
 import {Navigation} from "./Nav";
+import {AuthenticatedRoutes, UnauthenticatedRoutes, UnregisteredRoutes} from "./Routes";
 import Result from "./components/ui/result";
 import {OrganDetails} from './components/ui/icons';
 import {ValidateLocalStoreValue} from './utils/validators';
@@ -36,23 +36,6 @@ import { gateway_api_status } from "./service/gateway_service";
 
 // DEVtools
 import {SpeedDialTooltipOpen, ServerSight} from './components/ui/devTools';
-
-// The New Forms
-import {Search} from "./components/Search";
-import {DonorForm} from "./components/forms/Donors";
-import {UploadForm} from "./components/forms/Uploads";
-import {SampleForm} from "./components/forms/Samples";
-import {PublicationForm} from "./components/forms/Publications";
-import {DatasetForm} from "./components/forms/Datasets";
-import {CollectionForm} from "./components/forms/Collections";
-import {EPICollectionForm} from "./components/forms/Epicollections";
-
-// Bulk Forms
-import {BulkEntityForm} from "./components/forms/BulkEntity";
-import {BulkMetaForm} from "./components/forms/BulkMeta";
-
-// 404
-import NotFound from "./components/404";
 
 // doglogs
 // import { datadogRum } from '@datadog/browser-rum';
@@ -670,14 +653,7 @@ export function App(){
             {isLoading && (<LinearProgress />)}
 
             {!authStatus && !isLoading && (
-              <React.Fragment>
-                <Routes>
-                  <Route path="/" element={ <Login />} />
-                  <Route path="/*" element={ <Login />} />
-                  <Route path="*" element={ <Login />} />
-                  <Route path="/login" element={ <Login />} />
-                </Routes>
-              </React.Fragment>
+              <UnauthenticatedRoutes />
             )}
           
             {APIErrQueue.length > 0 && (
@@ -687,15 +663,7 @@ export function App(){
             )}
 
             {unregStatus === true && (
-              <Routes>
-                <Route index element={ 
-                  <Alert 
-                    variant="filled"
-                    severity="error"> 
-                      You do not have access to the HuBMAP Ingest Registration System.  You can request access by checking the "HuBMAP Data Via Globus" system in your profile. If you continue to have issues and have selected the "HuBMAP Data Via Globus" option make sure you have accepted the invitation to the Globus Group "HuBMAP-Read" or contact the help desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
-                  </Alert>
-                }/>
-              </Routes>
+              <UnregisteredRoutes />
             )}
 
             {authStatus && !isLoading && !unregStatus &&(
@@ -703,60 +671,12 @@ export function App(){
                 <Paper className={"px-4 py-3 admin-"+(adminStatus)}>
                   
                   {/* {() => renderSuccessDialog()} */}
-                  <Routes>
-                      
-                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route path="/" element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                    <Route path="/login" element={<Login />} />
-                    <Route path='/newSearch' element={ <Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-
-                    {/* Redirect plural top-level pages to the root Search with entity_type query */}
-                    <Route path="/donors" element={<Navigate to="/?entity_type=donor" replace />} />
-                    <Route path="/samples" element={<Navigate to="/?entity_type=sample" replace />} />
-                    <Route path="/publications" element={<Navigate to="/?entity_type=publication" replace />} />
-                    <Route path="/collections" element={<Navigate to="/?entity_type=collection" replace />} />
-                    <Route path="/epicollections" element={<Navigate to="/?entity_type=epicollection" replace />} />
-                    <Route path="/datasets" element={<Navigate to="/?entity_type=dataset" replace />} />
-                    <Route path="/uploads" element={<Navigate to="/?entity_type=upload" replace />} />
-
-
-                    <Route path="/new">
-                      <Route index element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                      <Route path='donor' element={ <DonorForm onCreated={(response) => creationSuccess(response)}/>}/>
-                      <Route path='sample' element={<SampleForm onCreated={(response) => creationSuccess(response)} /> }/> 
-                      <Route path='publication' element={<PublicationForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='collection' element={<CollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path='epicollection' element={<EPICollectionForm onCreated={(response) => creationSuccess(response)}/>} /> 
-                      <Route path="dataset" element={<Search urlChange={(event, params, details) => urlChange(event, params, details)}/>}/>
-                      <Route path='datasetAdmin' element={<DatasetForm onCreated={(response) => creationSuccess(response)}/>}/>
-                      <Route path='upload' element={ <UploadForm onCreated={(response) => creationSuccess(response)}/>}/>
-                      {/* In Develpment here */}
-                    </Route>
-                                          
-                    <Route path="/donor/:uuid" element={<DonorForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    <Route path="/sample/:uuid" element={<SampleForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    <Route path="/dataset/:uuid" element={<DatasetForm onUpdated={(response) => updateSuccess(response)}/>} />
-                    <Route path="/upload/:uuid" element={ <UploadForm onUpdated={(response) => updateSuccess(response)}/>} />
-
-                    <Route path="/publication/:uuid" element={<PublicationForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/collection/:uuid" element={<CollectionForm onUpdated={(response) => updateSuccess(response)} />} />
-                    <Route path="/epicollection/:uuid" element={<EPICollectionForm onUpdated={(response) => updateSuccess(response)} />} />
-
-                    <Route path="/bulk/donors" exact element={<BulkEntityForm reportError={reportError} bulkType="donor" />} />
-                    <Route path="/bulk/samples" exact element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
-                    
-                    <Route path="/metadata">
-                      <Route index element={<BulkMetaForm reportError={reportError} type="block" />} />
-                      <Route path='block' element={ <BulkMetaForm reportError={reportError} type='block'/>}/>
-                      <Route path='section' element={ <BulkMetaForm reportError={reportError} type='section'/>}/>
-                      <Route path='suspension' element={ <BulkMetaForm reportError={reportError} type='suspension'/>}/>
-                    </Route>
-
-                    {/* 404 */}
-                    <Route path="/notFound" element={ <NotFound /> } />
-
-                  </Routes>
+                  <AuthenticatedRoutes
+                    onCreated={(response) => creationSuccess(response)}
+                    onUpdated={(response) => updateSuccess(response)}
+                    onUrlChange={(event, params, details) => urlChange(event, params, details)}
+                    reportError={reportError}
+                  />
  
                   <Dialog 
                     aria-labelledby="result-dialog" 

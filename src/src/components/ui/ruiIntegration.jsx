@@ -1,6 +1,4 @@
 import React, { Component } from "react";
-import { RUI_ORGAN_MAPPING, ubkgRUIMap} from "../../constants.jsx";
-import { ubkg_api_get_organs_full } from "../../service/ubkg_api.js";
 import "../../App.css";
 
  

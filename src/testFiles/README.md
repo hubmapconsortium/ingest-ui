@@ -18,3 +18,31 @@ These Older files used, no modern replacement for donors yet
 **BulkDonorTest**
 
 **BulkSampleTest**
+
+## React migration smoke coverage
+
+Run the non-interactive migration smoke suite with:
+
+```sh
+npm test
+```
+
+`src/App.test.jsx` verifies:
+
+- the unauthenticated application root renders;
+- required `REACT_APP_*` configuration is readable;
+- the authenticated search route mounts and requests data;
+- MUI Data Grid renders a representative result row;
+- the new donor and new sample routes mount their key fields.
+
+Backend and authentication calls are mocked so these checks are deterministic
+and do not require credentials or network access.
+
+The following remain manual or deployment-level checks:
+
+- complete institutional login and logout;
+- authenticated searches against real Search API data;
+- opening and editing existing entities;
+- RUI registration, cancellation, and restoration;
+- creating or updating entities and bulk uploads;
+- browser-console warnings and nginx deep-link refreshes.
