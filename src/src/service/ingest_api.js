@@ -39,7 +39,6 @@ export function ingest_api_users_groups() {
       });
 }
 
-
 /*
  * Is User Admin
  *
@@ -88,7 +87,7 @@ export function ingest_api_all_user_groups() {
  * ALL groups are returned
  *
  */
-export function ingest_api_all_groups(auth) { 
+export function ingest_api_all_groups() { 
   return axios 
     .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/data-provider-groups`, options)
     .then(res => {
@@ -257,11 +256,6 @@ export function ingest_api_derived_dataset(uuid, data) {
 export function ingest_api_bulk_entities_upload(type, data) { 
   var dataForm = new FormData();
   dataForm.append('file', data);
-  let optionsMultipart = {
-    headers: {
-      Authorization: `Bearer ${globalToken}`,
-      "Content-Type": "multipart/form-data"
-    }};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}/bulk-upload`;
   return axios 
     .post(url, dataForm, {headers: {Authorization: `Bearer ${globalToken}`,"Content-Type": "multipart/form-data"}})
@@ -458,7 +452,6 @@ export function ingest_api_notify_slack(data) {
  */
 export function ingest_api_upload_bulk_metadata(type, dataFile) { 
   console.debug('%c⭗ ingest_api_upload_bulk_metadata', 'color:#ff005d', "ingest_api_upload_bulk_metadata", dataFile, type);
-  const options = {headers: { Authorization: "Bearer " + globalToken,"Content-Type": "multipart/form-data"}};
   var formData = new FormData();
   formData.append('metadata', new Blob([dataFile],{type: 'file' }),dataFile.name);
   formData.append('entity_type', "Sample")
@@ -510,7 +503,7 @@ export function ingest_api_publish_collection(data) {
  *  Pipeline Testing Privledges
  *
  */
-export function ingest_api_pipeline_test_privs(auth) { 
+export function ingest_api_pipeline_test_privs() { 
   const options = {headers: {Authorization: "Bearer " + globalToken,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/has-pipeline-test-privs`;
   return axios 
@@ -573,4 +566,3 @@ export function ingest_api_validate_contributors(dataFile) {
         return {res}
       });
 };
-

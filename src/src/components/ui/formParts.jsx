@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -293,9 +293,6 @@ export function StatusBadge(status){
 export function NewBadge(type, mini){ 
   console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
   let NewBadgeStyle 
-  let newBadgeSX={
-    color:"#ffffff!important"
-  }
   if (mini){
     NewBadgeStyle = {
       fontFamily: "'Inter var', Helvetica, sans-serif!important",
@@ -350,24 +347,20 @@ function revisionLinksTime(entityData){
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
         sx={{display: "inline-block", width: "100%", marginTop: "5px"}} >
-        <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+        <UpdateIcon className="iconEffect" sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
       </Typography> 
     )}
   </>)
 }
 
-
-
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType, subType){
   let type = entityType
   let organ_types = JSON.parse(localStorage.getItem("organs"));
-  let newTitle = "Registering a new "+type
   if (entityType === "Bulk"){
     console.debug('%c◉ SETTYPE ', 'color:#00ff7b', subType, type);
     type = subType ? toTitleCase(subType) : "Entity"
-    newTitle = `Bulk Registration for ${type}s`
   }
   
   return entityData[0] !== "new" ? (
@@ -384,7 +377,7 @@ function topHeader(entityData, entityType, subType){
                 </Typography><br />
               </Box>}>
             {entityData.status ? StatusBadge(entityData.status) : ""}
-          </Tooltip> ):(  <>
+          </Tooltip> ):( <>
             {entityData.status ? StatusBadge(entityData.status) : ""}
           </>)
         }
@@ -493,7 +486,7 @@ function infoPanels(entityData,permissions,globusURL){
         // They might not have write access but not because of data_access_level
         <Alert 
           severity="warning" 
-          iconMapping={{warning: <VpnLockIcon  />}}
+          iconMapping={{warning: <VpnLockIcon />}}
           sx={{
             minWidth: "100%",
             padding: "10px",
@@ -619,7 +612,7 @@ export function FormCheckRedirect(uuid,entityType,form){
 }
 
 // Prevents the Search Filter Restrictions from lingering & effecting the main Search View
-export function combineTypeOptionsComplete(blackList,whitelist,restrictions){
+export function combineTypeOptionsComplete(blackList,whitelist){
   // Removes the Whitelist / Blacklist stuff,
   // mostly for use for resetting the main Search Page View
   var combinedList = [];
@@ -685,7 +678,7 @@ export function handleSortOrgans(organList){
   return sortedMap;
 };
 
-export function CombinedEmbeddedEntityOptions(props){ 
+export function CombinedEmbeddedEntityOptions(){ 
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
@@ -982,7 +975,6 @@ export function SnackbarFeedback(props){
   );
 }
 
-
 // @TODO: Maybe move to a utils file?
 // Sanitize a Python-ish dict string and return the desired array/object structure
 export function ParsePreflightString(s) {
@@ -1036,7 +1028,6 @@ export function ParsePreflightString(s) {
 //   }
 // }
 
-
 function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
   let label;
@@ -1080,7 +1071,6 @@ function ReturnCreationActionDetail({ creation_action }) {
     </Box>
   );
 }
-  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){

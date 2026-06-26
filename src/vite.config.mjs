@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import react from '@vitejs/plugin-react';
@@ -7,6 +7,20 @@ import { defineConfig, loadEnv } from 'vite';
 const packageJson = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8')
 );
+
+function mirrorAppCssToAssets() {
+  const sourceCss = resolve(process.cwd(), 'src/App.css');
+  const targetDir = resolve(process.cwd(), 'src/assets');
+  const targetCss = resolve(targetDir, 'App.css');
+
+  return {
+    name: 'mirror-app-css-to-assets',
+    buildStart() {
+      mkdirSync(targetDir, { recursive: true });
+      writeFileSync(targetCss, readFileSync(sourceCss));
+    },
+  };
+}
 
 export default defineConfig(({ command, mode }) => {
   const loadedEnv = loadEnv(mode, process.cwd(), [
@@ -33,6 +47,7 @@ export default defineConfig(({ command, mode }) => {
       'process.env': JSON.stringify(processEnv),
     },
     plugins: [
+      mirrorAppCssToAssets(),
       react({
         include: /\.[jt]sx?$/,
       }),
@@ -59,6 +74,7 @@ export default defineConfig(({ command, mode }) => {
     },
     build: {
       assetsDir: 'static',
+      chunkSizeWarningLimit: 2000,
       emptyOutDir: true,
       outDir: 'build',
       sourcemap: loadedEnv.GENERATE_SOURCEMAP !== 'false',

@@ -80,7 +80,6 @@ export const SAMPLE_CATEGORIES = { // Use this instead of Types
    suspension: "Suspension",
 }
 
-
 // Deprecated but the old Tissue form still yerns for it till I Purge the Old Forms/Files
 export const RUI_ORGAN_TYPES = JSON.parse(localStorage.getItem("RUIOrgans"));
 

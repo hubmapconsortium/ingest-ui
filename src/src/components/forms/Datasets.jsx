@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { Typography } from "@mui/material";
 import Alert from "@mui/material/Alert";
@@ -406,7 +406,7 @@ export const DatasetForm = (props) => {
         var ingestURL= process.env.REACT_APP_URL+"/dataset/"+uuid
         var slackMessage = {"message":"Dataset has been submitted ("+ingestURL+")"}
         ingest_api_notify_slack(slackMessage)
-          .then((slackRes) => {
+          .then(() => {
             // console.debug("slackRes", slackRes);
             if (response.status < 300) {
               props.onUpdated(response.results);

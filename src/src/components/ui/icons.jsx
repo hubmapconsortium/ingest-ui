@@ -1,16 +1,13 @@
-import ClearIcon from "@mui/icons-material/Clear";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import PublicOffIcon from '@mui/icons-material/PublicOff';
 import PublicIcon from '@mui/icons-material/Public';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
-
+import {faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject} from "@fortawesome/free-solid-svg-icons";
 
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
@@ -60,10 +57,9 @@ export function EntityIconsBasic(entity_type, size){
     case "eppicollection":
       return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
     default:
-      return <BubbleChartIcon  size={size?size:"0.5em"} sx={style}/>
+      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
   }
 }
-
 
 export function OrganDetails(){
   console.debug('%c◉ OrganDetails ', 'color:#00ff7b', );
@@ -143,19 +139,19 @@ export function OrganIcons(organ){
 export function CreationActionIcon(action){
   switch (action) {
     case "Create Dataset Activity":
-      console.log('%c◉ Create Dataset Activity Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Create Dataset Activity Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCube} />);
     case "Create Publication Activity":
-      console.log('%c◉ Create Publication Activity Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Create Publication Activity Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faNewspaper} />);
     case "External Process":
-      console.log('%c◉ External Process Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ External Process Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faStar} />);
     case "Multi-Assay Split":
-      console.log('%c◉ Multi-Assay Split Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Multi-Assay Split Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faDiagramProject} />);
     case "Central Process":
-      console.log('%c◉ Central Process Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Central Process Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCodeMerge} />);
     default:
       return null;
@@ -176,7 +172,7 @@ export function AccessLevelIcon(level){
   }
 }
 
-export function RUIIcon(size,color){
+export function RUIIcon(size){
   // Scraped from: 
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}` } fill="none" xmlns="http://www.w3.org/2000/svg" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">

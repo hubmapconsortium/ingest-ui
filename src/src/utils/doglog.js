@@ -3,8 +3,8 @@ import { datadogLogs } from '@datadog/browser-logs';
 let _globalContext = {};
 let _initialized = false;
 const DD_SERVICE = process.env.REACT_APP_DD_SERVICE || 'site:ingest_ui';
-const DD_ENV =  process.env.REACT_APP_NODE_ENV === 'local' ? 'env:local:galah' : `env:${process.env.REACT_APP_NODE_ENV}`
-const DD_VERSION =  process.env.npm_package_version
+const DD_ENV = process.env.REACT_APP_NODE_ENV === 'local' ? 'env:local:galah' : `env:${process.env.REACT_APP_NODE_ENV}`
+const DD_VERSION = process.env.npm_package_version
 const DD_HOST = process.env.REACT_APP_DD_HOST || ((typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : undefined);
 const DOGLOG_SCHEMA_VERSION = 'v2';
 // marker property used to avoid duplicate logging of the same Error/object

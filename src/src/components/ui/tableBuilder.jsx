@@ -12,11 +12,8 @@ import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import PublicOffIcon from '@mui/icons-material/PublicOff';
 import PublicIcon from '@mui/icons-material/Public';
 import PersonIcon from '@mui/icons-material/Person';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import HttpsIcon from '@mui/icons-material/Https';
 import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
@@ -97,7 +94,7 @@ export const COLUMN_DEF_DATASET = [
   { field: 'data_access_level', headerName: 'Access Level', width: 115,
     renderCell: params => {
       if (params.value === "public") {
-        return  (
+        return (
           <Tooltip title="Public" placement="top" slotProps={{
                   popper: {
                     modifiers: [{
@@ -108,7 +105,7 @@ export const COLUMN_DEF_DATASET = [
                     }],
                   }
                 }}>
-              <PublicIcon sx={{ color: "#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#536e55", }  }}   />
+              <PublicIcon sx={{ color: "#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#536e55", } }} />
           </Tooltip>
           
         );
@@ -125,7 +122,7 @@ export const COLUMN_DEF_DATASET = [
                     }],
                   }
                 }}>
-              <DoNotDisturbIcon sx={{color:"#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#6e535e" }  }} />
+              <DoNotDisturbIcon sx={{color:"#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#6e535e" } }} />
           </Tooltip>
         );
       }

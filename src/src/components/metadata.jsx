@@ -42,7 +42,7 @@ export const RenderMetadata = (props) => {
     width: 1,
   });
   
-  var handleCancel = (e) => {
+  var handleCancel = () => {
     window.history.pushState( null,"", "/");
     window.location.reload()
   }
@@ -57,7 +57,6 @@ export const RenderMetadata = (props) => {
       console.debug('No Data??');
     }
   };
-
 
 function renderResults() {
 
@@ -81,7 +80,7 @@ function renderResults() {
           <FontAwesomeIcon icon={faExclamationTriangle} color="red" className="mr-1" /> There were errors encountered when Validating your File:
           {/* Do non IVT, non row error handling first */}
           {errorList.length >0 && (
-            <Alert  className="mb-2 p-1"  variant="filled" severity="error" >
+            <Alert className="mb-2 p-1" variant="filled" severity="error" >
               <AlertTitle>Error:</AlertTitle>
               {errorList.toString()}
             </Alert>
@@ -89,7 +88,7 @@ function renderResults() {
           {errorRows.length >0 && ( 
             errorRows.map((row, index) => {
               return (
-                <Alert  className="mb-2 p-1" key={index + 1} variant="filled" severity="error" >
+                <Alert className="mb-2 p-1" key={index + 1} variant="filled" severity="error" >
                   <AlertTitle>Error: Row {row.row.toString()} Column {row.column.toString()}</AlertTitle>
                   {row.error.toString()}
                 </Alert>
@@ -160,7 +159,7 @@ function parseErrorJSON(error) {
           // Always enter the final step regardless of results
           setActiveStep(2);
         })
-        .catch((error) => {
+        .catch(() => {
           setActiveStep(2);
           setResults("Error");
         });
@@ -174,11 +173,10 @@ function parseErrorJSON(error) {
     }
 };
 
-
 const introText = () =>{
   return(
     <>
-    <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+    <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
       To bulk register  {props.type.toLowerCase()} metadata, upload your tsv file here. Please refer to the format specified in this <Button href={exampleFile} size='small' download target="_blank " >{<FontAwesomeIcon icon={faFileDownload} className="m-1" />}Example.tsv </Button> file  For further details, please see the Metadata Upload Documentation for {props.type}s. 
     </Typography> 
     
@@ -207,7 +205,7 @@ const introText = () =>{
           </Button>
         </Grid>
         <Grid xs={10}>
-            <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+            <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
               Please select which file you'd like to process
             </Typography>
         </Grid>
@@ -221,7 +219,7 @@ const introText = () =>{
           <GridLoader color="#444a65" size={23} loading={true} />
         </Grid>
         <Grid xs={10} container alignItems="flex-start">
-          <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+          <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
             Uploading to Validation <br />
             This step could take a few moments. <br />
             Please do not refresh, close, or leave the page until the process is complete.
@@ -234,7 +232,7 @@ const introText = () =>{
     {activeStep ===2 && (
       <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
           <Grid xs={12}>
-            <div className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px"  }} >
+            <div className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
               {renderResults()}
             </div>
           </Grid>
@@ -247,13 +245,11 @@ const introText = () =>{
 
   </>)}
 
-
 var targetFile = (props.type).toLowerCase()
 const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/sample-"+targetFile+"/current/"
 
   return (
     <div className="row">
-
       
       <h4>{toTitleCase(props.type)} Metadata Upload</h4>
       <div className=' col-sm-2' id='stepContainer'>
@@ -274,7 +270,7 @@ const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/s
         </Stepper>             
       </div>
       
-      <div  className=' col-sm-10'>
+      <div className=' col-sm-10'>
         {introText()}
       </div>
       

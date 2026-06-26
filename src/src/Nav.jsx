@@ -9,7 +9,6 @@ import Menu from '@mui/material/Menu'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LoadingButton from '@mui/lab/LoadingButton'
 import {ingest_api_users_groups} from './service/ingest_api';
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -208,7 +207,7 @@ export const Navigation = (props) => {
   return(
     <AppBar position="static" id="header">
       {routingMessage && routingMessage.length >0 && (
-          <Alert variant="filled" severity="error" onClose={(e) => {setRoutingMessage(null)}}>
+          <Alert variant="filled" severity="error" onClose={() => {setRoutingMessage(null)}}>
             <strong>Sorry</strong> {routingMessage[0]+" "} 
             Please use <Link to={routingMessage[1]} className="text-white">Uploads</Link> instead.
           </Alert>

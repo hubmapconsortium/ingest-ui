@@ -1,6 +1,5 @@
-import React from "react";
 
-const Login = (props) => {
+const Login = () => {
   const login_url = `${process.env.REACT_APP_DATAINGEST_API_URL}/login`;
   function cleanLogin(e){
     e.preventDefault();

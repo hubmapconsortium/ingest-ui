@@ -1,4 +1,4 @@
-import React,{useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
+import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
@@ -1184,7 +1184,6 @@ export function Search({
                     </>
                 </Box>
               </Box>
-
 
             </Grid>
           </Grid>

@@ -537,8 +537,8 @@ a:not([href]).ttip {
 
 /* Hubmap Standard CSS for text */
 .table-fmt {
-  minwidth: 650;
-  width: "100%";
+  min-width: 650px;
+  width: 100%;
 }
 
 .table-hdr-fmt {
@@ -1203,6 +1203,9 @@ svg.invalid {
 /* Column headers and footers */
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-columnHeaders,
+.HDT .MuiDataGrid-container--top,
+.HDT .MuiDataGrid-container--top [role="row"],
+.HDT .MuiDataGrid-columnHeader,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
   background: linear-gradient(180deg,  #585E7A 0%,  #444a65 100%) !important;
@@ -1212,6 +1215,9 @@ svg.invalid {
 }
 .HDT.errorSetTable.shortHeader .MuiDataGrid-columnHeaders,
 .HDT.errorSetTable .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-container--top,
+.HDT.errorSetTable .MuiDataGrid-container--top [role="row"],
+.HDT.errorSetTable .MuiDataGrid-columnHeader,
 .HDT.errorSetTable .MuiDataGrid-footerContainer,
 .HDT.errorSetTable .thead-dark{
   background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
@@ -1219,6 +1225,9 @@ svg.invalid {
 }
 .HDT.successReg.shortHeader .MuiDataGrid-columnHeaders,
 .HDT.successReg .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-container--top,
+.HDT.successReg .MuiDataGrid-container--top [role="row"],
+.HDT.successReg .MuiDataGrid-columnHeader,
 .HDT.successReg .MuiDataGrid-footerContainer,
 .HDT.successReg .thead-dark{
   background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
@@ -1256,6 +1265,7 @@ svg.invalid {
 /* For tables that need a shorter footer (override with .shortFooter) */
 .HDT.shortFooter .MuiDataGrid-footerContainer,
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.shortHeader .MuiDataGrid-container--top,
 .MuiTablePagination-root .MuiToolbar-root {
   min-height: 35px!important;
   max-height: 35px!important;

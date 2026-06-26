@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {DataGrid} from "@mui/x-data-grid";
@@ -7,16 +7,13 @@ import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from '@mui/material/MenuItem';
 import Select from "@mui/material/Select";
-import Collapse from '@mui/material/Collapse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationTriangle, faFileCircleXmark, faUpload, faRepeat } from '@fortawesome/free-solid-svg-icons';
-import CircularProgress from '@mui/material/CircularProgress';
+import { faExclamationTriangle, faUpload, faRepeat } from '@fortawesome/free-solid-svg-icons';
 import Alert from "@mui/material/Alert";
 import {ingest_api_upload_bulk_metadata} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
-import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing, ParseBadJSON} from '../../utils/error_helper.jsx';
-import LoadingButton from "@mui/lab/LoadingButton";
+import {ParseBadJSON} from '../../utils/error_helper.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 // import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import Button from "@mui/material/Button";
@@ -45,7 +42,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
 
   // Column Management 
   let [columns, setColumns] = useState([]);
-  
 
   // Handle file upload and parse bulkMeta
   function handleFileGrab(e) {
@@ -128,7 +124,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
     let newFile = file;
     let data = fileData.rows;
-    console.debug('%c◉ handleFileUpload newFile ',  'color:#fff; background:#0033FF;', newFile, data);
+    console.debug('%c◉ handleFileUpload newFile ', 'color:#fff; background:#0033FF;', newFile, data);
     ingest_api_upload_bulk_metadata(toTitleCase(type), newFile)
       .then((res) => {
         console.debug('%c◉ res ', ' background:#0033FF;', res);
@@ -154,7 +150,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             let errorsArray = [];
             const validationPrefix = "Errors occurred during validation. Error validating metadata: ";
             if (typeof obj === "string" && obj.startsWith(validationPrefix)) {
-
 
               // Extract the array between [ and ]
               const arrayMatch = obj.match(/\[(.*)\]/s);
@@ -209,8 +204,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             }
             console.debug('%c◉ errorsArray ', 'color:#00ff7b', errorsArray);
             setBulkMetaValidationErrors(errorsArray);
-
-
             
           }catch(error){
             console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
@@ -290,7 +283,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             ...prevValues,
             'bulkMeta': "Please Review the following validation errors and re-upload your file.",
           }))
-
             
         }else{
           setPageErrors((prevValues) => ({
@@ -324,7 +316,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
       success:false,
     })
   }
-
 
   function highlightTableErrors(errorSet){
     console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
@@ -455,7 +446,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
       </div>
     </>);
   }
-
 
   function calcRegDisabled(){
     let erCheck = bulkMetaValidationErrors && bulkMetaValidationErrors?.length > 0

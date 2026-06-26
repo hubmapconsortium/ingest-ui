@@ -47,7 +47,7 @@ import APIAlertHandler from "./components/ui/APIAlertHandler";
 export function App(){
   let navigate = useNavigate();
   // @todo: trim how many need to actually be hooks / work with the state
-  var[expiredKey,setExpiredKey] = useState(false);
+  var[,setExpiredKey] = useState(false);
   var[loginError,setLoginError] = useState("");
   var[loginErrorCause,setLoginErrorCause] = useState(null);
   var[successDialogRender, setSuccessDialogRender] = useState(false);
@@ -130,7 +130,7 @@ export function App(){
         }
     
       })
-      .catch(error => { 
+      .catch(() => { 
         // console.error('There was a problem with the fetch operation:', error);
       })
 
@@ -461,7 +461,7 @@ export function App(){
   
     function loadFailed(error,errorTitle, errorDetail){
       reportError(error);
-      console.debug('%c◉ errorTitle, error, errorDetail ',  'color:#00ff7b', errorTitle, error, errorDetail);
+      console.debug('%c◉ errorTitle, error, errorDetail ', 'color:#00ff7b', errorTitle, error, errorDetail);
       let ddMeta = {source: 'LocalStorage.login_error',auth: { login_error: loginError },cause: null,};
 
       try{ ddMeta.error = { kind: 'auth', message: error.message, stack: error.stack }; }catch(e){}
@@ -543,7 +543,6 @@ export function App(){
   // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
-
 
   // Error Query Bits
   function reportError(error, details){

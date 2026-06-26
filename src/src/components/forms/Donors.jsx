@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 import {
@@ -7,7 +7,6 @@ import {
   entity_api_create_entity,
 } from "../../service/entity_api";
 import {
-  validateRequired,
   validateProtocolIODOI,
   validateSingleProtocolIODOI
 } from "../../utils/validators";
@@ -131,7 +130,6 @@ export const DonorForm = (props) => {
       [id]: value,
     }));
   }
-  
 
   function validateDOI(protocolDOI){
     if (!validateProtocolIODOI(protocolDOI)) {

@@ -224,7 +224,7 @@ export const SampleForm = (props) => {
                     // Is there a RUI enabled organ up the chain?
 
                     })
-                    .catch((error) => {
+                    .catch(() => {
                       // console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
                     });
               })
@@ -237,7 +237,7 @@ export const SampleForm = (props) => {
             setPageErrors(response);
           }
         })
-        .catch((error) => {
+        .catch(() => {
           // console.debug("entity_api_get_entity ERROR", error);
           // setPageErrors(error); its counting no ancestors of ancestors as an error, shush
         });
@@ -540,7 +540,6 @@ export const SampleForm = (props) => {
   }
 
   function wrapUpPageErrors(error){
-    let errors = pageErrors;
     // console.debug('%c◉ wrapUpPageErrors Err pageErrors ', 'color:#00ff7b', errors);
     setPageErrors(error);
     setIsProcessing(false);

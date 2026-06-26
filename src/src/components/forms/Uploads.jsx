@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from "react";
+import {useEffect, useState, useMemo} from "react";
 import {useParams} from "react-router-dom";
 import {
   ingest_api_allowable_edit_states, 
@@ -27,8 +27,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import InfoIcon from '@mui/icons-material/Info';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -44,7 +42,6 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
-import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
 import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,SnackbarFeedback} from "../ui/formParts";
 import {RenderPageError} from "../../utils/error_helper";
@@ -57,7 +54,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export const UploadForm = (props) => {
-  const [eValOpen, setEValOpen] = useState(true);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "",
@@ -683,7 +679,6 @@ export const UploadForm = (props) => {
       </Dialog>
     )
   }
-
 
   if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);

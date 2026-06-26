@@ -1,4 +1,4 @@
-import React,{useEffect,useState,useMemo} from "react";
+import {useEffect,useState,useMemo} from "react";
 import { useLocation } from 'react-router-dom';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
 // import { DataGrid } from '@material-ui/data-grid';
@@ -26,12 +26,11 @@ import {
   COLUMN_DEF_MIXED,
 } from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
-import {OrganIcons} from "./ui/icons"
 
 export function EmbeddedSearch({  
   custom_title,
   custom_subtitle,
-  searchFilters,
+  searchFilters: initialSearchFilters,
   urlChange,
   modecheck,
   handleTableCellClick,
@@ -73,7 +72,7 @@ export function EmbeddedSearch({
 
   // TABLE & FILTER VALUES
   var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
-  var [searchFilters, setSearchFilters] = useState();
+  var [searchFilters, setSearchFilters] = useState(initialSearchFilters);
   var [formFilters, setFormFilters] = useState(
     searchFilters ? 
     searchFilters : {});
@@ -81,14 +80,13 @@ export function EmbeddedSearch({
   var [pageSize,setPageSize] = useState(100);
 
   // TABLE DATA
-  var [results, setResults] = React.useState({
+  var [results, setResults] = useState({
     dataRows: null,
     rowCount: 0,
     colDef: COLUMN_DEF_MIXED,
   });
 
   //  LOADERS
-  var [loading, setLoading] = useState(true);
   var [tableLoading, setTableLoading] = useState(true);
   // ERROR THINGS
   var [error, setError] = useState();
@@ -237,7 +235,7 @@ export function EmbeddedSearch({
           setTableLoading(false);
         }
     })
-    .catch((error) => {
+    .catch(() => {
       setTableLoading(false);
     });
 
@@ -309,7 +307,7 @@ export function EmbeddedSearch({
     }
   }
 
-  function handleTableCellClickDefault(params, event) {
+  function handleTableCellClickDefault(params) {
     // console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {

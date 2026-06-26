@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 // import MultipleListModal from "../uuid/tissue_form_components/multipleListModal";
-import Tooltip from '@mui/material/Tooltip';
 import { Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

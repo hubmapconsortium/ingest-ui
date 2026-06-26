@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "../../App.css";
-
  
 // NOTE: This will be superseeding the ruiIntegration.jsx in /uuid/tissue_form_components/
 class RUIIntegration extends Component {
@@ -87,7 +86,7 @@ class RUIIntegration extends Component {
     window.removeEventListener("resize", this.updateDimensions.bind(this));
   }
 
-  handleCloseScreenClick = (e) => {
+  handleCloseScreenClick = () => {
   // console.debug('%c◉ Closing,  handleCloseScreenClick', 'color:#00ff7b', );
     this.setState({ close_rui: true });
     this.props.closeRUIModal();
@@ -140,7 +139,7 @@ class RUIIntegration extends Component {
       // IEC TODO: Fetch previous registrations for this user/organization to the same organ
       return [];
     };
-    rui.cancelRegistration = function (str) {
+    rui.cancelRegistration = function () {
     // console.log("cancelRegistration",str);
       self.setState({ close_rui: true });
       self.props.closeRUIModal();

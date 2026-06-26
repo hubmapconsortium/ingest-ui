@@ -20,7 +20,6 @@ import { validateRequired } from "../../utils/validators";
 export const EPICollectionForm = (props) => {
   const navigate = useNavigate();
   const { uuid } = useParams();
-  const userGroups = JSON.parse(localStorage.getItem("userGroups"));
   const [entityData, setEntityData] = useState();
   let [loading, setLoading] = useState({
     page: true,
@@ -242,7 +241,6 @@ export const EPICollectionForm = (props) => {
         setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
     }
   };
-
 
   const handlePublish = (e) => {
     e.preventDefault();
