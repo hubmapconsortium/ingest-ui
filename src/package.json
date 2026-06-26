@@ -20,8 +20,8 @@
     "dompurify": "^3.3.2",
     "elastic-builder": "^2.16.0",
     "env-cmd": "^10.1.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "react-error-boundary": "^4.0.11",
     "react-idle-timer": "^4.6.4",
     "react-papaparse": "^3.18.1",
@@ -63,7 +63,12 @@
     "upload-sourcemaps:dry-run": "node ./scripts/upload-sourcemaps.js --dry-run",
     "test": "vitest run",
     "test:watch": "vitest",
-    "cypress:open": "cypress open"
+    "cypress:open": "cypress open",
+    "cypress:auth-search": "cypress run --spec cypress/e2e/search/authenticatedSearchSmoke.cy.js",
+    "verify:production-routing": "node ./scripts/verify-production-routing.js",
+    "verify:react19": "npm run lint && npm test && npm run build && npm run build:tags && npm run verify:production-routing",
+    "verify:docker-config": "cd ../docker && ./docker-development.sh config",
+    "verify:docker-build": "cd ../docker && ./docker-development.sh build"
   },
   "browserslist": {
     "production": [

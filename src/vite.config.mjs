@@ -7,6 +7,9 @@ import { defineConfig, loadEnv } from 'vite';
 const packageJson = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8')
 );
+const reactPackageJson = JSON.parse(
+  readFileSync(new URL('./node_modules/react/package.json', import.meta.url), 'utf8')
+);
 
 function mirrorAppCssToAssets() {
   const sourceCss = resolve(process.cwd(), 'src/App.css');
@@ -18,6 +21,20 @@ function mirrorAppCssToAssets() {
     buildStart() {
       mkdirSync(targetDir, { recursive: true });
       writeFileSync(targetCss, readFileSync(sourceCss));
+    },
+  };
+}
+
+function printReactVersionOnStart() {
+  return {
+    name: 'print-react-version-on-start',
+    configureServer(server) {
+      const printUrls = server.printUrls.bind(server);
+
+      server.printUrls = () => {
+        server.config.logger.info(`  React v${reactPackageJson.version}`);
+        printUrls();
+      };
     },
   };
 }
@@ -48,6 +65,7 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       mirrorAppCssToAssets(),
+      printReactVersionOnStart(),
       react({
         include: /\.[jt]sx?$/,
       }),
