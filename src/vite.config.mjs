@@ -79,17 +79,6 @@ export default defineConfig(({ command, mode }) => {
       host: '0.0.0.0',
       port: Number(loadedEnv.PORT || 8585),
     },
-    esbuild: {
-      include: /src\/.*\.[jt]sx?$/,
-      loader: 'jsx',
-    },
-    optimizeDeps: {
-      esbuildOptions: {
-        loader: {
-          '.js': 'jsx',
-        },
-      },
-    },
     build: {
       assetsDir: 'static',
       chunkSizeWarningLimit: 2000,

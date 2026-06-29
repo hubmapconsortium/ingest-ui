@@ -69,9 +69,10 @@ export const EPICollectionForm = (props) => {
                 contacts: entityData.contacts || [],
                 group_uuid: entityData.group_uuid || "",
               });
+              const datasets = entityData.datasets || [];
               setBulkSelection({
-                uuids: entityData.datasets.map(obj => obj.uuid),
-                data: entityData.datasets
+                uuids: datasets.map(obj => obj.uuid),
+                data: datasets
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {

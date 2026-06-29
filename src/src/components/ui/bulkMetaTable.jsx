@@ -119,6 +119,14 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (bulkMetaValidationErrors?.some(error => error?.row && error?.column)) {
+      window.setTimeout(() => highlightTableErrors(bulkMetaValidationErrors), 0);
+    } else if (!bulkMetaValidationErrors || bulkMetaValidationErrors.length === 0) {
+      highlightTableErrors("clear");
+    }
+  }, [bulkMetaValidationErrors]);
+
   function handleFileUpload(){
     console.debug('%c◉ fileData ', 'color:#0033FF', fileData, file);
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
@@ -322,9 +330,9 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
       for (const error of errorSet) {
-        let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
+        let errorRow = document.querySelector(`.associatedBulkMetaTable [aria-rowindex="${error.row}" ]`);
         const col = error.column === "organ_type" ? "organ" : error.column;
-        let cell = errorRow.querySelector(`[data-field="${col}" ]`);
+        let cell = errorRow?.querySelector(`[data-field="${col}" ]`);
         if(cell){
           // We only want to set up the hover listeners and data attributes 
           // if there is a cell to attach them to.
@@ -334,6 +342,9 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
           cell.setAttribute('data-target',`${error?.row-1}_${col}`)
           cell.addEventListener("mouseenter", function (e) {
             spotlightCellAndRow(e, error, `${error?.row-1}_${col}`); 
+          });
+          errorRow.addEventListener("click", function (e) {
+            setSelectionListRow(e, error, `${error?.row}`); 
           });
           
         }
@@ -353,14 +364,15 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     let olds = document.querySelectorAll(`[data-spotlight="true" ]`);
     olds.forEach(el => el.removeAttribute('data-spotlight', 'true'));
     // Attach data-spotlight to both the error list item and the cell, so both will be highlighted
-    let spotlightTargets = document.querySelectorAll(`[data-target="${target}" ]`);
-    const hasUndefinedErrRow = Array.from(spotlightTargets).some(
+    let spotlightTargets = Array.from(document.querySelectorAll(`[data-target="${target}" ]`))
+      .filter((el) => (el?.getAttribute('data-selected') !== 'true' || !el.getAttribute('data-selected')));
+    const hasUndefinedErrRow = spotlightTargets.some(
       (el) => el?.id === 'errListRow-undefined'
     );
     if (!hasUndefinedErrRow) {
       spotlightTargets.forEach(el => el.setAttribute('data-spotlight', 'true')); 
       // Add bonus row highlight on table when spotlit
-      let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
+      let errorRow = document.querySelector(`.associatedBulkMetaTable [aria-rowindex="${error.row}" ]`);
       errorRow?.setAttribute('data-spotlight', 'true');
     }
     setTimeout(() => {
@@ -374,6 +386,31 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     oldDataError.forEach(el => el.removeAttribute('data-error'));
     let oldDataCellError= document.querySelectorAll('[data-cell-error]');
     oldDataCellError.forEach(el => el.removeAttribute('data-cell-error'));
+  }
+
+  function clearSelection(){
+    let oldSelected = document.querySelectorAll('[data-selected]'); 
+    oldSelected.forEach(el => el.removeAttribute('data-selected')); 
+    oldSelected.forEach(el => el.classList.remove('Mui-selected')); 
+    let oldByClass = document.getElementsByClassName("Mui-selected");
+    Array.from(oldByClass).forEach(el => el.classList.remove('Mui-selected'));
+  }
+
+  function setSelectionTableRow(e, item, target){
+    clearSelection();
+    let dataGridContainer = document.querySelector('.associatedBulkMetaTable');
+    let selectedRow = dataGridContainer?.querySelector(`[aria-rowindex="${target}" ]`);
+    if(selectedRow){
+      selectedRow.setAttribute('data-selected', 'true');
+      selectedRow.classList.add('Mui-selected');
+    }
+    e?.currentTarget?.setAttribute('data-selected', 'true');
+  }
+
+  function setSelectionListRow(e, item, target){
+    clearSelection();
+    let selectedRow = document.getElementById(`errListRow-${target}`);
+    selectedRow?.setAttribute('data-selected', 'true');
   }
 
   function renderEntityTable(){
@@ -471,6 +508,21 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
         </Box>
         <ErrorList
             errors={bulkMetaValidationErrors}
+            onHover={({ event, item }) => {
+              const col = item?.column === 'organ_type' ? 'organ' : item?.column;
+              spotlightCellAndRow(
+                event,
+                { row: item?.row, column: col },
+                `${item?.row - 1}_${col}`
+              );
+            }}
+            onRowClick={({ event, item }) => {
+              setSelectionTableRow(
+                event,
+                item,
+                `${item?.row}`
+              );
+            }}
           />
         {/* <Box sx={{background:"#FFE8E8"}} >
           {bulkMetaValidationErrors && bulkMetaValidationErrors.length > 0 && (

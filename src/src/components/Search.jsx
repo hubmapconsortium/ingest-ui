@@ -1050,7 +1050,7 @@ export function Search({
                 <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                 <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
               </Box>
-              <Box sx={{display: 'flex', gap: 1, alignItems: 'center', width: '100%'}}> 
+              <Box sx={{display: 'inline-block', alignItems: 'center', width: '100%'}}> 
               {savedSearches.length === 0 ? (
                 <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
               ) : (
@@ -1076,7 +1076,7 @@ export function Search({
                         borderRadius: '999px',
                         height: 24,
                         px: 1.25,
-                        mr: 0,
+                        margin: "2px 2px 2px 0",
                         border: '1px solid #b7c0cb',
                         minWidth: 'auto',
                         lineHeight: 1,
