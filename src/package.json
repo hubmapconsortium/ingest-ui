@@ -65,6 +65,7 @@
     "tests": "env -u ELECTRON_RUN_AS_NODE npx cypress run --browser chrome --spec \"cypress/e2e/forms/create/*Form.cy.js,cypress/e2e/forms/create/bulkUploadPages.cy.js\" --config baseUrl=http://127.0.0.1:9696",
     "testRec": "env -u ELECTRON_RUN_AS_NODE npx cypress run --browser chrome --spec \"cypress/e2e/forms/create/*Form.cy.js,cypress/e2e/forms/create/bulkUploadPages.cy.js\" --config baseUrl=http://127.0.0.1:9696,video=true",
     "testPics": "env -u ELECTRON_RUN_AS_NODE CYPRESS_VISUAL_CHECKPOINTS=true npx cypress run --browser chrome --spec \"cypress/e2e/forms/create/*Form.cy.js,cypress/e2e/forms/create/bulkUploadPages.cy.js\" --config baseUrl=http://127.0.0.1:9696",
+    "testServices:dev": "env -u ELECTRON_RUN_AS_NODE npx cypress run --browser chrome --spec \"cypress/e2e/services/dev/*.cy.js\"",
     "cypress:open": "cypress open",
     "cypress:auth-search": "cypress run --spec cypress/e2e/search/authenticatedSearchSmoke.cy.js",
     "cypress:forms": "cypress run --spec \"cypress/e2e/forms/create/*Form.cy.js,cypress/e2e/forms/create/bulkUploadPages.cy.js\"",
