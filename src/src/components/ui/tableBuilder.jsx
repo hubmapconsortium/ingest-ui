@@ -88,7 +88,13 @@ export const COLUMN_DEF_DATASET = [
   },
   { field: 'creation_action', headerName: 'Creation Action', width: 170,
     renderCell: params => {
-      return <Typography variant="caption" sx={{color:"#00000060"}}> <CreationActionIcon action={params.value.toString()} /> {params.value}</Typography> ;
+      const creationAction = params.value ? params.value.toString() : "";
+      return (
+        <Typography variant="caption" sx={{color:"#00000060"}}>
+          {creationAction && <CreationActionIcon action={creationAction} />}
+          {creationAction || "N/A"}
+        </Typography>
+      );
     }
   },
   { field: 'data_access_level', headerName: 'Access Level', width: 115,
