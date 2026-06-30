@@ -90,6 +90,22 @@ export const wrongTypeSourceListEntity = {
   status: 'New',
 };
 
+export const protocolUrl = 'https://dx.doi.org/10.17504/protocols.io.AAAAAAdfgzf';
+
+export function successEntity(entityType, overrides = {}) {
+  const prefix = entityType.substring(0, 4).toUpperCase();
+  return {
+    uuid: `${entityType.toLowerCase()}-created-cypress`,
+    hubmap_id: `HBM999.${prefix}.999`,
+    entity_type: entityType,
+    submission_id: `${prefix}-CYPRESS-1`,
+    group_uuid: '00000000-0000-0000-0000-000000000001',
+    group_name: 'Cypress Smoke Group',
+    status: 'New',
+    ...overrides,
+  };
+}
+
 export function assertFormLoaded({ entityType, selectors, submitLabel }) {
   cy.contains('.FormHead', 'Registering a', { timeout: 30000 }).should('be.visible');
   cy.contains('.FormHead', entityType, { timeout: 30000 }).should('be.visible');
@@ -111,6 +127,23 @@ export function visualCheckpoint(name) {
   if (Cypress.env('VISUAL_CHECKPOINTS')) {
     cy.screenshot(`form-checkpoints/${name}`, { capture: 'viewport' });
   }
+}
+
+export function assertSuccessDialog(entity) {
+  cy.contains('Success!', { timeout: 30000 }).should('be.visible');
+  cy.contains('Save was successful').should('be.visible');
+  cy.contains(entity.hubmap_id).should('be.visible');
+}
+
+export function assertUpdateSnackbar(message = 'Entity Updated Successfully!') {
+  cy.contains(message, { timeout: 30000 }).should('be.visible');
+}
+
+export function requestBody(alias) {
+  return cy.wait(alias).then((interception) => {
+    const { body } = interception.request;
+    return typeof body === 'string' ? JSON.parse(body) : body;
+  });
 }
 
 export function interceptNewSampleSource(source, ancestors = [donorAncestor, source]) {
@@ -170,6 +203,30 @@ export function interceptDataset(entity, permissions) {
     statusCode: 200,
     body: permissions,
   }).as(`edit-states-${entity.uuid}`);
+}
+
+export function interceptExistingEntity(entity, permissions = editStates(), options = {}) {
+  cy.intercept('GET', `**/entities/${entity.uuid}*`, {
+    statusCode: 200,
+    body: entity,
+  }).as(`${entity.entity_type.toLowerCase()}-${entity.uuid}`);
+
+  cy.intercept('GET', `**/entities/${entity.hubmap_id}*`, {
+    statusCode: 200,
+    body: entity,
+  }).as(`${entity.entity_type.toLowerCase()}-${entity.hubmap_id}`);
+
+  cy.intercept('GET', `**/entities/${entity.uuid}/allowable-edit-states`, {
+    statusCode: 200,
+    body: permissions,
+  }).as(`${entity.entity_type.toLowerCase()}-edit-states-${entity.uuid}`);
+
+  if (options.globusUrl) {
+    cy.intercept('GET', `**/entities/${entity.uuid}/globus-url`, {
+      statusCode: 200,
+      body: options.globusUrl,
+    }).as(`${entity.entity_type.toLowerCase()}-globus-${entity.uuid}`);
+  }
 }
 
 export function assertBulkSelectorSourceList({

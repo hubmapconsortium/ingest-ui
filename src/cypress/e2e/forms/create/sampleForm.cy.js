@@ -4,12 +4,18 @@ import {
   ancestorOrganSample,
   assertEmptySubmitValidation,
   assertFormLoaded,
+  assertSuccessDialog,
+  assertUpdateSnackbar,
   donorAncestor,
   donorSource,
   editStates,
+  interceptExistingEntity,
   interceptNewSampleSource,
+  protocolUrl,
+  requestBody,
   sampleSource,
   sampleSourceWithoutOrgan,
+  successEntity,
   visualCheckpoint,
 } from './formTestHelpers';
 
@@ -153,5 +159,85 @@ describe('Sample form', () => {
     cy.contains('You do not have permission to modify this item.').should('be.visible');
     cy.contains('button', 'Update').should('not.exist');
     cy.contains('button', 'Cancel').should('be.visible');
+  });
+
+  it('creates a sample from a complete valid form', () => {
+    const createdSample = successEntity('Sample', {
+      uuid: 'sample-create-success',
+      hubmap_id: 'HBM999.SAMP.001',
+      sample_category: 'organ',
+      organ: 'RK',
+      lab_tissue_sample_id: 'created-sample-lab-id',
+    });
+    interceptNewSampleSource(donorSource, [donorSource]);
+    cy.intercept('POST', '**/entities/sample', {
+      statusCode: 200,
+      body: createdSample,
+    }).as('createSample');
+
+    const sampleParams = new URLSearchParams({
+      direct_ancestor_uuid: donorSource.uuid,
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: createdSample.lab_tissue_sample_id,
+      description: 'Created sample description',
+      organ: 'RK',
+      group_uuid: '00000000-0000-0000-0000-000000000001',
+    });
+
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/new/sample?${sampleParams.toString()}`);
+    cy.get('#organ', { timeout: 30000 }).select('RK');
+    cy.contains('button', 'Generate ID', { timeout: 30000 }).click({ force: true });
+
+    requestBody('@createSample').then((body) => {
+      expect(body).to.include({
+        direct_ancestor_uuid: donorSource.uuid,
+        protocol_url: protocolUrl,
+        lab_tissue_sample_id: createdSample.lab_tissue_sample_id,
+        description: 'Created sample description',
+        sample_category: 'organ',
+        organ: 'RK',
+        group_uuid: '00000000-0000-0000-0000-000000000001',
+      });
+    });
+    assertSuccessDialog(createdSample);
+  });
+
+  it('updates an existing sample from a valid edit form', () => {
+    const editableSample = successEntity('Sample', {
+      uuid: 'sample-edit-success',
+      hubmap_id: 'HBM999.SAMP.002',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'editable-sample-lab-id',
+      description: 'Original sample description',
+    });
+
+    interceptExistingEntity(editableSample, editStates({ has_write_priv: true }));
+    cy.intercept('GET', `**/ancestors/${sampleSource.uuid}`, {
+      statusCode: 200,
+      body: [donorAncestor, sampleSource],
+    }).as('editableSampleAncestors');
+    cy.intercept('GET', `**/specimens/${editableSample.uuid}/ingest-group-ids`, {
+      statusCode: 200,
+      body: { ingest_group_ids: [] },
+    }).as('editableSampleAssociatedIds');
+    cy.intercept('PUT', `**/entities/${editableSample.hubmap_id}`, {
+      statusCode: 200,
+      body: { message: 'Sample updated successfully' },
+    }).as('updateSample');
+
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/sample/${editableSample.uuid}`);
+    cy.get('textarea#description', { timeout: 30000 }).clear().type('Updated sample description');
+    cy.contains('button', 'Update').click({ force: true });
+
+    requestBody('@updateSample').then((body) => {
+      expect(body.description).to.equal('Updated sample description');
+      expect(body.lab_tissue_sample_id).to.equal(editableSample.lab_tissue_sample_id);
+    });
+    assertUpdateSnackbar('Sample updated successfully');
   });
 });

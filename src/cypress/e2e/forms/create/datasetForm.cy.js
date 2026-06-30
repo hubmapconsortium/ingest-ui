@@ -4,9 +4,13 @@ import {
   assertBulkSelectorSourceList,
   assertEmptySubmitValidation,
   assertFormLoaded,
+  assertSuccessDialog,
   datasetEntity,
   editStates,
   interceptDataset,
+  requestBody,
+  sourceListEntities,
+  successEntity,
 } from './formTestHelpers';
 
 const datasetForm = {
@@ -36,6 +40,48 @@ describe('Dataset form', () => {
       expectsWrongTypeError: false,
       screenshotName: 'dataset-bulkselector-warning-error',
     });
+  });
+
+  it('creates a dataset from a complete valid form', () => {
+    const createdDataset = successEntity('Dataset', {
+      uuid: 'dataset-create-success',
+      hubmap_id: 'HBM999.DATA.001',
+      lab_dataset_id: 'created-dataset-lab-id',
+      dataset_type: 'RNAseq',
+    });
+    const datasetParams = new URLSearchParams({
+      lab_dataset_id: createdDataset.lab_dataset_id,
+      description: 'Created dataset description',
+      dataset_info: 'Created dataset searchable info',
+      contains_human_genetic_sequences: 'false',
+      dt_select: 'RNAseq',
+      group_uuid: '00000000-0000-0000-0000-000000000001',
+      source_list: sourceListEntities[0].hubmap_id,
+    });
+
+    cy.intercept('POST', '**/datasets', {
+      statusCode: 200,
+      body: createdDataset,
+    }).as('createDataset');
+
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/new/datasetAdmin?${datasetParams.toString()}`, {
+      searchResults: [sourceListEntities[0]],
+    });
+    cy.contains('button', 'Save', { timeout: 30000 }).click({ force: true });
+
+    requestBody('@createDataset').then((body) => {
+      expect(body).to.include({
+        lab_dataset_id: createdDataset.lab_dataset_id,
+        description: 'Created dataset description',
+        dataset_info: 'Created dataset searchable info',
+        contains_human_genetic_sequences: false,
+        dataset_type: 'RNAseq',
+        group_uuid: '00000000-0000-0000-0000-000000000001',
+      });
+      expect(body.direct_ancestor_uuids).to.deep.equal([sourceListEntities[0].uuid]);
+    });
+    assertSuccessDialog(createdDataset);
   });
 
   describe('action buttons', () => {
@@ -93,5 +139,32 @@ describe('Dataset form', () => {
         });
       });
     });
+  });
+
+  it('updates an existing dataset from a valid edit form', () => {
+    const editableDataset = datasetEntity({
+      uuid: 'dataset-edit-success',
+      hubmap_id: 'HBM999.DATA.002',
+      description: 'Original dataset description',
+      direct_ancestors: [sourceListEntities[0]],
+    });
+
+    interceptDataset(editableDataset, editStates({ has_write_priv: true }));
+    cy.intercept('PUT', `**/entities/${editableDataset.hubmap_id}`, {
+      statusCode: 200,
+      body: { message: 'Dataset update accepted' },
+    }).as('updateDataset');
+
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/dataset/${editableDataset.uuid}`);
+    cy.get('textarea#description', { timeout: 30000 }).clear().type('Updated dataset description');
+    cy.contains('button', /^Save$/).click({ force: true });
+
+    requestBody('@updateDataset').then((body) => {
+      expect(body.description).to.equal('Updated dataset description');
+      expect(body.lab_dataset_id).to.equal(editableDataset.lab_dataset_id);
+    });
+    cy.location('pathname', { timeout: 30000 }).should('eq', '/');
+    cy.contains('Search').should('be.visible');
   });
 });
