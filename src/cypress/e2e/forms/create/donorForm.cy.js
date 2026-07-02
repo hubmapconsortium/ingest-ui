@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import {
   assertEmptySubmitValidation,
@@ -21,6 +21,10 @@ const donorForm = {
     'input#protocol_url',
     'textarea#description',
     'select#group_uuid',
+  ],
+  requiredFields: [
+    'input#label',
+    'input#protocol_url',
   ],
 };
 

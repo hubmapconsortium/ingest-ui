@@ -17,8 +17,6 @@ import {AUTH} from '../../config/constants';
 const requiredAuthInfoFields = [
   'name',
   'email',
-  'auth_token',
-  'transfer_token',
   'groups_token',
 ];
 

@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import {
   ancestorOrganSample,
@@ -28,6 +28,10 @@ const sampleForm = {
     'input#protocol_url',
     'textarea#description',
     'select#group_uuid',
+  ],
+  requiredFields: [
+    'input#direct_ancestor_uuid',
+    'input#protocol_url',
   ],
 };
 

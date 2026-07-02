@@ -1,4 +1,4 @@
-/* global cy, Cypress */
+/* global cy, Cypress, expect */
 
 export const editStates = (overrides = {}) => ({
   has_admin_priv: false,
@@ -117,10 +117,36 @@ export function assertFormLoaded({ entityType, selectors, submitLabel }) {
   cy.get('button:visible').contains(submitLabel).should('exist');
 }
 
-export function assertEmptySubmitValidation({ submitLabel }) {
+function assertRequiredFieldError(selector) {
+  cy.get(selector, { timeout: 30000 }).should(($field) => {
+    const elements = Array.from($field);
+    const hasInvalidField = elements.some((element) => element.matches(':invalid'));
+    const hasErrorState = (
+      hasInvalidField
+      || $field.hasClass('Mui-error')
+      || $field.hasClass('error')
+      || $field.hasClass('fieldError')
+      || $field.closest('.MuiFormControl-root').find('.Mui-error').length > 0
+      || $field.closest('.MuiFormControl-root').find('.fieldError').length > 0
+      || $field.closest('.invalid').length > 0
+      || $field.closest('.error').length > 0
+    );
+
+    expect(hasErrorState, `${selector} should render an error state`).to.equal(true);
+    expect(elements.length, `${selector} should still be in the form`).to.be.greaterThan(0);
+  });
+}
+
+export function assertEmptySubmitValidation({ submitLabel, requiredFields = [], requiredMessages = [] }) {
   cy.get('button:visible').contains(submitLabel).click();
   cy.contains(/required|Please select|Please Review|valid protocols/i, { timeout: 30000 })
     .should('exist');
+
+  requiredFields.forEach(assertRequiredFieldError);
+
+  requiredMessages.forEach((message) => {
+    cy.contains(message, { timeout: 30000 }).should('be.visible');
+  });
 }
 
 export function visualCheckpoint(name) {

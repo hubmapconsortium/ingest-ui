@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import {
   assertBulkSelectorSourceList,
@@ -23,6 +23,13 @@ const collectionForm = {
     'input#title',
     'textarea#description',
     'select#group_uuid',
+  ],
+  requiredFields: [
+    'input#title',
+    'textarea#description',
+  ],
+  requiredMessages: [
+    'Please select at least one Associated Dataset',
   ],
 };
 

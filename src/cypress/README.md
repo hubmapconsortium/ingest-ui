@@ -8,22 +8,24 @@ migration confidence. Do not commit real auth/session tokens.
 In one terminal, provide a current local session JSON and start the app:
 
 ```sh
-export CYPRESS_AUTH_INFO='{"name":"...","email":"...","globus_id":"...","auth_token":"...","transfer_token":"...","groups_token":"..."}'
+export CYPRESS_AUTH_INFO='{"name":"...","email":"...","groups_token":"..."}'
 
-npm start
+npm run start -- --host 127.0.0.1 --port 9696
 ```
 
 Then, in a second terminal:
 
 ```sh
+npm test
 npm run cypress:forms
+npm run testall
 ```
 
 If you store the session JSON in a local untracked file:
 
 ```sh
 export CYPRESS_AUTH_INFO="$(cat ./auth-info.local.json)"
-npm run cypress:forms
+npm test
 ```
 
 The form smoke suite covers the new entity forms for Donor, Sample, Dataset,
@@ -48,8 +50,14 @@ authenticated search and expects at least one result row.
 ## Cypress UI
 
 ```sh
+npm run start -- --host 127.0.0.1 --port 9595
 npm run cypress:open
+npm run testall -- -v
 ```
+
+`npm run testall` runs the UI form/bulk suite and the DEV Services suite through
+the single `cypress/e2e/testall.cy.js` orchestrator spec. `npm run testall -- -v`
+opens Cypress GUI with that one spec listed.
 
 ## Related verification commands
 
@@ -61,9 +69,9 @@ npm run verify:docker-build
 
 ## Notes
 
-- `npm start` must be running at `http://localhost:8585` unless
-  `CYPRESS_BASE_URL` is set.
+- Headless form test commands use `http://127.0.0.1:9696`.
+- Cypress GUI/open commands use `http://127.0.0.1:9595`.
 - `CYPRESS_AUTH_INFO` must be set in the same shell where Cypress runs.
-- The session tokens must be valid and unexpired.
+- The `groups_token` must be valid and unexpired for HuBMAP service calls.
 - Use `example.env` for dummy/local template values only; never commit real
   session JSON.

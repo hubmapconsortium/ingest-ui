@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import {
   assertEmptySubmitValidation,
@@ -22,6 +22,12 @@ const uploadForm = {
     '#intended_dataset_type',
     'input#anticipated_dataset_count',
     '#group_uuid',
+  ],
+  requiredFields: [
+    'input#title',
+    'textarea#description',
+    '#intended_organ',
+    '#intended_dataset_type',
   ],
 };
 

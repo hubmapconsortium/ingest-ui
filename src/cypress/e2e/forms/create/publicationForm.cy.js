@@ -1,4 +1,4 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import {
   assertBulkSelectorSourceList,
@@ -26,6 +26,17 @@ const publicationForm = {
     'input#publication_url',
     'textarea#description',
     'select#group_uuid',
+  ],
+  requiredFields: [
+    'input#title',
+    'input#publication_venue',
+    'input#publication_date',
+    '#publication_status',
+    'input#publication_url',
+    'textarea#description',
+  ],
+  requiredMessages: [
+    'Please select at least one Source',
   ],
 };
 
