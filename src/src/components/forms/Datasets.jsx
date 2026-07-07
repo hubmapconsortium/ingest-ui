@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { Fragment, useEffect, useState, useMemo, useCallback } from "react";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { Typography } from "@mui/material";
 import Alert from "@mui/material/Alert";
@@ -16,6 +16,7 @@ import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
 import { validateRequired, matchingList } from "../../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../../service/entity_api";
+import { DATASET_ACTIONS, getDatasetActions } from "./datasetActionRules";
 
 import { 
   ingest_api_allowable_edit_states, 
@@ -480,85 +481,76 @@ export const DatasetForm = (props) => {
 
   const buttonEngine = () => {
     // SEE https://docs.google.com/spreadsheets/d/1y0q0JVS_KcXjOIhuNJKFZskwc99byiBqPcP5jNK1Gvk/edit?gid=1355693033#gid=1355693033 for logic rules 
+    const renderLoadingActionButton = ({
+      label,
+      loading: isLoading = false,
+      name,
+      onClick,
+      type,
+    }) => (
+      <LoadingButton
+        variant="contained"
+        name={name}
+        loading={isLoading}
+        className="m-2"
+        onClick={onClick}
+        type={type}>
+        {label}
+      </LoadingButton>
+    );
+
+    const actionRenderers = {
+      [DATASET_ACTIONS.create]: () => renderLoadingActionButton({
+        label: "Save",
+        loading: loading.processing,
+        name: "generate",
+        onClick: (e) => handleSave(e),
+        type: "submit",
+      }),
+      [DATASET_ACTIONS.revert]: () => (
+        <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+      ),
+      [DATASET_ACTIONS.process]: () => renderLoadingActionButton({
+        label: "Process",
+        loading: loading.button.process,
+        name: "process",
+        onClick: (e) => handleProcess(e),
+      }),
+      [DATASET_ACTIONS.submitForTesting]: () => renderLoadingActionButton({
+        label: "Submit for Testing",
+        loading: loading.button.submitFT,
+        name: "submit",
+        onClick: (e) => handleSubmitForTesting(e),
+      }),
+      [DATASET_ACTIONS.submit]: () => renderLoadingActionButton({
+        label: "Submit",
+        loading: loading.button.submit,
+        name: "submit",
+        onClick: (e) => handleLaunchSubmitModal(e),
+      }),
+      [DATASET_ACTIONS.validate]: () => renderLoadingActionButton({
+        label: "Validate",
+        loading: loading.button.validate,
+        name: "validate",
+        onClick: (e) => handleValidateEntity(e),
+      }),
+      [DATASET_ACTIONS.save]: () => renderLoadingActionButton({
+        label: "Save",
+        loading: loading.button.save,
+        name: "save",
+        onClick: (e) => handleSave(e),
+      }),
+      [DATASET_ACTIONS.cancel]: () => renderLoadingActionButton({
+        label: "Cancel",
+        onClick: () => navigate("/"),
+      }),
+    };
+
     return (<>
       <Box sx={{ textAlign: "right" }}>
-        {/* SAVE new*/}
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            name="generate"
-            loading={loading.processing}
-            className="m-2"
-            onClick={(e) => handleSave(e)}
-            type="submit">
-            Save
-          </LoadingButton>
-        )}
-        {/* REVERT */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted"].includes(entityData.status.toLowerCase())) && (
-          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
-        )}
-        {/*PROCESS */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && ["new", "submitted"].includes(entityData.status.toLowerCase()) && (entityData.isPrimary || entityData.isEpic) && (
-          <LoadingButton
-            loading={loading.button.process}
-            name="process"
-            onClick={(e) => handleProcess(e)}
-            variant="contained"
-            className="m-2">
-            Process
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_pipeline_testing_priv && (entityData.isPrimary || entityData.isEpic ) && (["new","invalid","error","submitted","published","retracted", "qa", "approval"].includes(entityData.status.toLowerCase())) && (
-          <LoadingButton
-            loading={loading.button.submitFT}
-            onClick={(e) => handleSubmitForTesting(e)}
-            name="submit"
-            variant="contained"
-            className="m-2">
-            Submit for Testing
-          </LoadingButton>
-        )}
-        {/* SUBMIT */}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
-          <LoadingButton
-            loading={loading.button.submit}
-            onClick={(e) => handleLaunchSubmitModal(e)}
-            name="submit"
-            variant="contained"
-            className="m-2">
-            Submit
-          </LoadingButton>
-        )}
-        {/* VALIDATE */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted", "processing"].includes(entityData.status.toLowerCase())) && (
-          <LoadingButton
-            loading={loading.button.validate}
-            onClick={(e) => handleValidateEntity(e)}
-            name="validate"
-            variant="contained"
-            className="m-2">
-            Validate
-          </LoadingButton>
-        )}
-        {/* SAVE  Changes*/}
-        {uuid && uuid.length > 0 && ((permissions.has_write_priv && (!["published","retracted", "qa", "approval"].includes(entityData.status.toLowerCase()))) || (permissions.has_admin_priv && ["qa", "approval"].includes((entityData.status || "").toLowerCase()))) && (
-          <LoadingButton
-            loading={loading.button.save}
-            name="save"
-            onClick={(e) => handleSave(e)}
-            variant="contained"
-            className="m-2">
-            Save
-          </LoadingButton>
-        )}
-        {/* CANCEL */}
-        <LoadingButton
-          variant="contained"
-          className="m-2"
-          onClick={() => navigate("/")}>
-          Cancel
-        </LoadingButton>
+        {getDatasetActions({ uuid, permissions, entityData }).map((action) => (
+          <Fragment key={action.id}>{actionRenderers[action.id]()}</Fragment>
+        ))}
       </Box>
     </>);
   };
