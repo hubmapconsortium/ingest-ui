@@ -137,6 +137,10 @@ export function OrganIcons(organ){
 }
 
 export function CreationActionIcon(action){
+  if(action?.action ){
+    action = action.action
+  }
+  console.debug('%c◉ CreationActionIcon ', 'color:#00ff7b',action );
   switch (action) {
     case "Create Dataset Activity":
       console.log('%c◉ Create Dataset Activity Found', 'background:#8b6eff; color:#fff');

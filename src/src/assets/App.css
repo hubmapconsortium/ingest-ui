@@ -1251,9 +1251,6 @@ svg.invalid {
   min-height: 50px!important;
 }
 
-.HDT .thead-dark th{
-  background: none!important;
-}
 .HDT .MuiDataGrid-columnHeaders {
   border-radius: 0% !important;
 }

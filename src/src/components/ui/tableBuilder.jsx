@@ -91,7 +91,9 @@ export const COLUMN_DEF_DATASET = [
       const creationAction = params.value ? params.value.toString() : "";
       return (
         <Typography variant="caption" sx={{color:"#00000060"}}>
-          {creationAction && <CreationActionIcon action={creationAction} />}
+          {creationAction &&(<>
+              <CreationActionIcon action={creationAction} /> &nbsp;
+          </>)}
           {creationAction || "N/A"}
         </Typography>
       );
@@ -338,7 +340,9 @@ export const COLUMN_DEF_MIXED = [
         return nullCell();
         // return <Skeleton sx={nullRowBarStyle} animation={false} />
       }else{
-        return <Typography >{params?.row?.submission_id} </Typography>
+        return (
+          <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "4px", backgroundColor: "#f0f0f0", fontFamily:"monospace", borderRadius:"6px"}}>{params?.row?.submission_id}</Typography>
+        )
       }
   },
   },
