@@ -65,6 +65,18 @@ function authInfoFromHref(href) {
   return info ? JSON.parse(info) : null;
 }
 
+function originHostname(origin) {
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    return new URL(origin).hostname.toLowerCase();
+  } catch (e) {
+    return null;
+  }
+}
+
 function fillGlobusLogin(account) {
   return cy.get('body', { timeout: 30000 }).then(($body) => {
     if (account.organization === 'Google' && $body.find('a[href*="google"], button:contains("Google"), img[alt*="Google"], .fa-google').length > 0) {
@@ -96,7 +108,7 @@ function fillGlobusLogin(account) {
 
 function failIfGlobusErrorPage() {
   return cy.location('origin', { timeout: 30000 }).then((origin) => {
-    if (!origin || !origin.includes('auth.globus.org')) {
+    if (originHostname(origin) !== 'auth.globus.org') {
       return;
     }
 
@@ -170,7 +182,7 @@ function fillGoogleLogin(account) {
 
 function fillCurrentOriginLogin(account) {
   return cy.location('origin', { timeout: 60000 }).then((origin) => {
-    if (origin && origin.includes('accounts.google.com')) {
+    if (originHostname(origin) === 'accounts.google.com') {
       return fillGoogleLogin(account);
     }
 
