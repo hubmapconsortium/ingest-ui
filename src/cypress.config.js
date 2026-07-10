@@ -13,9 +13,8 @@ module.exports = defineConfig({
     authSearchKeyword: process.env.CYPRESS_AUTH_SEARCH_KEYWORD,
   },
   e2e: {
-    baseUrl: process.env.CYPRESS_BASE_URL || "http://127.0.0.1:9696",
-    //excludeSpecPattern: "**/entity/create/*.cy.js",
-    testIsolation:false,
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://127.0.0.1:9595",
+    testIsolation: false,
     setupNodeEvents() {
       // implement node event listeners here
     },

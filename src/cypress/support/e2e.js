@@ -15,13 +15,7 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
-// import './commands'
 import './commands/general'
-import './commands/entity/general'
-import './commands/entity/constraints'
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
 
 beforeEach(() => {
   cy.intercept('POST', 'https://www.google-analytics.com/**', {

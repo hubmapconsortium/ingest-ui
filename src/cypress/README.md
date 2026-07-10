@@ -1,63 +1,60 @@
-# Cypress smoke tests
+# Test commands
 
-These Cypress specs include opt-in authenticated smoke checks for React 19
-migration confidence. Do not commit real auth/session tokens.
-
-## Authenticated form smoke tests
-
-In one terminal, provide a current local session JSON and start the app:
+The supported local test commands are:
 
 ```sh
-export CYPRESS_AUTH_INFO='{"name":"...","email":"...","groups_token":"..."}'
-
-npm run start -- --host 127.0.0.1 --port 9696
+npm run test:v
+npm run test:c
+npm run test:all
 ```
 
-Then, in a second terminal:
+## `npm run test:v`
+
+Runs the non-interactive Vitest suite.
 
 ```sh
-npm test
-npm run cypress:forms
-npm run testall
+npm run test:v
 ```
 
-If you store the session JSON in a local untracked file:
+This covers the React migration smoke tests under `src/App.test.jsx` and the
+form/action unit tests under `src/tests/`.
 
-```sh
-export CYPRESS_AUTH_INFO="$(cat ./auth-info.local.json)"
-npm test
-```
+## `npm run test:c`
 
-The form smoke suite covers the new entity forms for Donor, Sample, Dataset,
-Upload, Publication, Collection, and EPICollection. It verifies form loading,
-key fields, and empty-submit validation. It does not create real entities.
-
-For speed, each entity type is checked in a single visit: load assertions run
-first, then the empty-submit validation assertion runs on the same page.
-
-## Authenticated search smoke test
-
-Optionally provide a known search keyword:
-
-```sh
-export CYPRESS_AUTH_SEARCH_KEYWORD="HBM000.TEST.000"
-npm run cypress:auth-search
-```
-
-Without `CYPRESS_AUTH_SEARCH_KEYWORD`, the search smoke runs a broad
-authenticated search and expects at least one result row.
-
-## Cypress UI
+Opens Cypress against the current unified spec:
 
 ```sh
 npm run start -- --host 127.0.0.1 --port 9595
-npm run cypress:open
-npm run testall -- -v
+npm run test:c
 ```
 
-`npm run testall` runs the UI form/bulk suite and the DEV Services suite through
-the single `cypress/e2e/testall.cy.js` orchestrator spec. `npm run testall -- -v`
-opens Cypress GUI with that one spec listed.
+Cypress defaults to `http://127.0.0.1:9595`. If that port is unavailable, start
+Vite on a different testing port and pass the matching base URL:
+
+```sh
+npm run start -- --host 127.0.0.1 --port 9696
+CYPRESS_BASE_URL=http://127.0.0.1:9696 npm run test:c
+```
+
+`npm run test:c` opens only `cypress/e2e/testall.cy.js`, which imports the
+current form, bulk upload, and DEV service Cypress specs.
+
+For DEV service specs, keep real tokens local and untracked. The Cypress helper
+supports `cypress.env.json` or the shell variable below:
+
+```sh
+export CYPRESS_AUTH_INFO="$(cat ./auth-info.local.json)"
+npm run test:c
+```
+
+## `npm run test:all`
+
+Runs Vitest first, then opens Cypress:
+
+```sh
+npm run start -- --host 127.0.0.1 --port 9595
+npm run test:all
+```
 
 ## Related verification commands
 
@@ -69,8 +66,7 @@ npm run verify:docker-build
 
 ## Notes
 
-- Headless form test commands use `http://127.0.0.1:9696`.
-- Cypress GUI/open commands use `http://127.0.0.1:9595`.
+- Keep `9595` as the default local testing port when possible.
 - `CYPRESS_AUTH_INFO` must be set in the same shell where Cypress runs.
 - The `groups_token` must be valid and unexpired for HuBMAP service calls.
 - Use `example.env` for dummy/local template values only; never commit real
