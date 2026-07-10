@@ -33,6 +33,8 @@ import { PublicationFormFields, PublicationFieldSet } from "../ui/fields/Publica
 import { PUBLICATION_ACTIONS, getPublicationActions } from "../formActionRules/publicationActionRules";
 import NotFound from "../404";
 
+const PUBLICATION_SUBMIT_SETTLE_DELAY_MS = 100;
+
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
   let [entityData, setEntityData] = useState();
@@ -74,6 +76,7 @@ export const PublicationForm = (props) => {
   // Only track selected UUIDs from BulkSelector
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
+  const selectedBulkDataRef = React.useRef([]);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "", 
@@ -125,7 +128,9 @@ export const PublicationForm = (props) => {
                     setGlobusPath(res.results);
                   }
                 })
-              setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
+              const directAncestorUUIDs = entityData.direct_ancestors.map(obj => obj.uuid);
+              selectedBulkDataRef.current = entityData.direct_ancestors;
+              setSelectedBulkUUIDs(directAncestorUUIDs);
               setSelectedBulkData(entityData.direct_ancestors);
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
@@ -177,6 +182,7 @@ export const PublicationForm = (props) => {
 
   // Callback for BulkSelector
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
+    selectedBulkDataRef.current = data;
     setFormValues(prev => ({
       ...prev,
       direct_ancestor_uuids: uuids
@@ -208,6 +214,7 @@ export const PublicationForm = (props) => {
   }
 
   const validateForm = () => {
+    const latestSelectedBulkData = selectedBulkDataRef.current;
     setValErrorMessages(null);
     let errors = 0;
     let e_messages = []
@@ -253,17 +260,17 @@ export const PublicationForm = (props) => {
     validatePositiveIntegerField('issue', 'Issue');
     validatePositiveIntegerField('volume', 'Volume');
 
-    if (!selectedBulkData || selectedBulkData.length <= 0) {
+    if (!latestSelectedBulkData || latestSelectedBulkData.length <= 0) {
       e_messages.push("Please select at least one Source");
       errors++;
       setFormErrors((prevValues) => ({
         ...prevValues,
         ["direct_ancestor_uuids"]: "Required",
       }));
-    } else if (selectedBulkData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0) {
+    } else if (latestSelectedBulkData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0) {
       setFormValues((prevValues) => ({
         ...prevValues,
-        'direct_ancestor_uuids': selectedBulkData.map(obj => obj.uuid),
+        'direct_ancestor_uuids': latestSelectedBulkData.map(obj => obj.uuid),
       }));
     }
     // Formatting Validation
@@ -274,10 +281,15 @@ export const PublicationForm = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    const submitAction = e.currentTarget?.name || e.nativeEvent?.submitter?.name || e.target?.name;
 
+    window.setTimeout(() => submitPublication(submitAction), PUBLICATION_SUBMIT_SETTLE_DELAY_MS);
+  }
+
+  const submitPublication = (submitAction) => {
     if (validateForm()) {
       setIsProcessing(true);
-      let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
+      let selectedUUIDs = selectedBulkDataRef.current.map((obj) => obj.uuid);
       let cleanForm = {
         title: formValues.title,
         publication_venue: formValues.publication_venue,
@@ -295,12 +307,11 @@ export const PublicationForm = (props) => {
       }
 
       if (uuid) { // We're in Edit Mode
-        let target = e.target.name;
         setButtonLoading((prev) => ({
           ...prev,
-          [target]: true,
+          [submitAction]: true,
         }));
-        if (e.target.name === "process") { // Process
+        if (submitAction === "process") { // Process
           ingest_api_dataset_submit(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status < 300) {
@@ -317,9 +328,9 @@ export const PublicationForm = (props) => {
               props.reportError(error);
               setPageErrors(error);
             });
-        } else if (e.target.name === "submit") { // Submit
+        } else if (submitAction === "submit") { // Submit
           setIsSubmitModalOpen(true)
-        } else if ( e.target.name === "submit_modal") {
+        } else if ( submitAction === "submit_modal") {
           setIsSubmitModalOpen(false);
           cleanForm.status = "Submitted"
           entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
@@ -341,7 +352,7 @@ export const PublicationForm = (props) => {
                 setPageErrors(response);
               }
             })
-        } else if (e.target.name === "save") { // Save
+        } else if (submitAction === "save") { // Save
           entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status === 200) {
