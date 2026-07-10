@@ -16,7 +16,8 @@ import {RevertFeature} from "../../utils/revertModal";
 import { humanize } from "../../utils/string_helper";
 import { validateRequired, matchingList } from "../../utils/validators";
 import { entity_api_get_entity, entity_api_update_entity, entity_api_get_globus_url, } from "../../service/entity_api";
-import { DATASET_ACTIONS, getDatasetActions } from "./datasetActionRules";
+import { DATASET_ACTIONS, getDatasetActions } from "../formActionRules/datasetActionRules";
+import NotFound from "../404";
 
 import { 
   ingest_api_allowable_edit_states, 
@@ -25,7 +26,7 @@ import {
   ingest_api_pipeline_test_submit,
   ingest_api_dataset_submit,
   ingest_api_notify_slack} from "../../service/ingest_api";
-import { prefillFormValuesFromUrl, EntityValidationMessage, RenderSubmitModal } from "../ui/formParts";
+import { prefillFormValuesFromUrl, EntityValidationMessage, redirectToEntityRoute, RenderSubmitModal } from "../ui/formParts";
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
@@ -50,6 +51,7 @@ export const DatasetForm = (props) => {
   let [formErrors, setFormErrors] = useState({});
   let [errorMessages, setErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [notFound, setNotFound] = useState(false);
   let [globusPath, setGlobusPath] = useState(null);
   let [readOnlySources, setReadOnlySources] = useState(false);
   let [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
@@ -124,20 +126,20 @@ export const DatasetForm = (props) => {
   );
 
   useEffect(() => {
+    setNotFound(false);
     if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
           // console.debug('%c◉ RESP ', 'color:#00ff7b', response);
           if(response.status === 404 || response.status === 400){
             // console.debug('%c◉ ERRRRR ', 'color:#FFFFFF;background: #2200FF;padding:200' , );
-            navigate("/notFound?entityID="+uuid);
+            setNotFound(true);
+            return;
           }
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Dataset") {
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             } else {
               const entityData = response.results;
               entityData.isPrimary = response.results.creation_action === "Create Dataset Activity" ? true : false; 
@@ -197,7 +199,8 @@ export const DatasetForm = (props) => {
         })
         .catch((error) => {
           if(error.status === 404){
-            navigate("/notFound?entityID="+uuid);
+            setNotFound(true);
+            return;
           }
           setPageErrors(error);
         });
@@ -555,7 +558,9 @@ export const DatasetForm = (props) => {
     </>);
   };
 
-  if (loading.page || ((!entityData || !form) && uuid)) {
+  if (notFound) {
+    return (<NotFound entityID={uuid} />);
+  } else if (loading.page || ((!entityData || !form) && uuid)) {
     return (<LinearProgress />);
   } else {
     return (

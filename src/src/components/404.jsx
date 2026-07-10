@@ -2,10 +2,10 @@ import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import HomeIcon from '@mui/icons-material/Home';
 
-export default function NotFound() {
+export default function NotFound({ entityID: entityIDProp } = {}) {
   const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
-  const entityID = params.get('entityID');
+  const entityID = entityIDProp || params.get('entityID');
   return (
     <Box
       sx={{

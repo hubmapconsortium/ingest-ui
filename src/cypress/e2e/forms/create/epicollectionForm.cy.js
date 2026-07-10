@@ -1,10 +1,12 @@
 /* global cy, describe, expect, it */
 
 import {
+  assertActionButtons,
   assertBulkSelectorSourceList,
   assertDatasetOnlyEmbeddedSearch,
   assertEmptySubmitValidation,
   assertFormLoaded,
+  assertMissingEntityRendersNotFoundInPlace,
   assertSuccessDialog,
   assertUpdateSnackbar,
   editStates,
@@ -39,6 +41,13 @@ describe('EPICollection form', () => {
     cy.visitWithMockAuth(epicollectionForm.path);
     assertFormLoaded(epicollectionForm);
     assertEmptySubmitValidation(epicollectionForm);
+  });
+
+  it('renders not-found content in place for missing EPICollection IDs', () => {
+    assertMissingEntityRendersNotFoundInPlace({
+      path: '/epicollection',
+      entityID: 'missing-epicollection-id',
+    });
   });
 
   it('prefills source_list rows and renders BulkSelector warning/error dialogs', () => {
@@ -91,6 +100,65 @@ describe('EPICollection form', () => {
       expect(body.dataset_uuids).to.deep.equal([sourceListEntities[0].uuid]);
     });
     assertSuccessDialog(createdEPICollection);
+  });
+
+  describe('action buttons', () => {
+    const epicollection = successEntity('EPICollection', {
+      uuid: 'epicollection-action-buttons',
+      hubmap_id: 'HBM999.EPIC.900',
+      title: 'Action button EPICollection',
+      description: 'Action button EPICollection description',
+      dataset_uuids: [sourceListEntities[0].uuid],
+      datasets: [sourceListEntities[0]],
+    });
+
+    const cases = [
+      {
+        name: 'create mode shows enabled Save and Cancel',
+        path: epicollectionForm.path,
+        visible: ['Save', 'Cancel'],
+        hidden: ['Publish'],
+        enabled: ['Save'],
+      },
+      {
+        name: 'editable EPICollection shows enabled Save without Publish for non-admin',
+        path: `/epicollection/${epicollection.uuid}`,
+        entity: epicollection,
+        permissions: editStates({ has_write_priv: true }),
+        visible: ['Save', 'Cancel'],
+        hidden: ['Publish'],
+        enabled: ['Save'],
+      },
+      {
+        name: 'admin EPICollection shows Publish but Save stays disabled without write',
+        path: `/epicollection/${epicollection.uuid}`,
+        entity: epicollection,
+        permissions: editStates({ has_admin_priv: true, has_write_priv: false }),
+        visible: ['Save', 'Publish', 'Cancel'],
+        disabled: ['Save'],
+        enabled: ['Publish'],
+      },
+      {
+        name: 'registered DOI EPICollection disables Save and Publish',
+        path: `/epicollection/${epicollection.uuid}`,
+        entity: { ...epicollection, registered_doi: '10.1234/cypress.epicollection' },
+        permissions: editStates({ has_admin_priv: true, has_write_priv: true }),
+        visible: ['Save', 'Publish', 'Cancel'],
+        disabled: ['Save', 'Publish'],
+      },
+    ];
+
+    cases.forEach(({ name, path, entity, permissions, visible, hidden, enabled, disabled }) => {
+      it(name, () => {
+        cy.viewport(1280, 900);
+        if (entity) {
+          interceptExistingEntity(entity, permissions);
+        }
+
+        cy.visitWithMockAuth(path);
+        assertActionButtons({ visible, hidden, enabled, disabled });
+      });
+    });
   });
 
   it('updates an existing EPICollection from a valid edit form', () => {

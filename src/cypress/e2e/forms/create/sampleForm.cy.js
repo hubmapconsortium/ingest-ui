@@ -2,8 +2,11 @@
 
 import {
   ancestorOrganSample,
+  assertActionButtons,
   assertEmptySubmitValidation,
   assertFormLoaded,
+  assertInvalidFieldValidation,
+  assertMissingEntityRendersNotFoundInPlace,
   assertSuccessDialog,
   assertUpdateSnackbar,
   donorAncestor,
@@ -36,11 +39,30 @@ const sampleForm = {
 };
 
 describe('Sample form', () => {
+  function interceptSampleEdit(entity, permissions) {
+    interceptExistingEntity(entity, permissions);
+    cy.intercept('GET', `**/ancestors/${sampleSource.uuid}`, {
+      statusCode: 200,
+      body: [donorAncestor, sampleSource],
+    }).as(`ancestors-${entity.uuid}`);
+    cy.intercept('GET', `**/specimens/${entity.uuid}/ingest-group-ids`, {
+      statusCode: 200,
+      body: { ingest_group_ids: [] },
+    }).as(`associated-${entity.uuid}`);
+  }
+
   it('loads and validates required fields', () => {
     cy.viewport(1280, 900);
     cy.visitWithMockAuth(sampleForm.path);
     assertFormLoaded(sampleForm);
     assertEmptySubmitValidation(sampleForm);
+  });
+
+  it('renders not-found content in place for missing sample IDs', () => {
+    assertMissingEntityRendersNotFoundInPlace({
+      path: '/sample',
+      entityID: 'missing-sample-id',
+    });
   });
 
   it('switches visible creation fields based on whether the source is a donor or sample', () => {
@@ -116,6 +138,29 @@ describe('Sample form', () => {
     cy.get('#sample_category').select('block');
     cy.contains('button', /Register Location/i).should('be.visible');
     visualCheckpoint('sample-ancestor-supported-organ-rui-available');
+  });
+
+  it('rejects invalid protocol URL values', () => {
+    const sampleParams = new URLSearchParams({
+      direct_ancestor_uuid: donorSource.uuid,
+      protocol_url: 'https://example.org/not-a-protocol',
+      lab_tissue_sample_id: 'invalid-protocol-sample',
+      description: 'Sample with invalid protocol URL',
+      group_uuid: '00000000-0000-0000-0000-000000000001',
+    });
+
+    cy.intercept('POST', '**/entities/sample').as('createSampleInvalidProtocol');
+    cy.viewport(1280, 900);
+    interceptNewSampleSource(donorSource, [donorSource]);
+    cy.visitWithMockAuth(`/new/sample?${sampleParams.toString()}`);
+    cy.get('#organ', { timeout: 30000 }).select('RK');
+    cy.contains('button', 'Generate ID', { timeout: 30000 }).click({ force: true });
+
+    assertInvalidFieldValidation({
+      selector: 'input#protocol_url',
+      message: 'This must be provided as a protocols.io DOI URL',
+    });
+    cy.get('@createSampleInvalidProtocol.all').should('have.length', 0);
   });
 
   it('locks immutable and writable sample fields separately on an existing read-only sample', () => {
@@ -205,6 +250,56 @@ describe('Sample form', () => {
       });
     });
     assertSuccessDialog(createdSample);
+  });
+
+  describe('action buttons', () => {
+    const sample = successEntity('Sample', {
+      uuid: 'sample-action-buttons',
+      hubmap_id: 'HBM999.SAMP.900',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'sample-action-buttons',
+      description: 'Action button sample description',
+    });
+
+    const cases = [
+      {
+        name: 'create mode shows Generate ID and Cancel',
+        path: sampleForm.path,
+        visible: ['Generate ID', 'Cancel'],
+        hidden: ['Update'],
+      },
+      {
+        name: 'editable sample shows Update and Cancel',
+        path: `/sample/${sample.uuid}`,
+        entity: sample,
+        permissions: editStates({ has_write_priv: true }),
+        visible: ['Update', 'Cancel'],
+        hidden: ['Generate ID'],
+      },
+      {
+        name: 'read-only sample hides Update',
+        path: `/sample/${sample.uuid}`,
+        entity: sample,
+        permissions: editStates({ has_admin_priv: true, has_write_priv: false }),
+        visible: ['Cancel'],
+        hidden: ['Generate ID', 'Update'],
+      },
+    ];
+
+    cases.forEach(({ name, path, entity, permissions, visible, hidden }) => {
+      it(name, () => {
+        cy.viewport(1280, 900);
+        if (entity) {
+          interceptSampleEdit(entity, permissions);
+        }
+
+        cy.visitWithMockAuth(path);
+        assertActionButtons({ visible, hidden });
+      });
+    });
   });
 
   it('updates an existing sample from a valid edit form', () => {

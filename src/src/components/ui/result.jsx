@@ -32,7 +32,7 @@ const Result = (props) => {
     let thisSource = props.result.entity;
     console.debug('%c◉ thisSource ', 'color:#001AFF', thisSource);
     if(thisSource && thisSource.uuid) {
-      let newURL = `${process.env.REACT_APP_URL}/new/sample?direct_ancestor_uuid=${thisSource.uuid}`;
+      let newURL = `/new/sample?direct_ancestor_uuid=${thisSource.uuid}`;
       window.location.replace(newURL);
     }
   }

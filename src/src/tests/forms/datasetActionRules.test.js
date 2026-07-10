@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DATASET_ACTIONS, getDatasetActions } from "./datasetActionRules";
+import { DATASET_ACTIONS, getDatasetActions } from "../../components/formActionRules/datasetActionRules";
 
 const basePermissions = {
   has_admin_priv: false,
@@ -91,7 +91,7 @@ describe("getDatasetActions", () => {
     });
   });
 
-  it("hides testing submission and Save for a processing dataset without write access", () => {
+  it("hides testing submission, Validate, and Save for a processing dataset without write access", () => {
     expect(actionSummary({
       uuid: "dataset-processing",
       permissions: {

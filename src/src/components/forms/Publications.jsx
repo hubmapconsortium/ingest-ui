@@ -28,8 +28,10 @@ import {
   validateSingleProtocolIODOI
 } from "../../utils/validators";
 import { BulkSelector } from "../ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback, RenderSubmitModal} from "../ui/formParts";
+import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback, RenderSubmitModal} from "../ui/formParts";
 import { PublicationFormFields, PublicationFieldSet } from "../ui/fields/PublicationFormFields";
+import { PUBLICATION_ACTIONS, getPublicationActions } from "../formActionRules/publicationActionRules";
+import NotFound from "../404";
 
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
@@ -38,6 +40,7 @@ export const PublicationForm = (props) => {
   let [isProcessing, setIsProcessing] = useState(false);
   let [valErrorMessages, setValErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [notFound, setNotFound] = useState(false);
   let [globusPath, setGlobusPath] = useState(null);
 
   let [permissions, setPermissions] = useState({
@@ -87,15 +90,18 @@ export const PublicationForm = (props) => {
   );
 
   useEffect(() => {
+    setNotFound(false);
     if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
+          if (response.status === 404 || response.status === 400) {
+            setNotFound(true);
+            return;
+          }
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Publication") {
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             } else {
               const entityData = response.results;
               setEntityData(entityData);
@@ -139,6 +145,10 @@ export const PublicationForm = (props) => {
           }
         })
         .catch((error) => {
+          if (error.status === 404 || error.status === 400) {
+            setNotFound(true);
+            return;
+          }
           setPageErrors(error);
         });
     } else {
@@ -386,65 +396,72 @@ export const PublicationForm = (props) => {
   }
 
   const buttonEngine = () => {
+    const renderLoadingActionButton = ({
+      label,
+      loading: isButtonLoading = false,
+      name,
+      onClick,
+      type,
+    }) => (
+      <LoadingButton
+        loading={isButtonLoading}
+        name={name}
+        onClick={onClick}
+        variant="contained"
+        className="m-2"
+        type={type}>
+        {label}
+      </LoadingButton>
+    );
+
+    const actionRenderers = {
+      [PUBLICATION_ACTIONS.revert]: () => (
+        <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+      ),
+      [PUBLICATION_ACTIONS.cancel]: (action) => renderLoadingActionButton({
+        label: action.label,
+        onClick: () => navigate("/"),
+      }),
+      [PUBLICATION_ACTIONS.create]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: isProcessing,
+        name: "generate",
+        onClick: (e) => handleSubmit(e),
+        type: "submit",
+      }),
+      [PUBLICATION_ACTIONS.process]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['process'],
+        name: "process",
+        onClick: (e) => handleSubmit(e),
+      }),
+      [PUBLICATION_ACTIONS.submit]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['submit'],
+        name: "submit",
+        onClick: (e) => handleSubmit(e),
+      }),
+      [PUBLICATION_ACTIONS.save]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['save'] === true ? true : false,
+        name: "save",
+        onClick: (e) => handleSubmit(e),
+      }),
+    };
+
     return (
       <Box sx={{ textAlign: "right" }}>
-        {/* REVERT */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted"].includes(entityData.status.toLowerCase())) && (
-          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
-        )}
-        <LoadingButton
-          variant="contained"
-          className="m-2"
-          onClick={() => navigate("/")}>
-          Cancel
-        </LoadingButton>
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            name="generate"
-            loading={isProcessing}
-            className="m-2"
-            onClick={(e) => handleSubmit(e)}
-            type="submit">
-            Save
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
-          <LoadingButton
-            loading={buttonLoading['process']}
-            name="process"
-            onClick={(e) => handleSubmit(e)}
-            variant="contained"
-            className="m-2">
-            Process
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
-          <LoadingButton
-            loading={buttonLoading['submit']}
-            onClick={(e) => handleSubmit(e)}
-            name="submit"
-            variant="contained"
-            className="m-2">
-            Submit
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
-          <LoadingButton
-            loading={buttonLoading['save'] === true ? true : false}
-            name="save"
-            onClick={(e) => handleSubmit(e)}
-            variant="contained"
-            className="m-2">
-            Save
-          </LoadingButton>
-        )}
+        {getPublicationActions({ uuid, permissions, entityData }).map((action) => (
+          <React.Fragment key={action.id}>{actionRenderers[action.id](action)}</React.Fragment>
+        ))}
       </Box>
     );
   }
 
   // MAIN RENDER
-  if (isLoading || ((!entityData || !formValues) && uuid)) {
+  if (notFound) {
+    return (<NotFound entityID={uuid} />);
+  } else if (isLoading || ((!entityData || !formValues) && uuid)) {
     return (<LinearProgress />);
   } else {
     return (

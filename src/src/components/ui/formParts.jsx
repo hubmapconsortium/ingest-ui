@@ -601,13 +601,20 @@ export function UserGroupSelectMenu(formValues, menu){
 
 // Checks if the entityType in the URL matches the type of entity requested
 // if it's not, redirects you on over to the proper form
+export function getEntityRoutePath(entityType, uuid) {
+  const normalizedEntityType = entityType?.toLowerCase() === "data upload" ? "upload" : entityType?.toLowerCase();
+  return `/${normalizedEntityType}/${uuid}`;
+}
+
+export function redirectToEntityRoute(entityType, uuid) {
+  window.location.replace(getEntityRoutePath(entityType, uuid));
+}
+
 export function FormCheckRedirect(uuid,entityType,form){
   // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
-    window.location.replace(
-      `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-    );
+    redirectToEntityRoute(entityType, uuid);
   }
 }
 

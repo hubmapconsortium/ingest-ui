@@ -24,7 +24,7 @@ These Older files used, no modern replacement for donors yet
 Run the non-interactive migration smoke suite with:
 
 ```sh
-npm test
+npm run test:v
 ```
 
 `src/App.test.jsx` verifies:

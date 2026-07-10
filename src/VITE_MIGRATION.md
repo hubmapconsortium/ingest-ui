@@ -13,8 +13,9 @@ npm start
 npm run build
 npm run build:tags
 npm run build:sourcemaps
-npm test
-npm run test:watch
+npm run test:all
+npm run test:c
+npm run test:v
 ```
 
 - `npm start` runs the Vite development server on `PORT`, defaulting to 8585.
@@ -47,4 +48,4 @@ deployment-specific values using `envs/env_tool.py`.
 ## Tests
 
 Vitest with jsdom replaces Create React App's Jest wrapper. The migration smoke
-suite runs non-interactively with `npm test`.
+suite runs non-interactively with `npm run test:v`.

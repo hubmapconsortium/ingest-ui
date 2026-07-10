@@ -1,10 +1,13 @@
 /* global cy, describe, expect, it */
 
 import {
+  assertActionButtons,
   assertBulkSelectorSourceList,
   assertDatasetOnlyEmbeddedSearch,
   assertEmptySubmitValidation,
   assertFormLoaded,
+  assertInvalidFieldValidation,
+  assertMissingEntityRendersNotFoundInPlace,
   assertSuccessDialog,
   assertUpdateSnackbar,
   editStates,
@@ -48,6 +51,13 @@ describe('Publication form', () => {
     assertEmptySubmitValidation(publicationForm);
   });
 
+  it('renders not-found content in place for missing publication IDs', () => {
+    assertMissingEntityRendersNotFoundInPlace({
+      path: '/publication',
+      entityID: 'missing-publication-id',
+    });
+  });
+
   it('prefills source_list rows and renders BulkSelector warning/error dialogs', () => {
     assertBulkSelectorSourceList({
       path: publicationForm.path,
@@ -63,6 +73,37 @@ describe('Publication form', () => {
       dialogTitle: 'Search for a Source ID for your Publication',
       screenshotName: 'publication-embedded-search-dataset-only',
     });
+  });
+
+  it('rejects invalid issue and volume values', () => {
+    const publicationParams = new URLSearchParams({
+      title: 'Invalid publication numbers',
+      publication_venue: 'Journal of Cypress',
+      publication_date: '2026-01-15',
+      publication_status: 'true',
+      publication_url: 'https://example.org/publication',
+      issue: '-1',
+      volume: 'abc',
+      description: 'Publication with invalid numeric fields',
+      source_list: sourceListEntities[0].hubmap_id,
+    });
+
+    cy.intercept('POST', '**/publications').as('createPublicationInvalidNumbers');
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/new/publication?${publicationParams.toString()}`, {
+      searchResults: [sourceListEntities[0]],
+    });
+    cy.contains('button', 'Save', { timeout: 30000 }).click({ force: true });
+
+    assertInvalidFieldValidation({
+      selector: 'input#issue',
+      message: 'Issue must be a positive integer',
+    });
+    assertInvalidFieldValidation({
+      selector: 'input#volume',
+      message: 'Volume must be a positive integer',
+    });
+    cy.get('@createPublicationInvalidNumbers.all').should('have.length', 0);
   });
 
   it('creates a publication from a complete valid form', () => {
@@ -114,6 +155,68 @@ describe('Publication form', () => {
       expect(body.direct_ancestor_uuids).to.deep.equal([sourceListEntities[0].uuid]);
     });
     assertSuccessDialog(createdPublication);
+  });
+
+  describe('action buttons', () => {
+    const publication = successEntity('Publication', {
+      uuid: 'publication-action-buttons',
+      hubmap_id: 'HBM999.PUBL.900',
+      title: 'Action button publication',
+      publication_venue: 'Journal of Cypress',
+      publication_date: '2026-01-15',
+      publication_status: true,
+      publication_url: 'https://example.org/publication',
+      publication_doi: '10.1234/cypress.publication',
+      description: 'Action button publication abstract',
+      direct_ancestors: [sourceListEntities[0]],
+    });
+
+    const cases = [
+      {
+        name: 'create mode shows Save and Cancel',
+        path: publicationForm.path,
+        visible: ['Save', 'Cancel'],
+        hidden: ['Revert', 'Process', 'Submit'],
+      },
+      {
+        name: 'new publication with admin and write shows all edit actions',
+        path: `/publication/${publication.uuid}`,
+        entity: publication,
+        permissions: editStates({ has_admin_priv: true, has_write_priv: true }),
+        visible: ['Revert', 'Process', 'Submit', 'Save', 'Cancel'],
+        hidden: [],
+      },
+      {
+        name: 'admin-only publication can revert and process but cannot save or submit',
+        path: `/publication/${publication.uuid}`,
+        entity: publication,
+        permissions: editStates({ has_admin_priv: true, has_write_priv: false }),
+        visible: ['Revert', 'Process', 'Cancel'],
+        hidden: ['Submit', 'Save'],
+      },
+      {
+        name: 'published publication hides edit actions',
+        path: `/publication/${publication.uuid}`,
+        entity: { ...publication, status: 'Published' },
+        permissions: editStates({ has_admin_priv: true, has_write_priv: true }),
+        visible: ['Cancel'],
+        hidden: ['Revert', 'Process', 'Submit', 'Save'],
+      },
+    ];
+
+    cases.forEach(({ name, path, entity, permissions, visible, hidden }) => {
+      it(name, () => {
+        cy.viewport(1280, 900);
+        if (entity) {
+          interceptExistingEntity(entity, permissions, {
+            globusUrl: `https://example.org/globus/${entity.uuid}`,
+          });
+        }
+
+        cy.visitWithMockAuth(path);
+        assertActionButtons({ visible, hidden });
+      });
+    });
   });
 
   it('updates an existing publication from a valid edit form', () => {

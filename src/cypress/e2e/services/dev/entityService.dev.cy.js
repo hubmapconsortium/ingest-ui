@@ -133,13 +133,33 @@ describe('DEV service integration: entity lifecycle', () => {
           expectSuccess(state.sampleGetResponse);
           expect(state.sampleGetResponse.body.description).to.equal(state.updatedSampleDescription);
 
+          const blockSamplePayload = {
+            direct_ancestor_uuid: state.sample.uuid,
+            sample_category: 'block',
+            protocol_url: protocolUrl,
+            lab_tissue_sample_id: `${runId}-block-sample`,
+            description: `Lifecycle block sample created by Cypress ${runId}`,
+            group_uuid: groupUuid,
+          };
+
+          return entityApiRequest('POST', '/entities/sample', blockSamplePayload)
+            .then((blockSampleResponse) => ({ ...state, blockSamplePayload, blockSampleResponse }));
+        })
+        .then((state) => {
+          expectSuccess(state.blockSampleResponse, [200, 201]);
+          expect(state.blockSampleResponse.body).to.include({
+            entity_type: 'Sample',
+            lab_tissue_sample_id: state.blockSamplePayload.lab_tissue_sample_id,
+            sample_category: 'block',
+          });
+
           const datasetPayload = {
             lab_dataset_id: `${runId}-dataset`,
             description: `Lifecycle dataset created by Cypress ${runId}`,
             dataset_info: `Traceable Cypress DEV dataset ${runId}`,
             contains_human_genetic_sequences: false,
             dataset_type: 'RNAseq',
-            direct_ancestor_uuids: [state.sample.uuid],
+            direct_ancestor_uuids: [state.blockSampleResponse.body.uuid],
             group_uuid: groupUuid,
           };
 
@@ -154,10 +174,8 @@ describe('DEV service integration: entity lifecycle', () => {
             contains_human_genetic_sequences: false,
             dataset_type: 'RNAseq',
           });
-
-          const datasetAncestorUuids = (state.datasetResponse.body.direct_ancestors || [])
-            .map((ancestor) => ancestor.uuid);
-          expect(datasetAncestorUuids, 'dataset ancestors').to.include(state.sample.uuid);
+          expect(state.datasetPayload.direct_ancestor_uuids, 'dataset create request ancestors')
+            .to.include(state.blockSampleResponse.body.uuid);
 
           const updatedDatasetDescription = `Lifecycle dataset updated by Cypress ${runId}`;
           return entityApiRequest('PUT', `/entities/${state.datasetResponse.body.hubmap_id}`, {
@@ -180,6 +198,9 @@ describe('DEV service integration: entity lifecycle', () => {
         .then((state) => {
           expectSuccess(state.datasetGetResponse);
           expect(state.datasetGetResponse.body.description).to.equal(state.updatedDatasetDescription);
+          const datasetAncestorUuids = (state.datasetGetResponse.body.direct_ancestors || [])
+            .map((ancestor) => ancestor.uuid);
+          expect(datasetAncestorUuids, 'dataset ancestors after read').to.include(state.blockSampleResponse.body.uuid);
 
           const uploadPayload = {
             title: `Cypress DEV lifecycle upload ${runId}`,

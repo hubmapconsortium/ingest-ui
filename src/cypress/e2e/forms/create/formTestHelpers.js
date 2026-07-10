@@ -117,7 +117,7 @@ export function assertFormLoaded({ entityType, selectors, submitLabel }) {
   cy.get('button:visible').contains(submitLabel).should('exist');
 }
 
-function assertRequiredFieldError(selector) {
+export function assertFieldError(selector) {
   cy.get(selector, { timeout: 30000 }).should(($field) => {
     const elements = Array.from($field);
     const hasInvalidField = elements.some((element) => element.matches(':invalid'));
@@ -142,11 +142,16 @@ export function assertEmptySubmitValidation({ submitLabel, requiredFields = [], 
   cy.contains(/required|Please select|Please Review|valid protocols/i, { timeout: 30000 })
     .should('exist');
 
-  requiredFields.forEach(assertRequiredFieldError);
+  requiredFields.forEach(assertFieldError);
 
   requiredMessages.forEach((message) => {
     cy.contains(message, { timeout: 30000 }).should('be.visible');
   });
+}
+
+export function assertInvalidFieldValidation({ selector, message }) {
+  cy.contains(message, { timeout: 30000 }).should('be.visible');
+  assertFieldError(selector);
 }
 
 export function visualCheckpoint(name) {
@@ -163,6 +168,34 @@ export function assertSuccessDialog(entity) {
 
 export function assertUpdateSnackbar(message = 'Entity Updated Successfully!') {
   cy.contains(message, { timeout: 30000 }).should('be.visible');
+}
+
+function buttonLabelRegex(label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^\\s*${escaped}\\s*$`);
+}
+
+export function assertActionButtons({
+  visible = [],
+  hidden = [],
+  enabled = [],
+  disabled = [],
+}) {
+  visible.forEach((label) => {
+    cy.contains('button', buttonLabelRegex(label), { timeout: 30000 }).should('be.visible');
+  });
+
+  hidden.forEach((label) => {
+    cy.contains('button', buttonLabelRegex(label)).should('not.exist');
+  });
+
+  enabled.forEach((label) => {
+    cy.contains('button', buttonLabelRegex(label), { timeout: 30000 }).should('be.enabled');
+  });
+
+  disabled.forEach((label) => {
+    cy.contains('button', buttonLabelRegex(label), { timeout: 30000 }).should('be.disabled');
+  });
 }
 
 export function requestBody(alias) {
@@ -215,11 +248,6 @@ export function datasetEntity(overrides = {}) {
 }
 
 export function interceptDataset(entity, permissions) {
-  cy.intercept('GET', `**/entities/${entity.uuid}*`, {
-    statusCode: 200,
-    body: entity,
-  }).as(`dataset-${entity.uuid}`);
-
   cy.intercept('GET', `**/entities/${entity.uuid}/globus-url`, {
     statusCode: 200,
     body: 'https://example.org/globus/mock',
@@ -229,19 +257,14 @@ export function interceptDataset(entity, permissions) {
     statusCode: 200,
     body: permissions,
   }).as(`edit-states-${entity.uuid}`);
-}
 
-export function interceptExistingEntity(entity, permissions = editStates(), options = {}) {
   cy.intercept('GET', `**/entities/${entity.uuid}*`, {
     statusCode: 200,
     body: entity,
-  }).as(`${entity.entity_type.toLowerCase()}-${entity.uuid}`);
+  }).as(`dataset-${entity.uuid}`);
+}
 
-  cy.intercept('GET', `**/entities/${entity.hubmap_id}*`, {
-    statusCode: 200,
-    body: entity,
-  }).as(`${entity.entity_type.toLowerCase()}-${entity.hubmap_id}`);
-
+export function interceptExistingEntity(entity, permissions = editStates(), options = {}) {
   cy.intercept('GET', `**/entities/${entity.uuid}/allowable-edit-states`, {
     statusCode: 200,
     body: permissions,
@@ -253,6 +276,16 @@ export function interceptExistingEntity(entity, permissions = editStates(), opti
       body: options.globusUrl,
     }).as(`${entity.entity_type.toLowerCase()}-globus-${entity.uuid}`);
   }
+
+  cy.intercept('GET', `**/entities/${entity.uuid}*`, {
+    statusCode: 200,
+    body: entity,
+  }).as(`${entity.entity_type.toLowerCase()}-${entity.uuid}`);
+
+  cy.intercept('GET', `**/entities/${entity.hubmap_id}*`, {
+    statusCode: 200,
+    body: entity,
+  }).as(`${entity.entity_type.toLowerCase()}-${entity.hubmap_id}`);
 }
 
 export function assertBulkSelectorSourceList({
@@ -292,6 +325,35 @@ export function assertBulkSelectorSourceList({
   }
 
   visualCheckpoint(screenshotName);
+}
+
+export function assertMissingEntityRendersNotFoundInPlace({ path, entityID }) {
+  cy.intercept('GET', `**/entities/${entityID}*`, {
+    statusCode: 404,
+    body: { message: 'Entity not found' },
+  }).as(`missing-entity-${entityID}`);
+
+  cy.viewport(1280, 900);
+  cy.visitWithMockAuth(`${path}/${entityID}`);
+  cy.wait(`@missing-entity-${entityID}`);
+
+  cy.location('pathname').should('eq', `${path}/${entityID}`);
+  cy.contains('Entity Not Found', { timeout: 30000 }).should('be.visible');
+  cy.contains(entityID).should('be.visible');
+}
+
+export function assertWrongTypeRedirectsToEntityRoute({ fromPath, entity, permissions = editStates() }) {
+  interceptExistingEntity(entity, permissions);
+
+  cy.viewport(1280, 900);
+  cy.visitWithMockAuth(`${fromPath}/${entity.uuid}`);
+
+  cy.location('pathname', { timeout: 30000 }).should(
+    'eq',
+    `/${entity.entity_type.toLowerCase()}/${entity.uuid}`,
+  );
+  cy.contains('.FormHead', entity.entity_type, { timeout: 30000 }).should('be.visible');
+  cy.contains('.FormHead', entity.hubmap_id, { timeout: 30000 }).should('be.visible');
 }
 
 export function assertDatasetOnlyEmbeddedSearch({ path, dialogTitle, screenshotName }) {
