@@ -13,6 +13,7 @@ import {EPICollectionForm} from "./components/forms/Epicollections";
 import {BulkEntityForm} from "./components/forms/BulkEntity";
 import {BulkMetaForm} from "./components/forms/BulkMeta";
 import NotFound from "./components/404";
+import {EntityRedirectResolver} from "./components/EntityRedirectResolver";
 
 function SearchRoute({onUrlChange}) {
   return <Search urlChange={(event, params, details) => onUrlChange(event, params, details)}/>;
@@ -99,6 +100,7 @@ export function AuthenticatedRoutes({
 
       {/* 404 */}
       <Route path="/notFound" element={<NotFound />} />
+      <Route path="*" element={<EntityRedirectResolver />} />
     </Routes>
   );
 }
