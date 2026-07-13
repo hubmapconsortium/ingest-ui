@@ -7,6 +7,7 @@ import {
   assertEmptySubmitValidation,
   assertFormLoaded,
   assertMissingEntityRendersNotFoundInPlace,
+  assertSelectedSource,
   assertSuccessDialog,
   assertUpdateSnackbar,
   editStates,
@@ -89,6 +90,7 @@ describe('Collection form', () => {
     cy.visitWithMockAuth(`/new/collection?${collectionParams.toString()}`, {
       searchResults: [sourceListEntities[0]],
     });
+    assertSelectedSource(sourceListEntities[0]);
     cy.contains('button', 'Save', { timeout: 30000 }).click({ force: true });
 
     requestBody('@createCollection').then((body) => {

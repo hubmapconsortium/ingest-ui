@@ -1,10 +1,6 @@
 /* eslint-disable no-undef */
 
-const requiredAuthInfoFields = [
-  'name',
-  'email',
-  'groups_token',
-];
+import { authInfoString } from '../authSession';
 
 const smokeGroups = [
   {
@@ -26,27 +22,11 @@ const mockAuthInfo = {
 
 function getAuthInfo() {
   const authInfo = Cypress.env('authInfo');
-  if (!authInfo) {
-    throw new Error('Missing CYPRESS_AUTH_INFO. Export a local session JSON string before running authenticated Cypress specs.');
-  }
-
-  let parsedAuthInfo;
-  try {
-    parsedAuthInfo = JSON.parse(authInfo);
-  } catch (error) {
-    throw new Error('CYPRESS_AUTH_INFO must be valid JSON.');
-  }
-
-  const missingFields = requiredAuthInfoFields.filter((field) => !parsedAuthInfo[field]);
-  if (missingFields.length > 0) {
-    throw new Error(`CYPRESS_AUTH_INFO is missing: ${missingFields.join(', ')}`);
-  }
-
-  return authInfo;
+  return JSON.parse(authInfoString(authInfo));
 }
 
 function seedAuthenticatedLocalStorage(win, authInfo) {
-  win.localStorage.setItem('info', authInfo);
+  win.localStorage.setItem('info', JSON.stringify(authInfo));
   win.localStorage.setItem('userGroups', JSON.stringify(smokeGroups));
   win.localStorage.setItem('allGroups', JSON.stringify(smokeGroups));
   win.localStorage.setItem('organs', JSON.stringify({ RK: 'Right Kidney', LK: 'Left Kidney', BL: 'Blood' }));
@@ -68,8 +48,8 @@ function seedAuthenticatedLocalStorage(win, authInfo) {
 }
 
 Cypress.Commands.add('visitWithAuth', (path, options = {}) => {
-  const authInfo = getAuthInfo();
   const { onBeforeLoad, ...visitOptions } = options;
+  const authInfo = getAuthInfo();
 
   cy.visit(path, {
     ...visitOptions,
@@ -117,7 +97,7 @@ Cypress.Commands.add('visitWithMockAuth', (path, options = {}) => {
   cy.visit(path, {
     ...visitOptions,
     onBeforeLoad(win) {
-      seedAuthenticatedLocalStorage(win, JSON.stringify(authInfo));
+      seedAuthenticatedLocalStorage(win, authInfo);
       win.localStorage.setItem('userGroups', JSON.stringify(groups));
       win.localStorage.setItem('allGroups', JSON.stringify(groups));
       if (onBeforeLoad) onBeforeLoad(win);

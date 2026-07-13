@@ -10,10 +10,12 @@ module.exports = defineConfig({
   ...(serviceUserAgent ? { userAgent: serviceUserAgent } : {}),
   env: {
     authInfo: process.env.CYPRESS_AUTH_INFO,
+    token: process.env.CYPRESS_GLOBUS_TOKEN || process.env.CYPRESS_TOKEN,
+    session_displayname: process.env.CYPRESS_SESSION_DISPLAYNAME,
     authSearchKeyword: process.env.CYPRESS_AUTH_SEARCH_KEYWORD,
   },
   e2e: {
-    baseUrl: process.env.CYPRESS_BASE_URL || "http://127.0.0.1:9595",
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://127.0.0.1:8585",
     testIsolation: false,
     setupNodeEvents() {
       // implement node event listeners here

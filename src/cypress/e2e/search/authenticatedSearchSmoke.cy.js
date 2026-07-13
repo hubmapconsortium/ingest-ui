@@ -1,38 +1,7 @@
 /* global cy, Cypress, describe, expect, it */
-const requiredSessionFields = [
-  'name',
-  'email',
-  'groups_token',
-];
-
-function getAuthInfo() {
-  const authInfo = Cypress.env('authInfo');
-
-  if (!authInfo) {
-    throw new Error(
-      'Missing CYPRESS_AUTH_INFO. Export a local session JSON string before running this spec.'
-    );
-  }
-
-  let parsedAuthInfo;
-  try {
-    parsedAuthInfo = JSON.parse(authInfo);
-  } catch (error) {
-    throw new Error('CYPRESS_AUTH_INFO must be valid JSON.');
-  }
-
-  const missingFields = requiredSessionFields.filter((field) => !parsedAuthInfo[field]);
-  if (missingFields.length > 0) {
-    throw new Error(`CYPRESS_AUTH_INFO is missing: ${missingFields.join(', ')}`);
-  }
-
-  return authInfo;
-}
 
 function visitWithSessionInfo() {
-  const encodedAuthInfo = encodeURIComponent(getAuthInfo());
-
-  cy.visit(`/?info=${encodedAuthInfo}`, { log: false });
+  cy.visitWithAuth('/', { log: false });
   cy.window({ log: false }).then((win) => {
     const storedAuthInfo = win.localStorage.getItem('info');
     expect(storedAuthInfo, 'authenticated session is stored').to.be.a('string');

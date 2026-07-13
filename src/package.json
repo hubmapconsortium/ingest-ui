@@ -62,6 +62,7 @@
     "upload-sourcemaps:dry-run": "node ./scripts/upload-sourcemaps.js --dry-run",
     "test:all": "npm run test:v && npm run test:c",
     "test:c": "node ./scripts/test-cypress.js",
+    "test:c:globus": "node ./scripts/test-cypress-with-globus-token.js",
     "test:v": "vitest run",
     "verify:production-routing": "node ./scripts/verify-production-routing.js",
     "verify:react19": "npm run lint && npm run test:v && npm run build && npm run build:tags && npm run verify:production-routing",

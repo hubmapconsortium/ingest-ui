@@ -205,6 +205,10 @@ export function requestBody(alias) {
   });
 }
 
+export function assertSelectedSource(source = sourceListEntities[0]) {
+  cy.contains('button', source.hubmap_id, { timeout: 30000 }).should('be.visible');
+}
+
 export function interceptNewSampleSource(source, ancestors = [donorAncestor, source]) {
   cy.intercept('GET', `**/entities/${source.uuid}*`, {
     statusCode: 200,
