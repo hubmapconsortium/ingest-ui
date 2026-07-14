@@ -38,6 +38,10 @@ CYPRESS_BASE_URL=http://127.0.0.1:9696 npm run test:c
 `npm run test:c` opens only `cypress/e2e/testall.cy.js`, which imports the
 current form, bulk upload, and DEV service Cypress specs.
 
+`cypress/e2e/search/authenticatedSearchSmoke.cy.js` is intentionally kept as a
+targeted real-auth smoke spec. It is not imported by `testall.cy.js`; select it
+directly in Cypress when validating authenticated search with a real session.
+
 For DEV service specs and real authenticated smoke specs, keep real tokens local
 and untracked. This repo follows the SenNet Cypress CI approach of passing a
 valid Globus groups token plus the matching session display name into Cypress.
