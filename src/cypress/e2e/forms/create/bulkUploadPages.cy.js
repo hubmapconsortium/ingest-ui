@@ -1,8 +1,59 @@
-/* global cy, describe, it */
+/* global cy, describe, expect, it */
 
 import { visualCheckpoint } from './formTestHelpers';
 
+function assertSavedLinks(links) {
+  const requestedHrefs = new Set();
+
+  links.forEach(({ text, href, target, rel, occurrences }) => {
+    cy.get('a')
+      .filter((_, link) => link.textContent.trim() === text)
+      .should('have.length', occurrences)
+      .each(($link) => {
+        expect($link.attr('href'), `${text} href`).to.equal(href);
+        if (target) {
+          expect($link.attr('target'), `${text} target`).to.equal(target);
+        }
+        if (rel) {
+          expect($link.attr('rel'), `${text} rel`).to.equal(rel);
+        }
+      });
+
+    if (!requestedHrefs.has(href)) {
+      requestedHrefs.add(href);
+      cy.request({
+        url: href,
+        failOnStatusCode: false,
+      }).then((response) => {
+        expect(response.status, `${text} reachable at ${href}`).to.be.within(200, 399);
+      });
+    }
+  });
+}
+
 describe('Bulk entity and metadata upload pages', () => {
+  it('keeps bulk entity help and example links pointed at the saved targets', () => {
+    cy.fixture('bulkUploadPageLinks').then(({ entityPages }) => {
+      entityPages.forEach(({ route, heading, links }) => {
+        cy.viewport(1280, 900);
+        cy.visitWithMockAuth(route);
+        cy.contains(heading, { timeout: 30000 }).should('be.visible');
+        assertSavedLinks(links);
+      });
+    });
+  });
+
+  it('keeps bulk metadata help and example links pointed at the saved targets', () => {
+    cy.fixture('bulkUploadPageLinks').then(({ metadataPages }) => {
+      metadataPages.forEach(({ route, heading, links }) => {
+        cy.viewport(1280, 900);
+        cy.visitWithMockAuth(route);
+        cy.contains(heading, { timeout: 30000 }).should('be.visible');
+        assertSavedLinks(links);
+      });
+    });
+  });
+
   it('parses and registers a bulk sample TSV through the happy path', () => {
     cy.viewport(1280, 900);
     cy.intercept('POST', '**/samples/bulk-upload', {

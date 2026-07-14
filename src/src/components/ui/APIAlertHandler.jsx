@@ -19,8 +19,12 @@ const baseChevronStyle = {
   paddingBottom: "2px",
 };
 
+const HOVER_SPIN_MS = 420;
+const RELOAD_SPIN_MS = 300;
+
 function APIErrorItem({ err, idx, setAPIErrQueue }) {
   const [openDetail, setOpenDetail] = useState(false);
+  const [reloadSpinning, setReloadSpinning] = useState(false);
   const [visible, setVisible] = useState(true);
   const ANIM_MS = 360;
   const title = err && err[0] ? err[0] : "API Error";
@@ -48,13 +52,31 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
     }, ANIM_MS);
   };
 
+  const reloadPage = () => {
+    if (reloadSpinning) return;
+    setReloadSpinning(true);
+    setTimeout(() => {
+      window.location.reload();
+    }, RELOAD_SPIN_MS);
+  };
+
   return (
     <Box className={`api-alert-wrap ${visible ? 'enter' : 'exit'}`}>
       <Alert
         className="APIAlertCell mb-1"
         variant="filled"
         severity="error"
-        icon={<SyncProblemIcon />}
+        icon={
+          <IconButton
+            size="small"
+            aria-label="refresh-page"
+            color="inherit"
+            className={`api-alert-refresh ${reloadSpinning ? 'click-spin' : ''}`}
+            onClick={reloadPage}
+          >
+            <SyncProblemIcon fontSize="small" />
+          </IconButton>
+        }
         sx={{ mb: 1 }}
         action={
           <IconButton
@@ -89,6 +111,40 @@ export default function APIAlertHandler({ APIErrQueue, setAPIErrQueue }) {
     <Box
       className="ErrorPanel mb-2"
       sx={() => ({
+        "@keyframes apiAlertRefreshHoverSpin": {
+          "0%": { transform: "rotate(0deg) scale(1)" },
+          "65%": { transform: "rotate(375deg) scale(1.08)" },
+          "82%": { transform: "rotate(345deg) scale(0.98)" },
+          "100%": { transform: "rotate(360deg) scale(1)" },
+        },
+        "@keyframes apiAlertRefreshClickSpin": {
+          "0%": { transform: "rotate(0deg) scale(1)" },
+          "72%": { transform: "rotate(710deg) scale(1.08)" },
+          "100%": { transform: "rotate(720deg) scale(1)" },
+        },
+        "& .MuiAlert-icon": {
+          alignItems: "center",
+          padding: 0,
+        },
+        "& .api-alert-refresh": {
+          color: "#fff",
+          margin: "-3px 0",
+          padding: "3px",
+          transition: "background-color 120ms ease-in-out",
+        },
+        "& .api-alert-refresh:hover": {
+          animation: `apiAlertRefreshHoverSpin ${HOVER_SPIN_MS}ms cubic-bezier(.24, 1.35, .45, 1) both`,
+          backgroundColor: "rgba(255, 255, 255, 0.16)",
+        },
+        "& .api-alert-refresh.click-spin": {
+          animation: `apiAlertRefreshClickSpin ${RELOAD_SPIN_MS}ms cubic-bezier(.17, .84, .44, 1) both`,
+          backgroundColor: "rgba(255, 255, 255, 0.24)",
+        },
+        "@media (prefers-reduced-motion: reduce)": {
+          "& .api-alert-refresh:hover, & .api-alert-refresh.click-spin": {
+            animation: "none",
+          },
+        },
         "& .APIAlertCell":
           APIErrQueue.length > 1
             ? {

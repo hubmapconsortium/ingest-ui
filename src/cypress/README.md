@@ -16,8 +16,7 @@ Runs the non-interactive Vitest suite.
 npm run test:v
 ```
 
-This covers the React migration smoke tests under `src/App.test.jsx` and the
-form/action unit tests under `src/tests/`.
+This covers the form/action unit tests under `src/tests/forms/`.
 
 ## `npm run test:c`
 
