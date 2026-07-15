@@ -69,7 +69,6 @@ export function ubkg_api_get_organ_type_set(format) {
       });
 };
 
-
 /*
  * UBKG GET extensive, RUI inclusive Organ Data
  *
@@ -87,7 +86,6 @@ export function ubkg_api_get_organs_full() {
         captureError(error);
       });
 };
-
 
 /*
  * UBKG GET dataset types method

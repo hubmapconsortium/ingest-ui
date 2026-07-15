@@ -11,11 +11,13 @@ import NativeSelect from "@mui/material/NativeSelect";
 import LoadingButton from "@mui/lab/LoadingButton";
 import { BulkSelector } from "../ui/bulkSelector";
 import { ContributorsTable } from "../ui/contributorsTable";
-import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback } from "../ui/formParts";
+import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback } from "../ui/formParts";
 import { CollectionFormFields, CollectionFieldSet } from "../ui/fields/CollectionFormFields";
 import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../../service/entity_api";
 import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../../service/ingest_api";
 import { validateRequired } from "../../utils/validators";
+import { DOI_COLLECTION_ACTIONS, getDoiCollectionActions } from "../formActionRules/doiCollectionActionRules";
+import NotFound from "../404";
 
 export const CollectionForm = (props) => {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export const CollectionForm = (props) => {
   });
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [permissions, setPermissions] = useState({ has_write_priv: false, has_admin_priv: false, });
   const [formValues, setFormValues] = useState({
     title: "",
@@ -48,15 +51,18 @@ export const CollectionForm = (props) => {
   );
 
   useEffect(() => {
+    setNotFound(false);
     if (uuid && uuid !== "") {
       entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
         .then((response) => {
+          if (response.status === 404 || response.status === 400) {
+            setNotFound(true);
+            return;
+          }
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Collection") {
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             } else {
               const entityData = response.results;
               entityData.initialSelectedUUIDs = entityData.dataset_uuids || [];
@@ -69,9 +75,10 @@ export const CollectionForm = (props) => {
                 contacts: entityData.contacts || [],
                 group_uuid: entityData.group_uuid || "",
               });
+              const datasets = entityData.datasets || [];
               setBulkSelection({
-                uuids: entityData.datasets.map(obj => obj.uuid),
-                data: entityData.datasets
+                uuids: datasets.map(obj => obj.uuid),
+                data: datasets
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
@@ -91,6 +98,10 @@ export const CollectionForm = (props) => {
           }
         })
         .catch((error) => {
+          if (error.status === 404 || error.status === 400) {
+            setNotFound(true);
+            return;
+          }
           setPageErrors(error);
         });
     } else {
@@ -271,40 +282,62 @@ export const CollectionForm = (props) => {
       });
   };
 
-  const buttonEngine = () => (
-    <Box sx={{ textAlign: "right" }}>
+  const buttonEngine = () => {
+    const renderLoadingActionButton = ({
+      disabled,
+      label,
+      loading: isButtonLoading = false,
+      name,
+      onClick,
+      type,
+    }) => (
       <LoadingButton
         variant="contained"
+        name={name}
+        disabled={disabled}
+        loading={isButtonLoading}
         className="m-2"
-        onClick={() => navigate("/")}>
-        Cancel
+        onClick={onClick}
+        type={type}>
+        {label}
       </LoadingButton>
-      <LoadingButton
-        variant="contained"
-        name="save"
-        disabled={permissions.has_write_priv ? false : true}
-        loading={loading.button.save}
-        className="m-2"
-        onClick={(e) => handleSubmit(e)}
-        type="submit">
-        Save
-      </LoadingButton>
-      {permissions.has_admin_priv && uuid && (
-        <LoadingButton
-          variant="contained"
-          name="save"
-          disabled={entityData && (entityData.doi_url || entityData.registered_doi) ? true : false}
-          loading={loading.button.publish}
-          className="m-2"
-          onClick={(e) => handlePublish(e)}
-          type="submit">
-          Publish
-        </LoadingButton>
-      )}
-    </Box>
-  );
+    );
 
-  if (loading.page || ((!entityData || !formValues) && uuid)) {
+    const actionRenderers = {
+      [DOI_COLLECTION_ACTIONS.cancel]: (action) => renderLoadingActionButton({
+        label: action.label,
+        onClick: () => navigate("/"),
+      }),
+      [DOI_COLLECTION_ACTIONS.save]: (action) => renderLoadingActionButton({
+        label: action.label,
+        disabled: action.disabled,
+        loading: loading.button.save,
+        name: "save",
+        onClick: (e) => handleSubmit(e),
+        type: "submit",
+      }),
+      [DOI_COLLECTION_ACTIONS.publish]: (action) => renderLoadingActionButton({
+        label: action.label,
+        disabled: action.disabled,
+        loading: loading.button.publish,
+        name: "save",
+        onClick: (e) => handlePublish(e),
+        type: "submit",
+      }),
+    };
+
+    return (
+      <Box sx={{ textAlign: "right" }}>
+        {getDoiCollectionActions({ uuid, permissions, entityData }).map((action) => (
+          <React.Fragment key={action.id}>{actionRenderers[action.id](action)}</React.Fragment>
+        ))}
+      </Box>
+    );
+  };
+
+  if (notFound) {
+    return <NotFound entityID={uuid} />;
+  } else if (loading.page || ((!entityData || !formValues) && uuid)) {
     return <LinearProgress />;
   } else {
     return (

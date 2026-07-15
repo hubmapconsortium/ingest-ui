@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {DataGrid} from "@mui/x-data-grid";
@@ -149,7 +149,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
           }
           setValidatingContributorsUpload(false)
         })
-        .catch((error) => {
+        .catch(() => {
           //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
         });
         

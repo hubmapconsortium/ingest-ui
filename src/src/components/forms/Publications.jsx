@@ -28,8 +28,12 @@ import {
   validateSingleProtocolIODOI
 } from "../../utils/validators";
 import { BulkSelector } from "../ui/bulkSelector";
-import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,SnackbarFeedback, RenderSubmitModal} from "../ui/formParts";
+import { FormHeader, UserGroupSelectMenu, prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback, RenderSubmitModal} from "../ui/formParts";
 import { PublicationFormFields, PublicationFieldSet } from "../ui/fields/PublicationFormFields";
+import { PUBLICATION_ACTIONS, getPublicationActions } from "../formActionRules/publicationActionRules";
+import NotFound from "../404";
+
+const PUBLICATION_SUBMIT_SETTLE_DELAY_MS = 100;
 
 export const PublicationForm = (props) => {
   let navigate = useNavigate();
@@ -38,6 +42,7 @@ export const PublicationForm = (props) => {
   let [isProcessing, setIsProcessing] = useState(false);
   let [valErrorMessages, setValErrorMessages] = useState([]);
   let [pageErrors, setPageErrors] = useState(null);
+  let [notFound, setNotFound] = useState(false);
   let [globusPath, setGlobusPath] = useState(null);
 
   let [permissions, setPermissions] = useState({
@@ -71,6 +76,7 @@ export const PublicationForm = (props) => {
   // Only track selected UUIDs from BulkSelector
   let [selectedBulkUUIDs, setSelectedBulkUUIDs] = useState([]);
   let [selectedBulkData, setSelectedBulkData] = useState([]);
+  const selectedBulkDataRef = React.useRef([]);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "", 
@@ -87,15 +93,18 @@ export const PublicationForm = (props) => {
   );
 
   useEffect(() => {
+    setNotFound(false);
     if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
+          if (response.status === 404 || response.status === 400) {
+            setNotFound(true);
+            return;
+          }
           if (response.status === 200) {
             const entityType = response.results.entity_type;
             if (entityType !== "Publication") {
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             } else {
               const entityData = response.results;
               setEntityData(entityData);
@@ -119,7 +128,9 @@ export const PublicationForm = (props) => {
                     setGlobusPath(res.results);
                   }
                 })
-              setSelectedBulkUUIDs(entityData.direct_ancestors.map(obj => obj.uuid));
+              const directAncestorUUIDs = entityData.direct_ancestors.map(obj => obj.uuid);
+              selectedBulkDataRef.current = entityData.direct_ancestors;
+              setSelectedBulkUUIDs(directAncestorUUIDs);
               setSelectedBulkData(entityData.direct_ancestors);
 
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
@@ -139,6 +150,10 @@ export const PublicationForm = (props) => {
           }
         })
         .catch((error) => {
+          if (error.status === 404 || error.status === 400) {
+            setNotFound(true);
+            return;
+          }
           setPageErrors(error);
         });
     } else {
@@ -167,6 +182,7 @@ export const PublicationForm = (props) => {
 
   // Callback for BulkSelector
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
+    selectedBulkDataRef.current = data;
     setFormValues(prev => ({
       ...prev,
       direct_ancestor_uuids: uuids
@@ -198,6 +214,7 @@ export const PublicationForm = (props) => {
   }
 
   const validateForm = () => {
+    const latestSelectedBulkData = selectedBulkDataRef.current;
     setValErrorMessages(null);
     let errors = 0;
     let e_messages = []
@@ -243,17 +260,17 @@ export const PublicationForm = (props) => {
     validatePositiveIntegerField('issue', 'Issue');
     validatePositiveIntegerField('volume', 'Volume');
 
-    if (!selectedBulkData || selectedBulkData.length <= 0) {
+    if (!latestSelectedBulkData || latestSelectedBulkData.length <= 0) {
       e_messages.push("Please select at least one Source");
       errors++;
       setFormErrors((prevValues) => ({
         ...prevValues,
         ["direct_ancestor_uuids"]: "Required",
       }));
-    } else if (selectedBulkData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0) {
+    } else if (latestSelectedBulkData.length > 0 && formValues['direct_ancestor_uuids'].length <= 0) {
       setFormValues((prevValues) => ({
         ...prevValues,
-        'direct_ancestor_uuids': selectedBulkData.map(obj => obj.uuid),
+        'direct_ancestor_uuids': latestSelectedBulkData.map(obj => obj.uuid),
       }));
     }
     // Formatting Validation
@@ -264,10 +281,15 @@ export const PublicationForm = (props) => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    const submitAction = e.currentTarget?.name || e.nativeEvent?.submitter?.name || e.target?.name;
 
+    window.setTimeout(() => submitPublication(submitAction), PUBLICATION_SUBMIT_SETTLE_DELAY_MS);
+  }
+
+  const submitPublication = (submitAction) => {
     if (validateForm()) {
       setIsProcessing(true);
-      let selectedUUIDs = selectedBulkData.map((obj) => obj.uuid);
+      let selectedUUIDs = selectedBulkDataRef.current.map((obj) => obj.uuid);
       let cleanForm = {
         title: formValues.title,
         publication_venue: formValues.publication_venue,
@@ -285,12 +307,11 @@ export const PublicationForm = (props) => {
       }
 
       if (uuid) { // We're in Edit Mode
-        let target = e.target.name;
         setButtonLoading((prev) => ({
           ...prev,
-          [target]: true,
+          [submitAction]: true,
         }));
-        if (e.target.name === "process") { // Process
+        if (submitAction === "process") { // Process
           ingest_api_dataset_submit(uuid, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status < 300) {
@@ -307,9 +328,9 @@ export const PublicationForm = (props) => {
               props.reportError(error);
               setPageErrors(error);
             });
-        } else if (e.target.name === "submit") { // Submit
+        } else if (submitAction === "submit") { // Submit
           setIsSubmitModalOpen(true)
-        } else if ( e.target.name === "submit_modal") {
+        } else if ( submitAction === "submit_modal") {
           setIsSubmitModalOpen(false);
           cleanForm.status = "Submitted"
           entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
@@ -331,7 +352,7 @@ export const PublicationForm = (props) => {
                 setPageErrors(response);
               }
             })
-        } else if (e.target.name === "save") { // Save
+        } else if (submitAction === "save") { // Save
           entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
             .then((response) => {
               if (response.status === 200) {
@@ -386,65 +407,72 @@ export const PublicationForm = (props) => {
   }
 
   const buttonEngine = () => {
+    const renderLoadingActionButton = ({
+      label,
+      loading: isButtonLoading = false,
+      name,
+      onClick,
+      type,
+    }) => (
+      <LoadingButton
+        loading={isButtonLoading}
+        name={name}
+        onClick={onClick}
+        variant="contained"
+        className="m-2"
+        type={type}>
+        {label}
+      </LoadingButton>
+    );
+
+    const actionRenderers = {
+      [PUBLICATION_ACTIONS.revert]: () => (
+        <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+      ),
+      [PUBLICATION_ACTIONS.cancel]: (action) => renderLoadingActionButton({
+        label: action.label,
+        onClick: () => navigate("/"),
+      }),
+      [PUBLICATION_ACTIONS.create]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: isProcessing,
+        name: "generate",
+        onClick: (e) => handleSubmit(e),
+        type: "submit",
+      }),
+      [PUBLICATION_ACTIONS.process]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['process'],
+        name: "process",
+        onClick: (e) => handleSubmit(e),
+      }),
+      [PUBLICATION_ACTIONS.submit]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['submit'],
+        name: "submit",
+        onClick: (e) => handleSubmit(e),
+      }),
+      [PUBLICATION_ACTIONS.save]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: buttonLoading['save'] === true ? true : false,
+        name: "save",
+        onClick: (e) => handleSubmit(e),
+      }),
+    };
+
     return (
       <Box sx={{ textAlign: "right" }}>
-        {/* REVERT */}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && (!["published","retracted"].includes(entityData.status.toLowerCase())) && (
-          <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
-        )}
-        <LoadingButton
-          variant="contained"
-          className="m-2"
-          onClick={() => navigate("/")}>
-          Cancel
-        </LoadingButton>
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            name="generate"
-            loading={isProcessing}
-            className="m-2"
-            onClick={(e) => handleSubmit(e)}
-            type="submit">
-            Save
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_admin_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
-          <LoadingButton
-            loading={buttonLoading['process']}
-            name="process"
-            onClick={(e) => handleSubmit(e)}
-            variant="contained"
-            className="m-2">
-            Process
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && entityData.status.toLowerCase() === "new" && (
-          <LoadingButton
-            loading={buttonLoading['submit']}
-            onClick={(e) => handleSubmit(e)}
-            name="submit"
-            variant="contained"
-            className="m-2">
-            Submit
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && !["published","retracted"].includes(entityData.status.toLowerCase()) && (
-          <LoadingButton
-            loading={buttonLoading['save'] === true ? true : false}
-            name="save"
-            onClick={(e) => handleSubmit(e)}
-            variant="contained"
-            className="m-2">
-            Save
-          </LoadingButton>
-        )}
+        {getPublicationActions({ uuid, permissions, entityData }).map((action) => (
+          <React.Fragment key={action.id}>{actionRenderers[action.id](action)}</React.Fragment>
+        ))}
       </Box>
     );
   }
 
   // MAIN RENDER
-  if (isLoading || ((!entityData || !formValues) && uuid)) {
+  if (notFound) {
+    return (<NotFound entityID={uuid} />);
+  } else if (isLoading || ((!entityData || !formValues) && uuid)) {
     return (<LinearProgress />);
   } else {
     return (

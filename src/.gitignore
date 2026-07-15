@@ -31,12 +31,15 @@ src/ingest-ui/.pnp.js
 # testing
 src/react-app/coverage
 thunder-tests/
-cypress/*
+cypress/downloads/
+cypress/screenshots/
+cypress/videos/
 
 # env files
 src/.env.*
 src/.env
 envs/example.env.*
+cypress.env.json
 
 # misc
 .DS_Store
@@ -66,9 +69,5 @@ favorites.json
 # *.~lock.*
 # Disabling so Dependabot can figure itself out
 # package-lock.json
-
-#cypress
-src/cypress.config.js
-src/cypress.env.json
 
 .idea

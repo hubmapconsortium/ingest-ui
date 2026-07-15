@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from "react";
+import {Fragment, useEffect, useState, useMemo} from "react";
 import {useParams} from "react-router-dom";
 import {
   ingest_api_allowable_edit_states, 
@@ -27,8 +27,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import InfoIcon from '@mui/icons-material/Info';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -44,9 +42,8 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
-import Snackbar from '@mui/material/Snackbar';
 import Button from "@mui/material/Button";
-import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,SnackbarFeedback} from "../ui/formParts";
+import {FormHeader,UserGroupSelectMenu,EntityValidationMessage,redirectToEntityRoute,SnackbarFeedback} from "../ui/formParts";
 import {RenderPageError} from "../../utils/error_helper";
 import {Typography} from "@mui/material";
 import {DataGrid} from "@mui/x-data-grid";
@@ -55,9 +52,10 @@ import isBetween from "dayjs";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { UPLOAD_ACTIONS, getUploadActions } from "../formActionRules/uploadActionRules";
+import NotFound from "../404";
 
 export const UploadForm = (props) => {
-  const [eValOpen, setEValOpen] = useState(true);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "",
@@ -95,6 +93,7 @@ export const UploadForm = (props) => {
   let[isProcessing, setIsProcessing] = useState(false);
   let[processingButton, setProcessingButton] = useState(false);
   let[pageErrors, setPageErrors] = useState(null);
+  let[notFound, setNotFound] = useState(false);
   let[globusPath, setGlobusPath] = useState(null);
   let[datasetMenu, setDatasetMenu] = useState();
   let[expandVMessage, setExpandVMessage] = useState(false);
@@ -133,17 +132,20 @@ export const UploadForm = (props) => {
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
+    setNotFound(false);
     if(uuid && uuid !== ""){
       entity_api_get_entity(uuid)
         .then((response) => {
+          if(response.status === 404 || response.status === 400){
+            setNotFound(true);
+            return;
+          }
           if(response.status === 200){
             const entityType = response.results.entity_type;
             if(entityType !== "Upload"){
               // Are we sure we're loading an Upload?
               // @TODO: Move this sort of handling/detection to the outer app, or into component
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             }else{
               const entityData = response.results;
               // console.group("Entity Info");
@@ -185,6 +187,10 @@ export const UploadForm = (props) => {
           }
         })
         .catch((error) => {
+          if(error.status === 404 || error.status === 400){
+            setNotFound(true);
+            return;
+          }
           wrapUp(error)
         });
     }else{
@@ -526,17 +532,6 @@ export const UploadForm = (props) => {
     }
   }
 
-  function saveCheck(){
-    // Slightly more compelx
-    if(entityData && entityData.status){
-      if(saveStatuses.includes(entityData.status.toLowerCase()) && (permissions.has_write_priv === true || permissions.has_admin_priv === true) ){
-        return true
-      }else{
-        return false
-      }
-    }
-  }
-
   function colorizeField(field) {
     return formErrors[field]
       ? "rgb(211, 47, 47)!important" // Error color
@@ -546,53 +541,69 @@ export const UploadForm = (props) => {
   }
   
   function buttonEngine(){
+    const renderLoadingActionButton = ({
+      className = "m-1",
+      label,
+      loading: isButtonLoading = false,
+      onClick,
+      type,
+    }) => (
+      <LoadingButton
+        loading={isButtonLoading}
+        variant="contained"
+        className={className}
+        onClick={onClick}
+        type={type}>
+        {label}
+      </LoadingButton>
+    );
+
+    const actionRenderers = {
+      [UPLOAD_ACTIONS.cancel]: () => (
+        <Button
+          variant="contained"
+          className="m-2"
+          onClick={() => window.history.back()}>
+          Cancel
+        </Button>
+      ),
+      [UPLOAD_ACTIONS.create]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: isProcessing,
+        className: "m-2",
+        onClick: (e) => submitForm(e,"Create"),
+        type: "submit",
+      }),
+      [UPLOAD_ACTIONS.revert]: () => (
+        <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
+      ),
+      [UPLOAD_ACTIONS.submit]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: processingButton === "Submit",
+        onClick: () => submitModalOpen(),
+      }),
+      [UPLOAD_ACTIONS.reorganize]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: processingButton === "Reorganize",
+        onClick: (e) => submitForm(e,"Reorganize"),
+      }),
+      [UPLOAD_ACTIONS.validate]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: processingButton === "Validate",
+        onClick: (e) => submitForm(e,"Validate"),
+      }),
+      [UPLOAD_ACTIONS.save]: (action) => renderLoadingActionButton({
+        label: action.label,
+        loading: processingButton === "Save",
+        onClick: (e) => submitForm(e,"Save"),
+      }),
+    };
+
     return(
         <Box sx={{textAlign: "right"}}>
-          <Button
-            variant="contained"
-            className="m-2"
-            onClick={() => window.history.back()}>
-            Cancel
-          </Button>
-          {/* @TODO use next form to help work this in to its own UI component? */}
-          {!uuid && (
-            <LoadingButton
-              variant="contained"
-              onClick={(e) => submitForm(e,"Create")}
-              loading={isProcessing}
-              className="m-2"
-              type="submit">
-              Generate ID
-            </LoadingButton>
-          )}
-
-          {uuid && uuid.length > 0 && permissions.has_admin_priv &&(
-            <RevertFeature uuid={entityData ? entityData.uuid : null} type={entityData ? entityData.entity_type : 'entity'}/>
-          )}
-
-          {uuid && uuid.length > 0 && (permissions.has_write_priv || permissions.has_admin_priv) && (entityData.status && (entityData.status.toLowerCase() !== "reorganized" && entityData.status.toLowerCase() !== "submitted")) &&(
-            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Submit"} variant="contained" className="m-1" onClick={() => submitModalOpen()}>
-              Submit
-            </LoadingButton>
-          )}
-
-          {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && entityData.status.toLowerCase() === "submitted") && (
-            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Reorganize"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Reorganize")}>
-              Reorganize
-            </LoadingButton>
-          )}
-
-          {/* For Uploads not in Published or Processing status (If Upload status is Published or Upload status is Processing do not enable) */}
-          {uuid && uuid.length > 0 && permissions.has_admin_priv && (entityData.status && !validateRestrictions.includes(entityData.status.toLowerCase())) && (
-            <LoadingButton disaled={isProcessing.toString()} loading={processingButton === "Validate"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Validate")}>
-              Validate
-            </LoadingButton>
-          )}
-          {uuid && uuid.length > 0 && saveCheck() === true && (
-            <LoadingButton disabled={!saveCheck.toString()} loading={processingButton === "Save"} variant="contained" className="m-1" onClick={(e) => submitForm(e,"Save")}>
-              Save
-            </LoadingButton>
-          )}
+          {getUploadActions({ uuid, permissions, entityData, saveStatuses, validateRestrictions }).map((action) => (
+            <Fragment key={action.id}>{actionRenderers[action.id](action)}</Fragment>
+          ))}
         </Box>
 
     );
@@ -684,8 +695,9 @@ export const UploadForm = (props) => {
     )
   }
 
-
-  if(isLoading ||(!entityData && !formValues && uuid) ){
+  if(notFound){
+    return(<NotFound entityID={uuid} />);
+  }else if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
 

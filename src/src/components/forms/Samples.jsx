@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from "react";
+import React, {Fragment, useEffect, useState, useMemo} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -40,14 +40,19 @@ import {
   entity_api_get_entity_ancestor_list
 } from "../../service/entity_api";
 import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../../service/ingest_api";
-import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "../ui/formParts";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect, redirectToEntityRoute} from "../ui/formParts";
 import {OrganIcons} from "../ui/icons";
 import RUIIntegration from "../ui/ruiIntegration";
 // import SearchComponent from "./search/SearchComponent";
 import {EmbeddedSearch} from "../embeddedSearch"; 
 import {toTitleCase} from "../../utils/string_helper";
+import { SIMPLE_ENTITY_ACTIONS, getSimpleEntityActions } from "../formActionRules/simpleEntityActionRules";
+import {
+  validateProtocolIODOI,
+  validateSingleProtocolIODOI,
+} from "../../utils/validators";
+import NotFound from "../404";
 // import {RUI_ORGAN_TYPES} from "../constants";
-// import {ValidateLocalhost} from "../../utils/validators";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
@@ -57,6 +62,7 @@ export const SampleForm = (props) => {
   let[isLoading, setLoading] = useState(true);
   let[isProcessing, setIsProcessing] = useState(false);
   let[pageErrors, setPageErrors] = useState(null);
+  let[notFound, setNotFound] = useState(false);
   let[validationError, setValidationError] = useState(null);
   let[sourceEntity, setSourceEntity] = useState(null);
   let[relatedEntities, setRelatedEntities] = useState(null);
@@ -179,10 +185,15 @@ export const SampleForm = (props) => {
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
+    setNotFound(false);
     if(uuid && uuid !== ""){
       entity_api_get_entity(uuid)
         .then((response) => {
           // console.debug('%c◉ response ', 'color:#00ff7b',response.results.direct_ancestor, response.results);
+          if(response.status === 404 || response.status === 400){
+            setNotFound(true);
+            return;
+          }
           if(response.status === 200){
             const entityType = response.results.entity_type;
             FormCheckRedirect(uuid,entityType,"Sample");
@@ -224,7 +235,7 @@ export const SampleForm = (props) => {
                     // Is there a RUI enabled organ up the chain?
 
                     })
-                    .catch((error) => {
+                    .catch(() => {
                       // console.debug('%c◉ ERROR ingest_api_get_associated_ids', 'color:#ff005d', error);
                     });
               })
@@ -238,6 +249,10 @@ export const SampleForm = (props) => {
           }
         })
         .catch((error) => {
+          if(error.status === 404 || error.status === 400){
+            setNotFound(true);
+            return;
+          }
           // console.debug("entity_api_get_entity ERROR", error);
           // setPageErrors(error); its counting no ancestors of ancestors as an error, shush
         });
@@ -348,6 +363,20 @@ export const SampleForm = (props) => {
         }));
         errors++;
       }
+    }
+
+    if(!validateProtocolIODOI(formValues.protocol_url)){
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        protocol_url: "Please enter a valid protocols.io URL"
+      }));
+      errors++;
+    }else if(!validateSingleProtocolIODOI(formValues.protocol_url)){
+      setFormErrors(prevErrors => ({
+        ...prevErrors,
+        protocol_url: "Please enter only one valid protocols.io URL"
+      }));
+      errors++;
     }
 
     return errors === 0;
@@ -534,42 +563,48 @@ export const SampleForm = (props) => {
 
   function handleMultiEdit(uuid){
     if(uuid !== entityData.uuid){
-      window.location.replace(`${process.env.REACT_APP_URL}/Sample/${uuid}`);
+      redirectToEntityRoute("Sample", uuid);
     }
     // We're already here otherwise
   }
 
   function wrapUpPageErrors(error){
-    let errors = pageErrors;
     // console.debug('%c◉ wrapUpPageErrors Err pageErrors ', 'color:#00ff7b', errors);
     setPageErrors(error);
     setIsProcessing(false);
   }
 
   function buttonEngine(){
-    return(
-      <Box sx={{textAlign: "right"}}>
+    const actionRenderers = {
+      [SIMPLE_ENTITY_ACTIONS.cancel]: () => (
         <Button
           variant="contained"
           className="m-2"
           onClick={() => navigate("/")}>
           Cancel
         </Button>
-        {/* @TODO use next form to help work this in to its own UI component? */}
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            loading={isProcessing}
-            className="m-2"
-            type="submit">
-            Generate ID
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && (
-          <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
-            Update
-          </LoadingButton>
-        )}
+      ),
+      [SIMPLE_ENTITY_ACTIONS.create]: () => (
+        <LoadingButton
+          variant="contained"
+          loading={isProcessing}
+          className="m-2"
+          type="submit">
+          Generate ID
+        </LoadingButton>
+      ),
+      [SIMPLE_ENTITY_ACTIONS.update]: () => (
+        <LoadingButton loading={isProcessing} variant="contained" className="m-2" type="submit">
+          Update
+        </LoadingButton>
+      ),
+    };
+
+    return(
+      <Box sx={{textAlign: "right"}}>
+        {getSimpleEntityActions({ uuid, permissions }).map((action) => (
+          <Fragment key={action.id}>{actionRenderers[action.id]()}</Fragment>
+        ))}
       </Box>
     );
   }
@@ -674,7 +709,9 @@ export const SampleForm = (props) => {
     }
   }
 
-  if(isLoading ||(!entityData && uuid)){
+  if(notFound){
+    return(<NotFound entityID={uuid} />);
+  }else if(isLoading ||(!entityData && uuid)){
     return(<LinearProgress />);
   }else{
     return(

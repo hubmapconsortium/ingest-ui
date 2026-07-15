@@ -50,7 +50,7 @@ def process_files_in_dir(directory, env_vars):
                     with open(fpath, 'w', encoding='utf-8') as f:
                         f.write(new_content)
                     print(f"Updated: {fpath}")
-            except Exception:
+            except Exception as e:
                 print(f"Env Engine Processing Error: {fpath}: {e}")
                 continue
 

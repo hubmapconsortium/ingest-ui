@@ -13,6 +13,73 @@ body {
   padding: 10px;
 }
 
+.app-footer {
+  margin-top: 2rem;
+  background: #444a65;
+  border-top: 4px solid #97cdf6;
+  color: #f4f4f4;
+}
+
+.app-footer-inner {
+  width: 85%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1.25rem 0;
+  text-align: center;
+}
+
+.app-footer .MuiTypography-root {
+  color: inherit;
+}
+
+.app-footer a,
+.app-footer .MuiLink-root {
+  color: #97cdf6;
+  font-weight: 700;
+}
+
+.app-footer a:hover,
+.app-footer .MuiLink-root:hover {
+  color: #c1e2fa;
+}
+
+.app-footer-funding {
+  margin-bottom: 0.75rem !important;
+}
+
+.app-footer-copy,
+.app-footer-link,
+.app-footer-version {
+  display: block;
+  line-height: 1.7 !important;
+}
+
+.app-footer-version-link {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  justify-content: center;
+  line-height: 1.7;
+  margin-top: 0.1rem;
+}
+
+.app-footer-github-icon {
+  color: #d7d9e5;
+  font-size: 0.9rem !important;
+}
+
+.app-footer-version {
+  color: inherit !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 600px) {
+  .app-footer-inner {
+    width: 90%;
+    padding: 1rem 0;
+  }
+}
+
 body {
   background-color: #ebebeb;
   font-family: 'Inter var', sans-serif!important;
@@ -537,8 +604,8 @@ a:not([href]).ttip {
 
 /* Hubmap Standard CSS for text */
 .table-fmt {
-  minwidth: 650;
-  width: "100%";
+  min-width: 650px;
+  width: 100%;
 }
 
 .table-hdr-fmt {
@@ -1203,6 +1270,9 @@ svg.invalid {
 /* Column headers and footers */
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-columnHeaders,
+.HDT .MuiDataGrid-container--top,
+.HDT .MuiDataGrid-container--top [role="row"],
+.HDT .MuiDataGrid-columnHeader,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
   background: linear-gradient(180deg,  #585E7A 0%,  #444a65 100%) !important;
@@ -1212,6 +1282,9 @@ svg.invalid {
 }
 .HDT.errorSetTable.shortHeader .MuiDataGrid-columnHeaders,
 .HDT.errorSetTable .MuiDataGrid-columnHeaders,
+.HDT.errorSetTable .MuiDataGrid-container--top,
+.HDT.errorSetTable .MuiDataGrid-container--top [role="row"],
+.HDT.errorSetTable .MuiDataGrid-columnHeader,
 .HDT.errorSetTable .MuiDataGrid-footerContainer,
 .HDT.errorSetTable .thead-dark{
   background: linear-gradient(180deg, #c30d0d 0%, #C40000 100%) !important;
@@ -1219,6 +1292,9 @@ svg.invalid {
 }
 .HDT.successReg.shortHeader .MuiDataGrid-columnHeaders,
 .HDT.successReg .MuiDataGrid-columnHeaders,
+.HDT.successReg .MuiDataGrid-container--top,
+.HDT.successReg .MuiDataGrid-container--top [role="row"],
+.HDT.successReg .MuiDataGrid-columnHeader,
 .HDT.successReg .MuiDataGrid-footerContainer,
 .HDT.successReg .thead-dark{
   background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
@@ -1242,9 +1318,6 @@ svg.invalid {
   min-height: 50px!important;
 }
 
-.HDT .thead-dark th{
-  background: none!important;
-}
 .HDT .MuiDataGrid-columnHeaders {
   border-radius: 0% !important;
 }
@@ -1256,6 +1329,7 @@ svg.invalid {
 /* For tables that need a shorter footer (override with .shortFooter) */
 .HDT.shortFooter .MuiDataGrid-footerContainer,
 .HDT.shortHeader .MuiDataGrid-columnHeaders,
+.HDT.shortHeader .MuiDataGrid-container--top,
 .MuiTablePagination-root .MuiToolbar-root {
   min-height: 35px!important;
   max-height: 35px!important;

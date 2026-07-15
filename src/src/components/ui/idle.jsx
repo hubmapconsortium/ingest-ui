@@ -1,8 +1,7 @@
-import React, {Component} from "react";
+import {Component} from "react";
 // import Modal from "../uuid/modal";
 
 import Button from "@mui/material/Button";
-import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Dialog from '@mui/material/Dialog';
@@ -35,7 +34,7 @@ class Timer extends Component{
     this.idleTimer.reset();
   }
 
-  onIdle = e => {
+  onIdle = () => {
     console.debug("Idle");
     if (localStorage.getItem("isAuthenticated") === "true") {
       this.setState({
@@ -76,13 +75,13 @@ class Timer extends Component{
     this.setState({ show: false });
   };
 
-  onAction = e => {
+  onAction = () => {
     // console.debug("onAction");
     this.setState({show:false});
     this.resetTimer();
   }
   
-  onActive = e => {
+  onActive = () => {
     // console.debug("onActive");
     this.resetTimer();
   };

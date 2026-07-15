@@ -71,3 +71,5 @@ src/cypress.env.json
 .idea
 src/cypress.env.json
 .directory
+.github/copilot-instructions.md
+src/cypress.config.js

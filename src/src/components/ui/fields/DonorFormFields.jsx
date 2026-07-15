@@ -1,4 +1,3 @@
-import React from "react";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 
@@ -52,7 +51,6 @@ export const DonorFormFields = ({
         if(error){
           console.debug('%c◉ field error ', 'color:#f44336', field.id, error, formErrors[field.id]);
         }
-        const errorStyle = error ? { borderColor: '#f44336', background: '#fff0f0' } : {};
         if (field.type === "text" || field.type === "textarea") {
           return (
             <TextField
