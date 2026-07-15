@@ -1,10 +1,6 @@
 /* global Cypress */
 
-export const requiredAuthInfoFields = [
-  'name',
-  'email',
-  'groups_token',
-];
+export const defaultAuthRole = 'basic';
 
 function parseJsonish(value, label) {
   if (!value || typeof value !== 'string') {
@@ -18,57 +14,38 @@ function parseJsonish(value, label) {
   }
 }
 
-function envFirst(...names) {
-  return names.map((name) => Cypress.env(name)).find(Boolean);
-}
+export function normalizeAuthInfo(authInfo, label = 'Cypress auth info') {
+  const normalizedAuthInfo = parseJsonish(authInfo, label);
+  const requiredFields = ['name', 'email', 'groups_token'];
+  const missingFields = requiredFields.filter((field) => !normalizedAuthInfo?.[field]);
 
-export function authInfoFromGlobusSession() {
-  const token = envFirst('groups_token', 'token', 'globusToken');
-  const sessionDisplayName = envFirst('session_displayname', 'sessionDisplayName', 'display_name');
-
-  if (!token) {
-    return null;
-  }
-
-  if (!sessionDisplayName) {
-    throw new Error('Globus token auth requires session_displayname.');
+  if (missingFields.length > 0) {
+    throw new Error(`${label} must include: ${missingFields.join(', ')}.`);
   }
 
   return {
-    name: sessionDisplayName,
-    email: sessionDisplayName,
-    groups_token: token,
+    name: normalizedAuthInfo.name,
+    email: normalizedAuthInfo.email,
+    groups_token: normalizedAuthInfo.groups_token,
   };
 }
 
-export function normalizeAuthInfo(authInfo, label = 'CYPRESS_AUTH_INFO') {
-  const parsedAuthInfo = parseJsonish(authInfo, label);
-  const normalizedAuthInfo = parsedAuthInfo || authInfoFromGlobusSession();
-
-  if (!normalizedAuthInfo) {
-    throw new Error(
-      'Missing Cypress auth session. Provide authInfo or token plus session_displayname before running authenticated Cypress specs.'
-    );
-  }
-
-  const missingFields = requiredAuthInfoFields.filter((field) => !normalizedAuthInfo[field]);
-  if (missingFields.length > 0) {
-    throw new Error(`Cypress auth session is missing: ${missingFields.join(', ')}`);
-  }
-
-  return normalizedAuthInfo;
-}
-
-export function authInfoString(authInfo, label = 'CYPRESS_AUTH_INFO') {
+export function authInfoString(authInfo, label = 'Cypress auth info') {
   return JSON.stringify(normalizeAuthInfo(authInfo, label));
 }
 
 export function selectedAuthRole() {
-  return Cypress.env('serviceAuthRole') || Cypress.env('authRole');
+  return Cypress.env('authRole') || defaultAuthRole;
 }
 
 export function getConfiguredAuthInfo() {
-  const authInfoByRole = Cypress.env('authInfoByRole') || {};
+  const authAccounts = parseJsonish(Cypress.env('authAccounts'), 'authAccounts') || {};
   const role = selectedAuthRole();
-  return (role && authInfoByRole[role]) ? authInfoByRole[role] : Cypress.env('authInfo');
+  const authInfo = authAccounts[role];
+
+  if (!authInfo) {
+    throw new Error(`Missing Cypress auth account for role: ${role}.`);
+  }
+
+  return normalizeAuthInfo(authInfo, `Cypress auth account ${role}`);
 }

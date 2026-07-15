@@ -9,9 +9,8 @@ module.exports = defineConfig({
   experimentalStudio: true,
   ...(serviceUserAgent ? { userAgent: serviceUserAgent } : {}),
   env: {
-    authInfo: process.env.CYPRESS_AUTH_INFO,
-    token: process.env.CYPRESS_GLOBUS_TOKEN || process.env.CYPRESS_TOKEN,
-    session_displayname: process.env.CYPRESS_SESSION_DISPLAYNAME,
+    authAccounts: process.env.CYPRESS_AUTH_ACCOUNTS,
+    authRole: process.env.CYPRESS_AUTH_ROLE,
     authSearchKeyword: process.env.CYPRESS_AUTH_SEARCH_KEYWORD,
   },
   e2e: {

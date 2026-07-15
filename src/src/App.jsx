@@ -41,7 +41,7 @@ import {SpeedDialTooltipOpen, ServerSight} from './components/ui/devTools';
 // import { datadogRum } from '@datadog/browser-rum';
 // import { reactPlugin } from '@datadog/browser-rum-react';
 import { installAxiosDoglog, installGlobalAxiosErrorLogger } from './utils/axiosDoglog';
-import { initDoglog, ddLog } from './utils/doglog';
+import { initDoglog, isDoglogConfigured, ddLog } from './utils/doglog';
 import APIAlertHandler from "./components/ui/APIAlertHandler";
 import ConsolePopoverTools from "./components/ui/ConsolePopoverTools";
 import AppFooter from "./components/ui/AppFooter";
@@ -107,11 +107,13 @@ export function App(){
   }, [loginError, loginErrorCause]);
   
   useEffect(() => {
-    // Initialize centralized doglog (avoids double-init and ensures consistent context)
-    try{ initDoglog(); }catch(e){ console.warn('initDoglog failed', e); }
-    // Do not override global.console.error here; doglog handles console.error centrally.
-    try{ installAxiosDoglog(); }catch(e){ console.warn('installAxiosDoglog failed', e); }
-    try{ installGlobalAxiosErrorLogger(); }catch(e){ console.warn('installGlobalAxiosErrorLogger failed', e); }
+    if(isDoglogConfigured()){
+      // Initialize centralized doglog (avoids double-init and ensures consistent context)
+      try{ initDoglog(); }catch(e){ console.warn('initDoglog failed', e); }
+      // Do not override global.console.error here; doglog handles console.error centrally.
+      try{ installAxiosDoglog(); }catch(e){ console.warn('installAxiosDoglog failed', e); }
+      try{ installGlobalAxiosErrorLogger(); }catch(e){ console.warn('installGlobalAxiosErrorLogger failed', e); }
+    }
     
     // Banner
     const t = Math.floor(Date.now()/1000); // current UTC time in seconds

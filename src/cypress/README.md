@@ -27,13 +27,8 @@ npm run start -- --host 127.0.0.1 --port 8585
 npm run test:c
 ```
 
-Cypress defaults to `http://127.0.0.1:8585`. If that port is unavailable, start
-Vite on a different testing port and pass the matching base URL:
-
-```sh
-npm run start -- --host 127.0.0.1 --port 9696
-CYPRESS_BASE_URL=http://127.0.0.1:9696 npm run test:c
-```
+Cypress defaults to `http://127.0.0.1:8585`; keep Vite on that same host and
+port so redirect-sensitive authentication uses the expected app origin.
 
 `npm run test:c` opens only `cypress/e2e/testall.cy.js`, which imports the
 current form, bulk upload, and DEV service Cypress specs.
@@ -42,50 +37,47 @@ current form, bulk upload, and DEV service Cypress specs.
 targeted real-auth smoke spec. It is not imported by `testall.cy.js`; select it
 directly in Cypress when validating authenticated search with a real session.
 
-For DEV service specs and real authenticated smoke specs, keep real tokens local
-and untracked. This repo follows the SenNet Cypress CI approach of passing a
-valid Globus groups token plus the matching session display name into Cypress.
-
-Copy `cypress.example.env.json` to `cypress.env.json`, set `token` to a valid
-Globus groups token, set `session_displayname` to the matching user display
-name, and keep that file untracked.
+For DEV service specs and real authenticated smoke specs, keep real account
+details and Groups tokens local and untracked. Copy `cypress.example.env.json`
+to `cypress.env.json`, add the name, email, and manually acquired Groups token
+for each account role, and keep that file untracked.
 
 ```sh
 cp cypress.example.env.json cypress.env.json
 npm run test:c
 ```
 
-You can also pass the same values from the shell:
+The supported roles are:
+
+- `basic`: a normal user with read/write access
+- `admin`: an administrator
+- `readOnly`: a user with read-only access
+
+Select the account used by real-auth specs with `authRole`. It defaults to
+`basic` when omitted:
+
+```json
+{
+  "authAccounts": {
+    "basic": { "name": "...", "email": "...", "groups_token": "..." },
+    "admin": { "name": "...", "email": "...", "groups_token": "..." },
+    "readOnly": { "name": "...", "email": "...", "groups_token": "..." }
+  },
+  "authRole": "basic"
+}
+```
+
+You can also supply the account map and selected role from the shell. The map
+must be JSON:
 
 ```sh
-export CYPRESS_GLOBUS_TOKEN="paste-valid-globus-groups-token-here"
-export CYPRESS_SESSION_DISPLAYNAME="cypress-dev@example.org"
+export CYPRESS_AUTH_ACCOUNTS='{"basic":{"name":"...","email":"...","groups_token":"..."}}'
+export CYPRESS_AUTH_ROLE="basic"
 npm run test:c
 ```
 
-To generate a fresh access token from the Globus Auth API before opening
-Cypress, provide local-only Globus OAuth credentials and run:
-
-```sh
-export GLOBUS_CLIENT_ID="..."
-export GLOBUS_CLIENT_SECRET="..."
-export GLOBUS_GROUPS_REFRESH_TOKEN="..."
-export GLOBUS_SESSION_DISPLAYNAME="cypress-dev@example.org"
-npm run test:c:globus
-```
-
-`npm run test:c:globus` performs a refresh-token grant against
-`https://auth.globus.org/v2/oauth2/token`, selects the groups access token, and
-passes it to Cypress as `CYPRESS_GLOBUS_TOKEN`. It does not write the refreshed
-access token to disk.
-
-The helper converts those SenNet-style fields into the app's expected
-`localStorage.info` shape:
-
-`{ "name": session_displayname, "email": session_displayname, "groups_token": token }`
-
-`CYPRESS_AUTH_INFO` with a full `info` JSON payload is still supported as a
-fallback for local debugging.
+The selected account is stored in the app's authenticated session shape:
+`{ "name": "...", "email": "...", "groups_token": "..." }`.
 
 ## `npm run test:all`
 
@@ -108,9 +100,7 @@ npm run verify:docker-build
 
 - Keep `8585` as the default local testing port when possible. This matches the
   Vite default and `REACT_APP_URL` values used by redirect-sensitive auth flows.
-- `token` and `session_displayname` must be valid for authenticated service
-  specs.
-- `GLOBUS_CLIENT_ID`, `GLOBUS_CLIENT_SECRET`, and
-  `GLOBUS_GROUPS_REFRESH_TOKEN` are only needed for `npm run test:c:globus`.
+- The selected `authAccounts` entry must have a valid name, email, and Groups
+  token for authenticated specs.
 - Use `example.env` for dummy/local template values only; never commit real
-  credentials or session JSON.
+  Groups tokens.

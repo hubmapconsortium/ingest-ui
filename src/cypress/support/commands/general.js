@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 
-import { authInfoString } from '../authSession';
+import { authInfoString, getConfiguredAuthInfo } from '../authSession';
 
 const smokeGroups = [
   {
@@ -21,8 +21,7 @@ const mockAuthInfo = {
 };
 
 function getAuthInfo() {
-  const authInfo = Cypress.env('authInfo');
-  return JSON.parse(authInfoString(authInfo));
+  return JSON.parse(authInfoString(getConfiguredAuthInfo()));
 }
 
 function seedAuthenticatedLocalStorage(win, authInfo) {
