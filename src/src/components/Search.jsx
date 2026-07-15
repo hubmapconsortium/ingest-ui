@@ -21,8 +21,11 @@ import Collapse from '@mui/material/Collapse';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
@@ -74,6 +77,7 @@ function buildDefaultFormFilters() {
     group_uuid: '',
     entity_type: '',
     target_field: '',
+    sort_field: '',
     sort_dir: '',
   };
 }
@@ -98,8 +102,11 @@ export function Search({
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
   var [sortDir, setSortDir] = useState("asc");
+  const [sortField, setSortField] = useState("last_modified_timestamp");
+  const [sortModel, setSortModel] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
+  const [tableHelpAnchorEl, setTableHelpAnchorEl] = useState(null);
 
   useEffect(() => {
     function handleResize() {
@@ -206,6 +213,11 @@ export function Search({
       } else if (paramsObj.sort) {
         newForm.sort_dir = paramsObj.sort;
         setSortDir(paramsObj.sort);
+      }
+      if (paramsObj.sort_field) {
+        newForm.sort_field = paramsObj.sort_field;
+        setSortField(paramsObj.sort_field);
+        setSortModel([{ field: paramsObj.sort_field, sort: paramsObj.sort_dir || paramsObj.sort || 'asc' }]);
       }
 
       // status may be repeated or comma-separated
@@ -392,16 +404,36 @@ export function Search({
     ? { flex: '1 1 0', minWidth: 0, display: 'flex' }
     : { flex: '0 0 auto', display: 'flex' };
 
-  function handleSortToggle() {
-    const newDir = sortDir === 'asc' ? 'desc' : 'asc';
-    setSortDir(newDir);
-    setFormFilters((prev) => ({ ...prev, sort_dir: newDir }));
+  function applySort(nextField, nextDir, showColumnSort = true) {
+    setSortField(nextField);
+    setSortDir(nextDir);
+    setSortModel(showColumnSort ? [{ field: nextField, sort: nextDir }] : []);
+    setFormFilters((prev) => ({ ...prev, sort_field: nextField, sort_dir: nextDir }));
     const url = new URL(window.location);
-    url.searchParams.set('sort_dir', newDir);
+    url.searchParams.set('sort_field', nextField);
+    url.searchParams.set('sort_dir', nextDir);
     window.history.pushState({}, '', url);
     setPage(0);
-    setSearchFiltersState((prev) => ({ ...(prev || {}), sort_dir: newDir }));
+    setSearchFiltersState((prev) => ({ ...(prev || {}), sort_field: nextField, sort_dir: nextDir }));
   }
+
+  function handleSortToggle() {
+    const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+    applySort(sortField, newDir, sortModel.length > 0);
+  }
+
+  function handleSortModelChange(nextModel) {
+    const nextSort = nextModel?.[0];
+    if (nextSort?.field && nextSort?.sort) {
+      applySort(nextSort.field, nextSort.sort);
+      return;
+    }
+    applySort('last_modified_timestamp', 'asc', false);
+  }
+
+  const activeSortLabel = sortModel.length > 0
+    ? searchState.colDef.find((column) => column.field === sortField)?.headerName || sortField
+    : 'Last Modified Date';
 
   // Custom toolbar keeps all controls in one responsive row so the sort button shares space evenly.
   function CustomToolbar(props) {
@@ -449,7 +481,7 @@ export function Search({
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip
-            title={sortDir === 'asc' ? 'Toggle sort (currently ascending by Last Modified Date)' : 'Toggle sort (currently descending by Last Modified Date)'}
+            title={`Toggle sort (currently ${sortDir === 'asc' ? 'ascending' : 'descending'} by ${activeSortLabel})`}
             arrow
           >
             <Box sx={{ width: '100%', display: 'flex' }}>
@@ -460,10 +492,70 @@ export function Search({
                 size="small"
                 onClick={handleSortToggle}
                 sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}>
-                {isNarrow ? '' : `Sort: ${sortDir === 'asc' ? 'Ascending' : 'Descending'}`}
+                {isNarrow ? '' : `Sort ${activeSortLabel}: ${sortDir === 'asc' ? 'Ascending' : 'Descending'}`}
               </Button>
             </Box>
           </Tooltip>
+        </Box>
+        <Box sx={{ marginLeft: 'auto', flex: '0 0 auto' }}>
+          <Tooltip title="Search table help" arrow>
+            <IconButton
+              aria-label="Open search table help"
+              aria-controls={tableHelpAnchorEl ? 'search-table-help' : undefined}
+              aria-haspopup="dialog"
+              aria-expanded={Boolean(tableHelpAnchorEl)}
+              color="inherit"
+              size="small"
+              onClick={(event) => setTableHelpAnchorEl(event.currentTarget)}
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Popover
+            id="search-table-help"
+            open={Boolean(tableHelpAnchorEl)}
+            anchorEl={() => document.getElementById('SearchDataGrid')}
+            onClose={() => setTableHelpAnchorEl(null)}
+            onClick={() => setTableHelpAnchorEl(null)}
+            anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
+            transformOrigin={{ vertical: 'center', horizontal: 'center' }}
+            slotProps={{
+              backdrop: {
+                sx: {
+                  backgroundColor: 'rgba(45, 49, 68, 0.18)',
+                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                },
+              },
+              paper: {
+                sx: {
+                  width: 290,
+                  p: 1.5,
+                  color: '#444a65',
+                  border: '1px solid #444a6540',
+                },
+              },
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+              Search table shortcuts
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '7px 12px', alignItems: 'baseline' }}>
+              <Typography component="kbd" variant="caption" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Click</Typography>
+              <Typography variant="caption">Open the entity</Typography>
+              <Typography component="kbd" variant="caption" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Ctrl/⌘+ Click</Typography>
+              <Typography variant="caption">Open in a new tab</Typography>
+            </Box>
+            <Typography variant="caption" component="p" sx={{ mt: 1.25, mb: 0, color: '#666b80' }}>
+              Use the toolbar to show columns, filter rows, change density, sort, or export results.
+            </Typography>
+            <Typography
+              variant="caption"
+              component="p"
+              sx={{ mt: 1.25, mb: 0, textAlign: 'center', color: '#85899a', fontStyle: 'italic' }}
+            >
+              (click anywhere to close)
+            </Typography>
+          </Popover>
         </Box>
       </GridToolbarContainer>
     );
@@ -718,6 +810,7 @@ export function Search({
         entity_type: normalizeEntityTypeValue(formFilters?.entity_type || formFilters?.entityType) || '',
         target_field: formFilters?.target_field || '',
         sort_dir: formFilters?.sort_dir || '',
+        sort_field: formFilters?.sort_field || '',
       };
       // include status selections
       params.status = Array.isArray(chipSelect) ? chipSelect : [];
@@ -754,8 +847,13 @@ export function Search({
       entity_type: normalizedEntityType || '',
       target_field: p.target_field || '',
       sort_dir: p.sort_dir || '',
+      sort_field: p.sort_field || '',
     };
     setSortDir(nextFormFilters.sort_dir || 'asc');
+    setSortField(nextFormFilters.sort_field || 'last_modified_timestamp');
+    setSortModel(nextFormFilters.sort_field
+      ? [{ field: nextFormFilters.sort_field, sort: nextFormFilters.sort_dir || 'asc' }]
+      : []);
     // Only populate the form fields and chips from the saved search.
     // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
     setFormFilters(nextFormFilters);
@@ -962,7 +1060,7 @@ export function Search({
             }
           }}
           id="SearchDataGrid"
-          className="SearchGridWrap HDT "
+          className="SearchGridWrap HDT"
           columnBuffer={2}
           columns={searchState.colDef}
           columnThreshold={2}
@@ -972,11 +1070,14 @@ export function Search({
           loading={searchState.loading}
           onCellClick={onCellClickHandler}
           onPaginationModelChange={handlePageChange}
+          onSortModelChange={handleSortModelChange}
           pageSizeOptions={[10, 50, 100]}
           pagination
           paginationMode="server"
+          sortingMode="server"
           rowCount={searchState.rowCount}
           rows={searchState.dataRows}
+          sortModel={sortModel}
           localeText={isNarrow ? compactLocaleText : undefined}
           slots={{ toolbar: CustomToolbar }}
           slotProps={{
@@ -1419,6 +1520,13 @@ export function Search({
     }
 
     // include sort direction if present
+    if (formFilters.sort_field) {
+      params["sort_field"] = formFilters.sort_field;
+      url.searchParams.set('sort_field', formFilters.sort_field);
+    } else {
+      url.searchParams.delete('sort_field');
+    }
+
     if (formFilters.sort_dir) {
       params["sort_dir"] = formFilters.sort_dir;
       url.searchParams.set('sort_dir', formFilters.sort_dir);

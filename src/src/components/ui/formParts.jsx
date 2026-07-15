@@ -451,6 +451,7 @@ function infoPanels(entityData,permissions,globusURL){
 
       {globusURL&& (
         <Alert 
+          className="formHeaderInfoPanel"
           severity="info" 
           sx={{ 
             width: "100%", 
@@ -485,6 +486,7 @@ function infoPanels(entityData,permissions,globusURL){
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && ["published","retracted"].includes(entityData.status.toLowerCase()))) && (
         // They might not have write access but not because of data_access_level
         <Alert 
+          className="formHeaderInfoPanel"
           severity="warning" 
           iconMapping={{warning: <VpnLockIcon />}}
           sx={{
@@ -509,6 +511,7 @@ function infoPanels(entityData,permissions,globusURL){
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         
         <Alert  
+          className="formHeaderInfoPanel formHeaderInfoPanelMuted"
           variant="caption" 
           severity="info" 
           sx={{
