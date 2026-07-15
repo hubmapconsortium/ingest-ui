@@ -17,6 +17,13 @@ Running the following command will create an optimized static build of your app 
 npm run build
 ````
 
+## Testing
+To run the suites of unit (via Vite) and javascript E2E tests (Cypress).
+
+```
+npm test:all
+```
+
 ## Docker build for DEV/TEST/PROD development
 
 There are a few configurable environment variables to keep in mind:
