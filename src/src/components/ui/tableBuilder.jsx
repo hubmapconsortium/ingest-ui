@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
-import { CreationActionIcon } from "./icons";
+import { CreationActionIcon, OrganIcon } from "./icons";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { StatusBadge } from "./formParts";
 import Link from "@mui/material/Link";
@@ -457,31 +457,13 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     headerName: "Organ",
     // minWidth: 150,
     renderCell: (params) => {
-      let toMirror = ["Knee (Left)"];
-      let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}");
       let organ_types = JSON.parse(localStorage.getItem("organs"));
       if (!params.row['organ_type']) {
         return nullCell();
       }else{
         return (
           <>
-            <svg
-              width="25"
-              height="25"
-              xmlns="http://www.w3.org/2000/svg"
-              style={
-                toMirror.includes(params.row.organ_type)
-                  ? { transform: "scaleX(-1)", marginRight: "5px" }
-                  : { marginRight: "5px" }
-              }
-            >
-              <image
-                alt={params.row.organ_type}
-                href={systemIcons[params.row.organ_type]}
-                width="25"
-                height="25"
-              />
-            </svg>{" "}
+            <OrganIcon organ={params.row.organ_type} />{" "}
             {organ_types[params.row.organ_type]}
           </>
         );
@@ -532,11 +514,9 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
     renderCell: params => {
       let icon = entityIconsBasic(params.row.entity_type) 
       if(params.row.organ){
-        let toMirror = ["Knee (Left)"]
-        let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
         let organ_types = JSON.parse(localStorage.getItem("organs"));
         return (<> 
-          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}><image alt={params.row.organ} href={systemIcons[params.row.organ]} width="25" height="25" /></svg>{organ_types[params.row.organ]} (Organ)
+          <OrganIcon organ={params.row.organ} />{organ_types[params.row.organ]} (Organ)
         </>)
       }else if(params.row.sample_category){
         return (<>{icon}{toTitleCase(params.row.sample_category)}</>)
@@ -614,15 +594,11 @@ function entityIconsBasic(entity_type){
 }
 
   export function renderFieldIcons(params){
-  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  let toMirror = ["Knee (Left)"]
   // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
-      {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.value) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}>
-          <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
-        </svg>
+      {params.row.organ && (
+        <OrganIcon organ={params.row.organ} alt={params.value} />
       )}
       {!params.row.organ && params.row.entity_type && (
         entityIconsBasic(params.row.entity_type)

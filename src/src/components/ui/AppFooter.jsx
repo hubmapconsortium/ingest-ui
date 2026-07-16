@@ -24,9 +24,6 @@ export default function AppFooter() {
           </Link>
           .
         </Typography>
-        <Typography className="app-footer-copy" variant="caption">
-          © 2026 HuBMAP Consortium | All Rights Reserved
-        </Typography>
         <Typography className="app-footer-link" variant="caption">
           <Link href="https://hubmapconsortium.org/" target="_blank" rel="noopener noreferrer">
             Collaboration Portal

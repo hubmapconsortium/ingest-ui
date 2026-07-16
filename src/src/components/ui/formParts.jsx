@@ -37,7 +37,7 @@ import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
-import {OrganIcons, CreationActionIcon} from "../ui/icons";
+import {OrganIcon, CreationActionIcon} from "../ui/icons";
 import { badgeClass } from "../../utils/badgeClasses";
 
 // The header on all of the Forms (The top bit)
@@ -392,9 +392,7 @@ function topHeader(entityData, entityType, subType){
       )}
       {entityData.organ	 && (
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong> 
-          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
-            <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
-          </svg> {organ_types[entityData.organ]}
+          <OrganIcon organ={entityData.organ} /> {organ_types[entityData.organ]}
         </Typography>
       )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>

@@ -567,7 +567,7 @@ export function App(){
 
   return(
     <React.Fragment>
-      <div className={"App pb-3 env-"+process.env.REACT_APP_NODE_ENV }>
+      <div className={"App env-"+process.env.REACT_APP_NODE_ENV }>
         <ConsolePopoverTools setAPIErrQueue={setAPIErrQueue} />
         {/* Specific to Expired key */}
         {/* <Snackbar

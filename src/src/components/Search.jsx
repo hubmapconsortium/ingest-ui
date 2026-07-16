@@ -1,5 +1,5 @@
 import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
-import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
+import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton,useGridApiRef} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -23,6 +23,9 @@ import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
+import Popper from '@mui/material/Popper';
+import Paper from '@mui/material/Paper';
+import Fade from '@mui/material/Fade';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -45,7 +48,7 @@ import {
   COLUMN_DEF_MIXED,
 } from "./ui/tableBuilder";
 import {api_search2} from "../service/search_api";
-import {OrganIcons} from "./ui/icons"
+import {EntityIconsBasic, OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -107,6 +110,9 @@ export function Search({
   const [hasSearched, setHasSearched] = useState(false);
   const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
   const [tableHelpAnchorEl, setTableHelpAnchorEl] = useState(null);
+  const [rowPreview, setRowPreview] = useState(null);
+  const rowPreviewTimerRef = useRef(null);
+  const searchGridApiRef = useGridApiRef();
 
   useEffect(() => {
     function handleResize() {
@@ -115,6 +121,7 @@ export function Search({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
   const urlParamsAppliedRef = useRef(false);
   const lastAppliedFiltersRef = useRef(null);
   var [fieldsChanged, setFieldsChanged] = useState(false);
@@ -157,6 +164,39 @@ export function Search({
   }
 
   const [searchState, dispatchSearchState] = useReducer(searchReducer, initialSearchState);
+
+  useEffect(() => {
+    const api = searchGridApiRef.current;
+    if (!api?.subscribeEvent || !searchState.dataRows?.length) return undefined;
+
+    const clearPreviewTimer = () => {
+      if (rowPreviewTimerRef.current) {
+        window.clearTimeout(rowPreviewTimerRef.current);
+        rowPreviewTimerRef.current = null;
+      }
+    };
+    const hidePreview = () => {
+      clearPreviewTimer();
+      setRowPreview(null);
+    };
+    const unsubscribeEnter = api.subscribeEvent('rowMouseEnter', (params, event) => {
+      clearPreviewTimer();
+      const anchorEl = event.currentTarget;
+      const row = params.row;
+      rowPreviewTimerRef.current = window.setTimeout(() => {
+        if (anchorEl?.isConnected) setRowPreview({ anchorEl, row });
+      }, 450);
+    });
+    const unsubscribeLeave = api.subscribeEvent('rowMouseLeave', hidePreview);
+    const unsubscribeScroll = api.subscribeEvent('scrollPositionChange', hidePreview);
+
+    return () => {
+      clearPreviewTimer();
+      unsubscribeEnter();
+      unsubscribeLeave();
+      unsubscribeScroll();
+    };
+  }, [searchGridApiRef, searchState.dataRows]);
 
   // ERROR THINGS
   var [error, setError] = useState();
@@ -1046,6 +1086,7 @@ export function Search({
           <GridLoader size="2px" color="white" width="30px" /> Loading ...
         </Box>
         <DataGrid
+          apiRef={searchGridApiRef}
           sx={{
             '.MuiTablePagination-select': {
               'background': '#eee',
@@ -1057,6 +1098,9 @@ export function Search({
             '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
               'marginTop': '1em',
               'marginBottom': '1em'
+            },
+            '.MuiDataGrid-virtualScrollerContent': {
+              'marginTop': '10px'
             }
           }}
           id="SearchDataGrid"
@@ -1089,6 +1133,74 @@ export function Search({
             // },
           }}
         />
+        <Popper
+          open={Boolean(rowPreview)}
+          anchorEl={rowPreview?.anchorEl}
+          placement="right-start"
+          transition
+          modifiers={[
+            { name: 'offset', options: { offset: [0, 10] } },
+            { name: 'flip', options: { fallbackPlacements: ['left-start', 'right-end', 'left-end'] } },
+            { name: 'preventOverflow', options: { padding: 10 } },
+          ]}
+          sx={{ zIndex: 1400, pointerEvents: 'none' }}
+        >
+          {({ TransitionProps }) => (
+            <Fade {...TransitionProps} timeout={160}>
+              <Paper
+                aria-hidden="true"
+                elevation={4}
+                sx={{
+                  width: 270,
+                  p: 1.5,
+                  color: '#444a65',
+                  border: '1px solid #585e7a45',
+                  backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Box sx={{ display: 'flex', color: '#585e7a' }}>
+                    {EntityIconsBasic(rowPreview?.row?.entity_type)}
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="overline" component="div" sx={{ lineHeight: 1.1, color: '#777b8c' }}>
+                      {rowPreview?.row?.entity_type || 'Entity'}
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {rowPreview?.row?.hubmap_id || 'ID unavailable'}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr)', gap: '5px 10px' }}>
+                  {(rowPreview?.row?.submission_id || rowPreview?.row?.lab_dataset_id || rowPreview?.row?.lab_tissue_sample_id || rowPreview?.row?.lab_donor_id) && (<>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Local ID</Typography>
+                    <Typography variant="caption" noWrap>
+                      {rowPreview.row.submission_id || rowPreview.row.lab_dataset_id || rowPreview.row.lab_tissue_sample_id || rowPreview.row.lab_donor_id}
+                    </Typography>
+                  </>)}
+                  {rowPreview?.row?.status && (<>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Status</Typography>
+                    <Typography variant="caption" noWrap>{toTitleCase(rowPreview.row.status)}</Typography>
+                  </>)}
+                  {rowPreview?.row?.data_access_level && (<>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Access</Typography>
+                    <Typography variant="caption" noWrap>{toTitleCase(rowPreview.row.data_access_level)}</Typography>
+                  </>)}
+                  {rowPreview?.row?.group_name && (<>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Group</Typography>
+                    <Typography variant="caption" noWrap>{rowPreview.row.group_name}</Typography>
+                  </>)}
+                  {(rowPreview?.row?.created_by_user_displayname || rowPreview?.row?.created_by_user_email) && (<>
+                    <Typography variant="caption" sx={{ fontWeight: 700 }}>Created by</Typography>
+                    <Typography variant="caption" noWrap>
+                      {rowPreview.row.created_by_user_displayname || rowPreview.row.created_by_user_email}
+                    </Typography>
+                  </>)}
+                </Box>
+              </Paper>
+            </Fade>
+          )}
+        </Popper>
       </Box>
     );
   }
