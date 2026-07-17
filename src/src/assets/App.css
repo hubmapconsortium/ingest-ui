@@ -1,6 +1,17 @@
 body {
   font-family: 'Inter var',"Helvetica", "sans-serif";
 }
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.App #content {
+  flex: 1 0 auto;
+}
+
 #header {
   margin-bottom: 20px;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
@@ -1103,6 +1114,7 @@ svg.invalid {
   border: 3px solid #444a65 !important;
   border-radius: 0 0 4px 4px !important;
 }
+
 .HDT .MuiDataGrid-toolbarContainer {
   /* background: #444a65!important ; */
   background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
@@ -1600,6 +1612,127 @@ svg.invalid {
 }
 .newBadge .MuiSvgIcon-root{
   color:#ffffff!important;
+}
+
+/* Gently brighten form-header panels and strengthen their border inward. */
+.formHeaderInfoPanel {
+  position: relative;
+  border-color: color-mix(in hsl, var(--info-panel-border) 94%, white) !important;
+  transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.formHeaderInfoPanel.MuiAlert-standardInfo {
+  --info-panel-background: #e5f6fd;
+  --info-panel-foreground: #014361;
+  --info-panel-border: #0288d1;
+  --info-panel-link: #0d6efd;
+}
+
+.formHeaderInfoPanel.MuiAlert-standardWarning {
+  --info-panel-background: #fff4e5;
+  --info-panel-foreground: #663c00;
+  --info-panel-border: #ed6c02;
+  border-color: #fde4c2 !important;
+}
+
+.formHeaderInfoPanel.MuiAlert-standardWarning::after {
+  border-color: #fde4c2;
+}
+
+.formHeaderInfoPanel.MuiAlert-standardError {
+  --info-panel-background: #fdeded;
+  --info-panel-foreground: #61211f;
+  --info-panel-border: #f1aeae;
+}
+
+.formHeaderInfoPanel.formHeaderInfoPanelMuted {
+  --info-panel-background: #f9f9f9;
+  --info-panel-foreground: #666666;
+  --info-panel-border: #b8b8b8;
+}
+
+.formHeaderInfoPanel .MuiAlert-icon,
+.formHeaderInfoPanel .MuiAlert-message,
+.formHeaderInfoPanel a {
+  transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.formHeaderInfoPanel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border: 0 solid currentColor;
+  border-color: color-mix(in hsl, var(--info-panel-border) 94%, white);
+  border-radius: inherit;
+  opacity: 0.16;
+  pointer-events: none;
+  transition: border-width 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .formHeaderInfoPanel:hover,
+  .formHeaderInfoPanel:focus-within {
+    background-color: color-mix(in hsl, var(--info-panel-background) 98%, white) !important;
+    border-color: color-mix(in hsl, var(--info-panel-border) 97%, white) !important;
+    color: color-mix(in hsl, var(--info-panel-foreground) 96%, white) !important;
+  }
+
+  .formHeaderInfoPanel:hover .MuiAlert-message,
+  .formHeaderInfoPanel:hover a,
+  .formHeaderInfoPanel:focus-within .MuiAlert-message,
+  .formHeaderInfoPanel:focus-within a {
+    color: color-mix(in hsl, var(--info-panel-foreground) 96%, white) !important;
+  }
+
+  .formHeaderInfoPanel:hover .MuiAlert-icon,
+  .formHeaderInfoPanel:focus-within .MuiAlert-icon {
+    color: color-mix(in hsl, var(--info-panel-border) 86%, white) !important;
+  }
+
+  .formHeaderInfoPanel.MuiAlert-standardInfo:hover a,
+  .formHeaderInfoPanel.MuiAlert-standardInfo:focus-within a {
+    color: color-mix(in hsl, var(--info-panel-link) 88%, white) !important;
+  }
+
+  .formHeaderInfoPanel.MuiAlert-standardInfo a:hover,
+  .formHeaderInfoPanel.MuiAlert-standardInfo a:focus-visible {
+    color: color-mix(in hsl, var(--info-panel-link) 76%, white) !important;
+  }
+
+  .formHeaderInfoPanel.MuiAlert-standardWarning:hover,
+  .formHeaderInfoPanel.MuiAlert-standardWarning:focus-within {
+    border-color: color-mix(in hsl, #fde4c2 82%, white) !important;
+  }
+
+  .formHeaderInfoPanel:hover::after,
+  .formHeaderInfoPanel:focus-within::after {
+    border-width: 2px;
+    border-color: color-mix(in hsl, var(--info-panel-border) 97%, white);
+    opacity: 0.17;
+  }
+
+  .formHeaderInfoPanel.MuiAlert-standardWarning:hover::after,
+  .formHeaderInfoPanel.MuiAlert-standardWarning:focus-within::after {
+    border-color: color-mix(in hsl, #fde4c2 75%, white);
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .formHeaderInfoPanel {
+    transition: none;
+  }
+
+  .formHeaderInfoPanel::after,
+  .formHeaderInfoPanel .MuiAlert-icon,
+  .formHeaderInfoPanel .MuiAlert-message,
+  .formHeaderInfoPanel a {
+    transition: none;
+  }
 }
 
 /* Short bounce-up animation for alert close + snappy enter */

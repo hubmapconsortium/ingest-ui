@@ -17,19 +17,9 @@ export default function AppFooter() {
   return (
     <Box component="footer" className="app-footer">
       <Box className="app-footer-inner">
-        <Typography className="app-footer-funding" variant="body2">
-          The Human Biomolecular Atlas Program is funded by the <br />{" "}
-          <Link href="https://commonfund.nih.gov/HuBMAP" target="_blank" rel="noopener noreferrer">
-            Common Fund at the National Institutes of Health
-          </Link>
-          .
-        </Typography>
-        <Typography className="app-footer-copy" variant="caption">
-          © 2026 HuBMAP Consortium | All Rights Reserved
-        </Typography>
         <Typography className="app-footer-link" variant="caption">
           <Link href="https://hubmapconsortium.org/" target="_blank" rel="noopener noreferrer">
-            Collaboration Portal
+            The Human Biomolecular Atlas Program
           </Link>
         </Typography>
         {version && (

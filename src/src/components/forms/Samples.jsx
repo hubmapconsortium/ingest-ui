@@ -41,7 +41,7 @@ import {
 } from "../../service/entity_api";
 import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../../service/ingest_api";
 import {FormHeader, UserGroupSelectMenu, FormCheckRedirect, redirectToEntityRoute} from "../ui/formParts";
-import {OrganIcons} from "../ui/icons";
+import {OrganIcon} from "../ui/icons";
 import RUIIntegration from "../ui/ruiIntegration";
 // import SearchComponent from "./search/SearchComponent";
 import {EmbeddedSearch} from "../embeddedSearch"; 
@@ -889,9 +889,7 @@ export const SampleForm = (props) => {
                 <Typography >
                   <b>Organ Type:</b>
                   <Typography variant="caption" component="span">
-                    <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
-                      <image alt={sourceEntity.organ} href={OrganIcons(sourceEntity.organ)} width="25" height="25" />
-                    </svg>
+                    <OrganIcon organ={sourceEntity.organ} />
                     {organ_types[sourceEntity.organ]}
                   </Typography>
                 </Typography>
