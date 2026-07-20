@@ -1,4 +1,6 @@
 // ***********************************************************
+/* global beforeEach, cy */
+
 // This example support/e2e.js is processed and
 // loaded automatically before your test files.
 //
@@ -13,10 +15,12 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
-// import './commands'
 import './commands/general'
-import './commands/entity/general'
-import './commands/entity/constraints'
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+
+beforeEach(() => {
+  cy.intercept('POST', 'https://www.google-analytics.com/**', {
+    statusCode: 204,
+    body: '',
+    log: false,
+  }).as('googleAnalytics');
+});

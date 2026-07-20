@@ -2,22 +2,18 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolder,faTrash } from "@fortawesome/free-solid-svg-icons";
 import { toTitleCase } from "../../utils/string_helper";
-import { CreationActionIcon } from "./icons";
+import { CreationActionIcon, OrganIcon } from "./icons";
 import { ingest_api_get_globus_url } from '../../service/ingest_api';
 import { StatusBadge } from "./formParts";
 import Link from "@mui/material/Link";
 import Tooltip from '@mui/material/Tooltip';
 import Button from "@mui/material/Button";
-import { ValueFormatterParams, ValueGetterParams } from "@mui/x-data-grid";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import PublicOffIcon from '@mui/icons-material/PublicOff';
 import PublicIcon from '@mui/icons-material/Public';
 import PersonIcon from '@mui/icons-material/Person';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import HttpsIcon from '@mui/icons-material/Https';
 import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
@@ -92,13 +88,21 @@ export const COLUMN_DEF_DATASET = [
   },
   { field: 'creation_action', headerName: 'Creation Action', width: 170,
     renderCell: params => {
-      return <Typography variant="caption" sx={{color:"#00000060"}}> <CreationActionIcon action={params.value.toString()} /> {params.value}</Typography> ;
+      const creationAction = params.value ? params.value.toString() : "";
+      return (
+        <Typography variant="caption" sx={{color:"#00000060"}}>
+          {creationAction &&(<>
+              <CreationActionIcon action={creationAction} /> &nbsp;
+          </>)}
+          {creationAction || "N/A"}
+        </Typography>
+      );
     }
   },
   { field: 'data_access_level', headerName: 'Access Level', width: 115,
     renderCell: params => {
       if (params.value === "public") {
-        return  (
+        return (
           <Tooltip title="Public" placement="top" slotProps={{
                   popper: {
                     modifiers: [{
@@ -109,7 +113,7 @@ export const COLUMN_DEF_DATASET = [
                     }],
                   }
                 }}>
-              <PublicIcon sx={{ color: "#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#536e55", }  }}   />
+              <PublicIcon sx={{ color: "#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#536e55", } }} />
           </Tooltip>
           
         );
@@ -126,7 +130,7 @@ export const COLUMN_DEF_DATASET = [
                     }],
                   }
                 }}>
-              <DoNotDisturbIcon sx={{color:"#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#6e535e" }  }} />
+              <DoNotDisturbIcon sx={{color:"#717171", margin:"0 auto", transition: "color 180ms ease-in-out", "&:hover": { color: "#6e535e" } }} />
           </Tooltip>
         );
       }
@@ -159,7 +163,7 @@ export const COLUMN_DEF_DATASET = [
 // DATASET COLUMNS FOR THE UPLOADS VIEW / MINIFIED
 export const COLUMN_DEF_DATASET_MINI = [
   { field: 'hubmap_id', headerName: 'HubMAP ID',width: 220,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <Button
         fullWidth
         variant="contained"
@@ -172,7 +176,7 @@ export const COLUMN_DEF_DATASET_MINI = [
   { field: 'lab_dataset_id', headerName: 'Lab Name/ID', flex: 0.5},
   { field: 'group_name', headerName: 'Group Name', flex: 0.4},
   { field: 'status', headerName: 'Submission Status', flex: 0.3,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <StatusBadge status={params.value}/>
     )
   },
@@ -186,13 +190,13 @@ export const COLUMN_DEF_PUBLICATION = [
   { field: 'data_access_level', headerName: 'Access Level', width: 150},
   {
  field: 'status', headerName: 'Submission Status', width: 200,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <StatusBadge status={params.value}/>
     )
   },
   {
  field: 'uuid', headerName: 'Data', width: 100,
-  renderCell: (params: ValueFormatterParams) => (
+  renderCell: (params) => (
     <React.Fragment>
       <button
         className='btn btn-link'
@@ -207,7 +211,7 @@ export const COLUMN_DEF_PUBLICATION = [
 export const COLUMN_DEF_UPLOADS = [
   { field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   { field: 'title', headerName: 'Upload Name', width: 250,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <React.Fragment>
         <span>{params.value}</span>
       </React.Fragment>
@@ -216,7 +220,7 @@ export const COLUMN_DEF_UPLOADS = [
   { field: 'group_name', headerName: 'Group Name', width: 200},
   { field: 'created_by_user_email', headerName: 'Created By', width: 210},
   { field: 'status', headerName: 'Submission Status', width: 160,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <StatusBadge status={params.value}/>
     )
   },
@@ -231,7 +235,7 @@ export const COLUMN_DEF_UPLOADS = [
     field: "title",
     headerName: "Title",
     width: 250,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <React.Fragment>
         <span>{params.value}</span>
       </React.Fragment>
@@ -241,14 +245,15 @@ export const COLUMN_DEF_UPLOADS = [
   {field: "doi_url",
     headerName: "DOI",
     width: 400,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <React.Fragment>
        <span>{params.value}</span>
      </React.Fragment>
    ),
-    valueGetter: ({ row }) => {
-      if (row.doi_url && row.registered_doi) {
-        return (doiLink(row.doi_url, row.registered_doi))
+    valueGetter: (valueOrParams, row) => {
+      const resolvedRow = getRowFromGridValue(valueOrParams, row);
+      if (resolvedRow.doi_url && resolvedRow.registered_doi) {
+        return (doiLink(resolvedRow.doi_url, resolvedRow.registered_doi))
       }
     },
   },{
@@ -267,7 +272,7 @@ export const COLUMN_DEF_EPICOLLECTION = [
     field: "title",
     headerName: "Title",
     width: 250,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <React.Fragment>
         <span>{params.value}</span>
       </React.Fragment>
@@ -277,14 +282,15 @@ export const COLUMN_DEF_EPICOLLECTION = [
   {field: "doi_url",
     headerName: "DOI",
     width: 400,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <React.Fragment>
        <span>{params.value}</span>
      </React.Fragment>
    ),
-    valueGetter: ({ row }) => {
-      if (row.doi_url && row.registered_doi) {
-        return (doiLink(row.doi_url, row.registered_doi))
+    valueGetter: (valueOrParams, row) => {
+      const resolvedRow = getRowFromGridValue(valueOrParams, row);
+      if (resolvedRow.doi_url && resolvedRow.registered_doi) {
+        return (doiLink(resolvedRow.doi_url, resolvedRow.registered_doi))
       }
     },
   },{
@@ -334,7 +340,9 @@ export const COLUMN_DEF_MIXED = [
         return nullCell();
         // return <Skeleton sx={nullRowBarStyle} animation={false} />
       }else{
-        return <Typography >{params?.row?.submission_id} </Typography>
+        return (
+          <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", padding: "4px", backgroundColor: "#f0f0f0", fontFamily:"monospace", borderRadius:"6px"}}>{params?.row?.submission_id}</Typography>
+        )
       }
   },
   },
@@ -376,7 +384,7 @@ export const COLUMN_DEF_MIXED = [
   { field: "uuid",
     headerName: "Action",
     sortable: false,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <div sx={{width: "100%"}} className="actionButton" data-target={params.row.uuid} >
         <FontAwesomeIcon
           className='inline-icon interaction-icon'
@@ -404,7 +412,7 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     field: "row",
     headerName: "",
     flex: 0.1,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <Typography className="rowNum" variant="caption">
         {params.value}
       </Typography>
@@ -415,7 +423,7 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     headerName: "Source Id",
     flex: 0.6,
     minWidth: 150,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
       <Button
         fullWidth
         variant="contained"
@@ -449,31 +457,13 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     headerName: "Organ",
     // minWidth: 150,
     renderCell: (params) => {
-      let toMirror = ["Knee (Left)"];
-      let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}");
       let organ_types = JSON.parse(localStorage.getItem("organs"));
       if (!params.row['organ_type']) {
         return nullCell();
       }else{
         return (
           <>
-            <svg
-              width="25"
-              height="25"
-              xmlns="http://www.w3.org/2000/svg"
-              style={
-                toMirror.includes(params.row.organ_type)
-                  ? { transform: "scaleX(-1)", marginRight: "5px" }
-                  : { marginRight: "5px" }
-              }
-            >
-              <image
-                alt={params.row.organ_type}
-                href={systemIcons[params.row.organ_type]}
-                width="25"
-                height="25"
-              />
-            </svg>{" "}
+            <OrganIcon organ={params.row.organ_type} />{" "}
             {organ_types[params.row.organ_type]}
           </>
         );
@@ -496,7 +486,7 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
   { field: 'hubmap_id', 
     headerName: 'HubMAP ID', 
     width: 180,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
         <Button
           fullWidth
           variant="contained"
@@ -524,11 +514,9 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
     renderCell: params => {
       let icon = entityIconsBasic(params.row.entity_type) 
       if(params.row.organ){
-        let toMirror = ["Knee (Left)"]
-        let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
         let organ_types = JSON.parse(localStorage.getItem("organs"));
         return (<> 
-          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.row.organ) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}><image alt={params.row.organ} href={systemIcons[params.row.organ]} width="25" height="25" /></svg>{organ_types[params.row.organ]} (Organ)
+          <OrganIcon organ={params.row.organ} />{organ_types[params.row.organ]} (Organ)
         </>)
       }else if(params.row.sample_category){
         return (<>{icon}{toTitleCase(params.row.sample_category)}</>)
@@ -559,7 +547,7 @@ export const COLUMN_DEF_BULK_DONORS_SUCCESS = [
   { field: 'hubmap_id', 
     headerName: 'HubMAP ID', 
     width: 180,
-    renderCell: (params: ValueFormatterParams) => (
+    renderCell: (params) => (
         <Button
           fullWidth
           variant="contained"
@@ -605,16 +593,12 @@ function entityIconsBasic(entity_type){
   }
 }
 
-  export function renderFieldIcons(params: ValueFormatterParams){
-  let systemIcons = JSON.parse(localStorage.getItem("organ_icons") || "{}")
-  let toMirror = ["Knee (Left)"]
+  export function renderFieldIcons(params){
   // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
-      {params.row.organ && systemIcons[params.row.organ] && (
-        <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg" style={toMirror.includes(params.value) ? { transform: "scaleX(-1)", marginRight: "5px" } : { marginRight: "5px" }}>
-          <image alt={params.value} href={systemIcons[params.row.organ]} width="25" height="25" />
-        </svg>
+      {params.row.organ && (
+        <OrganIcon organ={params.row.organ} alt={params.value} />
       )}
       {!params.row.organ && params.row.entity_type && (
         entityIconsBasic(params.row.entity_type)
@@ -630,34 +614,41 @@ function shrinkCols(){
   return COLUMN_DEF_MIXED.filter(col => col.field !== 'submission_id');
 }
 
-function getLabId(params: ValueGetterParams) {
- // console.debug('params:', params.row)
+function getRowFromGridValue(valueOrParams, row) {
+  return row || valueOrParams?.row || {};
+}
+
+function getLabId(valueOrParams, row) {
+ const resolvedRow = getRowFromGridValue(valueOrParams, row);
+ // console.debug('row:', resolvedRow)
   try {
-    return params.row['lab_donor_id'] || params.row['lab_tissue_sample_id'] || params.row['lab_dataset_id']
+    return resolvedRow['lab_donor_id'] || resolvedRow['lab_tissue_sample_id'] || resolvedRow['lab_dataset_id']
   } catch { }
 return ""
 //	return  params.getValue('lab_donor_id') || params.getValue('lab_tissue_sample_id')
 }
-function getTypeValue(params: ValueGetterParams) {
-  // console.debug('%c◉ getTypeValue params ', 'color:#00ff7b', params);
+function getTypeValue(valueOrParams, row) {
+  const resolvedRow = getRowFromGridValue(valueOrParams, row);
+  // console.debug('%c◉ getTypeValue row ', 'color:#00ff7b', resolvedRow);
   try {
-    return params.row['display_subtype'] || params.row['organ'] || params.row['specimen_type'] || params.row['entity_type']
+    return resolvedRow['display_subtype'] || resolvedRow['organ'] || resolvedRow['specimen_type'] || resolvedRow['entity_type']
    }catch{
     return ""
   }
 }
-function getStatusAccess(params: ValueGetterParams) {
-  // console.debug('%c◉ getStatusAccess params ', 'color:#00ff7b', params);
-  if(params.row['status']){
-    return ['status', params.row['status']]
-  }else if(params.row['data_access_level']){
-    return ["access", params.row['data_access_level']]
+function getStatusAccess(valueOrParams, row) {
+  const resolvedRow = getRowFromGridValue(valueOrParams, row);
+  // console.debug('%c◉ getStatusAccess row ', 'color:#00ff7b', resolvedRow);
+  if(resolvedRow['status']){
+    return ['status', resolvedRow['status']]
+  }else if(resolvedRow['data_access_level']){
+    return ["access", resolvedRow['data_access_level']]
   }else{
     return ["", ""]
   }
 }
 
-function renderStatusAccess(params: ValueFormatterParams) {
+function renderStatusAccess(params) {
   // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
   if (params.value[0]==="status") {
     return (

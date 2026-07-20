@@ -1,0 +1,107 @@
+{
+  "savedAt": "2026-07-02",
+  "purpose": "Before-state snapshot of form helper text copy prior to React warning cleanup.",
+  "forms": {
+    "Donor": {
+      "source": "src/components/ui/fields/DonorFormFields.jsx",
+      "fields": {
+        "lab_donor_id": "A non-PHI id used by the lab when referring to the donor",
+        "label": "A deidentified name used by the lab to identify the donor (e.g. HuBMAP Donor 1)",
+        "protocol_url": "The protocol used when choosing and acquiring the donor. This can be supplied a DOI from http://protocols.io",
+        "description": "Free text field to enter a description of the donor"
+      },
+      "dynamicSuffixes": {
+        "label": "Appends formErrors.label when present.",
+        "protocol_url": "Appends formErrors.protocol_url when present."
+      }
+    },
+    "Sample": {
+      "source": "src/components/forms/Samples.jsx",
+      "fields": {
+        "direct_ancestor_uuid": "The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.",
+        "organ": "The HuBMAP Unique identifier of the direct origin entity,other sample or donor, where this sample came from.",
+        "sample_category": "The category of sample",
+        "visit": "Associated visit in which sample was acquired (Non-PHI number). e.g., baseline",
+        "protocol_url": "The protocol used when procuring or preparing the tissue. This must be provided as a protocols.io DOI URL see https://www.protocols.io/",
+        "lab_tissue_sample_id": "An identifier used by the lab to identify the specimen, this can be an identifier from the system used to track the specimen in the lab. This field will be entered by the user.",
+        "description": "Free text field to enter a description of the donor",
+        "generate_number": ""
+      },
+      "dynamicSuffixes": {
+        "direct_ancestor_uuid": "Appends formErrors.direct_ancestor_uuid when present.",
+        "sample_category": "Appends formErrors.sample_category in a nested .error span when present.",
+        "generate_number": "Shows formErrors.generate_number when present."
+      }
+    },
+    "Dataset": {
+      "source": "src/components/forms/Datasets.jsx",
+      "fields": {
+        "lab_dataset_id": "An identifier used locally by the data provider.",
+        "description": "",
+        "dataset_info": "Add information here which can be used to find this data, including lab specific (non-PHI) identifiers.",
+        "contains_human_genetic_sequences": "",
+        "dt_select": "",
+        "group_uuid": "Select the group for this dataset."
+      },
+      "dynamicSuffixes": {
+        "allFields": "DatasetFormFields renders the field error in place of helperText when formErrors[field.id] is present."
+      }
+    },
+    "Upload": {
+      "source": "src/components/forms/Uploads.jsx",
+      "fields": {
+        "title": "A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload",
+        "description": "A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload.",
+        "intended_organ": "Select the organ type that the data in this Upload is intended to be derived from.",
+        "intended_dataset_type": "Select the organ type that the data in this Upload is intended to be derived from.",
+        "anticipated_complete_upload_month": "The month and year of that this Upload will have all required data uploaded and be ready for reorganization into Datasets.",
+        "anticipated_dataset_count": "The total number of datasets that this Upload will eventually contain.",
+        "ingest_task": "The next task in the data ingest process.",
+        "group_uuid": "The group responsible for the next step in the data ingest process."
+      },
+      "dynamicSuffixes": {
+        "intended_organ": "Appends formErrors.intended_organ when present.",
+        "anticipated_dataset_count": "TextField displays formErrors.anticipated_dataset_count via error state, but helperText remains the base copy."
+      }
+    },
+    "Publication": {
+      "source": "src/components/ui/fields/PublicationFormFields.jsx",
+      "fields": {
+        "title": "The title of the publication",
+        "publication_venue": "The venue of the publication, journal, conference, preprint server, etc...",
+        "publication_date": "The date of publication",
+        "publication_status": "Has this Publication been Published? Not published (No) includes publications in preprint status.",
+        "publication_url": "The URL at the publishers server for print/pre-print (http(s)://[alpha-numeric-string].[alpha-numeric-string].[...]",
+        "publication_doi": "The DOI of the publication. (##.####/[alpha-numeric-string])",
+        "omap_doi": "A DOI pointing to an Organ Mapping Antibody Panel relevant to this publication",
+        "issue": "The issue number of the journal that it was published in.",
+        "volume": "The volume number of a journal that it was published in.",
+        "pages_or_article_num": "The pages or the article number in the publication journal e.g., \"23\", \"23-49\", \"e1003424.",
+        "description": "Free text description of the publication"
+      },
+      "dynamicSuffixes": {
+        "allFields": "PublicationFormFields appends formErrors[field.id] when present."
+      }
+    },
+    "Collection": {
+      "source": "src/components/ui/fields/CollectionFormFields.jsx",
+      "fields": {
+        "title": "The title of the collection",
+        "description": "A description of the collection"
+      },
+      "dynamicSuffixes": {
+        "allFields": "CollectionFormFields appends formErrors[field.id] when present."
+      }
+    },
+    "EPICollection": {
+      "source": "src/components/ui/fields/EPICollectionFormFields.jsx",
+      "fields": {
+        "title": "The title of the EPICollection",
+        "description": "A description of the EPICollection"
+      },
+      "dynamicSuffixes": {
+        "allFields": "EPICollectionFormFields appends formErrors[field.id] when present."
+      }
+    }
+  }
+}

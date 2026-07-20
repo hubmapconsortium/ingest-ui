@@ -1,0 +1,139 @@
+{
+  "entityPages": [
+    {
+      "route": "/bulk/donors",
+      "heading": "Bulk Donors",
+      "links": [
+        {
+          "text": "Example TSV File",
+          "href": "https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-donor-registrations.tsv",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 2
+        },
+        {
+          "text": "Donor Bulk Registration",
+          "href": "https://docs.hubmapconsortium.org/bulk-registration/donor-bulk-reg.html",
+          "target": "_blank",
+          "occurrences": 1
+        },
+        {
+          "text": "Bulk donor file schema information",
+          "href": "https://docs.hubmapconsortium.org/bulk-registration/donor-bulk-reg.html",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "route": "/bulk/samples",
+      "heading": "Bulk Samples",
+      "links": [
+        {
+          "text": "Example TSV File",
+          "href": "https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-sample-registrations.tsv",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 2
+        },
+        {
+          "text": "Sample Bulk Registration",
+          "href": "https://docs.hubmapconsortium.org/bulk-registration/sample-bulk-reg.html",
+          "target": "_blank",
+          "occurrences": 1
+        },
+        {
+          "text": "Bulk sample file schema information",
+          "href": "https://docs.hubmapconsortium.org/bulk-registration/sample-bulk-reg.html",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        }
+      ]
+    }
+  ],
+  "metadataPages": [
+    {
+      "route": "/metadata/block",
+      "heading": "Bulk Blocks",
+      "links": [
+        {
+          "text": "Example TSV File",
+          "href": "https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-block/latest/sample-block.tsv",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 2
+        },
+        {
+          "text": "Metadata Upload Documentation",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-block/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        },
+        {
+          "text": "Bulk block file schema information",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-block/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "route": "/metadata/section",
+      "heading": "Bulk Sections",
+      "links": [
+        {
+          "text": "Example TSV File",
+          "href": "https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-section/latest/sample-section.tsv",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 2
+        },
+        {
+          "text": "Metadata Upload Documentation",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-section/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        },
+        {
+          "text": "Bulk section file schema information",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-section/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        }
+      ]
+    },
+    {
+      "route": "/metadata/suspension",
+      "heading": "Bulk Suspensions",
+      "links": [
+        {
+          "text": "Example TSV File",
+          "href": "https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-suspension/latest/sample-suspension.tsv",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 2
+        },
+        {
+          "text": "Metadata Upload Documentation",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-suspension/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        },
+        {
+          "text": "Bulk suspension file schema information",
+          "href": "https://hubmapconsortium.github.io/ingest-validation-tools/sample-suspension/current/",
+          "target": "_blank",
+          "rel": "noreferrer",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

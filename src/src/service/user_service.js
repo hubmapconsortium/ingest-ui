@@ -11,7 +11,7 @@ export function getAllGroups(auth){
                 // console.debug('%c⊙ userService allGroups!!', 'color:#00ff7b', res.results );
                 return(sortGroupsByDisplay(res.results))
             })
-            .catch((err) => {
+            .catch(() => {
                 // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
     }catch (error) {
@@ -26,7 +26,7 @@ export function getAllSortedGrouops(auth){
                 // console.debug('%c⊙ userService allGroups!!', 'color:#00ff7b', res.results );
                 return(sortGroupsByDisplay(res.results))
             })
-            .catch((err) => {
+            .catch(() => {
                 // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
     }

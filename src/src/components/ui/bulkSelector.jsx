@@ -61,11 +61,13 @@ export function BulkSelector({
   const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
   const title = dialogTitle || "Select a Source Entity ";
   const subtitle = dialogSubtitle || "Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections"; 
-  let menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
-  let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
-  const searchFilters = menuFilterMap[currentForm] ? menuFilterMap[currentForm] : {};
   let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
   let [loadingState, setLoadingState] = useState(preLoad)
+  const darkHeadBG = {
+      background: "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
+      color: "white",
+      padding: "2rem .0rem"
+    }
 
   console.debug('%c◉ readOnlyState ', 'color:#00ff7b', readOnlyState, readOnly);
   // console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
@@ -157,7 +159,7 @@ export function BulkSelector({
       let entityId = entity.hubmap_id || entity.uuid;
       if (addedIds.has(entityId)) continue;
       let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
-      let currentForm  = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+      let currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
       let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
       // console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
 
@@ -318,7 +320,7 @@ export function BulkSelector({
         sx={{ margin: "auto", border: "1px solid #444A65" }}
         fullWidth={true}>
         <DialogTitle sx={{
-          background: "#444A65",
+          backgroundColor: "#444A65",
           background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)",
           borderBottom: "1px solid #444A65",
           color: "white", padding: "2px 10px",
@@ -462,7 +464,7 @@ export function BulkSelector({
       </Box>
       <Box className="sourceShade" sx={{
         opacity: sourceBulkStatus === "loading" ? 1 : 0,
-        background: "#444a65",
+        backgroundColor: "#444a65",
         background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
         width: "100%",
         height: "48px",
@@ -499,13 +501,13 @@ export function BulkSelector({
               color: "white",
               padding: "2rem .0rem"
             }}>
-              <TableRow className="   ">
-                <TableCell sx={{ width: "220px" }}> Source ID</TableCell>
-                <TableCell component="th">Subtype</TableCell>
-                <TableCell component="th" sx={{ maxWidth: "200px" }}>Group Name</TableCell>
-                <TableCell component="th">Status</TableCell>
+              <TableRow className="">
+                <TableCell sx={{...darkHeadBG, width: "220px"}}> Source ID</TableCell>
+                <TableCell sx={darkHeadBG} component="th">Subtype</TableCell>
+                <TableCell component="th" sx={{...darkHeadBG, maxWidth: "200px" }}>Group Name</TableCell>
+                <TableCell component="th" sx={darkHeadBG}>Status</TableCell>
                 {permissions.has_write_priv && !readOnlyState && (
-                  <TableCell component="th" align="right">
+                  <TableCell component="th" sx={darkHeadBG} align="right">
                     Action
                   </TableCell>
                 )}

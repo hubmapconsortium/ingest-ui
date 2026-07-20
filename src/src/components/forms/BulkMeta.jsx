@@ -24,7 +24,7 @@ export const BulkMetaForm = (props) => {
       <Grid container className="mb-3 mt-3" spacing={1} >
         <Grid item lassName="topHeader" > 
             {NewBadge(props.type,"new")}
-            <h3 style={{margin: "4px 5px", display: "inline-table",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.type)}s`}<br/></h3>
+            <h3 style={{margin: "4px 5px", display: "inline-table", width:"100%",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.type)}s`}<br/></h3>
         </Grid>
         <Grid item xs={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>

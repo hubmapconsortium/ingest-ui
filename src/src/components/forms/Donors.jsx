@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {useParams, useNavigate} from "react-router-dom";
 import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 import {
@@ -7,7 +7,6 @@ import {
   entity_api_create_entity,
 } from "../../service/entity_api";
 import {
-  validateRequired,
   validateProtocolIODOI,
   validateSingleProtocolIODOI
 } from "../../utils/validators";
@@ -24,8 +23,10 @@ import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,UserGroupSelectMenu,prefillFormValuesFromUrl,SnackbarFeedback} from "../ui/formParts";
+import {FormHeader,UserGroupSelectMenu,prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback} from "../ui/formParts";
 import { DonorFormFields,DonorFieldSet } from "../ui/fields/DonorFormFields";
+import { SIMPLE_ENTITY_ACTIONS, getSimpleEntityActions } from "../formActionRules/simpleEntityActionRules";
+import NotFound from "../404";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
@@ -45,6 +46,7 @@ export const DonorForm = (props) => {
     has_write_priv: false
   });
   let[pageErrors, setPageErrors] = useState(null);
+  let[notFound, setNotFound] = useState(false);
   const [valErrorMessages, setValErrorMessages] = useState([]);
   let[formErrors, setFormErrors] = useState({
     lab_donor_id: "",
@@ -68,17 +70,20 @@ export const DonorForm = (props) => {
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
+    setNotFound(false);
     if(uuid && uuid !== ""){
       entity_api_get_entity(uuid)
         .then((response) => {
+          if(response.status === 404 || response.status === 400){
+            setNotFound(true);
+            return;
+          }
           if(response.status === 200){
             const entityType = response.results.entity_type;
             if(entityType !== "Donor"){
               // Are we sure we're loading a Donor?
               // @TODO: Move this sort of handling/detection to the outer app, or into component
-              window.location.replace(
-                `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-              );
+              redirectToEntityRoute(entityType, uuid);
             }else{
               const entityData = response.results;
               setEntityData(entityData);
@@ -109,6 +114,10 @@ export const DonorForm = (props) => {
           }
         })
         .catch((error) => {
+          if(error.status === 404 || error.status === 400){
+            setNotFound(true);
+            return;
+          }
           // console.debug("entity_api_get_entity ERROR", error);
           setPageErrors(error);
         });
@@ -131,7 +140,6 @@ export const DonorForm = (props) => {
       [id]: value,
     }));
   }
-  
 
   function validateDOI(protocolDOI){
     if (!validateProtocolIODOI(protocolDOI)) {
@@ -241,38 +249,47 @@ export const DonorForm = (props) => {
   }
 
   function buttonEngine(){
-    return(
-      <Box sx={{textAlign: "right"}}>
+    const actionRenderers = {
+      [SIMPLE_ENTITY_ACTIONS.cancel]: () => (
         <Button
           variant="contained"
           className="m-2 cancelButton"
           onClick={() => navigate("/")}>
           Cancel
         </Button>
-        {/* @TODO use next form to help work this in to its own UI component? */}
-        {!uuid && (
-          <LoadingButton
-            variant="contained"
-            loading={isProcessing}
-            className="m-2 creationButton"
-            onClick={(e) => handleSubmit(e)}>
-            Generate ID
-          </LoadingButton>
-        )}
-        {uuid && uuid.length > 0 && permissions.has_write_priv && (
-          <LoadingButton 
-          loading={isProcessing} 
-          variant="contained" 
-          className="m-2 updateButton" 
+      ),
+      [SIMPLE_ENTITY_ACTIONS.create]: () => (
+        <LoadingButton
+          variant="contained"
+          loading={isProcessing}
+          className="m-2 creationButton"
           onClick={(e) => handleSubmit(e)}>
-            Update
-          </LoadingButton>
-        )}
+          Generate ID
+        </LoadingButton>
+      ),
+      [SIMPLE_ENTITY_ACTIONS.update]: () => (
+        <LoadingButton
+          loading={isProcessing}
+          variant="contained"
+          className="m-2 updateButton"
+          onClick={(e) => handleSubmit(e)}>
+          Update
+        </LoadingButton>
+      ),
+    };
+
+    return(
+      <Box sx={{textAlign: "right"}}>
+        {getSimpleEntityActions({ uuid, permissions }).map((action) => (
+          <Fragment key={action.id}>{actionRenderers[action.id]()}</Fragment>
+        ))}
       </Box>
     );
   }
 
-  if(isLoading ||(!entityData && !formValues && uuid) ){
+  if(notFound){
+    return(<NotFound entityID={uuid} />);
+  }else if(isLoading ||(!entityData && !formValues && uuid) ){
     return(<LinearProgress />);
   }else{
     return(

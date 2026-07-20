@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
+import {faBell, faHeadset, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
 import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -37,7 +37,7 @@ import Select from '@mui/material/Select';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import {toTitleCase} from "../../utils/string_helper";
-import {OrganIcons, CreationActionIcon} from "../ui/icons";
+import {OrganIcon, CreationActionIcon} from "../ui/icons";
 import { badgeClass } from "../../utils/badgeClasses";
 
 // The header on all of the Forms (The top bit)
@@ -293,9 +293,6 @@ export function StatusBadge(status){
 export function NewBadge(type, mini){ 
   console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
   let NewBadgeStyle 
-  let newBadgeSX={
-    color:"#ffffff!important"
-  }
   if (mini){
     NewBadgeStyle = {
       fontFamily: "'Inter var', Helvetica, sans-serif!important",
@@ -350,24 +347,20 @@ function revisionLinksTime(entityData){
         className="tiltLeftIcon hoverRiseContainer"
         variant="caption" 
         sx={{display: "inline-block", width: "100%", marginTop: "5px"}} >
-        <UpdateIcon className="iconEffect"  sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
+        <UpdateIcon className="iconEffect" sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
       </Typography> 
     )}
   </>)
 }
 
-
-
 // The TopLeftmost part of the Form Header 
 function topHeader(entityData, entityType, subType){
   let type = entityType
   let organ_types = JSON.parse(localStorage.getItem("organs"));
-  let newTitle = "Registering a new "+type
   if (entityType === "Bulk"){
     console.debug('%c◉ SETTYPE ', 'color:#00ff7b', subType, type);
     type = subType ? toTitleCase(subType) : "Entity"
-    newTitle = `Bulk Registration for ${type}s`
   }
   
   return entityData[0] !== "new" ? (
@@ -384,7 +377,7 @@ function topHeader(entityData, entityType, subType){
                 </Typography><br />
               </Box>}>
             {entityData.status ? StatusBadge(entityData.status) : ""}
-          </Tooltip> ):(  <>
+          </Tooltip> ):( <>
             {entityData.status ? StatusBadge(entityData.status) : ""}
           </>)
         }
@@ -399,9 +392,7 @@ function topHeader(entityData, entityType, subType){
       )}
       {entityData.organ	 && (
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong> 
-          <svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
-            <image alt={entityData.organ} href={OrganIcons(entityData.organ)} width="25" height="25" />
-          </svg> {organ_types[entityData.organ]}
+          <OrganIcon organ={entityData.organ} /> {organ_types[entityData.organ]}
         </Typography>
       )}
       <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entered by: </strong> {entityData.created_by_user_email}</Typography>
@@ -458,6 +449,7 @@ function infoPanels(entityData,permissions,globusURL){
 
       {globusURL&& (
         <Alert 
+          className="formHeaderInfoPanel"
           severity="info" 
           sx={{ 
             width: "100%", 
@@ -492,8 +484,9 @@ function infoPanels(entityData,permissions,globusURL){
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && ["published","retracted"].includes(entityData.status.toLowerCase()))) && (
         // They might not have write access but not because of data_access_level
         <Alert 
+          className="formHeaderInfoPanel"
           severity="warning" 
-          iconMapping={{warning: <VpnLockIcon  />}}
+          iconMapping={{warning: <VpnLockIcon />}}
           sx={{
             minWidth: "100%",
             padding: "10px",
@@ -516,6 +509,7 @@ function infoPanels(entityData,permissions,globusURL){
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
         
         <Alert  
+          className="formHeaderInfoPanel formHeaderInfoPanelMuted"
           variant="caption" 
           severity="info" 
           sx={{
@@ -608,18 +602,25 @@ export function UserGroupSelectMenu(formValues, menu){
 
 // Checks if the entityType in the URL matches the type of entity requested
 // if it's not, redirects you on over to the proper form
+export function getEntityRoutePath(entityType, uuid) {
+  const normalizedEntityType = entityType?.toLowerCase() === "data upload" ? "upload" : entityType?.toLowerCase();
+  return `/${normalizedEntityType}/${uuid}`;
+}
+
+export function redirectToEntityRoute(entityType, uuid) {
+  window.location.replace(getEntityRoutePath(entityType, uuid));
+}
+
 export function FormCheckRedirect(uuid,entityType,form){
   // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
-    window.location.replace(
-      `${process.env.REACT_APP_URL}/${entityType}/${uuid}`
-    );
+    redirectToEntityRoute(entityType, uuid);
   }
 }
 
 // Prevents the Search Filter Restrictions from lingering & effecting the main Search View
-export function combineTypeOptionsComplete(blackList,whitelist,restrictions){
+export function combineTypeOptionsComplete(blackList,whitelist){
   // Removes the Whitelist / Blacklist stuff,
   // mostly for use for resetting the main Search Page View
   var combinedList = [];
@@ -685,7 +686,7 @@ export function handleSortOrgans(organList){
   return sortedMap;
 };
 
-export function CombinedEmbeddedEntityOptions(props){ 
+export function CombinedEmbeddedEntityOptions(){ 
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
@@ -982,7 +983,6 @@ export function SnackbarFeedback(props){
   );
 }
 
-
 // @TODO: Maybe move to a utils file?
 // Sanitize a Python-ish dict string and return the desired array/object structure
 export function ParsePreflightString(s) {
@@ -1036,7 +1036,6 @@ export function ParsePreflightString(s) {
 //   }
 // }
 
-
 function ReturnCreationActionDetail({ creation_action }) {
   const [openCollapse, setOpenCollapse] = React.useState(false);
   let label;
@@ -1080,7 +1079,6 @@ function ReturnCreationActionDetail({ creation_action }) {
     </Box>
   );
 }
-  
 
 // Color manipullation (Right now namely for Feedback Dialog Colors)
 function HexToHsl(hex){

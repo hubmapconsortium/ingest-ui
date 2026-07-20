@@ -1,16 +1,13 @@
-import ClearIcon from "@mui/icons-material/Clear";
 import ArticleIcon from '@mui/icons-material/Article';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import PublicOffIcon from '@mui/icons-material/PublicOff';
 import PublicIcon from '@mui/icons-material/Public';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBell, faHeadset, faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject, faCircleExclamation, faUpRightFromSquare} from "@fortawesome/free-solid-svg-icons";
-
+import {faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject} from "@fortawesome/free-solid-svg-icons";
 
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
@@ -60,10 +57,9 @@ export function EntityIconsBasic(entity_type, size){
     case "eppicollection":
       return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
     default:
-      return <BubbleChartIcon  size={size?size:"0.5em"} sx={style}/>
+      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
   }
 }
-
 
 export function OrganDetails(){
   console.debug('%c◉ OrganDetails ', 'color:#00ff7b', );
@@ -88,16 +84,17 @@ export function OrganDetails(){
 
 export function OrganIcons(organ){  
   // console.debug('%c◉ status ', 'color:#00ff7b', organ);
-  const BASE_ICON_URL = 'https://cdn.humanatlas.io/hra-design-system/icons/organs/organ-icon-'
+  const BASE_ICON_URL = 'https://cdn.humanatlas.io/ui/humanatlas.io/assets/icons/organ/'
   // let prependURL = `${BASE_ICON_URL}`
   let iconMap={
+    "AD": `${BASE_ICON_URL}adipose-tissue`,
     "BD": `${BASE_ICON_URL}blood`,
     "BL": `${BASE_ICON_URL}bladder`,
     "BM": `${BASE_ICON_URL}bone-marrow`,
     "BR": `${BASE_ICON_URL}brain`,
-    "BV": `${BASE_ICON_URL}blood`,
+    "BV": `${BASE_ICON_URL}vasculature-thick`,
     "HT": `${BASE_ICON_URL}heart`,
-    "ID": `${BASE_ICON_URL}spinal-cord`, // intervertebral-disc, spinal-cord placeholder 
+    "ID": `${BASE_ICON_URL}intervertebral-disc`,
     "LA": `${BASE_ICON_URL}larynx`,
     "LB": `${BASE_ICON_URL}extrapulmonary-bronchus`,
     "LE": `${BASE_ICON_URL}eye`,
@@ -111,8 +108,10 @@ export function OrganIcons(organ){
     "LU": `${BASE_ICON_URL}ureter-left`,
     "LV": `${BASE_ICON_URL}liver`,
     "LY": `${BASE_ICON_URL}lymph-nodes`,
-    "ML": `${BASE_ICON_URL}mammary-gland-left`,
-    "MR": `${BASE_ICON_URL}mammary-gland-right`,
+    "MB": `${BASE_ICON_URL}manubrium`,
+    "MH": `${BASE_ICON_URL}mouth`,
+    "ML": `${BASE_ICON_URL}breast`,
+    "MR": `${BASE_ICON_URL}breast`,
     "PA": `${BASE_ICON_URL}pancreas`,
     "PL": `${BASE_ICON_URL}placenta`,
     "PR": `${BASE_ICON_URL}prostate`,
@@ -122,7 +121,7 @@ export function OrganIcons(organ){
     "RF": `${BASE_ICON_URL}fallopian-tube-right`,
     "RK": `${BASE_ICON_URL}kidney-right`,
     "RL": `${BASE_ICON_URL}lung-right`,
-    "RN": `${BASE_ICON_URL}knee-right`,
+    "RN": `${BASE_ICON_URL}knee`,
     "RO": `${BASE_ICON_URL}ovary-right`,
     "RT": `${BASE_ICON_URL}palatine-tonsil`,
     "RU": `${BASE_ICON_URL}ureter-right`,
@@ -130,32 +129,56 @@ export function OrganIcons(organ){
     "SI": `${BASE_ICON_URL}small-intestine`,
     "SK": `${BASE_ICON_URL}skin`,
     "SP": `${BASE_ICON_URL}spleen`,
+    "ST": `${BASE_ICON_URL}sternum`,
     "TH": `${BASE_ICON_URL}thymus`,
     "TR": `${BASE_ICON_URL}trachea`,
     "UT": `${BASE_ICON_URL}uterus`,
-    "VL": `${BASE_ICON_URL}lymph-nodes`,
+    "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
   }
-  let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : "https://cdn.jsdelivr.net/gh/cns-iu/md-icons@main/other-icons/organs/ico-organs-united.svg"
+  let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : `${BASE_ICON_URL}all-organs.svg`
   // console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
   return iconURL
 }
 
+export function OrganIcon({organ, alt, size = 25, style = {}}) {
+  const isLeftKnee = organ === "LN";
+  return (
+    <img
+      alt={alt || organ}
+      src={OrganIcons(organ)}
+      width={size}
+      height={size}
+      style={{
+        marginRight: "5px",
+        verticalAlign: "middle",
+        filter: "brightness(0) saturate(100%) invert(13%)",
+        ...style,
+        ...(isLeftKnee ? {transform: "scaleX(-1)"} : {}),
+      }}
+    />
+  );
+}
+
 export function CreationActionIcon(action){
+  if(action?.action ){
+    action = action.action
+  }
+  console.debug('%c◉ CreationActionIcon ', 'color:#00ff7b',action );
   switch (action) {
     case "Create Dataset Activity":
-      console.log('%c◉ Create Dataset Activity Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Create Dataset Activity Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCube} />);
     case "Create Publication Activity":
-      console.log('%c◉ Create Publication Activity Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Create Publication Activity Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faNewspaper} />);
     case "External Process":
-      console.log('%c◉ External Process Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ External Process Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faStar} />);
     case "Multi-Assay Split":
-      console.log('%c◉ Multi-Assay Split Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Multi-Assay Split Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faDiagramProject} />);
     case "Central Process":
-      console.log('%c◉ Central Process Found',  'background:#8b6eff; color:#fff');
+      console.log('%c◉ Central Process Found', 'background:#8b6eff; color:#fff');
       return (<FontAwesomeIcon icon={faCodeMerge} />);
     default:
       return null;
@@ -176,7 +199,7 @@ export function AccessLevelIcon(level){
   }
 }
 
-export function RUIIcon(size,color){
+export function RUIIcon(size){
   // Scraped from: 
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}` } fill="none" xmlns="http://www.w3.org/2000/svg" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">

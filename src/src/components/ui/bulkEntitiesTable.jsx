@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FormControl, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import {
   DataGrid, 
   useGridApiRef,
-  GridToolbar,
   useGridApiContext,
   GridToolbarContainer,
   GridToolbarColumnsButton,
@@ -157,6 +156,14 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (bulkEntityValidationErrors?.some(error => error?.row && error?.column)) {
+      window.setTimeout(() => highlightTableErrors(bulkEntityValidationErrors), 0);
+    } else if (!bulkEntityValidationErrors || bulkEntityValidationErrors.length === 0) {
+      highlightTableErrors("clear");
+    }
+  }, [bulkEntityValidationErrors]);
 
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
@@ -455,9 +462,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
       for (const error of errorSet) {
-        let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
+        let errorRow = document.querySelector(`.associatedBulkEntityTable [aria-rowindex="${error.row}" ]`);
         const col = error.column === "organ_type" ? "organ" : error.column;
-        let cell = errorRow.querySelector(`[data-field="${col}" ]`);
+        let cell = errorRow?.querySelector(`[data-field="${col}" ]`);
         if(cell){
           // We only want to set up the hover listeners and data attributes 
           // if there is a cell to attach them to.
@@ -466,7 +473,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           cell.setAttribute('data-cell-error','true')
           cell.setAttribute('data-target',`${error?.row-1}_${col}`)
           cell.addEventListener("mouseenter", function (e) {
-            spotlightCellAndRow(e, error, `${error?.row-1}_${col}`); 
+            spotlightCellAndRow(e, error, `${error?.row-1}_${col}`);
           });
           errorRow.addEventListener("click", function (e) {
             setSelectionListRow(e, error, `${error?.row}`); 
@@ -491,17 +498,14 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     // Exclude any elements that are currently selected (`data-selected="true"`).
     let spotlightTargets = Array.from(document.querySelectorAll(`[data-target="${target}" ]`))
       .filter((el) => (el?.getAttribute('data-selected') !== 'true' || !el.getAttribute('data-selected')));
-      let cleanTargets = []
-      if(spotlightTargets[0]?.attributes["data-target"]?.value === spotlightTargets[1]?.attributes["data-target"]?.value){
-        cleanTargets.push(spotlightTargets[0],spotlightTargets[1]);
-      }
+    let cleanTargets = spotlightTargets.filter(Boolean);
 
     const hasUndefinedErrRow = cleanTargets.some((el) => el?.id === 'errListRow-undefined');
     
     if (!hasUndefinedErrRow) {
       cleanTargets.forEach(el => el?.setAttribute('data-spotlight', 'true')); 
       // Add bonus row highlight on table when spotlit
-      let errorRow = document.querySelector(`[aria-rowindex="${error.row+1}" ]`);
+      let errorRow = document.querySelector(`.associatedBulkEntityTable [aria-rowindex="${error.row}" ]`);
       errorRow?.setAttribute('data-spotlight', 'true');
     }
     setTimeout(() => {
@@ -526,11 +530,12 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     Array.from(oldByClass).forEach(el => el.classList.remove('Mui-selected'));
 
     let dataGridContainer = document.querySelector('.associatedBulkEntityTable');
-    let selectedRow = dataGridContainer.querySelector(`[aria-rowindex="${target}" ]`);
+    let selectedRow = dataGridContainer?.querySelector(`[aria-rowindex="${target}" ]`);
     if(selectedRow){
-      selectedRow?.setAttribute('data-selected', 'true').classList.add('Mui-selected');
+      selectedRow.setAttribute('data-selected', 'true');
+      selectedRow.classList.add('Mui-selected');
     }
-    e.target.setAttribute('data-selected', 'true');
+    e?.currentTarget?.setAttribute('data-selected', 'true');
     // console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
@@ -570,18 +575,18 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         <Box className="errorListWrap">
           <ErrorList
             errors={bulkEntityValidationErrors}
-            onHover={(e, item) => {
+            onHover={({ event, item }) => {
               const col = item?.column === 'organ_type' ? 'organ' : item?.column;
               spotlightCellAndRow(
-                e,
-                { row: (item?.row) - 1, column: col },
+                event,
+                { row: item?.row, column: col },
                 `${item?.row - 1}_${col}`
               );
             }}
-            onRowClick={(e, item) => {
+            onRowClick={({ event, item }) => {
               const col = item?.column === 'organ_type' ? 'organ' : item?.column;
               setSelectionTableRow(
-                e,
+                event,
                 { row: (item?.row), column: col },
                 `${item?.row}`
               )

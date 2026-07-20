@@ -1,66 +1,105 @@
 /* eslint-disable no-undef */
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-import {DATA, PATHS, WAIT, AUTH} from '../../config/constants';
-// import { AUTH } from '../../config/auth';
 
-Cypress.Commands.add('clog', (msg) => {
-    cy.log(`/********** ${msg} ************/`)
-})
+import { authInfoString, getConfiguredAuthInfo } from '../authSession';
 
-Cypress.Commands.add('loginProcess', (msg) => {
-    // cy.contains('Log in with your institution credentials').click()
-    cy.wait(2000)
-    cy.get('#identity_provider-selectized').type(AUTH.organization).type('{enter}')
-    cy.get('#login-btn').click({ force: true })   
-    cy.get('#username').type(AUTH.username)
-    cy.get('#password').type(AUTH.password).type('{enter}')
-    cy.wait(2000)
-})
+const smokeGroups = [
+  {
+    displayname: 'Cypress Smoke Group',
+    name: 'cypress-smoke-group',
+    shortname: 'Cypress',
+    uuid: '00000000-0000-0000-0000-000000000001',
+    data_provider: true,
+  },
+];
 
-Cypress.Commands.add('login', (options = { }, name = 'pitt') => {
-    cy.viewport('macbook-13')
-    cy.session(name, () => {
-        if (!options.triggered) {
-            cy.visit("localhost:8484/login")
-            cy.loginProcess()
-        }
-        cy.wait(2000)
-        cy.contains('Search')
-    })
-})
+const mockAuthInfo = {
+  name: 'Cypress Mock User',
+  email: 'cypress@example.org',
+  auth_token: 'mock-auth-token',
+  transfer_token: 'mock-transfer-token',
+  groups_token: 'mock-groups-token',
+};
 
-let LOCAL_STORAGE_MEMORY = {};
-Cypress.Commands.add("mSaveLocalStorage", () => {
-  Object.keys(localStorage).forEach((key) => {
-    LOCAL_STORAGE_MEMORY[key] = localStorage[key];
+function getAuthInfo() {
+  return JSON.parse(authInfoString(getConfiguredAuthInfo()));
+}
+
+function seedAuthenticatedLocalStorage(win, authInfo) {
+  win.localStorage.setItem('info', JSON.stringify(authInfo));
+  win.localStorage.setItem('userGroups', JSON.stringify(smokeGroups));
+  win.localStorage.setItem('allGroups', JSON.stringify(smokeGroups));
+  win.localStorage.setItem('organs', JSON.stringify({ RK: 'Right Kidney', LK: 'Left Kidney', BL: 'Blood' }));
+  win.localStorage.setItem('organ_icons', JSON.stringify({}));
+  win.localStorage.setItem('organs_full', JSON.stringify([
+    { rui_supported: true, rui_code: 'RK' },
+    { rui_supported: true, rui_code: 'LK' },
+    { rui_supported: false, rui_code: 'BL' },
+  ]));
+  win.localStorage.setItem('RUIOrgans', JSON.stringify(['RK', 'LK']));
+  win.localStorage.setItem('dataset_types', JSON.stringify([{ dataset_type: 'RNAseq' }]));
+  win.localStorage.setItem('menuMap', JSON.stringify({
+    datasetadmin: { blackList: ['collection', 'epicollection'] },
+    publication: { whiteList: ['dataset'] },
+    collection: { whiteList: ['dataset'] },
+    epicollection: { whiteList: ['dataset'] },
+    sample: { blackList: ['collection', 'epicollection', 'dataset', 'upload', 'publication'] },
+  }));
+}
+
+Cypress.Commands.add('visitWithAuth', (path, options = {}) => {
+  const { onBeforeLoad, ...visitOptions } = options;
+  const authInfo = getAuthInfo();
+
+  cy.visit(path, {
+    ...visitOptions,
+    onBeforeLoad(win) {
+      seedAuthenticatedLocalStorage(win, authInfo);
+      if (onBeforeLoad) onBeforeLoad(win);
+    },
   });
 });
-Cypress.Commands.add("mRestoreLocalStorage", () => {
-  Object.keys(LOCAL_STORAGE_MEMORY).forEach((key) => {
-    localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+
+Cypress.Commands.add('visitWithMockAuth', (path, options = {}) => {
+  const {
+    authInfo = mockAuthInfo,
+    groups = smokeGroups,
+    searchResults = [],
+    onBeforeLoad,
+    ...visitOptions
+  } = options;
+
+  cy.intercept('GET', '**/status.json', {
+    statusCode: 200,
+    body: {
+      entity_api: { neo4j_connection: true },
+      ingest_api: { neo4j_connection: true },
+      ontology_api: { neo4j_connection: true },
+      search_api: { elasticsearch_status: 'green' },
+    },
+  }).as('gatewayStatus');
+
+  cy.intercept('POST', '**/search', {
+    statusCode: 200,
+    body: {
+      hits: {
+        hits: searchResults.map((result) => ({ _source: result })),
+        total: { value: searchResults.length },
+      },
+    },
+  }).as('searchApi');
+
+  cy.intercept('GET', '**/metadata/usergroups', {
+    statusCode: 200,
+    body: { groups },
+  }).as('userGroups');
+
+  cy.visit(path, {
+    ...visitOptions,
+    onBeforeLoad(win) {
+      seedAuthenticatedLocalStorage(win, authInfo);
+      win.localStorage.setItem('userGroups', JSON.stringify(groups));
+      win.localStorage.setItem('allGroups', JSON.stringify(groups));
+      if (onBeforeLoad) onBeforeLoad(win);
+    },
   });
 });
-
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })

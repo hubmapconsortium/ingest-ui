@@ -1,9 +1,10 @@
 // Search APIs
 
 import axios from "axios";
+import esb from "elastic-builder";
 import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
 import {ingest_api_all_user_groups} from "./ingest_api";
-export const esb = require("elastic-builder");
+export {esb};
 
 const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 const options = {

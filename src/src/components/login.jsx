@@ -1,7 +1,6 @@
-import React from "react";
 import Login from './ui/login';
 
-export const RenderLogin = (props) => {
+export const RenderLogin = () => {
       return (
         <div>
           <Login />
@@ -9,5 +8,3 @@ export const RenderLogin = (props) => {
       )
     
   }
-  
-

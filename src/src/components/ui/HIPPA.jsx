@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useLocation } from 'react-router-dom'
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
@@ -25,6 +24,7 @@ export const HIPPA = (props) => {
       {/* <Modal show={props.show} handleClose={props.handleClose}> */}
 
       <Alert
+        className="formHeaderInfoPanel"
         id="HIPPAAlert"
         severity="error"  
         sx={{color: "rgb(97, 26, 21)", border: "1px solid #f1aeae", background: "rgb(253, 237, 237)!important"}}
