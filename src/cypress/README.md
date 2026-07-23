@@ -18,6 +18,10 @@ npm run test:v
 
 This covers the form/action unit tests under `src/tests/forms/`.
 
+The full Vitest terminal report is also saved to
+`.test-results/vitest.log`, so it remains available after Cypress opens during
+`npm run test:all`.
+
 ## `npm run test:c`
 
 Opens Cypress against the current unified spec:

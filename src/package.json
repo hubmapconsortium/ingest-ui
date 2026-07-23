@@ -62,7 +62,7 @@
     "upload-sourcemaps:dry-run": "node ./scripts/upload-sourcemaps.js --dry-run",
     "test:all": "npm run test:v && npm run test:c",
     "test:c": "node ./scripts/test-cypress.js",
-    "test:v": "vitest run",
+    "test:v": "bash -o pipefail -c 'mkdir -p .test-results && vitest run 2>&1 | tee .test-results/vitest.log'",
     "verify:production-routing": "node ./scripts/verify-production-routing.js",
     "verify:react19": "npm run lint && npm run test:v && npm run build && npm run build:tags && npm run verify:production-routing",
     "verify:docker-config": "cd ../docker && ./docker-development.sh config",
