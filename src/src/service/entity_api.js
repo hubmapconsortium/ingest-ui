@@ -233,4 +233,3 @@ export function entity_api_attach_bulk_metadata(uuid,item){
       return{error}
     } );
 };
-

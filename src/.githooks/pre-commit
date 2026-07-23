@@ -1,0 +1,4 @@
+#!/bin/sh
+
+repo_root="$(git rev-parse --show-toplevel)" || exit 1
+exec node "$repo_root/src/scripts/scan-staged-secrets.js"

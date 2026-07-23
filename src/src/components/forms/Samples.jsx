@@ -40,7 +40,7 @@ import {
   entity_api_get_entity_ancestor_list
 } from "../../service/entity_api";
 import {ingest_api_allowable_edit_states,ingest_api_get_associated_ids} from "../../service/ingest_api";
-import {FormHeader, UserGroupSelectMenu, FormCheckRedirect, redirectToEntityRoute} from "../ui/formParts";
+import {FormHeader, UserGroupSelectMenu, FormCheckRedirect} from "../ui/formParts";
 import {OrganIcon} from "../ui/icons";
 import RUIIntegration from "../ui/ruiIntegration";
 // import SearchComponent from "./search/SearchComponent";
@@ -52,6 +52,7 @@ import {
   validateSingleProtocolIODOI,
 } from "../../utils/validators";
 import NotFound from "../404";
+import {getSampleGenerationError} from "../../utils/errorAlert";
 // import {RUI_ORGAN_TYPES} from "../constants";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
@@ -384,7 +385,10 @@ export const SampleForm = (props) => {
 
   function badValError(error){
     // console.debug('%c◉badValError error ', 'color:#00ff7b', error);
-    if(error.response){
+    const generationError = getSampleGenerationError(error);
+    if(generationError){
+      setValidationError(generationError);
+    }else if(error.response){
       // setValidationError(error.response);
       setValidationError(error.response.data.error ? error.response.data.error : error);
     }else{
@@ -438,7 +442,7 @@ export const SampleForm = (props) => {
           })
           .catch((error) => {
             // console.debug('%c◉ ERROR entity_api_create_multiple_entities', 'color:#ff005d', error);
-            wrapUpPageErrors(error)
+            wrapUpSampleGenerationErrors(error)
           });
         // Nope Just One  
         }else{
@@ -453,7 +457,7 @@ export const SampleForm = (props) => {
             }
           })
           .catch((error) => {
-            wrapUpPageErrors(error)
+            wrapUpSampleGenerationErrors(error)
           });
         }
           
@@ -561,17 +565,35 @@ export const SampleForm = (props) => {
     setOpenSearch(false);
   }
 
-  function handleMultiEdit(uuid){
-    if(uuid !== entityData.uuid){
-      redirectToEntityRoute("Sample", uuid);
-    }
-    // We're already here otherwise
-  }
-
   function wrapUpPageErrors(error){
     // console.debug('%c◉ wrapUpPageErrors Err pageErrors ', 'color:#00ff7b', errors);
     setPageErrors(error);
     setIsProcessing(false);
+  }
+
+  function wrapUpSampleGenerationErrors(error){
+    const generationError = getSampleGenerationError(error);
+    if(generationError){
+      setValidationError(generationError);
+    }else{
+      setPageErrors(error);
+    }
+    setIsProcessing(false);
+  }
+
+  function renderSampleError(error){
+    if(error?.userMessage){
+      return (
+        <>
+          <Typography component="div" sx={{fontWeight: 700, mb: 0.5}}>
+            {error.title}
+          </Typography>
+          <Typography variant="body2">{error.userMessage}</Typography>
+        </>
+      );
+    }
+
+    return <><strong>Error:</strong> {JSON.stringify(error)}</>;
   }
 
   function buttonEngine(){
@@ -590,7 +612,9 @@ export const SampleForm = (props) => {
           loading={isProcessing}
           className="m-2"
           type="submit">
-          Generate ID
+          {checked && parseInt(formValues.generate_number, 10) > 1
+            ? "Generate IDs"
+            : "Generate ID"}
         </LoadingButton>
       ),
       [SIMPLE_ENTITY_ACTIONS.update]: () => (
@@ -746,47 +770,138 @@ export const SampleForm = (props) => {
         </Grid>
      
         {uuid && relatedEntities && relatedEntities.length > 1 && (
-          <Alert severity="info" className="m-3" >
-            <Grid container>
-              <Grid item xs={8}>
-                This sample is part of a group of {relatedEntities.length} other {entityData.sample_category} samples, ranging from {relatedEntities[0].hubmap_id } through { relatedEntities[relatedEntities.length - 1].hubmap_id}
-                Click below to expand and view the groups list. Then select an Sample ID to edit the sample data. Press the update button to save your changes. 
-              </Grid>
-              <Grid item xs={4}>
-                <Button onClick={() => setCheckedMulti(!checkedMulti)} variant="contained" color="primary">
+          <Alert
+            severity="info"
+            className="m-3"
+            sx={{
+              alignItems: "flex-start",
+              "& .MuiAlert-icon": { mt: "2px" },
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: {xs: "flex-start", sm: "center"},
+                justifyContent: "space-between",
+                flexDirection: {xs: "column", sm: "row"},
+                gap: 1.5,
+                width: "100%",
+              }}
+            >
+              <Box>
+                <Typography variant="body2">
+                  This sample is one of a group of {relatedEntities.length} {entityData.sample_category} samples, ranging from{" "}
+                  <strong>{relatedEntities[0].submission_id}</strong> through{" "}
+                  <strong>{relatedEntities[relatedEntities.length - 1].submission_id}</strong>.
+                </Typography>
+              </Box>
+              <Button
+                onClick={() => setCheckedMulti(!checkedMulti)}
+                variant="outlined"
+                color="primary"
+                size="small"
+                aria-expanded={checkedMulti}
+                aria-controls="related-samples-list"
+                sx={{ flexShrink: 0 }}>
                 {checkedMulti ? "Hide" : "Show"} Related Samples
               </Button>
-              </Grid>
-            </Grid>
-            <Collapse in={checkedMulti}> 
-                {/* <ul className=""> */}
+            </Box>
+            <Collapse id="related-samples-list" in={checkedMulti}>
                 <ul 
                   style={{
-                    maxHeight: "125px", 
-                    overflowY: "scroll", 
-                    marginTop: "20px", 
-                    padding: "10px",
+                    maxHeight: relatedEntities.length > 5 ? "152px" : "none",
+                    overflowY: relatedEntities.length > 5 ? "auto" : "visible",
+                    overflowX: relatedEntities.length <= 5 ? "auto" : "visible",
+                    margin: "12px 0 0",
+                    padding: "8px 0 0",
+                    borderTop: "1px solid rgba(2, 136, 209, 0.18)",
+                    listStyle: "none",
                     display: "flex",
-                    flexDirection: "column",
-                    flexWrap: "wrap",
+                    flexDirection: relatedEntities.length <= 5 ? "row" : "column",
+                    flexWrap: relatedEntities.length <= 5 ? "nowrap" : "wrap",
+                    gap: "4px",
                   }}>
                   {relatedEntities.length > 0 && relatedEntities.map((item, index) => {
+                    const isCurrentSample = item.uuid === entityData.uuid;
                     return(
                       <li key={index+"_"+item.submission_id} >
                           <Button 
-                            style={{
-                              backgroundColor: item.uuid === entityData.uuid ? "#ffffff77" : "none",
-                              border: item.uuid === entityData.uuid ? "1px solid #1976d2" : "none",
+                            component="a"
+                            href={`/sample/${item.uuid}`}
+                            variant={isCurrentSample ? "contained" : "text"}
+                            size="small"
+                            aria-current={isCurrentSample ? "page" : undefined}
+                            sx={{
+                              minWidth: 0,
+                              px: 1,
+                              mb:1,
+                              textTransform: "none",
+                              fontWeight: isCurrentSample ? 700 : 500,
+                              color: isCurrentSample ? "#fff !important" : undefined,
+                              boxShadow: isCurrentSample ? "0 2px 5px rgba(25, 118, 210, 0.28)" : "none",
+                              transition: "background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease",
+                              "&:hover": {
+                                color: isCurrentSample ? "#fff !important" : "#084d91 !important",
+                                backgroundColor: isCurrentSample ? "#2385dc" : "rgba(25, 118, 210, 0.14)",
+                                boxShadow: isCurrentSample
+                                  ? "0 3px 8px rgba(25, 118, 210, 0.38)"
+                                  : "0 2px 5px rgba(25, 118, 210, 0.18)",
+                                transform: "translateY(-1px)",
+                              },
                             }}
-                            small={"true"}
-                            onClick={(e) => handleMultiEdit(item.uuid, e)}>
-                          {`${item.submission_id}`}
+                          >
+                          {item.submission_id}
+                          {isCurrentSample && (
+                            <Box
+                              component="span"
+                              sx={{
+                                ml: 0.75,
+                                px: 0.65,
+                                py: 0.1,
+                                borderRadius: "999px",
+                                color: "#fff",
+                                backgroundColor: "rgba(255, 255, 255, 0.3)",
+                                fontSize: "0.62rem",
+                                fontWeight: 700,
+                                lineHeight: 1.5,
+                                letterSpacing: "0.04em",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Current
+                            </Box>
+                          )}
                         </Button>
                       </li>
                     );
                   })}
                 </ul>
             </Collapse> 
+            {checkedMulti ? (
+              <Typography variant="caption" sx={{ display: "block", mt: 0.75 }}>
+                Ctrl/⌘ + click to open a sample in a new tab
+              </Typography>
+            ) : (
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setCheckedMulti(true)}
+                aria-expanded="false"
+                aria-controls="related-samples-list"
+                sx={{
+                  display: "block",
+                  mt: 1,
+                  minWidth: 0,
+                  p: 0,
+                  fontSize: "0.75rem",
+                  fontWeight: 400,
+                  lineHeight: 1.66,
+                  textTransform: "none",
+                }}
+              >
+                Expand to view the full group.
+              </Button>
+            )}
           </Alert>
         )}
 
@@ -1265,7 +1380,7 @@ export const SampleForm = (props) => {
           
           {validationError && (
             <Alert variant="filled" severity="error">
-              <strong>Error:</strong> {JSON.stringify(validationError)}
+              {renderSampleError(validationError)}
             </Alert>
           )}
           {buttonEngine()}
@@ -1273,7 +1388,7 @@ export const SampleForm = (props) => {
       
         {pageErrors && (
           <Alert variant="filled" severity="error">
-            <strong>Error:</strong> {JSON.stringify(pageErrors)}
+            {renderSampleError(pageErrors)}
           </Alert>
         )}
 
