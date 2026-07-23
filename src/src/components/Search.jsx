@@ -10,8 +10,6 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -83,7 +81,6 @@ function buildDefaultFormFilters() {
     group_uuid: '',
     entity_type: '',
     target_field: '',
-    date_field: 'last_modified_timestamp',
     date_from: '',
     date_to: '',
     sort_field: '',
@@ -226,7 +223,6 @@ export function Search({
         paramsObj.entity_type = normalizedEntityType;
       }
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
-      if (paramsObj.date_field) newForm.date_field = paramsObj.date_field;
       if (paramsObj.date_from) newForm.date_from = paramsObj.date_from;
       if (paramsObj.date_to) newForm.date_to = paramsObj.date_to;
       // sort direction may be provided as sort or sort_dir
@@ -832,7 +828,6 @@ export function Search({
         group_uuid: formFilters?.group_uuid || '',
         entity_type: normalizeEntityTypeValue(formFilters?.entity_type || formFilters?.entityType) || '',
         target_field: formFilters?.target_field || '',
-        date_field: formFilters?.date_field || 'last_modified_timestamp',
         date_from: formFilters?.date_from || '',
         date_to: formFilters?.date_to || '',
         sort_dir: formFilters?.sort_dir || '',
@@ -872,7 +867,6 @@ export function Search({
       group_uuid: p.group_uuid || '',
       entity_type: normalizedEntityType || '',
       target_field: p.target_field || '',
-      date_field: p.date_field || 'last_modified_timestamp',
       date_from: p.date_from || '',
       date_to: p.date_to || '',
       sort_dir: p.sort_dir || '',
@@ -1334,8 +1328,8 @@ export function Search({
       <FormControl sx={{width: "100%", mt: 1}} size="small">
         <Box className="searchFieldLabel">
           <DateRangeIcon sx={{marginRight: "5px", marginTop: "-4px", fontSize: "1.1em"}} />
-          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Date range | </Typography>
-          <Typography variant="caption" sx={{color: "#fff"}}> specify date field & select a date (or date range).</Typography>
+          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Created date | </Typography>
+          <Typography variant="caption" sx={{color: "#fff"}}> select a date (or date range).</Typography>
         </Box>
         <Box sx={{display: "flex", gap: 1, alignItems: "stretch", minWidth: 0}}>
           <Button
@@ -1417,55 +1411,6 @@ export function Search({
               </Button>
             </Box>
           </Popover>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            aria-label="Target date"
-            value={formFilters.date_field || "last_modified_timestamp"}
-            onChange={(_event, value) => {
-              if (value) {
-                setFormFilters((previous) => ({...previous, date_field: value}));
-              }
-            }}
-            sx={{
-              backgroundColor: "#eef1f4",
-              border: "1px solid #cbd1d8",
-              borderRadius: "999px",
-              overflow: "hidden",
-              flex: "0 0 auto",
-              "& .MuiToggleButtonGroup-grouped": {
-                border: 0,
-                borderRadius: 0,
-                color: "#babcc0",
-                px: 1.1,
-                py: 0.65,
-                fontSize: "0.68rem",
-                lineHeight: 1,
-                textTransform: "none",
-                transition: "background-color 150ms ease, color 150ms ease",
-              },
-              "& .MuiToggleButtonGroup-grouped + .MuiToggleButtonGroup-grouped": {
-                borderLeft: "1px solid #cbd1d8",
-                marginLeft: 0,
-              },
-              "& .MuiToggleButtonGroup-grouped.Mui-selected": {
-                background: "linear-gradient(180deg, #58617f 0%, #444a65 100%)",
-                color: "#fff",
-                fontWeight: 700,
-                textDecoration: "underline",
-                textDecorationColor: "#b9ddf7",
-                textDecorationThickness: "2px",
-                textUnderlineOffset: "3px",
-                boxShadow: "inset 0 0 0 1px rgba(185,221,247,0.16), 0 0 7px rgba(151,205,246,0.24)",
-              },
-              "& .MuiToggleButtonGroup-grouped.Mui-selected:hover": {
-                background: "linear-gradient(180deg, #515a79 0%, #3d435e 100%)",
-              },
-            }}
-          >
-            <ToggleButton value="created_timestamp">Created</ToggleButton>
-            <ToggleButton value="last_modified_timestamp">Updated</ToggleButton>
-          </ToggleButtonGroup>
         </Box>
       </FormControl>
     );
@@ -1694,12 +1639,7 @@ export function Search({
     } else {
       url.searchParams.delete("target_field");
     }
-    if (formFilters.date_from || formFilters.date_to) {
-      params["date_field"] = formFilters.date_field || "last_modified_timestamp";
-      url.searchParams.set("date_field", params["date_field"]);
-    } else {
-      url.searchParams.delete("date_field");
-    }
+    url.searchParams.delete("date_field");
     if (formFilters.date_from) {
       params["date_from"] = formFilters.date_from;
       url.searchParams.set("date_from", formFilters.date_from);

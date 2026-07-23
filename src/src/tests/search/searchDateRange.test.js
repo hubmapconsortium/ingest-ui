@@ -13,7 +13,6 @@ describe("advanced search date range", () => {
     const query = search_api_filter_es_query_builder(
       {
         entity_type: "Dataset",
-        date_field: "created_timestamp",
         date_from: "2026-07-01",
         date_to: "2026-07-17",
       },
@@ -31,9 +30,9 @@ describe("advanced search date range", () => {
     });
   });
 
-  it("defaults unknown target fields and treats one selected date as one day", () => {
+  it("ignores legacy target fields and treats one selected date as one day", () => {
     const query = search_api_filter_es_query_builder(
-      { date_field: "unsafe_field", date_from: "2026-07-01" },
+      { date_field: "last_modified_timestamp", date_from: "2026-07-01" },
       0,
       100,
       ["uuid"],
@@ -41,7 +40,7 @@ describe("advanced search date range", () => {
     );
 
     expect(getRangeFilter(query)).toEqual({
-      last_modified_timestamp: {
+      created_timestamp: {
         gte: 1782864000000,
         lte: 1782950399999,
       },
