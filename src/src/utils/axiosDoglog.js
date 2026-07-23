@@ -3,9 +3,6 @@ import { ddLog } from './doglog';
 
 let _axiosDoglog_installed = false;
 
-// Set a reasonable client-side timeout (ms). Can be overridden with REACT_APP_AXIOS_TIMEOUT_MS
-axios.defaults.timeout = parseInt(process.env.REACT_APP_AXIOS_TIMEOUT_MS || '10000', 10);
-
 // shared monitored bases for both scoped and global interceptors
 const _monitoredBases = [
   process.env.REACT_APP_UBKG_API_URL,
