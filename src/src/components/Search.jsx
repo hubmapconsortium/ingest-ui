@@ -26,6 +26,7 @@ import Popover from '@mui/material/Popover';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
@@ -1324,12 +1325,30 @@ export function Search({
   }
 
   function renderDateRangeField() {
+    const isPublicationSearch = normalizeEntityTypeValue(
+      formFilters.entity_type || formFilters.entityType,
+    ) === 'publication';
+
     return (
       <FormControl sx={{width: "100%", mt: 1}} size="small">
         <Box className="searchFieldLabel">
           <DateRangeIcon sx={{marginRight: "5px", marginTop: "-4px", fontSize: "1.1em"}} />
-          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Created date | </Typography>
+          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>
+            {isPublicationSearch ? 'Published date' : 'Created date'} |
+          </Typography>
           <Typography variant="caption" sx={{color: "#fff"}}> select a date (or date range).</Typography>
+          <Tooltip
+            arrow
+            title="Publications are filtered by Published date. All other entity types are filtered by Created date."
+          >
+            <IconButton
+              size="small"
+              aria-label="About date filtering"
+              sx={{color: "#fff", ml: 0.25, p: 0.25}}
+            >
+              <InfoOutlinedIcon sx={{fontSize: "0.95rem"}} />
+            </IconButton>
+          </Tooltip>
         </Box>
         <Box sx={{display: "flex", gap: 1, alignItems: "stretch", minWidth: 0}}>
           <Button

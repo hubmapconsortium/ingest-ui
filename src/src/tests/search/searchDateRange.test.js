@@ -46,4 +46,25 @@ describe("advanced search date range", () => {
       },
     });
   });
+
+  it("filters Publications by Published date", () => {
+    const query = search_api_filter_es_query_builder(
+      {
+        entity_type: "Publication",
+        date_from: "2026-07-01",
+        date_to: "2026-07-17",
+      },
+      0,
+      100,
+      ["uuid"],
+      "newTable",
+    );
+
+    expect(getRangeFilter(query)).toEqual({
+      publication_date: {
+        gte: 1782864000000,
+        lte: 1784332799999,
+      },
+    });
+  });
 });

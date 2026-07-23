@@ -226,7 +226,11 @@ export function search_api_filter_es_query_builder(
   // Date ranges are applied in Elasticsearch so filtering remains accurate
   // across every server-paginated results page, not just the visible rows.
   if (fields["date_from"] || fields["date_to"]) {
-    const dateRange = esb.rangeQuery("created_timestamp");
+    const entityType = String(fields["entity_type"] || "").trim().toLowerCase();
+    const dateField = entityType === "publication"
+      ? "publication_date"
+      : "created_timestamp";
+    const dateRange = esb.rangeQuery(dateField);
     // A lone date means that exact calendar day; two dates form a range.
     const dateFrom = fields["date_from"] || fields["date_to"];
     const dateTo = fields["date_to"] || fields["date_from"];
