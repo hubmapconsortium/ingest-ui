@@ -223,6 +223,25 @@ export function search_api_filter_es_query_builder(
     );
   }
 
+  // Date ranges are applied in Elasticsearch so filtering remains accurate
+  // across every server-paginated results page, not just the visible rows.
+  if (fields["date_from"] || fields["date_to"]) {
+    const entityType = String(fields["entity_type"] || "").trim().toLowerCase();
+    const dateField = entityType === "publication"
+      ? "publication_date"
+      : "created_timestamp";
+    const dateRange = esb.rangeQuery(dateField);
+    // A lone date means that exact calendar day; two dates form a range.
+    const dateFrom = fields["date_from"] || fields["date_to"];
+    const dateTo = fields["date_to"] || fields["date_from"];
+    // HuBMAP maps these fields as epoch-millisecond longs. Sending an ISO
+    // string makes Search API/Elasticsearch try (and fail) to parse it as a
+    // Java Long.
+    dateRange.gte(Date.parse(`${dateFrom}T00:00:00.000Z`));
+    dateRange.lte(Date.parse(`${dateTo}T23:59:59.999Z`));
+    boolQuery.filter(dateRange);
+  }
+
   // keywords handling: preserve HBM exact-match behavior, otherwise use
   // multiMatch for non-wildcard keywords. Wildcard keywords are handled
   // after this block by adding a queryStringQuery as a MUST so other
