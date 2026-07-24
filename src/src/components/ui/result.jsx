@@ -11,6 +11,9 @@ import Link from '@mui/material/Link';
 
 const Result = (props) => {
   console.debug('%c◉ props ', 'color:#00ff7b', props);
+  const createdSamples = Array.isArray(props.result?.entity?.new_samples)
+    ? props.result.entity.new_samples
+    : [];
   const handleReturnClick = (e) => {
     console.debug("handleReturnClick", e);
     if (props.onReturn) {
@@ -53,6 +56,23 @@ const Result = (props) => {
           {props.result.entity.hubmap_id && (
             <div className="portal-jss116 col-sm-12 ml-2">
               HuBMAP ID: <Link variant="body2" href={"/" + props.result.entity.entity_type.toLowerCase() + "/" + props.result.entity.uuid}>{props.result.entity.hubmap_id}</Link>
+            </div>
+          )}
+          {createdSamples.length > 0 && (
+            <div className="portal-jss116 col-sm-12 ml-2">
+              HuBMAP IDs:
+              <ul>
+                {createdSamples.map((sample) => (
+                  <li key={sample.uuid || sample.hubmap_id}>
+                    <Link
+                      variant="body2"
+                      href={`/sample/${sample.uuid || sample.hubmap_id}`}
+                    >
+                      {sample.hubmap_id}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
           {renderField("Submission ID", props.result.entity.submission_id)}

@@ -40,6 +40,8 @@ src/.env.*
 src/.env
 envs/example.env.*
 cypress.env.json
+.test-results/
+ingestApiSrc.txt
 
 # misc
 .DS_Store
