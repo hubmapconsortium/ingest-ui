@@ -1,5 +1,5 @@
 import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
-import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton,useGridApiRef} from "@mui/x-data-grid";
+import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router-dom";
 import Box from "@mui/material/Box";
@@ -114,7 +114,6 @@ export function Search({
   const [hasSearched, setHasSearched] = useState(false);
   const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
   const [tableHelpAnchorEl, setTableHelpAnchorEl] = useState(null);
-  const searchGridApiRef = useGridApiRef();
 
   useEffect(() => {
     function handleResize() {
@@ -1069,7 +1068,6 @@ export function Search({
           <GridLoader size="2px" color="white" width="30px" /> Loading ...
         </Box>
         <DataGrid
-          apiRef={searchGridApiRef}
           sx={{
             '.MuiTablePagination-select': {
               'background': '#eee',

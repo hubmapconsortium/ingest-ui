@@ -272,6 +272,12 @@ export const UploadForm = (props) => {
       }
     });
 
+    if(!uuid && !formValues.group_uuid){
+      newFormErrors.group_uuid = true;
+      e_messages.push("Please select a Group before creating the Upload (group selection is not automatic on this form)");
+      errors++;
+    }
+
     // Count is a #
     if(formValues.anticipated_dataset_count && isNaN(formValues.anticipated_dataset_count)){
       newFormErrors['anticipated_dataset_count'] = true;
@@ -909,12 +915,14 @@ export const UploadForm = (props) => {
               {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
               {!uuid && (
                 <Box className="mb-3 col-6">           
-                  <InputLabel htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
+                  <InputLabel required htmlFor="group_uuid" sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}}>
                     Group
                   </InputLabel>
                   <NativeSelect
                     id="group_uuid"
                     label="Group"
+                    required
+                    error={Boolean(formErrors.group_uuid)}
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
                     disabled={uuid?true:false}
@@ -922,6 +930,11 @@ export const UploadForm = (props) => {
                     <option key={"0"} value={null}></option>
                     <UserGroupSelectMenu formValues={formValues} />
                   </NativeSelect>
+                  {formErrors.group_uuid && (
+                    <FormHelperText error>
+                      Please manually select a Group
+                    </FormHelperText>
+                  )}
                 </Box>
               )}
            

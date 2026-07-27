@@ -31,9 +31,29 @@ function seedAuthenticatedLocalStorage(win, authInfo) {
   win.localStorage.setItem('organs', JSON.stringify({ RK: 'Right Kidney', LK: 'Left Kidney', BL: 'Blood' }));
   win.localStorage.setItem('organ_icons', JSON.stringify({}));
   win.localStorage.setItem('organs_full', JSON.stringify([
-    { rui_supported: true, rui_code: 'RK' },
-    { rui_supported: true, rui_code: 'LK' },
-    { rui_supported: false, rui_code: 'BL' },
+    {
+      term: 'Right Kidney',
+      rui_supported: true,
+      rui_code: 'RK',
+      organ_uberon: 'UBERON:0004538',
+      uberon_url: 'http://purl.obolibrary.org/obo/UBERON_0004538',
+      laterality: 'right',
+    },
+    {
+      term: 'Left Kidney',
+      rui_supported: true,
+      rui_code: 'LK',
+      organ_uberon: 'UBERON:0004538',
+      uberon_url: 'http://purl.obolibrary.org/obo/UBERON_0004538',
+      laterality: 'left',
+    },
+    {
+      term: 'Blood',
+      rui_supported: false,
+      rui_code: 'BL',
+      organ_uberon: 'UBERON:0000178',
+      uberon_url: 'http://purl.obolibrary.org/obo/UBERON_0000178',
+    },
   ]));
   win.localStorage.setItem('RUIOrgans', JSON.stringify(['RK', 'LK']));
   win.localStorage.setItem('dataset_types', JSON.stringify([{ dataset_type: 'RNAseq' }]));

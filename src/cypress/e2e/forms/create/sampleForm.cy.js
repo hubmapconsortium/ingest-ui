@@ -38,8 +38,19 @@ const sampleForm = {
   ],
 };
 
+const ruiLocation = {
+  '@context': 'https://hubmapconsortium.github.io/ccf-ontology/ccf-context.jsonld',
+  '@id': 'http://example.org/rui-location/cypress-kidney-block',
+  '@type': 'SpatialEntity',
+  label: 'Cypress kidney block',
+  x_dimension: 10,
+  y_dimension: 12,
+  z_dimension: 8,
+  dimension_unit: 'millimeter',
+};
+
 describe('Sample form', () => {
-  function interceptSampleEdit(entity, permissions) {
+  function interceptSampleEdit(entity, permissions, associatedIds = []) {
     interceptExistingEntity(entity, permissions);
     cy.intercept('GET', `**/ancestors/${sampleSource.uuid}`, {
       statusCode: 200,
@@ -47,8 +58,22 @@ describe('Sample form', () => {
     }).as(`ancestors-${entity.uuid}`);
     cy.intercept('GET', `**/specimens/${entity.uuid}/ingest-group-ids`, {
       statusCode: 200,
-      body: { ingest_group_ids: [] },
+      body: { ingest_group_ids: associatedIds },
     }).as(`associated-${entity.uuid}`);
+  }
+
+  function openRui(buttonLabel) {
+    cy.contains('button', buttonLabel, { timeout: 30000 }).click();
+    cy.get('ccf-rui', { timeout: 30000 }).should('be.visible');
+  }
+
+  function registerRuiLocation(location = ruiLocation) {
+    cy.get('ccf-rui').should(($rui) => {
+      expect($rui[0].register).to.be.a('function');
+    }).then(($rui) => {
+      $rui[0].register(JSON.stringify(location));
+    });
+    cy.get('ccf-rui').should('not.exist');
   }
 
   it('loads and validates required fields', () => {
@@ -138,6 +163,155 @@ describe('Sample form', () => {
     cy.get('#sample_category').select('block');
     cy.contains('button', /Register Location/i).should('be.visible');
     visualCheckpoint('sample-ancestor-supported-organ-rui-available');
+  });
+
+  it('shows existing RUI JSON and launches RUI with the saved location', () => {
+    const editableBlock = successEntity('Sample', {
+      uuid: 'sample-existing-rui',
+      hubmap_id: 'HBM999.RUI.001',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'existing-rui-location',
+      rui_location: ruiLocation,
+    });
+
+    interceptSampleEdit(editableBlock, editStates({ has_write_priv: true }));
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/sample/${editableBlock.uuid}`);
+
+    cy.contains('button', 'View Location', { timeout: 30000 }).click();
+    cy.contains(ruiLocation['@id']).should('be.visible');
+    cy.contains(ruiLocation.label).should('be.visible');
+    cy.contains('button', 'Close').click();
+
+    openRui('Modify Location Information');
+    cy.get('ccf-rui').should(($rui) => {
+      expect($rui[0].editRegistration).to.deep.equal(ruiLocation);
+    });
+  });
+
+  it('does not allow RUI edits on a sample associated with a published dataset', () => {
+    const publicBlock = successEntity('Sample', {
+      uuid: 'sample-public-rui',
+      hubmap_id: 'HBM999.RUI.002',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'public-rui-location',
+      rui_location: ruiLocation,
+    });
+
+    interceptSampleEdit(
+      publicBlock,
+      editStates({ has_write_priv: false }),
+      [{ uuid: publicBlock.uuid, submission_id: 'S-PUBLIC-1' }],
+    );
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/sample/${publicBlock.uuid}`);
+
+    cy.contains('button', 'View Location', { timeout: 30000 }).should('be.enabled');
+    cy.contains('button', 'Modify Location Information').should('be.disabled');
+    cy.contains('button', 'Update').should('not.exist');
+  });
+
+  it('allows an existing consortium-level RUI location to be edited', () => {
+    const consortiumBlock = successEntity('Sample', {
+      uuid: 'sample-consortium-rui',
+      hubmap_id: 'HBM999.RUI.003',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'consortium-rui-location',
+      rui_location: ruiLocation,
+    });
+    const updatedLocation = {
+      ...ruiLocation,
+      '@id': 'http://example.org/rui-location/updated-consortium-block',
+      label: 'Updated consortium kidney block',
+    };
+
+    interceptSampleEdit(consortiumBlock, editStates({ has_write_priv: true }));
+    cy.intercept('PUT', `**/entities/${consortiumBlock.hubmap_id}`, {
+      statusCode: 200,
+      body: { message: 'RUI location updated successfully' },
+    }).as('updateConsortiumRui');
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/sample/${consortiumBlock.uuid}`);
+
+    openRui('Modify Location Information');
+    registerRuiLocation(updatedLocation);
+    cy.contains('button', 'Update').click({ force: true });
+
+    requestBody('@updateConsortiumRui').then((body) => {
+      expect(body.rui_location).to.deep.equal(updatedLocation);
+    });
+  });
+
+  it('creates a new RUI location while creating a block sample', () => {
+    const createdBlock = successEntity('Sample', {
+      uuid: 'sample-create-rui',
+      hubmap_id: 'HBM999.RUI.004',
+      sample_category: 'block',
+      lab_tissue_sample_id: 'new-rui-block',
+    });
+    const sampleParams = new URLSearchParams({
+      direct_ancestor_uuid: sampleSource.uuid,
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: createdBlock.lab_tissue_sample_id,
+      description: 'Block created with RUI location',
+      sample_category: 'block',
+      group_uuid: '00000000-0000-0000-0000-000000000001',
+    });
+
+    interceptNewSampleSource(sampleSource);
+    cy.intercept('POST', '**/entities/sample', {
+      statusCode: 200,
+      body: createdBlock,
+    }).as('createRuiSample');
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/new/sample?${sampleParams.toString()}`);
+
+    openRui('Register Location');
+    registerRuiLocation();
+    cy.contains('button', 'Generate ID').click({ force: true });
+
+    requestBody('@createRuiSample').then((body) => {
+      expect(body.rui_location).to.deep.equal(ruiLocation);
+      expect(body.sample_category).to.equal('block');
+    });
+    assertSuccessDialog(createdBlock);
+  });
+
+  it('adds a new RUI location while editing a consortium-level block', () => {
+    const consortiumBlock = successEntity('Sample', {
+      uuid: 'sample-add-rui',
+      hubmap_id: 'HBM999.RUI.005',
+      direct_ancestor: sampleSource,
+      direct_ancestor_uuid: sampleSource.uuid,
+      sample_category: 'block',
+      protocol_url: protocolUrl,
+      lab_tissue_sample_id: 'consortium-block-without-rui',
+    });
+
+    interceptSampleEdit(consortiumBlock, editStates({ has_write_priv: true }));
+    cy.intercept('PUT', `**/entities/${consortiumBlock.hubmap_id}`, {
+      statusCode: 200,
+      body: { message: 'RUI location added successfully' },
+    }).as('addConsortiumRui');
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth(`/sample/${consortiumBlock.uuid}`);
+
+    openRui('Register Location');
+    registerRuiLocation();
+    cy.contains('button', 'Update').click({ force: true });
+
+    requestBody('@addConsortiumRui').then((body) => {
+      expect(body.rui_location).to.deep.equal(ruiLocation);
+    });
   });
 
   it('rejects invalid protocol URL values', () => {

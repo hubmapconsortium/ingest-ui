@@ -561,7 +561,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
       <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
         <Box className="w-100" sx={{display:"flex", justifyContent: "space-between"}}>
           {fileData.uploaded === false && (<>
-            <Box className="" sx={{display:"flex"}} >
+            <Box className="" sx={{display:"flex", height:"fit-content"}} >
               <input
                 accept=".tsv, .csv"
                 type="file"

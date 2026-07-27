@@ -7,6 +7,10 @@ module.exports = defineConfig({
   chromeWebSecurity: false,
   watchForFileChanges: true,
   experimentalStudio: true,
+  retries: {
+    runMode: 2,
+    openMode: 2,
+  },
   ...(serviceUserAgent ? { userAgent: serviceUserAgent } : {}),
   env: {
     authAccounts: process.env.CYPRESS_AUTH_ACCOUNTS,
