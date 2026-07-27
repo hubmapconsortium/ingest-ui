@@ -166,9 +166,7 @@ export function App(){
           }
         }
       })
-      .catch((error) => {
-        console.error('gateway_api_status ERROR', error);
-      });
+      .catch(() => {});
 
     var loadCounter = 0;
     let url = new URL(window.location.href);
