@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 
 import NotFound from "./404";
 import { entity_api_get_entity } from "../service/entity_api";

@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect, useState, useMemo} from "react";
-import {useParams, useNavigate} from "react-router-dom";
+import {useParams, useNavigate} from "react-router";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";

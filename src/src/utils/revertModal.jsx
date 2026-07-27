@@ -17,7 +17,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {entity_api_update_entity} from '../service/entity_api';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 export const RevertFeature = (props) => {
   const navigate = useNavigate();

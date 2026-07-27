@@ -1,6 +1,6 @@
 import *as React from "react";
 import {useEffect,useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {HuBMAPContext} from "./components/hubmapContext";
 import Timer from './components/ui/idle';
 import ErrorPage from "./utils/errorPage";

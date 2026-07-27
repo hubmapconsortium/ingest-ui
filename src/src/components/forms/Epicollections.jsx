@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Grid from "@mui/material/Grid";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";

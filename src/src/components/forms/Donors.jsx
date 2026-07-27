@@ -1,5 +1,5 @@
 import {Fragment, useEffect, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
+import {useParams, useNavigate} from "react-router";
 import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
 import {
   entity_api_get_entity,

@@ -1,5 +1,5 @@
 import {Fragment, useEffect, useState, useMemo} from "react";
-import {useParams} from "react-router-dom";
+import {useParams} from "react-router";
 import {
   ingest_api_allowable_edit_states, 
   ingest_api_create_upload,

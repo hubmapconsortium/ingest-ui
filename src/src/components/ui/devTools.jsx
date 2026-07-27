@@ -1,4 +1,4 @@
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import TableChartIcon from '@mui/icons-material/TableChart';
 import {Typography} from "@mui/material";
 import Box from "@mui/material/Box";

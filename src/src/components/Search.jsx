@@ -1,7 +1,7 @@
 import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
 import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from '@mui/material/Chip';
@@ -47,7 +47,7 @@ import {
 import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 
 const SIMPLE_COLUMNS = ["Donor", "Dataset", "Publication", "Upload", "Collection", "EPICollection"];
 
