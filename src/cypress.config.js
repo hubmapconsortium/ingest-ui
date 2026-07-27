@@ -6,7 +6,6 @@ const serviceUserAgent = process.env.CYPRESS_SERVICE_USER_AGENT;
 module.exports = defineConfig({
   chromeWebSecurity: false,
   watchForFileChanges: true,
-  experimentalStudio: true,
   retries: {
     runMode: 2,
     openMode: 2,

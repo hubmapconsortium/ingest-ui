@@ -25,7 +25,7 @@ import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import GridLoader from "react-spinners/GridLoader";
 import SearchIcon from '@mui/icons-material/Search';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutlineOutlined';
 import {CombinedWholeEntityOptions} from "./ui/formParts";
 import {RenderError} from "../utils/errorAlert";
 import {badgeClass} from "../utils/badgeClasses";
@@ -81,7 +81,7 @@ function buildDefaultFormFilters() {
     sort_dir: '',
   };
 }
- 
+
 export function Search({
   searchFilters: initialSearchFilters,
   restrictions,
@@ -96,7 +96,7 @@ export function Search({
   // rename local state to avoid shadowing the incoming prop 'initialSearchFilters'
   var [searchFiltersState, setSearchFiltersState] = useState(initialSearchFilters);
   var [formFilters, setFormFilters] = useState(
-    initialSearchFilters ? 
+    initialSearchFilters ?
     initialSearchFilters : {});
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
@@ -259,7 +259,7 @@ export function Search({
       if(paramsObj.target_field || paramsObj.status){
         setAdvancedSearch(true);
       }
-      
+
     } catch (err) {
       // ignore URL parse errors for now
     }
@@ -607,7 +607,7 @@ export function Search({
       let entityTypes = {
         donor: "Donor" ,
         sample: "Sample",
-        dataset: "Dataset", 
+        dataset: "Dataset",
         upload: "Data Upload",
         publication: "Publication",
         collection: "Collection",
@@ -895,22 +895,22 @@ export function Search({
   }
 
   function renderStatusControls() {
-    let colorMap = {  
-      "QA": '#17a2b8', 
-      "Approval": '#f5e537', 
-      "Submitted": '#17a2b8', 
-      "Reorganized": '#17a2b8', 
-      "Published": '#0ecd3a', 
+    let colorMap = {
+      "QA": '#17a2b8',
+      "Approval": '#f5e537',
+      "Submitted": '#17a2b8',
+      "Reorganized": '#17a2b8',
+      "Published": '#0ecd3a',
       "Valid": '#0ecd3a',
-      "Error": '#dc004e', 
-      "Invalid": '#dc004e', 
-      "Processing": '#424242', 
-      "Retracted": '#424242', 
-      "Incomplete": '#ffc107', 
-      "New": '#9933cc', 
+      "Error": '#dc004e',
+      "Invalid": '#dc004e',
+      "Processing": '#424242',
+      "Retracted": '#424242',
+      "Incomplete": '#ffc107',
+      "New": '#9933cc',
     }
     let statusOptions = ["Published", "Retracted", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
-    return(<> 
+    return(<>
       {statusOptions.map((status, i) => {
         const isSelected = chipSelect.includes(status);
         const isExcluded = chipExclude.includes(status);
@@ -1000,7 +1000,7 @@ export function Search({
           />
         );
       })}
-    </>)  
+    </>)
   }
 
   function renderView() {
@@ -1083,6 +1083,7 @@ export function Search({
           rows={searchState.dataRows}
           sortModel={sortModel}
           localeText={isNarrow ? compactLocaleText : undefined}
+          showToolbar
           slots={{ toolbar: CustomToolbar }}
           slotProps={{
             toolbar: {
@@ -1150,12 +1151,12 @@ export function Search({
             })}
           </Select>
           <Grid container spacing={1} sx={{mt: 1}}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Box className="searchFieldLabel" id="SearchLabelGroup" >
                 <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                 <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
               </Box>
-              <Box sx={{display: 'inline-block', alignItems: 'center', width: '100%'}}> 
+              <Box sx={{display: 'inline-block', alignItems: 'center', width: '100%'}}>
               {savedSearches.length === 0 ? (
                 <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
               ) : (
@@ -1176,7 +1177,7 @@ export function Search({
                       label={s.name}
                       sx={{
                         // background: 'linear-gradient(180deg, #eceff3 0%, #d7dde5 100%)',
-                        background: 'none', 
+                        background: 'none',
                         color: '#fff',
                         borderRadius: '999px',
                         height: 24,
@@ -1328,7 +1329,7 @@ export function Search({
           onSubmit={(e) => {
             handleSearchClick(e);
           }}>
-            
+
           <Grid
             container
             spacing={0}
@@ -1345,15 +1346,15 @@ export function Search({
               borderBottomRightRadius: "0px!important",
               borderBottomLeftRadius: "0px!important"
             }}>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", paddingLeft: "10px",borderLeft: "1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
-            <Grid item xs={12} sx={{display: "flex", paddingLeft: "10px", flexFlow: "row", fontSize: "0.9em", borderLeft: "1px solid #fff", alignItems: "end", fontStyle: "italic"}}> 
+            <Grid size={12} sx={{display: "flex", flexFlow: "row", paddingLeft: "10px",borderLeft: "1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
+            <Grid size={12} sx={{display: "flex", paddingLeft: "10px", flexFlow: "row", fontSize: "0.9em", borderLeft: "1px solid #fff", alignItems: "end", fontStyle: "italic"}}>
               <Typography variant="" sx={{ color: "#fff"}}>
                 Use the filter controls to search for <Link to={"?entity_type=donor"} className="text-white">Donors</Link>, <Link to={"?entity_type=sample"} className="text-white">Samples</Link>, <Link to={"?entity_type=dataset"} className="text-white">Datasets</Link>, <Link to={"?entity_type=upload"} className="text-white">Data Uploads</Link>, <Link to={"?entity_type=publication"} className="text-white">Publications</Link>, or <Link to={"?entity_type=collection"} className="text-white">Collections</Link>. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.
                 </Typography>
               </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "15px", }}>
-              <Grid item xs={6} sx={{padding: "4px"}} >{renderGroupField()}</Grid>
-              <Grid item xs={6} sx={{padding: "4px"}} > 
+            <Grid size={12} sx={{display: "flex", flexFlow: "row", marginTop: "15px", }}>
+              <Grid size={6} sx={{padding: "4px"}} >{renderGroupField()}</Grid>
+              <Grid size={6} sx={{padding: "4px"}} >
                 <CombinedWholeEntityOptions
                   formFilters = {formFilters}
                   OrganIcons={OrganIcons}
@@ -1361,25 +1362,25 @@ export function Search({
                   restrictions = {restrictions}/>
               </Grid>
             </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px"}}>
+            <Grid size={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px"}}>
               {renderKeywordField()}
             </Grid>
-            <Grid item xs={12} sx={{display: "flex", flexFlow: "row", margin: "0px", padding: "0px"}}>
+            <Grid size={12} sx={{display: "flex", flexFlow: "row", margin: "0px", padding: "0px"}}>
               <Typography variant="caption" sx={{marginLeft: "auto", marginRight: "auto", cursor: "pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
-              {advancedSearch ? "Hide" : "Show"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}  
+              {advancedSearch ? "Hide" : "Show"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}
               </Typography>
             </Grid>
             <Collapse in={advancedSearch} sx={{width: "100%"}}>
               <Grid container sx={{display: "flex", marginTop: "16px"}}>
-                <Grid item xs={6} sx={{padding: "4px"}}>
+                <Grid size={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
                 </Grid>
-                <Grid item xs={6} sx={{padding: "4px"}}>
+                <Grid size={6} sx={{padding: "4px"}}>
                   <Box className="searchFieldLabel" id="SearchLabelGroup" >
                     <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                     <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
                   </Box>
-                  <Box 
+                  <Box
                     id="statusSelectionSection"
                     sx={{
                       display: 'flex',
@@ -1401,11 +1402,11 @@ export function Search({
                 </Grid>
 
               </Grid>
-                
+
             </Collapse>
 
             <Grid container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
-              {/* <Grid item xs={2}> */}
+              {/* <Grid size={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
                   startIcon={<ClearIcon />}
@@ -1413,12 +1414,12 @@ export function Search({
                       width: "40%",
                     }}
                   variant="contained"
-                  size="large"  
+                  size="large"
                   onClick={(e) => handleClearFilter(e)}>
                   Clear
                 </Button>
               <Box sx={{width: '70%', position: 'relative', display: 'inline-block'}}>
-                <Button 
+                <Button
                   className={"m-1 HBM_DarkBlueButton" + (fieldsChanged ? " highlight" : "")}
                   id="applySearchButton"
                   size="large"
@@ -1537,7 +1538,7 @@ export function Search({
     } else {
       url.searchParams.delete('sort_dir');
     }
-    
+
     if (entityType && entityType !== "----" && entityType !== "DonorSample") {
       // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
       params["entity_type"] = entityType;
@@ -1545,7 +1546,7 @@ export function Search({
     } else {
       // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
       url.searchParams.delete("entity_type");
-    } 
+    }
     if(chipSelect.length > 0){
       params["status"] = chipSelect;
       url.searchParams.set('status', chipSelect.join(','));
@@ -1559,7 +1560,7 @@ export function Search({
     if (chipSelect.length === 0) {
       url.searchParams.delete('status');
     }
-    
+
     // If we're not in a special mode, push URL to window
     window.history.pushState({}, "", url);
     document.title = "HuBMAP Ingest Portal Search"

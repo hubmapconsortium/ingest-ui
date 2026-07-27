@@ -797,7 +797,7 @@ export const UploadForm = (props) => {
             {/* Dataset */}
             <Box className=" col-6" > 
               <Grid container spacing={2}>
-                <Grid item xs={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
+                <Grid size={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
                   <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="intended_dataset_type">
                     Intended Dataset Type *
                   </InputLabel>

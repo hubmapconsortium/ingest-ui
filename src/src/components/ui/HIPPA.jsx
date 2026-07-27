@@ -58,7 +58,7 @@ export const HIPPA = (props) => {
                 m: 'auto',
                 width: 'fit-content',}}>
                 <Grid container spacing={2} style={{marginTop: "10px"}}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                       <ol style={{fontSize: ".8em"}}>
                         <li>Names.</li>
                         <li>
@@ -90,7 +90,7 @@ export const HIPPA = (props) => {
                         <li>Social security numbers.</li>
                       </ol>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                       <ol start="8" style={{fontSize: ".8em"}}>
                         <li>Medical record numbers.</li>
                         <li>Health plan beneficiary numbers.</li>

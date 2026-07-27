@@ -622,14 +622,14 @@ export function App(){
                 width: '100%', height: '100%', padding: 1, backgroundColor: 'white', color: "#dc3545", 
               }}>
                 <Grid container>
-                  <Grid item xs={7}>
+                  <Grid size={7}>
                     <Typography variant="body2" gutterBottom>
                       There's been an error handling the current task. Please try again later. <br />
                       If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={5}>
+                  <Grid size={5}>
                     <Typography variant="body2"gutterBottom>
                       Error Details: <IconButton color="error" size="small" onClick={()=>setErrorInfoShow(!errorInfoShow)}> <ExpandMoreIcon /></IconButton>
                     </Typography>

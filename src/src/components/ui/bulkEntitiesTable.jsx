@@ -684,6 +684,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
+          showToolbar
           slots={{ toolbar: CustomToolbarExportAllRows }} 
           density="compact"
           logLevel="info"

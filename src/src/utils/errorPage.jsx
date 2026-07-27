@@ -32,15 +32,15 @@ export default function ErrorPage(props) {
             }}>
                 
                 <Grid container className='p-2'>
-                    <Grid item xs={12} className="mb-4" sx={{ backgroundColor: '#dc3545', color: "#fff", width: '100%', padding: 1 }}>
+                    <Grid size={12} className="mb-4" sx={{ backgroundColor: '#dc3545', color: "#fff", width: '100%', padding: 1 }}>
                         <Typography variant="h2" align="left"><FontAwesomeIcon icon={faExclamationTriangle} sx={{padding:1}}/>  Sorry!  </Typography><Typography align="left" variant="body" >Something's gone wrong...</Typography>
                     </Grid>
-                    <Grid item xs={7} className="mb-4">
+                    <Grid size={7} className="mb-4">
                         <Typography variant="body">There's been an error handling the current task. Please try again later. <br />
                             If the problem persists, please contact the HuBMAP Help Desk at <a href="mailto:help@hubmapconsortium.org">help@hubmapconsortium.org</a>
                         </Typography>
                     </Grid>
-                    <Grid item xs={12} sx={{
+                    <Grid size={12} sx={{
                         backgroundColor:'#fcfad9',
                         padding:"4px 8px",
                         color:"#dc3545",

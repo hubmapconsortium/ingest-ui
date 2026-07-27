@@ -153,7 +153,7 @@ export const COLUMN_DEF_DATASET = [
         <Button
           className='btn `btn-link'
           onClick={() => handleDataClick(params.value)}>
-          <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+          <FontAwesomeIcon icon={faFolder}/>
         </Button>                         
       );
     }
@@ -201,7 +201,7 @@ export const COLUMN_DEF_PUBLICATION = [
       <button
         className='btn btn-link'
         onClick={() => handleDataClick(params.value)}>
-        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+        <FontAwesomeIcon icon={faFolder}/>
       </button>                         
       </React.Fragment>
     )

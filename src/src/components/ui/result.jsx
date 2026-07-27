@@ -83,7 +83,7 @@ const Result = (props) => {
                 href={props.result.globus_path}
                 target='_blank'
                 rel='noopener noreferrer'
-              ><FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip' /> Click here to go to the Globus data repository</a>
+              ><FontAwesomeIcon icon={faFolder} /> Click here to go to the Globus data repository</a>
             </div>
           )}
           
@@ -91,7 +91,7 @@ const Result = (props) => {
             <div className="d-none">
               <a
                 href={props.result.entity.entity_type + "/" + props.result.entity.uuid}
-              ><FontAwesomeIcon icon={faLink} data-tip data-for='link_tooltip' /> View in Ingest</a>
+              ><FontAwesomeIcon icon={faLink} /> View in Ingest</a>
             </div>
           )}
         </>

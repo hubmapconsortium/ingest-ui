@@ -472,6 +472,7 @@ export function EmbeddedSearch({
           paginationMode="server"
           rowCount={results.rowCount}
           rows={results.dataRows}
+          showToolbar
           slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
@@ -527,7 +528,7 @@ export function EmbeddedSearch({
             container
             spacing={3}
             sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
-            <Grid item xs={6}>
+            <Grid size={6}>
             <FormControl sx={{ width: "100%", marginTop: "26px", display: "block" }} >
               <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
@@ -550,7 +551,7 @@ export function EmbeddedSearch({
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <InputLabel htmlFor="entity_type" id="entity_type_label">Type</InputLabel>
               <Select
                 native 
@@ -565,7 +566,7 @@ export function EmbeddedSearch({
                 <CombinedEmbeddedEntityOptions />
                 </Select>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
             <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
             <TextField
               labelid="keywords_label"
@@ -578,8 +579,8 @@ export function EmbeddedSearch({
               onChange={(e) => handleInputChange(e)}/>
               
             </Grid>
-            <Grid item xs={2}></Grid>
-            <Grid item xs={4}>
+            <Grid size={2}></Grid>
+            <Grid size={4}>
               <Button
                 fullWidth
                 color="primary"
@@ -589,7 +590,7 @@ export function EmbeddedSearch({
                 Search
               </Button>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -601,7 +602,7 @@ export function EmbeddedSearch({
               </Button>
             </Grid>
 
-            <Grid item xs={2}></Grid>
+            <Grid size={2}></Grid>
           </Grid>
 
           {/* </FormControl> */}
