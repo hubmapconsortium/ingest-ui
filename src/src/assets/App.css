@@ -1424,8 +1424,11 @@ svg.invalid {
   color: #fff;
   font-family: 'Inter var', sans-serif!important;
 }
+.HDT .MuiDataGrid-columnHeader .MuiDataGrid-sortButton {
+  background-color: transparent !important;
+}
 .HDT .MuiDataGrid-columnHeader .MuiDataGrid-sortButton:hover {
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 .HDT .MuiDataGrid-footerContainer .MuiSelect-select  {
   background-color: #444a65;
