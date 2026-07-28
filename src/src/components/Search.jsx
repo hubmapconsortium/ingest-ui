@@ -33,6 +33,10 @@ import SaveAsIcon from '@mui/icons-material/SaveAs';
 import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import dayjs from 'dayjs';
+import {DayPicker} from '@daypicker/react';
+import '@daypicker/react/style.css';
 import {toTitleCase} from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
@@ -77,6 +81,8 @@ function buildDefaultFormFilters() {
     group_uuid: '',
     entity_type: '',
     target_field: '',
+    date_from: '',
+    date_to: '',
     sort_field: '',
     sort_dir: '',
   };
@@ -101,6 +107,7 @@ export function Search({
   var [page, setPage] = useState(0);
   var [pageSize,setPageSize] = useState(100);
   var [advancedSearch,setAdvancedSearch] = useState(false);
+  const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState(null);
   var [sortDir, setSortDir] = useState("asc");
   const [sortField, setSortField] = useState("last_modified_timestamp");
   const [sortModel, setSortModel] = useState([]);
@@ -115,6 +122,14 @@ export function Search({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (!formFilters.date_from) {
+      if (formFilters.date_to) {
+        setFormFilters((previous) => ({...previous, date_to: ''}));
+      }
+    }
+  }, [formFilters.date_from, formFilters.date_to]);
 
   const urlParamsAppliedRef = useRef(false);
   const lastAppliedFiltersRef = useRef(null);
@@ -207,6 +222,8 @@ export function Search({
         paramsObj.entity_type = normalizedEntityType;
       }
       if (paramsObj.target_field) newForm.target_field = paramsObj.target_field;
+      if (paramsObj.date_from) newForm.date_from = paramsObj.date_from;
+      if (paramsObj.date_to) newForm.date_to = paramsObj.date_to;
       // sort direction may be provided as sort or sort_dir
       if (paramsObj.sort_dir) {
         newForm.sort_dir = paramsObj.sort_dir;
@@ -256,7 +273,7 @@ export function Search({
       // reset pagination to first page
       setPage(0);
       // Do we need to open the Advanced Fields view?
-      if(paramsObj.target_field || paramsObj.status){
+      if(paramsObj.target_field || paramsObj.status || paramsObj.date_from || paramsObj.date_to){
         setAdvancedSearch(true);
       }
 
@@ -810,6 +827,8 @@ export function Search({
         group_uuid: formFilters?.group_uuid || '',
         entity_type: normalizeEntityTypeValue(formFilters?.entity_type || formFilters?.entityType) || '',
         target_field: formFilters?.target_field || '',
+        date_from: formFilters?.date_from || '',
+        date_to: formFilters?.date_to || '',
         sort_dir: formFilters?.sort_dir || '',
         sort_field: formFilters?.sort_field || '',
       };
@@ -847,6 +866,8 @@ export function Search({
       group_uuid: p.group_uuid || '',
       entity_type: normalizedEntityType || '',
       target_field: p.target_field || '',
+      date_from: p.date_from || '',
+      date_to: p.date_to || '',
       sort_dir: p.sort_dir || '',
       sort_field: p.sort_field || '',
     };
@@ -1061,6 +1082,9 @@ export function Search({
             },
             '.MuiDataGrid-virtualScrollerContent': {
               'marginTop': '10px'
+            },
+            '& .MuiDataGrid-row:hover': {
+              backgroundColor: '#cacaca'
             }
           }}
           id="SearchDataGrid"
@@ -1298,6 +1322,99 @@ export function Search({
     )
   }
 
+  function renderDateRangeField() {
+    return (
+      <FormControl sx={{width: "100%", mt: 1}} size="small">
+        <Box className="searchFieldLabel">
+          <DateRangeIcon sx={{marginRight: "5px", marginTop: "-4px", fontSize: "1.1em"}} />
+          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Created date | </Typography>
+          <Typography variant="caption" sx={{color: "#fff"}}> select a date (or date range).</Typography>
+        </Box>
+        <Box sx={{display: "flex", gap: 1, alignItems: "stretch", minWidth: 0}}>
+          <Button
+            variant="outlined"
+            aria-label="Choose date range"
+            onClick={(event) => setDateRangeAnchorEl(event.currentTarget)}
+            sx={{
+              backgroundColor: "#fff",
+              borderColor: "#cbd1d8",
+              borderRadius: "8px",
+              color: "#444a65",
+              flex: "1 1 auto",
+              minWidth: 0,
+              px: 1.25,
+              justifyContent: "flex-start",
+              textTransform: "none",
+              "&:hover": {backgroundColor: "#f7f8fa", borderColor: "#aeb6c0"},
+            }}
+          >
+            <Typography variant="body2" noWrap>
+              {formFilters.date_from ? dayjs(formFilters.date_from).format('MMM D, YYYY') : 'From'}
+            </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              mx: 1,
+              color: formFilters.date_to ? "#fff" : "rgba(255,255,255,0.42)",
+              backgroundColor: formFilters.date_to ? "#444a65" : "#eef1f4",
+              borderRadius: "999px",
+              px: 0.75,
+              transition: "color 160ms ease, background-color 160ms ease",
+              flexShrink: 0,
+            }}
+          >
+            to
+          </Typography>
+            <Typography variant="body2" noWrap sx={{color: formFilters.date_to ? "inherit" : "text.secondary"}}>
+              {formFilters.date_to ? dayjs(formFilters.date_to).format('MMM D, YYYY') : 'To'}
+            </Typography>
+          </Button>
+          <Popover
+            open={Boolean(dateRangeAnchorEl)}
+            anchorEl={dateRangeAnchorEl}
+            onClose={() => setDateRangeAnchorEl(null)}
+            anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
+            transformOrigin={{vertical: 'top', horizontal: 'left'}}
+            slotProps={{paper: {sx: {p: 1.5, mt: 0.5, borderRadius: 2}}}}
+          >
+            <DayPicker
+              mode="range"
+              resetOnSelect
+              selected={formFilters.date_from ? {
+                from: dayjs(formFilters.date_from).toDate(),
+                to: formFilters.date_to ? dayjs(formFilters.date_to).toDate() : undefined,
+              } : undefined}
+              onSelect={(range) => {
+                const dateFrom = range?.from ? dayjs(range.from).format('YYYY-MM-DD') : '';
+                const dateTo = range?.to ? dayjs(range.to).format('YYYY-MM-DD') : '';
+                setFormFilters((previous) => ({...previous, date_from: dateFrom, date_to: dateTo}));
+                if (dateTo) setDateRangeAnchorEl(null);
+              }}
+              disabled={{after: new Date()}}
+              animate
+              style={{
+                '--rdp-accent-color': '#444a65',
+                '--rdp-accent-background-color': '#e4e8f0',
+                '--rdp-day-height': '38px',
+                '--rdp-day-width': '38px',
+                '--rdp-day_button-height': '36px',
+                '--rdp-day_button-width': '36px',
+              }}
+            />
+            <Box sx={{display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #e3e6ea', pt: 1, mt: 0.5}}>
+              <Button
+                size="small"
+                onClick={() => setFormFilters((previous) => ({...previous, date_from: '', date_to: ''}))}
+              >
+                Clear
+              </Button>
+            </Box>
+          </Popover>
+        </Box>
+      </FormControl>
+    );
+  }
+
   function renderKeywordField(){
     return (
       <FormControl sx={{width: "100%"}} size="small" >
@@ -1399,6 +1516,7 @@ export function Search({
 
                     {renderStatusControls()}
                   </Box>
+                  {renderDateRangeField()}
                 </Grid>
 
               </Grid>
@@ -1462,7 +1580,10 @@ export function Search({
     // Reset local form state and push a fresh /newSearch entry so the
     // navigation is recorded in history (useNavigate from react-router).
     // Clear all visible fields back to their defaults
-    setFormFilters({ group_uuid: "", entity_type: "DonorSample", keywords: "" });
+    setFormFilters({
+      ...buildDefaultFormFilters(),
+      entity_type: "DonorSample",
+    });
 
     // Clear the URL (remove any search params) and record navigation
     navigate('/newSearch');
@@ -1516,6 +1637,19 @@ export function Search({
       url.searchParams.set("target_field", formFilters.target_field);
     } else {
       url.searchParams.delete("target_field");
+    }
+    url.searchParams.delete("date_field");
+    if (formFilters.date_from) {
+      params["date_from"] = formFilters.date_from;
+      url.searchParams.set("date_from", formFilters.date_from);
+    } else {
+      url.searchParams.delete("date_from");
+    }
+    if (formFilters.date_to) {
+      params["date_to"] = formFilters.date_to;
+      url.searchParams.set("date_to", formFilters.date_to);
+    } else {
+      url.searchParams.delete("date_to");
     }
     if (group_uuid && group_uuid !== "All Components") {
       params["group_uuid"] = group_uuid;
