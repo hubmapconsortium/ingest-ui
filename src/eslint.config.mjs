@@ -41,6 +41,13 @@ const relaxedStyleRules = {
   "spaced-comment": "off",
 };
 
+const projectRules = {
+  ...relaxedStyleRules,
+  "no-undef": "error",
+  "no-unused-expressions": ["error", { allowTernary: true }],
+  "no-unused-vars": "warn",
+};
+
 export default [
   {
     ignores: ["build/**", "node_modules/**", ".test-results/**"],
@@ -62,10 +69,7 @@ export default [
       },
     },
     rules: {
-      ...relaxedStyleRules,
-      "no-undef": "error",
-      "no-unused-expressions": ["error", { allowTernary: true }],
-      "no-unused-vars": "warn",
+      ...projectRules,
     },
   },
   {
@@ -82,6 +86,42 @@ export default [
     files: ["vite.config.mjs"],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    files: ["scripts/**/*.{js,mjs}", "cypress.config.js", "eslint.config.mjs"],
+    ...js.configs.recommended,
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: globals.node,
+      sourceType: "module",
+    },
+    rules: {
+      ...projectRules,
+    },
+  },
+  {
+    files: ["cypress/**/*.{js,jsx}"],
+    ...js.configs.recommended,
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: {
+        ...globals.browser,
+        Cypress: "readonly",
+        cy: "readonly",
+        describe: "readonly",
+        expect: "readonly",
+        it: "readonly",
+      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+        sourceType: "module",
+      },
+    },
+    rules: {
+      ...projectRules,
     },
   },
 ];

@@ -58,7 +58,7 @@
     "build:compat": "NODE_OPTIONS='--trace-deprecation' vite build",
     "build:tags": "env-cmd -f envs/env.tags -- vite build",
     "build:sourcemaps": "GENERATE_SOURCEMAP=true vite build",
-    "lint": "eslint src vite.config.mjs",
+    "lint": "eslint src cypress scripts cypress.config.js vite.config.mjs eslint.config.mjs",
     "hooks:install": "git config core.hooksPath src/.githooks",
     "secrets:scan": "node ./scripts/scan-staged-secrets.js",
     "secrets:self-test": "node ./scripts/scan-staged-secrets.js --self-test",

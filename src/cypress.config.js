@@ -1,4 +1,3 @@
-/* eslint-env node */
 const { defineConfig } = require("cypress");
 
 const serviceUserAgent = process.env.CYPRESS_SERVICE_USER_AGENT;

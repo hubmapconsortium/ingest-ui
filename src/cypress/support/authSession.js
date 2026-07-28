@@ -9,7 +9,7 @@ function parseJsonish(value, label) {
 
   try {
     return JSON.parse(value);
-  } catch (error) {
+  } catch {
     throw new Error(`${label} must be valid JSON.`);
   }
 }

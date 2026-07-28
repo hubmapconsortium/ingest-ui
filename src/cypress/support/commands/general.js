@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 import { authInfoString, getConfiguredAuthInfo } from '../authSession';
 
 const smokeGroups = [

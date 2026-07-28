@@ -15,7 +15,7 @@ function getGitShaShort() {
   try {
     const { execSync } = require('child_process');
     return execSync('git rev-parse --short HEAD').toString().trim();
-  } catch (e) {
+  } catch {
     return null;
   }
 }
