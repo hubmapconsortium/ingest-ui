@@ -45,6 +45,7 @@ import { initDoglog, isDoglogConfigured, ddLog } from './utils/doglog';
 import APIAlertHandler from "./components/ui/APIAlertHandler";
 import ConsolePopoverTools from "./components/ui/ConsolePopoverTools";
 import AppFooter from "./components/ui/AppFooter";
+import {requestStorageReset} from "./utils/version_storage";
 
 export function App(){
   let navigate = useNavigate();
@@ -326,15 +327,8 @@ export function App(){
             if(results.error?.response && results.error.response.status){
               setExpiredKey(true);
               if(results.error.response.status ===401 ){
-                // No more message, just full cache-dump and reload
-                // Need to give sotrage a chance to clear,
-                setTimeout(() => {
-                  purgeStorage();
-                }, 10);                
-                // THEN lets refresh
-                setTimeout(() => {
-                  window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
-                }, 2000);
+                requestStorageReset();
+                window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`);
                 
                 // setLoginError("Your login credentials are invalid or have expired.  Please try logging out and and back in.");
               }else if(results.error.response.data.error && results.error.response.status !==401){
@@ -475,20 +469,9 @@ export function App(){
   useEffect(() => {
   }, []);
 
-  function purgeStorage(){
-    localStorage.removeItem('info');
-    localStorage.removeItem('organs');
-    localStorage.removeItem('organ_icons');
-    localStorage.removeItem('organs_full');
-    localStorage.removeItem('RUIOrgans');
-    localStorage.removeItem('datatypes');
-    localStorage.removeItem('allGroups');
-    localStorage.removeItem('userGroups');
-  };
-
   function Logout(){
     setIsLoggingOut(true);
-    purgeStorage();
+    requestStorageReset();
     window.location.replace(`${process.env.REACT_APP_DATAINGEST_API_URL}/logout`)
   };  
   

@@ -1080,9 +1080,6 @@ export function Search({
               'marginTop': '1em',
               'marginBottom': '1em'
             },
-            '.MuiDataGrid-virtualScrollerContent': {
-              'marginTop': '10px'
-            },
             '& .MuiDataGrid-row:hover': {
               backgroundColor: '#cacaca'
             }
@@ -1523,7 +1520,7 @@ export function Search({
 
             </Collapse>
 
-            <Grid container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
+            <Grid size={12} container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
               {/* <Grid size={2}> */}
                 <Button
                   className="m-1 HBM_DarkButton"
