@@ -1614,6 +1614,45 @@ svg.invalid {
   color:#ffffff!important;
 }
 
+.searchFieldLabel {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.searchFieldLabel > .MuiSvgIcon-root,
+.searchFieldLabel > .MuiTypography-root {
+  align-self: flex-start;
+  margin-top: 0 !important;
+}
+
+.searchFieldLabel > .MuiSvgIcon-root,
+.searchFieldLabel > .MuiTypography-overline {
+  flex: 0 0 auto;
+}
+
+.searchFieldLabel > .MuiTypography-overline {
+  white-space: nowrap;
+}
+
+.searchFieldLabel > .MuiTypography-root {
+  line-height: 1.5;
+}
+
+.searchFieldLabel > .MuiTypography-caption {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 4px;
+}
+
+@media (max-width: 767.98px) {
+  .advancedSearchColumn {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
 /* Gently brighten form-header panels and strengthen their border inward. */
 .formHeaderInfoPanel {
   position: relative;

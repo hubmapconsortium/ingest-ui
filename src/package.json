@@ -61,6 +61,7 @@
     "build:sourcemaps": "GENERATE_SOURCEMAP=true vite build",
     "lint": "eslint src cypress scripts cypress.config.js vite.config.mjs eslint.config.mjs",
     "hooks:install": "git config core.hooksPath src/.githooks",
+    "css:sync-staged": "node ./scripts/sync-app-css.js",
     "secrets:scan": "node ./scripts/scan-staged-secrets.js",
     "secrets:self-test": "node ./scripts/scan-staged-secrets.js --self-test",
     "upload-sourcemaps": "node ./scripts/upload-sourcemaps.js",

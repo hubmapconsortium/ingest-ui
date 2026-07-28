@@ -1171,7 +1171,7 @@ export function Search({
               );
             })}
           </Select>
-          <Grid container spacing={1} sx={{mt: 1}}>
+          <Grid container spacing={1} sx={{mt: 2}}>
             <Grid size={12}>
               <Box className="searchFieldLabel" id="SearchLabelGroup" >
                 <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
@@ -1321,7 +1321,7 @@ export function Search({
 
   function renderDateRangeField() {
     return (
-      <FormControl sx={{width: "100%", mt: 1}} size="small">
+      <FormControl sx={{width: "100%", mt: 2, mb: 1}} size="small">
         <Box className="searchFieldLabel">
           <DateRangeIcon sx={{marginRight: "5px", marginTop: "-4px", fontSize: "1.1em"}} />
           <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Created date | </Typography>
@@ -1486,10 +1486,10 @@ export function Search({
             </Grid>
             <Collapse in={advancedSearch} sx={{width: "100%"}}>
               <Grid container sx={{display: "flex", marginTop: "16px"}}>
-                <Grid size={6} sx={{padding: "4px"}}>
+                <Grid className="advancedSearchColumn" size={6} sx={{padding: "4px"}}>
                   {renderTargetField()}
                 </Grid>
-                <Grid size={6} sx={{padding: "4px"}}>
+                <Grid className="advancedSearchColumn" size={6} sx={{padding: "4px"}}>
                   <Box className="searchFieldLabel" id="SearchLabelGroup" >
                     <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
                     <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
