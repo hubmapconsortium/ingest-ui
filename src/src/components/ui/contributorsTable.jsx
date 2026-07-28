@@ -110,7 +110,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                   "name": name ? name : "",
                 }])
                 setValidatingContributorsUpload(false)
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
                 //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
               }
@@ -123,7 +123,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                   "row": ""
                 }])
                 setValidatingContributorsUpload(false)
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
                 //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
               }
@@ -134,7 +134,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                 setContributorValidationErrors(errorSet);
                 setValidatingContributorsUpload(false)
                 highlightTableErrors(errorSet);
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
                 // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
               }

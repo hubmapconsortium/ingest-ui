@@ -99,7 +99,7 @@ export function App(){
         cause: causeMeta,
       };
       if(errorObj){
-        try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch(e){}
+        try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch{}
       }
       ddLog('error', loginError, ddMeta);
     }catch(e){
@@ -460,7 +460,7 @@ export function App(){
       console.debug('%c◉ errorTitle, error, errorDetail ', 'color:#00ff7b', errorTitle, error, errorDetail);
       let ddMeta = {source: 'LocalStorage.login_error',auth: { login_error: loginError },cause: null,};
 
-      try{ ddMeta.error = { kind: 'auth', message: error.message, stack: error.stack }; }catch(e){}
+      try{ ddMeta.error = { kind: 'auth', message: error.message, stack: error.stack }; }catch{}
       // DD_LOGS.logger.error('API Error - Search API', { kind: 'auth', env: 'dev', user_id: info?.user_id || 'unknown' }
      ddLog(errorTitle, error, ddMeta);
     }

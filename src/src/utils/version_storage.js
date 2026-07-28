@@ -1,8 +1,10 @@
+import {clearUnprotectedLocalStorage} from "./protected_storage";
+
 export const APP_VERSION_STORAGE_KEY = "ingest-ui-version";
 export const STORAGE_RESET_PENDING_KEY = "ingest-ui-storage-reset-pending";
 
 function clearStorageForVersion(storage, version) {
-  storage.clear();
+  clearUnprotectedLocalStorage(storage);
   storage.setItem(APP_VERSION_STORAGE_KEY, version);
 }
 

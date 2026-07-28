@@ -104,7 +104,6 @@ export function BulkSelector({
       // Directly trigger handleInputUUIDs with the url value
       handleInputUUIDs(undefined, urlSourceList);
     }
-    // eslint-disable-next-line
   }, []);
 
   function stringFieldHandler(value){
@@ -282,7 +281,6 @@ export function BulkSelector({
           setSourceBulkStatus("error");
         });
     }
-    // eslint-disable-next-line
   }, [showHIDList, stringIDs, selected_HIDs]);
 
   // Remove a source from the table

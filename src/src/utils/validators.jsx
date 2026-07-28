@@ -65,7 +65,7 @@ export function ValidateJSON(str){
   try{     
     return JSON.parse(str);
   }
-  catch(e){
+  catch{
     return{
       "Error": true,
       "String": str,

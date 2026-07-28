@@ -672,7 +672,7 @@ function doiLink(doi_url,registered_doi) {
       );
     }
     
-  } catch(error) {
+  } catch {
     // console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
   }
   return "";

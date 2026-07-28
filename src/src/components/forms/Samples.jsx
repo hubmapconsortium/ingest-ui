@@ -151,7 +151,7 @@ export const SampleForm = (props) => {
     try {
       await navigator.clipboard.writeText(text);
       setSnackbarController({ open: true, message: `Copied ${text} to clipboard`, status: "success" });
-    } catch (err) {
+    } catch {
       setSnackbarController({ open: true, message: `Unable to copy`, status: "error" });
     }
   };

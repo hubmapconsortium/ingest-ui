@@ -143,7 +143,7 @@ export function Search({
   var [savedSearches, setSavedSearches] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("savedSearches") || "[]");
-    } catch (e) {
+    } catch {
       return [];
     }
   });
@@ -277,7 +277,7 @@ export function Search({
         setAdvancedSearch(true);
       }
 
-    } catch (err) {
+    } catch {
       // ignore URL parse errors for now
     }
   }, [initialSearchFilters, locationSearch]);
@@ -309,7 +309,7 @@ export function Search({
             }
           });
         return JSON.stringify(copy);
-      } catch (err) {
+      } catch {
         return JSON.stringify(o);
       }
     };
@@ -847,7 +847,7 @@ export function Search({
         setTimeout(() => {
           closeSavedSnack();
         }, 3000);
-      } catch (e) {
+      } catch {
         // ignore
       }
     } catch (err) {
@@ -889,7 +889,7 @@ export function Search({
       setTimeout(() => {
         closeSavedSnack();
       }, 3000);
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
@@ -907,7 +907,7 @@ export function Search({
         setTimeout(() => {
           closeSavedSnack();
         }, 3000);
-      } catch (e) {
+      } catch {
         // ignore
       }
     } catch (err) {

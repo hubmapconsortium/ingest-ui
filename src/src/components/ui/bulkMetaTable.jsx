@@ -245,7 +245,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
                 "error": errString,
                 "name": name ? name : "",
               }])
-            }catch(error){
+            }catch{
               //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
             }
           }else if(!errorSet[0].row){
@@ -266,7 +266,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkMetaValidationErrors(errorSet);
               highlightTableErrors(errorSet);
-            }catch(error){
+            }catch{
               // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
           }

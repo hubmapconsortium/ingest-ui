@@ -1002,7 +1002,7 @@ export function ParsePreflightString(s) {
   let obj;
   try {
     obj = JSON.parse(s);
-  } catch (err) {
+  } catch {
     // fallback: try to recover minimal structure if JSON.parse still fails
     // create a best-effort object by extracting the Preflight value substring
     const m = s.match(/["']?Preflight["']?\s*[:=]\s*["']?(.+)["']?\s*}$/);

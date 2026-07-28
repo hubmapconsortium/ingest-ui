@@ -16,6 +16,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DashboardIcon from '@mui/icons-material/Dashboard'
+import {clearUnprotectedLocalStorage} from "./utils/protected_storage";
 
 const MENU_SECTIONS = [
   {
@@ -176,7 +177,7 @@ export const Navigation = (props) => {
 
   function clearLocalStorage(){
     try{
-      window.localStorage.clear();
+      clearUnprotectedLocalStorage(window.localStorage);
       console.debug('Local storage cleared via Logout+modifier');
     }catch(err){
       console.error('Error clearing localStorage', err);

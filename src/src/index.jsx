@@ -4,10 +4,12 @@ import {BrowserRouter} from "react-router";
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {prepareVersionedStorage} from "./utils/version_storage";
+import {installDevToolHotkeys} from "./utils/dev_tool_manager";
 
 async function startApp() {
   if (!prepareVersionedStorage()) return;
 
+  installDevToolHotkeys();
   const {default: App} = await import("./App");
   const root = createRoot(document.getElementById("root"));
 

@@ -61,7 +61,7 @@ export function EmbeddedSearch({
     const pick = (segments[0] && String(segments[0]).toLowerCase() === 'new') ? segments[segments.length - 1] : segments[0];
     try {
       return decodeURIComponent(String(pick)).toLowerCase();
-    } catch (e) {
+    } catch {
       return String(pick).toLowerCase();
     }
   }, [location?.pathname]);

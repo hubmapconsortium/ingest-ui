@@ -189,7 +189,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             // Replace validation errors with the normalized set
             setBulkEntityValidationErrors(errorSet)
             highlightTableErrors(errorSet);
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
         }else if(res?.res?.response?.data){
@@ -223,7 +223,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "name": name ? name : "",
               }])
               //setValidatingBulkEntityUpload(false)
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
               //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
             }
@@ -236,7 +236,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "error": errorSet.toString(),
                 "row": ""
               }])
-            }catch(error){
+            }catch{
               // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
@@ -245,7 +245,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkEntityValidationErrors(errorSet);
               highlightTableErrors(errorSet);
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
               // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
@@ -262,7 +262,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
           
@@ -483,7 +483,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     }else{
       try{
         dimSpotlight();
-      }catch(err){
+      }catch{
         // - [autoSHH] console.debug('highlightTableErrors clear error', err);
       }
     }

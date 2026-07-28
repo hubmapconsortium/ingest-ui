@@ -15,7 +15,7 @@ export function getEntityIdFromPath(pathname) {
 
   try {
     return decodeURIComponent(candidateId);
-  } catch (e) {
+  } catch {
     return candidateId;
   }
 }

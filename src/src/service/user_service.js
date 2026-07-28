@@ -14,7 +14,7 @@ export function getAllGroups(auth){
             .catch(() => {
                 // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
-    }catch (error) {
+    }catch {
       // console.debug("%c⭗", "color:#ff005d",error);
     }
 }
@@ -30,7 +30,7 @@ export function getAllSortedGrouops(auth){
                 // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
     }
-    catch (error) {
+    catch {
       // console.debug("%c⭗", "color:#ff005d",error);
     }
 }
