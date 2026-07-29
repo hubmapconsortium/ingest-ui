@@ -22,9 +22,9 @@ function redactHeaders(headers){
         }else{
           out[k] = headers[k];
         }
-      }catch(e){ out[k] = 'ERROR_READING_HEADER'; }
+      }catch{ out[k] = 'ERROR_READING_HEADER'; }
     });
-  }catch(e){ return undefined; }
+  }catch{ return undefined; }
   return out;
 }
 
@@ -48,11 +48,11 @@ export function installAxiosDoglog(){
           }else if(!/^https?:\/\//.test(fullUrl)){
             fullUrl = new URL(cfg.url, window.location.origin).href;
           }
-        }catch(e){ /* ignore, keep cfg.url */ }
+        }catch{ /* ignore, keep cfg.url */ }
 
         // bail out if URL not in our monitored bases
         const matched = bases.some(b => {
-          try{ return fullUrl.startsWith(b); }catch(e){ return false; }
+          try{ return fullUrl.startsWith(b); }catch{ return false; }
         });
         if(!matched){
           return Promise.reject(error);
@@ -63,7 +63,7 @@ export function installAxiosDoglog(){
         try{
           const p = new URL(fullUrl);
           query = Object.fromEntries(p.searchParams.entries());
-        }catch(e){ /* ignore */ }
+        }catch{ /* ignore */ }
 
         const meta = {
           url: fullUrl,
@@ -74,21 +74,21 @@ export function installAxiosDoglog(){
           request_data: undefined,
           response_data: undefined,
         };
-        try{ meta.request_data = cfg.data }catch(e){}
-        try{ meta.response_data = error?.response?.data }catch(e){}
+        try{ meta.request_data = cfg.data }catch{}
+        try{ meta.response_data = error?.response?.data }catch{}
         // send structured log and attach returned log id to the error for tracing
         try{
           // attach an explicit error.kind for axios-originated logs
           const ddMeta = { axios_error: meta, stack: error?.stack };
-          try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch(e){}
+          try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch{}
           const logId = ddLog('error', error?.message || 'axios error', ddMeta);
           if(logId){
-            try{ error.__dd_log_id = logId; }catch(e){}
-            try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch(e){}
+            try{ error.__dd_log_id = logId; }catch{}
+            try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch{}
           }
-        }catch(e){ /* ignore ddLog failures */ }
+        }catch{ /* ignore ddLog failures */ }
       }catch(e){
-        try{ console.warn('axiosDoglog logging failed', e); }catch(_){}
+        try{ console.warn('axiosDoglog logging failed', e); }catch{}
       }
       return Promise.reject(error);
     }
@@ -112,14 +112,14 @@ export function installGlobalAxiosErrorLogger(){
           }else if(!/^https?:\/\//.test(fullUrl)){
             fullUrl = new URL(cfg.url, window.location.origin).href;
           }
-        }catch(e){ /* ignore */ }
+        }catch{ /* ignore */ }
 
         // parse query params
         let query = undefined;
         try{
           const p = new URL(fullUrl);
           query = Object.fromEntries(p.searchParams.entries());
-        }catch(e){ /* ignore */ }
+        }catch{ /* ignore */ }
 
         const meta = {
           url: fullUrl,
@@ -133,30 +133,30 @@ export function installGlobalAxiosErrorLogger(){
           response_data: undefined,
           request_id: undefined,
         };
-        try{ meta.request_data = cfg.data }catch(e){}
-        try{ meta.response_data = error?.response?.data }catch(e){}
-        try{ meta.request_id = error?.response?.headers && (error.response.headers['x-request-id'] || error.response.headers['x-amzn-requestid'] || error.response.headers['x-correlation-id']) }catch(e){}
+        try{ meta.request_data = cfg.data }catch{}
+        try{ meta.response_data = error?.response?.data }catch{}
+        try{ meta.request_id = error?.response?.headers && (error.response.headers['x-request-id'] || error.response.headers['x-amzn-requestid'] || error.response.headers['x-correlation-id']) }catch{}
 
         // If this request is already handled by the monitored (scoped) interceptor,
         // skip global logging to avoid duplicate entries.
         const matched = _monitoredBases.some(b => {
-          try{ return fullUrl.startsWith(b); }catch(e){ return false; }
+          try{ return fullUrl.startsWith(b); }catch{ return false; }
         });
         if(!matched){
           // Global logging for any axios error with richer metadata
           try{
             // attach explicit error.kind for global axios logs
             const ddMeta = { axios_error: meta, stack: error?.stack };
-            try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch(e){}
+            try{ ddMeta.error = { kind: 'axios', message: error?.message, stack: error?.stack }; }catch{}
             const logId = ddLog('error', error?.message || 'axios global error', ddMeta);
             if(logId){
-              try{ error.__dd_log_id = logId; }catch(e){}
-              try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch(e){}
+              try{ error.__dd_log_id = logId; }catch{}
+              try{ if(error.response && typeof error.response === 'object'){ error.response.data = error.response.data || {}; error.response.data.__dd_log_id = logId; } }catch{}
             }
-          }catch(e){ /* ignore ddLog failures */ }
+          }catch{ /* ignore ddLog failures */ }
         }
       }catch(e){
-        try{ console.warn('global axios error logger failed', e); }catch(_){}
+        try{ console.warn('global axios error logger failed', e); }catch{}
       }
       return Promise.reject(error);
     }

@@ -162,8 +162,6 @@ export function parseErrorMessage(err) {
     }else if(err.data){
       console.debug('%c⊙ErrData', 'color:#00ff7b', err.data );
     }
-    // console.log('parseErrorMessageerror ', l, (1)[1])\
-    // console.debug('%c⭗parseErrorMessageerror', 'color:#A200FF', 1, (1)[1], err, );
      return formattingMessage
   } catch {
     console.debug('%c⊙parseErrorMessage CATCH', 'color:#ff005d', err );
@@ -214,10 +212,8 @@ export const ParseRegErrorFrame = (errResp) => {
 }
 
 export function TableErrorRowProcessing(errorsArray){
-  // console.debug('%c◉ TableErrorRowProcessing ', 'color:#00ff7b', errorsArray);
   // Build a normalized error set: ensure we operate on strings
     const errorSet = errorsArray.map((item) => {
-      // console.debug('%c◉ item ', 'color:#00ff7b', item);
 
       const message = (typeof item === 'string') ? item : (item && item.error ? item.error : '');
       const msgStr = String(message || '');
@@ -228,7 +224,6 @@ export function TableErrorRowProcessing(errorsArray){
       // Sometimes the error lists "sample type" instead of "sample_category". 
       // Until this is fixes in the API, let's do a simple replace
       trimMsg = trimMsg.replace(/sample type/ig, "sample_category")
-      // console.debug('%c◉ rowMatch ', 'color:#00ff7b', rowMatch);
       const eRow = (rowMatch ? parseInt(rowMatch[1], 10) : null) + 1;
   
       // Consolidated regex patterns — try each in order and return on first match
@@ -276,7 +271,6 @@ export function TableErrorRowProcessing(errorsArray){
       for (const p of samplePatterns) {
         const m = trimMsg.match(p.regex);
         if (m) {
-          // console.dir('%c◉ ' + p.name + ' ', 'color:#00ff7b', m);
           return {
             column: m[1] || "",
             error: trimMsg,

@@ -137,7 +137,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       });
       
     } else {
-      //console.debug("No Data??");
     }
   }
 
@@ -168,7 +167,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
       .then((res) => {
-        // console.debug('%c◉ ingest_api_bulk_entities_upload res ', 'color:#fff; background:#0033FF;',res.status, res, res?.results?.temp_id);
         if(res.status === 200 || res.status === 201){
           setFileData({
             ...fileData,
@@ -189,7 +187,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             // Replace validation errors with the normalized set
             setBulkEntityValidationErrors(errorSet)
             highlightTableErrors(errorSet);
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
         }else if(res?.res?.response?.data){
@@ -223,9 +221,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "name": name ? name : "",
               }])
               //setValidatingBulkEntityUpload(false)
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
-              //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
@@ -236,7 +233,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "error": errorSet.toString(),
                 "row": ""
               }])
-            }catch(error){
+            }catch{
               // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
@@ -245,9 +242,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkEntityValidationErrors(errorSet);
               highlightTableErrors(errorSet);
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
-              // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
           }
           // - [autoSHH] console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
@@ -262,7 +258,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
           
@@ -288,11 +284,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         let outerTable = document.getElementsByClassName("HDTdynamic")
         if(newHeight > 350){ newHeight = 300; console.log("2Big")}
         outerTable[0].setAttribute("style", `height: ${newHeight+100}px!important;`);
-        // console.debug('%c◉ outerTable.style.height ', 'color:#00ff7b', outerTable[0]);
       })          
       
       .catch(() => {
-        //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
       });
   }
 
@@ -483,7 +477,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     }else{
       try{
         dimSpotlight();
-      }catch(err){
+      }catch{
         // - [autoSHH] console.debug('highlightTableErrors clear error', err);
       }
     }
@@ -536,7 +530,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       selectedRow.classList.add('Mui-selected');
     }
     e?.currentTarget?.setAttribute('data-selected', 'true');
-    // console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
   function setSelectionListRow(e, item, target){
@@ -684,6 +677,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
+          showToolbar
           slots={{ toolbar: CustomToolbarExportAllRows }} 
           density="compact"
           logLevel="info"

@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {Link} from 'react-router-dom'
+import {Link} from 'react-router'
 import AppBar from '@mui/material/AppBar'
 import Alert from "@mui/material/Alert";
 import Box from '@mui/material/Box'
@@ -16,6 +16,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DashboardIcon from '@mui/icons-material/Dashboard'
+import {clearUnprotectedLocalStorage} from "./utils/protected_storage";
 
 const MENU_SECTIONS = [
   {
@@ -65,7 +66,6 @@ export const Navigation = (props) => {
   const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
   useEffect(() => {
-    // console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
     try{
       let userGroups = JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null
       if(!userGroups || userGroups === null){
@@ -176,7 +176,7 @@ export const Navigation = (props) => {
 
   function clearLocalStorage(){
     try{
-      window.localStorage.clear();
+      clearUnprotectedLocalStorage(window.localStorage);
       console.debug('Local storage cleared via Logout+modifier');
     }catch(err){
       console.error('Error clearing localStorage', err);

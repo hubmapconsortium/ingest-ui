@@ -153,7 +153,7 @@ export const COLUMN_DEF_DATASET = [
         <Button
           className='btn `btn-link'
           onClick={() => handleDataClick(params.value)}>
-          <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+          <FontAwesomeIcon icon={faFolder}/>
         </Button>                         
       );
     }
@@ -201,7 +201,7 @@ export const COLUMN_DEF_PUBLICATION = [
       <button
         className='btn btn-link'
         onClick={() => handleDataClick(params.value)}>
-        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+        <FontAwesomeIcon icon={faFolder}/>
       </button>                         
       </React.Fragment>
     )
@@ -324,7 +324,6 @@ export const COLUMN_DEF_MIXED = [
     sortable: false,
     valueGetter: getLabId,
     renderCell: params => {
-      // console.debug('%c◉ computed_lab_id_type ', 'color:#00ff7b', params);
       if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
         return nullCell();
       }
@@ -448,7 +447,6 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     sortable: false,
     valueGetter: getTypeValue,
     renderCell: (params) => {
-      // console.debug('%c◉COLUMN_DEF_BULK_SAMPLES  sample_category', 'color:#00ff7b', params);
       return toTitleCase(params.row.sample_category);
     },
   },
@@ -594,7 +592,6 @@ function entityIconsBasic(entity_type){
 }
 
   export function renderFieldIcons(params){
-  // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
       {params.row.organ && (
@@ -620,7 +617,6 @@ function getRowFromGridValue(valueOrParams, row) {
 
 function getLabId(valueOrParams, row) {
  const resolvedRow = getRowFromGridValue(valueOrParams, row);
- // console.debug('row:', resolvedRow)
   try {
     return resolvedRow['lab_donor_id'] || resolvedRow['lab_tissue_sample_id'] || resolvedRow['lab_dataset_id']
   } catch { }
@@ -629,7 +625,6 @@ return ""
 }
 function getTypeValue(valueOrParams, row) {
   const resolvedRow = getRowFromGridValue(valueOrParams, row);
-  // console.debug('%c◉ getTypeValue row ', 'color:#00ff7b', resolvedRow);
   try {
     return resolvedRow['display_subtype'] || resolvedRow['organ'] || resolvedRow['specimen_type'] || resolvedRow['entity_type']
    }catch{
@@ -638,7 +633,6 @@ function getTypeValue(valueOrParams, row) {
 }
 function getStatusAccess(valueOrParams, row) {
   const resolvedRow = getRowFromGridValue(valueOrParams, row);
-  // console.debug('%c◉ getStatusAccess row ', 'color:#00ff7b', resolvedRow);
   if(resolvedRow['status']){
     return ['status', resolvedRow['status']]
   }else if(resolvedRow['data_access_level']){
@@ -649,7 +643,6 @@ function getStatusAccess(valueOrParams, row) {
 }
 
 function renderStatusAccess(params) {
-  // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
   if (params.value[0]==="status") {
     return (
       <StatusBadge status={params.value[1].toString()}/>
@@ -672,8 +665,7 @@ function doiLink(doi_url,registered_doi) {
       );
     }
     
-  } catch(error) {
-    // console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
+  } catch {
   }
   return "";
 }

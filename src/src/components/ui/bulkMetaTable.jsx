@@ -15,7 +15,6 @@ import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
 import {ParseBadJSON} from '../../utils/error_helper.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
-// import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import Button from "@mui/material/Button";
 // lodash removed (not used)
 
@@ -86,7 +85,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             setColumns(mappedColumns);
           }
           setBulkMetaRows(data.data);
-          // console.debug('%c◉ newFile ', 'color:#00ff7b', newFile);
           setFile(newFile);
           setFileData({...fileData, 
             file: newFile,
@@ -99,7 +97,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
       });
       
     } else {
-      //console.debug("No Data??");
       setLoaders((prev) => ({ ...prev, uploadTable: false }));
     }
   }
@@ -245,8 +242,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
                 "error": errString,
                 "name": name ? name : "",
               }])
-            }catch(error){
-              //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
+            }catch{
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
@@ -266,8 +262,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkMetaValidationErrors(errorSet);
               highlightTableErrors(errorSet);
-            }catch(error){
-              // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
+            }catch{
             }
           }
           console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
@@ -308,7 +303,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
         } 
       })
       .catch(() => {
-        //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
       });
       console.debug('%c◉ DATA CHECKIN: ', 'background:#EEA3FF', bulkMetaRows, fileData);
   }

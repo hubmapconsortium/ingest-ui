@@ -15,7 +15,7 @@ function getGitShaShort() {
   try {
     const { execSync } = require('child_process');
     return execSync('git rev-parse --short HEAD').toString().trim();
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -62,5 +62,3 @@ const runEnv = {
 // Need to sort out datadog ci npm 404 Complication
 // https://github.com/DataDog/datadog-ci/issues/1073
 run('npx', ['datadog-ci', ...baseArgs], runEnv);
-
-// console.log('\nNot Run, see coments. Sorry bout that...');

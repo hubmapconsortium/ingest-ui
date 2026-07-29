@@ -27,7 +27,17 @@ export const HIPPA = (props) => {
         className="formHeaderInfoPanel"
         id="HIPPAAlert"
         severity="error"  
-        sx={{color: "rgb(97, 26, 21)", border: "1px solid #f1aeae", background: "rgb(253, 237, 237)!important"}}
+        sx={{
+          "--info-panel-background": "#fdeded",
+          "--info-panel-foreground": "#611a15",
+          "--info-panel-border": "#f1aeae",
+          color: "var(--info-panel-foreground)",
+          border: "1px solid var(--info-panel-border)",
+          backgroundColor: "var(--info-panel-background) !important",
+          "&:hover .MuiAlert-icon, &:focus-within .MuiAlert-icon": {
+            color: "#e53935 !important",
+          },
+        }}
         iconMapping={{error: <FontAwesomeIcon style={{fontSize: "2em"}} icon={faUserShield} /> }}>
         Do not provide any Protected Health Information. <br />
          This includes the 
@@ -58,7 +68,7 @@ export const HIPPA = (props) => {
                 m: 'auto',
                 width: 'fit-content',}}>
                 <Grid container spacing={2} style={{marginTop: "10px"}}>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                       <ol style={{fontSize: ".8em"}}>
                         <li>Names.</li>
                         <li>
@@ -90,7 +100,7 @@ export const HIPPA = (props) => {
                         <li>Social security numbers.</li>
                       </ol>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                       <ol start="8" style={{fontSize: ".8em"}}>
                         <li>Medical record numbers.</li>
                         <li>Health plan beneficiary numbers.</li>

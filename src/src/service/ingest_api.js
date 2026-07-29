@@ -24,16 +24,13 @@ export function ingest_api_users_groups() {
         return {status: res.status, results: group_list}
       })
       .catch(error => {
-        // console.debug("ERR ingest_api_users_groups", error, error.response);
         if (error && error.response && error.response.response && error.response.response === "User is not a member of group HuBMAP-read") {
-          // console.debug("User exists just not in the read group");
           //  it's not really an /error/ to have anaccount w/o read
           return {status: 200, results: error.response.response} 
         }
         if(error.response){
           return {status: error.response.status, results: error.response.data}
         }else{
-          // console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
           return {error}
         }
       });
@@ -48,12 +45,9 @@ export function ingest_api_user_admin() {
   return axios 
   .get(`${process.env.REACT_APP_DATAINGEST_API_URL}/metadata/usergroups`, options)
   .then(res => {
-    // console.debug('%c◉ res ', 'color:#00ff7b', res);
     let groups = res.data.groups;
-    // console.debug('%c◉ ADMIN Check:', 'color:#FF227b', groups);
     for (let group in groups) {
       let groupName = groups[group].name
-      // console.debug('%c◉ groupName ', 'color:#ffe921', groupName);
       if(groupName.includes("hubmap-data-admin")){
         return true
       }
@@ -61,7 +55,6 @@ export function ingest_api_user_admin() {
     return false
   })
   .catch(error => {
-    // console.debug("ERR ingest_api_users_groups", error, error.response);
     return {error}
   });
 }
@@ -132,7 +125,6 @@ export function ingest_api_return_edit_states(url,options) {
         return {status: res.status, results: res.data}
       })
       .catch(error => {
-        // console.debug("ingest_api_allowable_edit_states", error, error.response);
         if(error.response){
           return {status: error.response.status, results: error.response.data}
         }else{
@@ -266,7 +258,6 @@ export function ingest_api_bulk_entities_upload(type, data) {
         let results = res.data;
         console.debug("results",results);
         if(results[0]){
-          // console.debug("results DATA ",results[0]);
         }
         return {status: res.status, results: results}
       })
@@ -287,7 +278,6 @@ export function ingest_api_bulk_entities_register(type, data) {
       "Content-Type": "application/json"
     }};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${type.toLowerCase()}s/bulk`;
-  // console.debug("URL: ",url, "\n DATA",data,"\n OPTS", options);
   return axios 
      .post(url, data, options)
       .then(res => {
@@ -391,17 +381,13 @@ export function ingest_api_validate_entity(uuid,type) {
   return axios 
     .post(url, data, options)
       .then(res => {
-        // console.debug('%c◉ ingest_api_validate_upload res ', 'color:#00ff7b', res);
         let results = res.data;
-        // console.debug('%c◉ ingest_api_validate_upload results ', 'color:#00ff7b', results);
         return {status: res.status, results: results}
       })
       .catch(error => {
-        // console.debug('%c◉ ingest_api_validate_upload error ', 'color:#ff005d', error);
         if(error.response){
           return {status: error.response.status, results: error.response.data}
         }else{
-          // console.error('%c⊙ Off Format err', 'color:#ff007b', error); 
           return {error}
         }
       });
@@ -436,12 +422,10 @@ export function ingest_api_notify_slack(data) {
   return axios 
     .post(url,data,options)
     .then(res => {
-      // console.debug("ingest_api_notify_slack",res);
         let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(error => {
-        // console.debug("ingest_api_notify_slack",error);
         return {error}
       });
 };
@@ -459,18 +443,14 @@ export function ingest_api_upload_bulk_metadata(type, dataFile) {
   formData.append('validate_uuids', 1)
   console.debug('%c⊙ DATA', 'color:#00ff7b', formData );
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/sample-bulk-metadata`;
-  // console.debug('%c⊙ url,dataForm,options', 'color:#00ff7b', url,formData,options );
   return axios 
     .put(url,formData,{headers: {Authorization: `Bearer ${globalToken}`,"Content-Type": "multipart/form-data"}})
     .then(res => {
-      // console.debug("ingest_api_upload_bulk_metadata",res);
         let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(error => {
-        // console.debug('%c⭗  ingest_api_upload_bulk_metadata', 'color:#ff005d',error );
         // Is it a server error or just a Validation error? 
-        // console.debug('%c◉ error ', 'color:#00ff7b', error, error.status);
         // throw new Error(error);
         return {error}
       });
@@ -483,7 +463,6 @@ export function ingest_api_upload_bulk_metadata(type, dataFile) {
 export function ingest_api_publish_collection(data) { 
   const options = {headers: {Authorization: `Bearer ${globalToken}`,"Content-Type":"application/json"}};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/collections/${data}/register-doi`;
-  // console.debug('%c◉ publish ', 'color:#00ff7b', url,options);
   return axios 
      .put(url, data, options)
       .then(res => {
@@ -509,12 +488,10 @@ export function ingest_api_pipeline_test_privs() {
   return axios 
     .get(url, options)
     .then(res => {
-      // console.debug("ingest_api_pipeline_test_privs",res);
         let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(error => {
-        // console.debug('%c⭗  ingest_api_pipeline_test_privs', 'color:#ff005d',error );
         // throw new Error(error);
         return {error}
       });
@@ -530,12 +507,10 @@ export function ingest_api_pipeline_test_submit(data) {
   return axios 
     .post(url, {}, options)
     .then(res => {
-      // console.debug("ingest_api_pipeline_test_submit",res);
         let results = res.data;
         return {status: res.status, results: results}
       })
       .catch(error => {
-        // console.debug('%c⭗  ingest_api_pipeline_test_submit', 'color:#ff005d',error );
         // throw new Error(error);
         return {error}
       });
@@ -561,7 +536,6 @@ export function ingest_api_validate_contributors(dataFile) {
       })
       .catch(res => {
         console.debug('%c◉ response ', 'color:#00ff7b', res);
-        // console.debug('%c⭗  ingest_api_validate_contributors', 'color:#ff005d',error );
         // throw new Error(error);
         return {res}
       });

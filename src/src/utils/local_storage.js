@@ -1,15 +1,16 @@
 // Lightweight localStorage helpers used across the app.
 // getItem tries to parse JSON and falls back to raw string when not JSON.
-import { ubkg_api_get_organ_type_set, ubkg_api_get_organs_full, ubkg_api_get_dataset_type_set } from './ubkg_api';
-import { ingest_api_users_groups, ingest_api_all_groups } from './ingest_api';
+import { ubkg_api_get_organ_type_set, ubkg_api_get_organs_full, ubkg_api_get_dataset_type_set } from '../service/ubkg_api';
+import { ingest_api_users_groups, ingest_api_all_groups } from '../service/ingest_api';
 import { OrganDetails } from '../components/ui/icons';
+import { removeLocalStorageItem } from './protected_storage';
 export function getItem(key) {
   try {
     const raw = window.localStorage.getItem(key);
     if (raw === null) return null;
     try {
       return JSON.parse(raw);
-    } catch (err) {
+    } catch {
       return raw;
     }
   } catch (err) {
@@ -34,8 +35,7 @@ export function setItem(key, value) {
 
 export function removeItem(key) {
   try {
-    window.localStorage.removeItem(key);
-    return true;
+    return removeLocalStorageItem(window.localStorage, key);
   } catch (err) {
     console.debug('local_storage.removeItem error', err);
     return false;
@@ -45,7 +45,7 @@ export function removeItem(key) {
 export function removeItems(keys) {
   try {
     for (const k of keys) {
-      window.localStorage.removeItem(k);
+      removeLocalStorageItem(window.localStorage, k);
     }
     return true;
   } catch (err) {

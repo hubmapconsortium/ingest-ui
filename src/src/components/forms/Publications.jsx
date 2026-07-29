@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import {RevertFeature} from "../../utils/revertModal";
 import {
   entity_api_get_entity,

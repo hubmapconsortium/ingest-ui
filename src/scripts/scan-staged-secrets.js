@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-/* eslint-env node */
-
 const { spawnSync } = require('child_process');
 
 const ALLOW_MARKER = 'secret-scan: allow';

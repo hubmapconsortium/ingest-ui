@@ -4,7 +4,6 @@
 
 export function getPublishStatusColor(status, itemID) {
 	var badge_class = "";
-	//console.log('status', status)\
   if(status=== undefined || !status){
     badge_class = "badge-danger";
     console.log("No Status Value for ID "+itemID)

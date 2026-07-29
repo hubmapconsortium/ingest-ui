@@ -8,14 +8,11 @@ export function getAllGroups(auth){
     try {
         ingest_api_all_groups(auth)
             .then((res) => {
-                // console.debug('%c⊙ userService allGroups!!', 'color:#00ff7b', res.results );
                 return(sortGroupsByDisplay(res.results))
             })
             .catch(() => {
-                // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
-    }catch (error) {
-      // console.debug("%c⭗", "color:#ff005d",error);
+    }catch {
     }
 }
 
@@ -23,15 +20,12 @@ export function getAllSortedGrouops(auth){
     try {
         ingest_api_all_groups(auth)
             .then((res) => {
-                // console.debug('%c⊙ userService allGroups!!', 'color:#00ff7b', res.results );
                 return(sortGroupsByDisplay(res.results))
             })
             .catch(() => {
-                // console.debug('%c⭗', 'color:#ff005d', "GROUPS ERR", err );
             })
     }
-    catch (error) {
-      // console.debug("%c⭗", "color:#ff005d",error);
+    catch {
     }
 }
 
@@ -78,7 +72,6 @@ export function adminStatusValidation() {
       return results
     })
     .catch((err) => {
-      // console.debug('%c⭗', 'color:#003BDF', "ingest_api_user_admin ERR", err );
       return new Error(err)
     })
 }
