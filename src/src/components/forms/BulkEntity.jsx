@@ -21,7 +21,7 @@ export const BulkEntityForm = (props) => {
   return(
     <Box>
       <Grid container className="mb-3 mt-3" spacing={1}>
-        <Grid className="topHeader" >
+        <Grid size="auto" className="topHeader" >
             {NewBadge(props.bulkType,"new")}
             <h3 style={{margin: "4px 5px", display: "inline-table", width:"100%",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.bulkType)}s`}<br/></h3>
         </Grid>

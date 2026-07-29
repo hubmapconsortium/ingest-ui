@@ -10,7 +10,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Grid from '@mui/material/Grid';
 import {styled} from '@mui/material/styles';
 import React from 'react';
 import {GridLoader} from "react-spinners";
