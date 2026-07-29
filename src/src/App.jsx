@@ -38,8 +38,6 @@ import { gateway_api_status } from "./service/gateway_service";
 import {SpeedDialTooltipOpen, ServerSight} from './components/ui/devTools';
 
 // doglogs
-// import { datadogRum } from '@datadog/browser-rum';
-// import { reactPlugin } from '@datadog/browser-rum-react';
 import { installAxiosDoglog, installGlobalAxiosErrorLogger } from './utils/axiosDoglog';
 import { initDoglog, isDoglogConfigured, ddLog } from './utils/doglog';
 import APIAlertHandler from "./components/ui/APIAlertHandler";
@@ -136,7 +134,6 @@ export function App(){
     
       })
       .catch(() => { 
-        // console.error('There was a problem with the fetch operation:', error);
       })
 
     gateway_api_status()
@@ -338,14 +335,12 @@ export function App(){
                 setLoginErrorWithLog("Error Validating Token", results.error);
               }
             }else if(!results.error){
-              // console.debug('%c◉ API Key OK ', 'color:#00ff7b', results);
               setAuthStatus(true);
               adminStatusValidation()
                 .then((adminCheck) => {
                   setAdminStatus(adminCheck);
                 })
                 .catch(() => {
-                  // console.debug('%c◉ setAdminStatus Error ', 'color:#ff005d', err);
                 })
 
               try{
@@ -353,17 +348,14 @@ export function App(){
                   ingest_api_users_groups()
                     .then((res) => {
                       if(res && res.status === 403 && res.results === "User is not a member of group HuBMAP-read"){
-                        // console.log("User is not a member of group HuBMAP-read");
                         setAuthStatus(true);
                         setUnregStatus(true);
                       }else if(res.results === "Non-active login" || res.status === 401){ // 401 Capture for non-active login
                         // The API Token Validation seems to provide a 200 response even when the token is expired?
                         // Added status check if/when we begin getting 401s directly
-                        // console.log("Non-active login");
                         setExpiredKey(true);
                           loadFailed("Auth Login Error", res);
                       }else if(res.status === 200){
-                        // console.debug('%c◉ UserGroups from ingest_api_users_groups ', 'color:#b300ff', res.results);
                         localStorage.setItem("userGroups",JSON.stringify(res.results));
                       }else{
                         setAPIErrQueue((prev) => [...prev,[
@@ -433,7 +425,6 @@ export function App(){
   
       }else{
         // No Info, No Auth, provide login screen nothing else to load
-        // console.debug('%c◉ No INFO found ', 'color:#ff005d');
         setIsLoading(false)
       }   
     } 
@@ -448,10 +439,8 @@ export function App(){
 
     function loadCount(){
       loadCounter++;
-      // console.debug('%c⊙', 'color:#00ff7b', "APP loadCounter", loadCounter );
       if(loadCounter>=5){
         setIsLoading(false)
-        // console.log("Loading Complete")
       }
     }
   
@@ -505,12 +494,10 @@ export function App(){
 
   // Success Modal Response
   function creationSuccess(results){
-    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", results );
     setNewEntity(results)
     setSuccessDialogRender(true);
   }
   function onCreateNext(source){
-    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", source );
     window.location.replace(
       `${process.env.REACT_APP_URL}/new/sample/?source=${JSON.stringify(source)}`
     )
@@ -519,13 +506,11 @@ export function App(){
   // Success SNack Response
   function updateSuccess(entity){
     console.debug('%c◉  updateSuccess', 'color:#00ff7b', entity);
-    // console.debug('%c⊙', 'color:#00ff7b', "APP creationSuccess", entity);
     setSnackMessage(entity.message ? entity.message : "Entity Updated Successfully!");
     setShowSnack(true)
     onClose();
   }
 
-  // console.debug('%c◉ Inf` ', 'color:#00ff7b', JSON.parse(localStorage.getItem("info")) );
   // Search Query Bits
   // @TODO: is search itself already handling this / is this an old prop drill?
 
@@ -569,9 +554,6 @@ export function App(){
           <StandardErrorBoundary
             FallbackComponent={ErrorPage}
             onError={() => {
-              // console.log("Error caught!");  
-              // console.error(error);
-              // console.error(errorInfo);
             }}>
             <Drawer 
               sx={{

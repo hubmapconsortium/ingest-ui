@@ -70,20 +70,16 @@ export function BulkSelector({
     }
 
   console.debug('%c◉ readOnlyState ', 'color:#00ff7b', readOnlyState, readOnly);
-  // console.debug('%c◉ subtitle ', 'color:#00ff7b', subtitle);
   // Sync sourcesData with prop changes
   useEffect(() => {
-    // console.debug('%c◉ initialSourcesData ', 'color:#00ff7b', initialSourcesData);
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
     setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
   }, [initialSourcesData]);
 
-	// console.log("BulkSelector SOurces:  ",initialSourcesData, sourcesData)
   // Keep parent in sync
   useEffect(() => {
     if (onBulkSelectionChange) {
-      // console.debug('%c◉ if (onBulkSelectionChange) ', 'color:rgb(255 0 144)', selected_UUIDs, selected_HIDs, selected_string, sourcesData);
       onBulkSelectionChange(selected_UUIDs, selected_HIDs, selected_string, sourcesData);
     }
   }, [selected_UUIDs, selected_HIDs, selected_string, sourcesData]);
@@ -108,7 +104,6 @@ export function BulkSelector({
 
   function stringFieldHandler(value){
     setTextFieldSourceString(value);
-    // console.debug('%c◉ stringFieldHandler ', 'color:#00ff7b', value);
   }
 
   // Validation helpers
@@ -160,7 +155,6 @@ export function BulkSelector({
       let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
       let currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
       let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
-      // console.debug('%c◉ searchFilters ', 'color:#00ff7b', searchFilters);
 
       if (
         (searchFilters.blackList && searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
@@ -185,11 +179,9 @@ export function BulkSelector({
 
   // Helper to format display_subtype for sources
   function assembleSourceAncestorData(sources) {
-    // console.debug('%c◉  assembleSourceAncestorData', 'color:#00ff7b', sources);
     var dst = "";
     sources.forEach(function(row, index) {
       dst = ubkg_api_generate_display_subtype(row);
-      // console.debug("dst", dst);
       if (row.entity_type !== "Dataset") {
         dst = toTitleCase(dst);
       }
@@ -201,7 +193,6 @@ export function BulkSelector({
   // Handle bulk input dialog update
   // Modified handleInputUUIDs to accept an optional overrideString (e.g. from URL)
   const handleInputUUIDs = useCallback((e, overrideString) => {
-    // console.debug('%c◉  handleInputUUIDs', 'color:#00ff7b', overrideString ? overrideString : "No Override String");
     if (e) e.preventDefault();
     setSourceTableError(false);
     // If triggered by URL, treat as if showHIDList is false (i.e. go straight to else branch)
@@ -215,20 +206,14 @@ export function BulkSelector({
       }
       // else, fall through to process the overrideString
     }
-    // console.log(textFieldSourceString)
     setShowHIDList(false);
     setSourceBulkStatus("loading");
-    // console.debug('%c◉ overrideString ', 'color:#00ff7b', overrideString);
-    // console.debug('%c◉ stringIDs ', 'color:#00ff7b', stringIDs);
-    // console.debug('%c◉ textFieldSourceString ', 'color:#00ff7b', textFieldSourceString);
     let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
     let fieldVal = document.getElementById("dataset_uuids_string");
     fieldVal = fieldVal ? fieldVal.value : null;
     if(idsToProcess !== fieldVal && fieldVal && fieldVal.length > 0){
       idsToProcess = fieldVal;
     }
-    
-    // console.debug('%c◉ idsToProcess ', 'color:#00ff7b',idsToProcess );
     
     // Split and trim, but do NOT dedupe here; pass all for duplicate detection
     let allIds = idsToProcess
@@ -299,7 +284,6 @@ export function BulkSelector({
 
   // Handle row selection from search dialog
   const handleSelectClick = (event) => {
-    // console.debug('%c◉  handleSelectClick', 'color:#00ff7b', event);
     setSourceTableError(false);
     if (!selected_HIDs.includes(event.row.hubmap_id)) {
       setSelectedUUIDs((rows) => [...rows, event.row.uuid]);
@@ -398,7 +382,6 @@ export function BulkSelector({
   }
 
   function handleOpenPage(e,row) {
-    // console.log("row",row)
     e.preventDefault()    
     let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`
     window.open(url, "_blank");

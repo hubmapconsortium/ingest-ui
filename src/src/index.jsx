@@ -1,6 +1,5 @@
 import { createRoot } from "react-dom/client";
 import {BrowserRouter} from "react-router";
-//import "./assets/App.css";
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {prepareVersionedStorage} from "./utils/version_storage";

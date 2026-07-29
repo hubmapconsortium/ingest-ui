@@ -70,7 +70,6 @@ function getHubmapIDsFromBulkTable() {
   if (!table) return [];
   // Select all first-column <a> elements in table rows
   const idLinks = table.querySelectorAll('tbody tr td:first-child a');
-  // console.log("idLinks",idLinks);
   return Array.from(idLinks).map(a => a.textContent.trim());
 }
 
@@ -79,9 +78,7 @@ export function HandleCopyFormUrl() {
   // e.preventDefault();
   const url = new URL(window.location.origin + window.location.pathname);
   let formValues = document.querySelectorAll("input, textarea, select");
-  // console.debug('%c◉ Found Inputs: ', 'color:#00ff7b',formValues );
   Object.entries(formValues).forEach(([, value]) => {
-    // console.debug('%c◉ formValues ', 'color:#00ff7b', value.id, value.type, value.value);
     if (value !== undefined && value !== null && value !== "" && value.type !== "checkbox" && value.id && value.value && !value.disabled) {
       url.searchParams.set(value.id, value.value);
     }

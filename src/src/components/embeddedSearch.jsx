@@ -1,7 +1,6 @@
 import {useEffect,useState,useMemo} from "react";
 import { useLocation } from 'react-router';
 import {DataGrid,GridToolbar} from "@mui/x-data-grid";
-// import { DataGrid } from '@material-ui/data-grid';
 import {SAMPLE_CATEGORIES} from "../constants";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -144,7 +143,6 @@ export function EmbeddedSearch({
 
   useEffect(() => {
     var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
-    // console.debug('%c◉ searchFilters ', 'color:#1900FF', searchFilterParams);
     setTableLoading(true);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {
@@ -308,7 +306,6 @@ export function EmbeddedSearch({
   }
 
   function handleTableCellClickDefault(params) {
-    // console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();

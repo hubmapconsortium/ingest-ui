@@ -104,12 +104,10 @@ export const DonorForm = (props) => {
                   setPermissions(updatedPermissions);
                 })
                 .catch((error) => {
-                  // console.error("ingest_api_allowable_edit_states ERROR", error);
                   setPageErrors(error);
                 });
             }
           }else{
-            // console.error("entity_api_get_entity RESP NOT 200",response.status,response);
             setPageErrors(response);
           }
         })
@@ -118,7 +116,6 @@ export const DonorForm = (props) => {
             setNotFound(true);
             return;
           }
-          // console.debug("entity_api_get_entity ERROR", error);
           setPageErrors(error);
         });
     }else{
@@ -239,7 +236,6 @@ export const DonorForm = (props) => {
       }
     }else{
       setIsProcessing(false);
-      // console.debug("%c◉ Invalid ", "color:#00ff7b");
     }
   }
 

@@ -1,5 +1,4 @@
 import React from "react";
-// import MultipleListModal from "../uuid/tissue_form_components/multipleListModal";
 import { Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {

@@ -12,8 +12,6 @@ import {faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject} from "@fortaw
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
 export function EntityIcons(entity_type, status){  
-  // console.debug('%c◉ status ', 'color:#00ff7b', entity_type, status);
-  // console.debug('%c◉ test.. ', 'color:#00ff7b', status? "true" : "false");
   let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -83,7 +81,6 @@ export function OrganDetails(){
 }
 
 export function OrganIcons(organ){  
-  // console.debug('%c◉ status ', 'color:#00ff7b', organ);
   const BASE_ICON_URL = 'https://cdn.humanatlas.io/ui/humanatlas.io/assets/icons/organ/'
   // let prependURL = `${BASE_ICON_URL}`
   let iconMap={
@@ -136,7 +133,6 @@ export function OrganIcons(organ){
     "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
   }
   let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : `${BASE_ICON_URL}all-organs.svg`
-  // console.debug('%c◉ iconURL ', 'color:#00ff7b',organ, iconURL);
   return iconURL
 }
 

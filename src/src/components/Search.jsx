@@ -193,7 +193,6 @@ export function Search({
     return unique;
   }
   function errorReporting(){
-    // console.debug('%c⭗errorReporting', 'color:#ff005d', error );
   }
 
   // If URL contains search params, prefill form and trigger a search.
@@ -632,10 +631,8 @@ export function Search({
       }
       console.debug('%c◉ SEARCHWHAT ', 'color:#002AFF', searchFilterParams, searchFilterParams?.entity_type, searchFiltersState, searchFiltersState?.entityType);
       if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        // console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
         searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
       } else if (SAMPLE_CATEGORIES.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        // console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
         searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
       } else {
         if(searchFilterParams && searchFilterParams.entityType !=="DonorSample"){
@@ -687,7 +684,6 @@ export function Search({
           }else{
             colDefs = COLUMN_DEF_MIXED
           }
-          // console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
           dispatchSearchState({
             type: "SET",
             payload: {
@@ -722,7 +718,6 @@ export function Search({
         dispatchSearchState({ type: "SET", payload: { loading: false } });
         // errorReport(error)
         //props.reportError(error);
-        // console.debug("%c⭗ ERROR", "color:#ff005d", error);
       });
       console.debug('%c◉ searchFiltersState ', 'color:#00ff7b', searchFiltersState);
   }, [page, pageSize, searchFiltersState, restrictions]);
@@ -1043,7 +1038,6 @@ export function Search({
 
   function renderTable() {
     // inner buildColumnFilter removed - using memoized columnVisibilityModel
-    // console.debug('%c◉ columnFilters ', 'color:#00ff7b', searchState.colDef);
 
     return (
       <Box style={{height: 590, width: "100%" , position: "relative"}}>
@@ -1598,7 +1592,6 @@ export function Search({
   }
 
   function handleSearchClick(event,reset) {
-    // console.debug('%c◉  handleSearchClick ', 'color:#00ff7b', info);
     if(event){event.preventDefault()}
     dispatchSearchState({ type: "SET", payload: { loading: true } });
     setPage(0)
@@ -1671,11 +1664,9 @@ export function Search({
     }
 
     if (entityType && entityType !== "----" && entityType !== "DonorSample") {
-      // console.debug('%c⊙', 'color:#00ff7b', "entityType fiound", entityType );
       params["entity_type"] = entityType;
       url.searchParams.set("entity_type", entityType);
     } else {
-      // console.debug('%c⊙', 'color:#00ff7b', "entityType NOT fiound" );
       url.searchParams.delete("entity_type");
     }
     if(chipSelect.length > 0){
@@ -1695,7 +1686,6 @@ export function Search({
     // If we're not in a special mode, push URL to window
     window.history.pushState({}, "", url);
     document.title = "HuBMAP Ingest Portal Search"
-    // console.debug('%c◉ params ', 'color:#00ff7b', params);
     setSearchFiltersState(params);
     setHasSearched(true);
     // record last-applied filters so we can detect subsequent changes

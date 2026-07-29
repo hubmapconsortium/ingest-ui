@@ -46,11 +46,9 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
   let subType = entityType === "Bulk" ? entityData[2] : null;
-  // console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
@@ -612,7 +610,6 @@ export function redirectToEntityRoute(entityType, uuid) {
 }
 
 export function FormCheckRedirect(uuid,entityType,form){
-  // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
     redirectToEntityRoute(entityType, uuid);
@@ -657,10 +654,8 @@ export function combineTypeOptionsComplete(blackList,whitelist){
       organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
     } );
     combinedList.push(organs.sort());
-    // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
     return combinedList;
   } catch (error){
-    // console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
     var errStringMSG = "";
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
@@ -700,7 +695,6 @@ export function CombinedEmbeddedEntityOptions(){
   // menuMap is stored with lowercase keys; just read it and lowercase the current form
   const menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
   const currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '').toLowerCase();
-  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', window.location.pathname, currentForm, menuFilterMap[currentForm]);
 
   const entry = menuFilterMap[currentForm] || {};
 
@@ -770,12 +764,10 @@ export function CombinedWholeEntityOptions({
 
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
-  // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);
   try {
     organList.forEach((value, key) => {
       organs[value] = key;
     });
-    // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
       <FormControl size="small" sx={{width:"100%"}}>
         {embedded && (
