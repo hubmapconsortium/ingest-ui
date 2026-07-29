@@ -385,15 +385,7 @@ export const SampleForm = (props) => {
 
   function badValError(error){
     // console.debug('%c◉badValError error ', 'color:#00ff7b', error);
-    const generationError = getSampleGenerationError(error);
-    if(generationError){
-      setValidationError(generationError);
-    }else if(error.response){
-      // setValidationError(error.response);
-      setValidationError(error.response.data.error ? error.response.data.error : error);
-    }else{
-      setValidationError(error);
-    }
+    setValidationError(getSampleGenerationError(error));
     setIsProcessing(false);
   }
     
@@ -572,28 +564,45 @@ export const SampleForm = (props) => {
   }
 
   function wrapUpSampleGenerationErrors(error){
-    const generationError = getSampleGenerationError(error);
-    if(generationError){
-      setValidationError(generationError);
-    }else{
-      setPageErrors(error);
-    }
+    setValidationError(getSampleGenerationError(error));
     setIsProcessing(false);
   }
 
   function renderSampleError(error){
-    if(error?.userMessage){
+    if(error?.userMessage || error?.formattedDetails){
       return (
         <>
           <Typography component="div" sx={{fontWeight: 700, mb: 0.5}}>
             {error.title}
           </Typography>
-          <Typography variant="body2">{error.userMessage}</Typography>
+          {error.userMessage && (
+            <Typography variant="body2">{error.userMessage}</Typography>
+          )}
+          {error.formattedDetails && (
+            <Box
+              component="pre"
+              sx={{
+                backgroundColor: "rgba(0, 0, 0, 0.16)",
+                borderRadius: 1,
+                fontFamily: "monospace",
+                fontSize: "0.8rem",
+                lineHeight: 1.4,
+                m: 0,
+                maxHeight: 240,
+                overflow: "auto",
+                p: 1.5,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {error.formattedDetails}
+            </Box>
+          )}
         </>
       );
     }
 
-    return <><strong>Error:</strong> {JSON.stringify(error)}</>;
+    return <><strong>Error:</strong> {String(error)}</>;
   }
 
   function buttonEngine(){

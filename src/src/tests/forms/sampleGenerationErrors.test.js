@@ -25,9 +25,51 @@ describe("getSampleGenerationError", () => {
     })).not.toBeNull();
   });
 
-  it("leaves non-504 errors to the existing error handling", () => {
+  it("prefers an API response message over the generic Axios message", () => {
     expect(getSampleGenerationError({
-      response: {status: 422},
-    })).toBeNull();
+      message: "Request failed with status code 422",
+      response: {
+        status: 422,
+        data: {message: "The selected source sample is invalid."},
+      },
+    })).toEqual({
+      title: "Error:",
+      userMessage: "The selected source sample is invalid.",
+    });
+  });
+
+  it("prefers a wrapped XHR response body over the generic Axios message", () => {
+    expect(getSampleGenerationError({
+      message: "Network Error",
+      code: "ERR_NETWORK",
+      request: {
+        responseText: JSON.stringify({message: "Endpoint request timed out"}),
+      },
+    })).toEqual({
+      title: "Error:",
+      userMessage: "Endpoint request timed out",
+    });
+  });
+
+  it("renders the Axios message when no response content is available", () => {
+    expect(getSampleGenerationError({
+      message: "Network Error",
+      code: "ERR_NETWORK",
+    }).userMessage).toBe("Network Error");
+  });
+
+  it("pretty prints and redacts message-less errors", () => {
+    const result = getSampleGenerationError({
+      code: "UNKNOWN",
+      config: {
+        headers: {Authorization: "Bearer sensitive-token"},
+      },
+    });
+
+    expect(result.title).toBe("Error:");
+    expect(result.formattedDetails).toContain('\n');
+    expect(result.formattedDetails).toContain('"code": "UNKNOWN"');
+    expect(result.formattedDetails).toContain('"Authorization": "[Redacted]"');
+    expect(result.formattedDetails).not.toContain("sensitive-token");
   });
 });

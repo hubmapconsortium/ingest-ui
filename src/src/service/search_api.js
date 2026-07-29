@@ -14,16 +14,6 @@ const options = {
     },
   };
 
-const SEARCH_API_TIMEOUT_MS = parseInt(
-  process.env.REACT_APP_SEARCH_API_TIMEOUT_MS || process.env.REACT_APP_AXIOS_TIMEOUT_MS || "6000",
-  10
-);
-
-const searchRequestOptions = {
-  ...options,
-  timeout: SEARCH_API_TIMEOUT_MS,
-};
-
 function parseSearchError(error) {
   const status = error?.response?.status;
   const isNetworkOrCors = !error?.response;
@@ -61,7 +51,7 @@ function parseSearchError(error) {
 export function api_validate_token(){
   let payload = search_api_filter_es_query_builder("test", 1, 1);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       return {status: res.status};
     } )
@@ -78,7 +68,7 @@ export function api_validate_token(){
 export function api_search(params){
   let payload = search_api_filter_es_query_builder(params, 0, 100);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       let hits = res.data.hits.hits;
 
@@ -102,7 +92,7 @@ export function api_search(params){
 export function api_search2(params, from, size, fields, searchMode){
   let payload = search_api_filter_es_query_builder(params, from, size, fields, searchMode);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       // console.debug("API api_search2 res", res);
       let hits = res.data.hits.hits;
@@ -364,7 +354,7 @@ export function search_api_es_query_ids(IDs,types,colFields){
 
   // console.debug('%c◉ requestBody ', 'color:#00ff7b', requestBody.toJSON());
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), options)
     .then((res) => {
       // console.debug("API api_search2 res", res);
       // console.debug('%c◉ res ', 'color:#00ff7b', res);
