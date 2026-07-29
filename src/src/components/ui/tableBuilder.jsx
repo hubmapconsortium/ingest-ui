@@ -536,10 +536,10 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
 
 // DONORS
 export const COLUMN_DEF_BULK_DONORS = [
-  { field: "lab_id", headerName: "Lab ID", width: 150 },
-  { field: "lab_name", headerName: "Lab Name", width: 150 },
-  { field: "selection_protocol", headerName: "Protocol", width: 150 },
-  { field: "description", headerName: "Description", width: 200 },
+  { field: "lab_id", headerName: "Lab ID", flex: 1, minWidth: 150 },
+  { field: "lab_name", headerName: "Lab Name", flex: 1, minWidth: 150 },
+  { field: "selection_protocol", headerName: "Protocol", flex: 1.5, minWidth: 180 },
+  { field: "description", headerName: "Description", flex: 2, minWidth: 220 },
 ];
 export const COLUMN_DEF_BULK_DONORS_SUCCESS = [
   { field: 'hubmap_id', 

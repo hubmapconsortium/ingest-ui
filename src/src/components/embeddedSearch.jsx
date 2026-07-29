@@ -1,6 +1,6 @@
 import {useEffect,useState,useMemo} from "react";
 import { useLocation } from 'react-router';
-import {DataGrid,GridToolbar} from "@mui/x-data-grid";
+import {DataGrid} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -470,7 +470,6 @@ export function EmbeddedSearch({
           rowCount={results.rowCount}
           rows={results.dataRows}
           showToolbar
-          slots={{ toolbar: GridToolbar }}
           slotProps={{
             toolbar: {
               csvOptions: csvOptions,

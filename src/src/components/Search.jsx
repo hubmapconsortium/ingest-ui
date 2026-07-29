@@ -1,5 +1,16 @@
 import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
-import {DataGrid,GridToolbarContainer,GridToolbarColumnsButton,GridToolbarDensitySelector,GridToolbarExport,GridToolbarFilterButton} from "@mui/x-data-grid";
+import {
+  ColumnsPanelTrigger,
+  DataGrid,
+  ExportCsv,
+  ExportPrint,
+  FilterPanelTrigger,
+  Toolbar,
+  ToolbarButton,
+  gridDensitySelector,
+  useGridApiContext,
+  useGridSelector,
+} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import {Link} from "react-router";
 import Box from "@mui/material/Box";
@@ -15,6 +26,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ClearIcon from '@mui/icons-material/Clear';
 import GradeIcon from '@mui/icons-material/Grade';
 import FormControl from '@mui/material/FormControl';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import GroupsIcon from '@mui/icons-material/Groups';
 import Collapse from '@mui/material/Collapse';
@@ -34,6 +46,11 @@ import CloudSyncIcon from '@mui/icons-material/CloudSync';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import DateRangeIcon from '@mui/icons-material/DateRange';
+import DensityMediumIcon from '@mui/icons-material/DensityMedium';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import PrintIcon from '@mui/icons-material/Print';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import dayjs from 'dayjs';
 import {DayPicker} from '@daypicker/react';
 import '@daypicker/react/style.css';
@@ -454,8 +471,21 @@ export function Search({
 
   // Custom toolbar keeps all controls in one responsive row so the sort button shares space evenly.
   function CustomToolbar(props) {
+    const apiRef = useGridApiContext();
+    const density = useGridSelector(apiRef, gridDensitySelector);
+    const [densityAnchorEl, setDensityAnchorEl] = useState(null);
+    const handleDensityChange = (nextDensity) => {
+      apiRef.current.setDensity(nextDensity);
+      setDensityAnchorEl(null);
+    };
+
+    const renderToolbarButton = (buttonProps) => (
+      <ToolbarButton render={<Button {...buttonProps} />} />
+    );
+
     return (
-      <GridToolbarContainer
+      <Toolbar
+        aria-label="Search table controls"
         sx={{
           width: '100%',
           position: 'relative',
@@ -468,65 +498,133 @@ export function Search({
         <Box sx={toolbarItemSx}>
           <Tooltip title="Columns" arrow>
             <Box sx={{ width: '100%', display: 'flex' }}>
-              <GridToolbarColumnsButton sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+              <ColumnsPanelTrigger
+                render={renderToolbarButton({
+                  startIcon: <ViewColumnIcon />,
+                  sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
+                })}
+              >
+                {isNarrow ? '' : 'Columns'}
+              </ColumnsPanelTrigger>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip title="Filters" arrow>
             <Box sx={{ width: '100%', display: 'flex' }}>
-              <GridToolbarFilterButton sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+              <FilterPanelTrigger
+                render={renderToolbarButton({
+                  startIcon: <FilterListIcon />,
+                  sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
+                })}
+              >
+                {isNarrow ? '' : 'Filters'}
+              </FilterPanelTrigger>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip title="Density" arrow>
             <Box sx={{ width: '100%', display: 'flex' }}>
-              <GridToolbarDensitySelector sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx} />
+              <ToolbarButton
+                aria-label={`Change density; currently ${density}`}
+                aria-controls={densityAnchorEl ? 'search-density-menu' : undefined}
+                aria-haspopup="menu"
+                aria-expanded={densityAnchorEl ? 'true' : undefined}
+                onClick={(event) => setDensityAnchorEl(event.currentTarget)}
+                render={
+                  <Button
+                    startIcon={<DensityMediumIcon />}
+                    sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
+                  />
+                }
+              >
+                {isNarrow ? '' : `Density: ${density}`}
+              </ToolbarButton>
+              <Menu
+                id="search-density-menu"
+                anchorEl={densityAnchorEl}
+                open={Boolean(densityAnchorEl)}
+                onClose={() => setDensityAnchorEl(null)}
+                slotProps={{ list: { 'aria-label': 'Table density' } }}
+              >
+                {['compact', 'standard', 'comfortable'].map((option) => (
+                  <MenuItem
+                    key={option}
+                    selected={density === option}
+                    onClick={() => handleDensityChange(option)}
+                  >
+                    {toTitleCase(option)}
+                  </MenuItem>
+                ))}
+              </Menu>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
-          <Tooltip title="Export" arrow>
+          <Tooltip title="Export CSV" arrow>
             <Box sx={{ width: '100%', display: 'flex' }}>
-              <GridToolbarExport
-                csvOptions={props.csvOptions}
-                sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
-              />
+              <ExportCsv
+                options={props.csvOptions}
+                render={renderToolbarButton({
+                  startIcon: <FileDownloadIcon />,
+                  sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
+                })}
+              >
+                {isNarrow ? '' : 'Export CSV'}
+              </ExportCsv>
             </Box>
           </Tooltip>
         </Box>
+        {!isNarrow && (
+          <Box sx={toolbarItemSx}>
+            <Tooltip title="Print table" arrow>
+              <Box sx={{ width: '100%', display: 'flex' }}>
+                <ExportPrint
+                  render={renderToolbarButton({
+                    startIcon: <PrintIcon />,
+                    sx: toolbarButtonSx,
+                  })}
+                >
+                  Print
+                </ExportPrint>
+              </Box>
+            </Tooltip>
+          </Box>
+        )}
         <Box sx={toolbarItemSx}>
           <Tooltip
             title={`Toggle sort (currently ${sortDir === 'asc' ? 'ascending' : 'descending'} by ${activeSortLabel})`}
             arrow
           >
             <Box sx={{ width: '100%', display: 'flex' }}>
-              <Button
-                startIcon={<SwapVertIcon />}
-                color="inherit"
-                variant="text"
-                size="small"
+              <ToolbarButton
                 onClick={handleSortToggle}
-                sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}>
+                render={
+                  <Button
+                    startIcon={<SwapVertIcon />}
+                    color="inherit"
+                    variant="text"
+                    size="small"
+                    sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
+                  />
+                }>
                 {isNarrow ? '' : `Sort ${activeSortLabel}: ${sortDir === 'asc' ? 'Ascending' : 'Descending'}`}
-              </Button>
+              </ToolbarButton>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={{ marginLeft: 'auto', flex: '0 0 auto' }}>
           <Tooltip title="Search table help" arrow>
-            <IconButton
+            <ToolbarButton
+              render={<IconButton color="inherit" size="small" />}
               aria-label="Open search table help"
               aria-controls={tableHelpAnchorEl ? 'search-table-help' : undefined}
               aria-haspopup="dialog"
               aria-expanded={Boolean(tableHelpAnchorEl)}
-              color="inherit"
-              size="small"
-              onClick={(event) => setTableHelpAnchorEl(event.currentTarget)}
-            >
+              onClick={(event) => setTableHelpAnchorEl(event.currentTarget)}>
               <HelpOutlineIcon fontSize="small" />
-            </IconButton>
+            </ToolbarButton>
           </Tooltip>
           <Popover
             id="search-table-help"
@@ -574,7 +672,7 @@ export function Search({
             </Typography>
           </Popover>
         </Box>
-      </GridToolbarContainer>
+      </Toolbar>
     );
   }
 
@@ -1275,7 +1373,7 @@ export function Search({
                               maxWidth: 360,
                               "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
                             }}
-                            inputProps={{ 'aria-label': 'saved-search-name' }}/>
+                            slotProps={{ htmlInput: { 'aria-label': 'saved-search-name' } }}/>
                           <Button
                             size="small"
                             variant="contained"

@@ -129,7 +129,7 @@ export function TaskAssignment({
           name="ingest_task"
           value={formValues ? formValues.ingest_task : ""}
           error={formErrors.ingest_task}
-          InputLabelProps={{ shrink: ((uuid || (formValues?.ingest_task)) ? true : false) }}
+          slotProps={{ inputLabel: { shrink: ((uuid || (formValues?.ingest_task)) ? true : false) } }}
           onChange={handleInputChange}
           fullWidth
           disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}

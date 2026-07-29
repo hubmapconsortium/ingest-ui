@@ -1284,6 +1284,8 @@ svg.invalid {
 .HDT .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-container--top,
 .HDT .MuiDataGrid-container--top [role="row"],
+.HDT .MuiDataGrid-filler,
+.HDT .MuiDataGrid-scrollbarFiller,
 .HDT .MuiDataGrid-columnHeader,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
@@ -1296,6 +1298,8 @@ svg.invalid {
 .HDT.errorSetTable .MuiDataGrid-columnHeaders,
 .HDT.errorSetTable .MuiDataGrid-container--top,
 .HDT.errorSetTable .MuiDataGrid-container--top [role="row"],
+.HDT.errorSetTable .MuiDataGrid-filler,
+.HDT.errorSetTable .MuiDataGrid-scrollbarFiller,
 .HDT.errorSetTable .MuiDataGrid-columnHeader,
 .HDT.errorSetTable .MuiDataGrid-footerContainer,
 .HDT.errorSetTable .thead-dark{
@@ -1306,6 +1310,8 @@ svg.invalid {
 .HDT.successReg .MuiDataGrid-columnHeaders,
 .HDT.successReg .MuiDataGrid-container--top,
 .HDT.successReg .MuiDataGrid-container--top [role="row"],
+.HDT.successReg .MuiDataGrid-filler,
+.HDT.successReg .MuiDataGrid-scrollbarFiller,
 .HDT.successReg .MuiDataGrid-columnHeader,
 .HDT.successReg .MuiDataGrid-footerContainer,
 .HDT.successReg .thead-dark{

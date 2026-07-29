@@ -623,8 +623,8 @@ export function BulkSelector({
     </Box>
 
     <Box className="mt-0 mb-4" >
-      <Box className="mt-2" display="inline-flex" flexDirection={"row"} width="100%" >
-        <Box className="m-0 text-right" id="bulkButtons" display={(!permissions.has_write_priv || readOnlyState)? "none" : "inline-flex"} flexDirection="row" >
+      <Box className="mt-2" sx={{ display: "inline-flex", flexDirection: "row", width: "100%" }} >
+        <Box className="m-0 text-right" id="bulkButtons" sx={{ display: (!permissions.has_write_priv || readOnlyState) ? "none" : "inline-flex", flexDirection: "row" }} >
           <Button
             sx={{ maxHeight: "35px", verticalAlign: 'bottom', background: "#444a65!important" }}
             variant="contained"

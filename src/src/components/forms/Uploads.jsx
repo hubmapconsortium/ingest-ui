@@ -705,7 +705,7 @@ export const UploadForm = (props) => {
             helperText={"A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload"}
             value={formValues ? formValues.title : ""}
             error={formErrors.title}
-            InputLabelProps={{shrink: ((uuid || (formValues?.title )) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.title )) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -719,7 +719,7 @@ export const UploadForm = (props) => {
             helperText={"A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload."}
             value={formValues ? formValues.description : ""}
             error={formErrors.description}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.description)) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -810,7 +810,6 @@ export const UploadForm = (props) => {
                 <Box>
                   <DatePicker
                     openTo="month"
-                    clearable
                     value={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(formValues.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
                     onChange={(e) => handleInputChange(e)}
                     format="YYYY-MM"
@@ -836,7 +835,7 @@ export const UploadForm = (props) => {
                 helperText={"The total number of datasets that this Upload will eventually contain."}
                 value={formValues ? formValues.anticipated_dataset_count : ""}
                 error={formErrors.anticipated_dataset_count}
-                InputLabelProps={{shrink: ((uuid || (formValues?.anticipated_dataset_count )) ? true:false)}}
+                slotProps={{inputLabel: {shrink: ((uuid || (formValues?.anticipated_dataset_count )) ? true:false)}}}
                 onChange={(e) => handleInputChange(e)}
                 fullWidth
                 disabled={!permissions.has_write_priv}
@@ -855,7 +854,7 @@ export const UploadForm = (props) => {
                     id="ingest_task"
                     value={formValues ? formValues.ingest_task : ""}
                     error={formErrors.ingest_task}
-                    InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
+                    slotProps={{inputLabel: {shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}}
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
                     disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }

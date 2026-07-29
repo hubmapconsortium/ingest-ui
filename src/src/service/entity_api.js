@@ -1,4 +1,5 @@
 import axios from "axios";
+import {forceLogoutForExpiredEntityLogin} from "../utils/auth_expiration";
 
 const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
 const options = {
@@ -23,6 +24,7 @@ export function entity_api_get_entity(uuid){
     } )
     .catch(error => {
       if(error.response){
+        forceLogoutForExpiredEntityLogin(error.response);
         return error.response
       }else{
         return{error}
