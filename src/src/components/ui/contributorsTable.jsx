@@ -174,9 +174,9 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
             rows={rows}
             columns={COLUMN_DEF_CONTRIBUTORS}
             loading={validatingContributorsUpload}
-            density="compact"
             logLevel="info"
             initialState={{
+              density: "compact",
               pagination: {
                 paginationModel: { pageSize: 10, page: 0 },
               },

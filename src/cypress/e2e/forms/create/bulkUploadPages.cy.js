@@ -32,6 +32,27 @@ function assertSavedLinks(links) {
 }
 
 describe('Bulk entity and metadata upload pages', () => {
+  it('fills the bulk donor table with responsive columns', () => {
+    cy.viewport(1280, 900);
+    cy.visitWithMockAuth('/bulk/donors');
+
+    cy.contains('Bulk Donors', { timeout: 30000 }).should('be.visible');
+    cy.get('.associatedBulkEntityTable .MuiDataGrid-columnHeaders').then(($headers) => {
+      const headersRect = $headers[0].getBoundingClientRect();
+
+      cy.get('.associatedBulkEntityTable .MuiDataGrid-columnHeader[data-field="description"]')
+        .then(($description) => {
+          const descriptionRect = $description[0].getBoundingClientRect();
+
+          expect(descriptionRect.width, 'description column width').to.be.greaterThan(200);
+          expect(
+            Math.abs(headersRect.right - descriptionRect.right),
+            'description column reaches the table edge',
+          ).to.be.lessThan(2);
+        });
+    });
+  });
+
   it('keeps bulk entity help and example links pointed at the saved targets', () => {
     cy.fixture('bulkUploadPageLinks').then(({ entityPages }) => {
       entityPages.forEach(({ route, heading, links }) => {
@@ -89,6 +110,7 @@ describe('Bulk entity and metadata upload pages', () => {
     cy.contains('Bulk Samples', { timeout: 30000 }).should('be.visible');
     cy.get('input[type=file]').selectFile('testFiles/Entities/Samples/Reg3Good.tsv', { force: true });
     cy.wait('@sampleBulkUpload');
+    cy.get('@sampleBulkUpload.all').should('have.length', 1);
     cy.get('.pagelessFooter').should('contain', 'Total Rows:').and('contain', '3');
     cy.get('.uploadManager').contains('button', 'Register').should('not.be.disabled').click();
     cy.wait('@sampleBulkRegister');

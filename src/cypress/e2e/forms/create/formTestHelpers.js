@@ -372,5 +372,9 @@ export function assertDatasetOnlyEmbeddedSearch({ path, dialogTitle, screenshotN
   cy.contains(dialogTitle, { timeout: 30000 }).should('be.visible');
   cy.get('select#entity_type').should('be.disabled').and('have.value', 'dataset');
   cy.get('select#entity_type option').should('have.length', 1).and('contain', 'Dataset');
+  cy.get('.MuiDataGrid-toolbar button').first().click();
+  cy.get('.MuiDataGrid-panel').should('be.visible');
+  cy.get('.MuiDataGrid-toolbar button').first().click();
+  cy.get('.MuiDataGrid-panel').should('not.exist');
   visualCheckpoint(screenshotName);
 }

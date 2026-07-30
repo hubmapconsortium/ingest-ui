@@ -3,7 +3,7 @@ import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import LoadingButton from '@mui/lab/LoadingButton';
+import LoadingButton from '@mui/material/Button';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -54,7 +54,7 @@ export const FormHeader = (props) => {
   }
   console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
   return (
-    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
+    <Grid container size={12} className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
       {entityData[0] !== "new" && (<>
           <Typography sx={{display: "inline-block", marginBottom: "-5px"}} variant='caption'>{entityType}</Typography>
           <Grid size={12} className="topHeader" >
@@ -129,7 +129,7 @@ export function TaskAssignment({
           name="ingest_task"
           value={formValues ? formValues.ingest_task : ""}
           error={formErrors.ingest_task}
-          InputLabelProps={{ shrink: ((uuid || (formValues?.ingest_task)) ? true : false) }}
+          slotProps={{ inputLabel: { shrink: ((uuid || (formValues?.ingest_task)) ? true : false) } }}
           onChange={handleInputChange}
           fullWidth
           disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}

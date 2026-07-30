@@ -17,7 +17,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
 import Popover from '@mui/material/Popover';
 import LinearProgress from "@mui/material/LinearProgress";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import Tooltip from '@mui/material/Tooltip';
 import NativeSelect from '@mui/material/NativeSelect';
 import SearchIcon from '@mui/icons-material/Search';
@@ -908,14 +908,16 @@ export const SampleForm = (props) => {
                 anchorReference="anchorPosition"
                 anchorPosition={sourcePopoverPos ? { top: sourcePopoverPos.mouseY, left: sourcePopoverPos.mouseX } : undefined}
                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                PaperProps={{
-                  sx: {
+                slotProps={{
+                  paper: {
+                    sx: {
                     backgroundColor: '#444a65',
                     color: '#fff',
                     borderRadius: '30px',
                     p: 0.5,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                     border:"2px solid #ffffff50"
+                    }
                   }
                 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'row', gap: 0.5, minWidth: 120, maxHeight:12, }}>
@@ -1068,7 +1070,7 @@ export const SampleForm = (props) => {
             label="Visit "
             helperText="Associated visit in which sample was acquired (Non-PHI number). e.g., baseline"
             value={formValues ? formValues.visit : ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.visit)) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.visit)) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             small={"true"}
@@ -1081,7 +1083,7 @@ export const SampleForm = (props) => {
             helperText="The protocol used when procuring or preparing the tissue. This must be provided as a protocols.io DOI URL see https://www.protocols.io/"
             value={formValues ? formValues.protocol_url : ""}
             error={formErrors.protocol_url ? formErrors.protocol_url : false} 
-            InputLabelProps={{shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.protocol_url)) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -1095,7 +1097,7 @@ export const SampleForm = (props) => {
               label="Lab Sample ID"
               helperText="An identifier used by the lab to identify the specimen, this can be an identifier from the system used to track the specimen in the lab. This field will be entered by the user."
               value={formValues ? formValues.lab_tissue_sample_id : ""}
-              InputLabelProps={{shrink: ((uuid || (formValues?.lab_tissue_sample_id)) ? true:false)}}
+              slotProps={{inputLabel: {shrink: ((uuid || (formValues?.lab_tissue_sample_id)) ? true:false)}}}
               onChange={(e) => handleInputChange(e)}
               fullWidth
               disabled={!permissions.has_write_priv}
@@ -1108,7 +1110,7 @@ export const SampleForm = (props) => {
             label="Description "
             helperText="Free text field to enter a description of the donor"
             value={formValues ? formValues.description : ""}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.description)) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}

@@ -9,7 +9,7 @@ import Menu from '@mui/material/Menu'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
-import LoadingButton from '@mui/lab/LoadingButton'
+import LoadingButton from '@mui/material/Button'
 import {ingest_api_users_groups} from './service/ingest_api';
 import useMediaQuery from '@mui/material/useMediaQuery'
 import AddBoxIcon from '@mui/icons-material/AddBox'
@@ -139,8 +139,10 @@ export const Navigation = (props) => {
           anchorEl={anchorEl}
           open={open}
           onClose={handleClose}
-          MenuListProps={{
-            'aria-labelledby': `${IDLabel}IndividualButton`
+          slotProps={{
+            list: {
+              'aria-labelledby': `${IDLabel}IndividualButton`
+            }
           }}>
           {section.items.map((item, index) => {
             return(renderMenuButton(item.to, item.label, index))

@@ -5,14 +5,20 @@ import {
   DataGrid, 
   useGridApiRef,
   useGridApiContext,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
+  useGridSelector,
+  gridDensitySelector,
+  ColumnsPanelTrigger,
+  FilterPanelTrigger,
+  Toolbar,
+  ToolbarButton,
 } from "@mui/x-data-grid";
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import DensityMediumIcon from '@mui/icons-material/DensityMedium';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Select from "@mui/material/Select";
 import Collapse from '@mui/material/Collapse';
@@ -26,7 +32,7 @@ import {
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import {
   COLUMN_DEF_BULK_SAMPLES, 
@@ -288,11 +294,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       
       .catch(() => {
       });
-  }
-
-  function handleTriggerUpload() {
-    // - [autoSHH] console.debug('%c◉ handleTriggerUpload', 'color:#4000FF');
-    document.getElementById('uploadBulk').click();
   }
 
   function handleFileWipe() {
@@ -640,6 +641,12 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   function CustomToolbarExportAllRows() {
     const apiRefLocal = useGridApiContext();
     const apiInst = apiRefLocal && apiRefLocal.current ? apiRefLocal.current : apiRefLocal;
+    const density = useGridSelector(apiRefLocal, gridDensitySelector);
+    const [densityAnchorEl, setDensityAnchorEl] = useState(null);
+    const handleDensityChange = (nextDensity) => {
+      apiRefLocal.current.setDensity(nextDensity);
+      setDensityAnchorEl(null);
+    };
     const handleExportAll = () => {
       const api = apiInst;
       if (!api) return;
@@ -650,14 +657,53 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       }
     };
     return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <Button size="small" onClick={handleExportAll} sx={{ ml: 1 }} startIcon={<SaveAltIcon />}>
+      <Toolbar aria-label="Bulk registration table controls">
+        <ColumnsPanelTrigger
+          aria-label="Show columns"
+          render={<ToolbarButton />}
+        >
+          <ViewColumnIcon fontSize="small" />
+        </ColumnsPanelTrigger>
+        <FilterPanelTrigger
+          aria-label="Show filters"
+          render={<ToolbarButton />}
+        >
+          <FilterListIcon fontSize="small" />
+        </FilterPanelTrigger>
+        <ToolbarButton
+          aria-label={`Change density; currently ${density}`}
+          aria-controls={densityAnchorEl ? 'bulk-density-menu' : undefined}
+          aria-haspopup="menu"
+          aria-expanded={densityAnchorEl ? 'true' : undefined}
+          onClick={(event) => setDensityAnchorEl(event.currentTarget)}
+        >
+          <DensityMediumIcon fontSize="small" />
+        </ToolbarButton>
+        <Menu
+          id="bulk-density-menu"
+          anchorEl={densityAnchorEl}
+          open={Boolean(densityAnchorEl)}
+          onClose={() => setDensityAnchorEl(null)}
+          slotProps={{ list: { 'aria-label': 'Table density' } }}
+        >
+          {['compact', 'standard', 'comfortable'].map((option) => (
+            <MenuItem
+              key={option}
+              selected={density === option}
+              onClick={() => handleDensityChange(option)}
+            >
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </MenuItem>
+          ))}
+        </Menu>
+        <ToolbarButton
+          aria-label="Export all rows"
+          onClick={handleExportAll}
+          render={<Button size="small" sx={{ ml: 1 }} startIcon={<SaveAltIcon />} />}
+        >
           Export All
-        </Button>
-      </GridToolbarContainer>
+        </ToolbarButton>
+      </Toolbar>
     );
   }
 
@@ -679,8 +725,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           loading={loaders.uploadTable}
           showToolbar
           slots={{ toolbar: CustomToolbarExportAllRows }} 
-          density="compact"
           logLevel="info"
+          initialState={{ density: "compact" }}
           hideFooterSelectedRowCount
           rowCount={successRows && successRows.length >0 ? successRows.length : 0}
           sx={{
@@ -706,9 +752,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           rows={errorRows}
           columns={errCols}
           loading={loaders.registration}
-          density="compact"
           logLevel="info"
           initialState={{
+            density: "compact",
             // pagination: {
             //   paginationModel: { pageSize: 10, page: 0 },
             // },
@@ -773,7 +819,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   
     <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
       {fileData.registered === false && (
-        <Box className="text-left" onClick={(e)=>handleTriggerUpload(e)}>
+        <Box className="text-left">
           <input
             accept=".tsv, .csv"
             type="file"

@@ -415,9 +415,9 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
           rows={fileData?.rows.map((row, idx) => ({ id: idx, "row": idx+1, ...row }))}
           columns={columns}
           loading={loaders.uploadTable}
-          density="compact"
           logLevel="info"
           initialState={{
+            density: "compact",
             pagination: {
               paginationModel: { pageSize: 10, page: 0 },
             },
@@ -457,9 +457,9 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columns.slice(0,5)}
           loading={loaders.uploadTable}
-          density="compact"
           logLevel="info"
           initialState={{
+            density: "compact",
             pagination: {
               paginationModel: { pageSize: 10, page: 0 },
             },

@@ -1,6 +1,6 @@
 
 import { Fragment, useEffect, useState, useMemo, useCallback } from "react";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import { Typography } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
