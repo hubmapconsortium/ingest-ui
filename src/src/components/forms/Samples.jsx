@@ -17,7 +17,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from "@mui/material/InputLabel";
 import Popover from '@mui/material/Popover';
 import LinearProgress from "@mui/material/LinearProgress";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import Tooltip from '@mui/material/Tooltip';
 import NativeSelect from '@mui/material/NativeSelect';
 import SearchIcon from '@mui/icons-material/Search';

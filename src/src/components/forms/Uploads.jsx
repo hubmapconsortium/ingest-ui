@@ -30,7 +30,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';

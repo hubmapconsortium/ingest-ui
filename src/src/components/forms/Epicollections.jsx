@@ -8,7 +8,7 @@ import AlertTitle from "@mui/material/AlertTitle";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import NativeSelect from "@mui/material/NativeSelect";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import { BulkSelector } from "../ui/bulkSelector";
 import { ContributorsTable } from "../ui/contributorsTable";
 import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback } from "../ui/formParts";

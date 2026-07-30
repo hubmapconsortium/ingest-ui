@@ -12,7 +12,7 @@ import {
 } from "../../utils/validators";
 import { humanize } from "../../utils/string_helper";
 
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
 import InputLabel from "@mui/material/InputLabel";

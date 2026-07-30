@@ -32,7 +32,7 @@ import {
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import {
   COLUMN_DEF_BULK_SAMPLES, 
@@ -725,8 +725,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           loading={loaders.uploadTable}
           showToolbar
           slots={{ toolbar: CustomToolbarExportAllRows }} 
-          density="compact"
           logLevel="info"
+          initialState={{ density: "compact" }}
           hideFooterSelectedRowCount
           rowCount={successRows && successRows.length >0 ? successRows.length : 0}
           sx={{
@@ -752,9 +752,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           rows={errorRows}
           columns={errCols}
           loading={loaders.registration}
-          density="compact"
           logLevel="info"
           initialState={{
+            density: "compact",
             // pagination: {
             //   paginationModel: { pageSize: 10, page: 0 },
             // },

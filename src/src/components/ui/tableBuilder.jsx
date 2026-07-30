@@ -28,12 +28,11 @@ export const COLUMN_DEF_DONOR = [
   	{ field: 'lab_donor_id', headerName: 'Lab ID', width: 190},
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
-  	// { field: 'lab_donor_id', headerName: 'LABID', hide: true}
 ];
 
 // SAMPLE COLUMNS
 export const COLUMN_DEF_SAMPLE = [
-    { field: 'created_by_user_displayname', headerName: 'Created By', width: 210, hidden: true},
+    { field: 'created_by_user_displayname', headerName: 'Created By', width: 210},
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 150 },
   	{
@@ -48,11 +47,11 @@ export const COLUMN_DEF_SAMPLE = [
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
-    { field: 'entity_type', headerName: 'Type', hide: true, filterable: false, sortable: false},
-    { field: 'lab_donor_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
-    { field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
-    { field: 'organ', headerName: 'OrganCode', hide: true, filterable: false, sortable: false},
-    { field: 'sample_category', headerName: 'Sample Category', hide: true, filterable: false, sortable: false},
+    { field: 'entity_type', headerName: 'Type', filterable: false, sortable: false},
+    { field: 'lab_donor_id', headerName: 'LABID', filterable: false, sortable: false},
+    { field: 'lab_tissue_sample_id', headerName: 'LABID', filterable: false, sortable: false},
+    { field: 'organ', headerName: 'OrganCode', filterable: false, sortable: false},
+    { field: 'sample_category', headerName: 'Sample Category', filterable: false, sortable: false},
  ];
 
 // DATASET COLUMNS
@@ -141,7 +140,7 @@ export const COLUMN_DEF_DATASET = [
         return <StatusBadge status={params.value}/>;
       }
   },{
-    field: 'dataset_type', headerName: 'Dataset Type', width: 170, hide: true,renderCell: params => {
+    field: 'dataset_type', headerName: 'Dataset Type', width: 170, renderCell: params => {
       return (
         <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}> {params.value}</Typography>                 
       );
@@ -180,7 +179,7 @@ export const COLUMN_DEF_DATASET_MINI = [
       <StatusBadge status={params.value}/>
     )
   },
-  { field: 'uuid', headerName: 'UUID', hide: true, filterable: false, sortable: false},
+  { field: 'uuid', headerName: 'UUID', filterable: false, sortable: false},
 ];
 // PUBLICATION COLUMNS
 export const COLUMN_DEF_PUBLICATION = [
@@ -260,7 +259,6 @@ export const COLUMN_DEF_UPLOADS = [
     // This is just so it's included in the requested columns
     field: "registered_doi",
     headerName: "registered_doi",
-    hide: true,
   },
 ];
 
@@ -297,7 +295,6 @@ export const COLUMN_DEF_EPICOLLECTION = [
     // This is just so it's included in the requested columns
     field: "registered_doi",
     headerName: "registered_doi",
-    hide: true,
   },
 ];
 
@@ -345,14 +342,6 @@ export const COLUMN_DEF_MIXED = [
       }
   },
   },
-  { field: 'entity_type', 
-    headerName: 'Entity Type', 
-    flex: 1,
-    minWidth: 150,
-    renderCell: params => { 
-      return (toTitleCase(params.row.entity_type))
-    }
-  },
   { field: "type",
     headerName: "Type",
     flex: 1,
@@ -369,6 +358,14 @@ export const COLUMN_DEF_MIXED = [
         return <Typography variant="caption" sx={{color:"#dedede",}}>{icon}{typeVal}</Typography>
       }
       return (renderFieldIcons(params) )
+    }
+  },
+  { field: 'entity_type',
+    headerName: 'Entity Type',
+    flex: 1,
+    minWidth: 150,
+    renderCell: params => {
+      return (toTitleCase(params.row.entity_type))
     }
   }, 
   { field: 'group_name', headerName: 'Group Name', flex: 1, minWidth: 200},

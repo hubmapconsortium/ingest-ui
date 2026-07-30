@@ -129,16 +129,33 @@ export function Search({
   const [sortField, setSortField] = useState("last_modified_timestamp");
   const [sortModel, setSortModel] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
-  const [isNarrow, setIsNarrow] = useState(typeof window !== 'undefined' ? window.innerWidth < 775 : false);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [searchGridContainer, setSearchGridContainer] = useState(null);
   const [tableHelpAnchorEl, setTableHelpAnchorEl] = useState(null);
 
   useEffect(() => {
-    function handleResize() {
-      setIsNarrow(window.innerWidth < 775);
+    const container = searchGridContainer;
+    if (!container) return undefined;
+
+    function updateNarrowState(width = container.getBoundingClientRect().width) {
+      setIsNarrow(width < 775);
     }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    updateNarrowState();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver((entries) => {
+        const width = entries[0]?.contentRect?.width;
+        updateNarrowState(width);
+      });
+      observer.observe(container);
+      return () => observer.disconnect();
+    }
+
+    const handleWindowResize = () => updateNarrowState();
+    window.addEventListener('resize', handleWindowResize);
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, [searchGridContainer]);
 
   useEffect(() => {
     if (!formFilters.date_from) {
@@ -386,6 +403,7 @@ export function Search({
       "specimen_type",
       "organ",
       "registered_doi",
+      "dataset_type",
     ];
     if (searchState.colDef !== COLUMN_DEF_MIXED) {
       hiddenFields.push("entity_type");
@@ -480,11 +498,12 @@ export function Search({
     };
 
     const renderToolbarButton = (buttonProps) => (
-      <ToolbarButton render={<Button {...buttonProps} />} />
+      <ToolbarButton render={<Button size="small" {...buttonProps} />} />
     );
 
     return (
       <Toolbar
+        className="SearchDataGridToolbar"
         aria-label="Search table controls"
         sx={{
           width: '100%',
@@ -496,7 +515,7 @@ export function Search({
         }}
       >
         <Box sx={toolbarItemSx}>
-          <Tooltip title="Columns" arrow>
+          <Tooltip title="Select columns">
             <Box sx={{ width: '100%', display: 'flex' }}>
               <ColumnsPanelTrigger
                 render={renderToolbarButton({
@@ -510,7 +529,7 @@ export function Search({
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
-          <Tooltip title="Filters" arrow>
+          <Tooltip title="Show filters">
             <Box sx={{ width: '100%', display: 'flex' }}>
               <FilterPanelTrigger
                 render={renderToolbarButton({
@@ -524,7 +543,7 @@ export function Search({
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
-          <Tooltip title="Density" arrow>
+          <Tooltip title="Density">
             <Box sx={{ width: '100%', display: 'flex' }}>
               <ToolbarButton
                 aria-label={`Change density; currently ${density}`}
@@ -535,6 +554,7 @@ export function Search({
                 render={
                   <Button
                     startIcon={<DensityMediumIcon />}
+                    size="small"
                     sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
                   />
                 }
@@ -562,7 +582,7 @@ export function Search({
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
-          <Tooltip title="Export CSV" arrow>
+          <Tooltip title="Download as CSV">
             <Box sx={{ width: '100%', display: 'flex' }}>
               <ExportCsv
                 options={props.csvOptions}
@@ -578,7 +598,7 @@ export function Search({
         </Box>
         {!isNarrow && (
           <Box sx={toolbarItemSx}>
-            <Tooltip title="Print table" arrow>
+            <Tooltip title="Print">
               <Box sx={{ width: '100%', display: 'flex' }}>
                 <ExportPrint
                   render={renderToolbarButton({
@@ -595,7 +615,6 @@ export function Search({
         <Box sx={toolbarItemSx}>
           <Tooltip
             title={`Toggle sort (currently ${sortDir === 'asc' ? 'ascending' : 'descending'} by ${activeSortLabel})`}
-            arrow
           >
             <Box sx={{ width: '100%', display: 'flex' }}>
               <ToolbarButton
@@ -615,7 +634,7 @@ export function Search({
           </Tooltip>
         </Box>
         <Box sx={{ marginLeft: 'auto', flex: '0 0 auto' }}>
-          <Tooltip title="Search table help" arrow>
+          <Tooltip title="Search table help">
             <ToolbarButton
               render={<IconButton color="inherit" size="small" />}
               aria-label="Open search table help"
@@ -1138,7 +1157,7 @@ export function Search({
     // inner buildColumnFilter removed - using memoized columnVisibilityModel
 
     return (
-      <Box style={{height: 590, width: "100%" , position: "relative"}}>
+      <Box ref={setSearchGridContainer} style={{height: 590, width: "100%" , position: "relative"}}>
         <Box className="sourceShade" sx={{
           opacity: searchState.loading ? 1 : 0,
           backgroundColor: "#444a65",
@@ -1178,9 +1197,8 @@ export function Search({
           }}
           id="SearchDataGrid"
           className="SearchGridWrap HDT"
-          columnBuffer={2}
+          columnBufferPx={300}
           columns={searchState.colDef}
-          columnThreshold={2}
           columnVisibilityModel={columnVisibilityModel}
           disableColumnMenu={true}
           hideFooterSelectedRowCount

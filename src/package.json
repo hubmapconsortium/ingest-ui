@@ -1,6 +1,6 @@
 {
   "name": "ingest-ui",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -12,7 +12,6 @@
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@fortawesome/react-fontawesome": "^3.5.0",
     "@mui/icons-material": "^9.2.0",
-    "@mui/lab": "^9.0.0-beta.6",
     "@mui/material": "^9.2.0",
     "@mui/x-data-grid": "^9.10.1",
     "@mui/x-date-pickers": "^9.10.1",

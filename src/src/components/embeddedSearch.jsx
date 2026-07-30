@@ -101,6 +101,8 @@ export function EmbeddedSearch({
       "specimen_type",
       "organ",
       "registered_doi",
+      "dataset_type",
+      "sample_category",
     ];
     const hf = [...base];
     if (colDefDep && colDefDep !== COLUMN_DEF_MIXED) {
@@ -417,13 +419,14 @@ export function EmbeddedSearch({
     console.debug('%c◉ results.colDef ', 'color:#9900FF', results.colDef);
 
     return (
-      <div style={{height: 590, width: "100%" }}>
+      <div style={{height: 590, width: "100%", position: "relative" }}>
         <Box className="sourceShade" sx={{
           opacity: tableLoading ? 1 : 0,
           backgroundColor: "#444a65",
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
           maxWidth: "1266px",
+          pointerEvents: "none",
           height: "48px",
           position: "absolute",
           color: "white",
@@ -453,9 +456,8 @@ export function EmbeddedSearch({
           }}
           id="SearchDataGrid"
           className="SearchGridWrap associationTable HDT"
-          columnBuffer={2}
+          columnBufferPx={300}
           columns={results.colDef}
-          columnThreshold={2}
           columnVisibilityModel={columnFilters}
           disableColumnMenu={true}
           hideFooterSelectedRowCount
@@ -474,7 +476,7 @@ export function EmbeddedSearch({
             toolbar: {
               csvOptions: csvOptions,
             },
-            columnsPanel: {
+            columnsManagement: {
               getTogglableColumns,
             },
           }}
