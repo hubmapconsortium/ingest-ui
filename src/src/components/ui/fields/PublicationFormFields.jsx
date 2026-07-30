@@ -90,7 +90,7 @@ export const PublicationFormFields = ({
       if (["text", "date"].includes(field.type)) {
         return (
           <TextField
-            InputLabelProps={{ shrink: true }}
+            slotProps={{ inputLabel: { shrink: true } }}
             key={field.id + "_" + index}
             required={field.required}
             type={field.type}

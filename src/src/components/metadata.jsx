@@ -10,7 +10,7 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import Grid from '@mui/material/Grid';
 import {styled} from '@mui/material/styles';
 import React from 'react';
 import {GridLoader} from "react-spinners";
@@ -41,7 +41,7 @@ export const RenderMetadata = (props) => {
     whiteSpace: 'nowrap',
     width: 1,
   });
-  
+
   var handleCancel = () => {
     window.history.pushState( null,"", "/");
     window.location.reload()
@@ -85,7 +85,7 @@ function renderResults() {
               {errorList.toString()}
             </Alert>
           )}
-          {errorRows.length >0 && ( 
+          {errorRows.length >0 && (
             errorRows.map((row, index) => {
               return (
                 <Alert className="mb-2 p-1" key={index + 1} variant="filled" severity="error" >
@@ -135,7 +135,7 @@ function parseErrorJSON(error) {
             setResults("Succeeding");
           }else if (resp.status === 200) {
             setResults("Success");
-          }else{ 
+          }else{
             setResults("Failure");
             setFailedStep(2);
             var err = resp.error.response.data.error ? resp.error.response.data.error : resp
@@ -177,13 +177,13 @@ const introText = () =>{
   return(
     <>
     <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
-      To bulk register  {props.type.toLowerCase()} metadata, upload your tsv file here. Please refer to the format specified in this <Button href={exampleFile} size='small' download target="_blank " >{<FontAwesomeIcon icon={faFileDownload} className="m-1" />}Example.tsv </Button> file  For further details, please see the Metadata Upload Documentation for {props.type}s. 
-    </Typography> 
-    
+      To bulk register  {props.type.toLowerCase()} metadata, upload your tsv file here. Please refer to the format specified in this <Button href={exampleFile} size='small' download target="_blank " >{<FontAwesomeIcon icon={faFileDownload} className="m-1" />}Example.tsv </Button> file  For further details, please see the Metadata Upload Documentation for {props.type}s.
+    </Typography>
+
     {/* Gimmie the file */}
     {activeStep ===0 && (
-      <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-        <Grid container xs={2}>
+      <Grid container spacing={2} sx={{margin:"10px", alignItems: "flex-start"}}>
+        <Grid container size={2}>
           <Button
             sx={{
               padding:"1.5em",
@@ -196,7 +196,7 @@ const introText = () =>{
             startIcon={<FileOpenIcon />}
             >
             Select
-            <VisuallyHiddenInput 
+            <VisuallyHiddenInput
               type="file"
               accept='.tsv, .csv'
               id='FileUploader'
@@ -204,21 +204,21 @@ const introText = () =>{
               onChange={(event) => handleFileGrab(event)} />
           </Button>
         </Grid>
-        <Grid xs={10}>
+        <Grid size={10}>
             <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
               Please select which file you'd like to process
             </Typography>
         </Grid>
       </Grid>
     )}
-    
+
     {activeStep ===1 && (
-      <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}} > 
-        <Grid container alignItems="flex-start" xs={2}>
+      <Grid container spacing={2} sx={{margin:"10px", alignItems: "flex-start"}} >
+        <Grid container size={2} sx={{alignItems: "flex-start"}}>
           <GridLoader color="#444a65" size={23} loading={true} />
           <GridLoader color="#444a65" size={23} loading={true} />
         </Grid>
-        <Grid xs={10} container alignItems="flex-start">
+        <Grid size={10} container sx={{alignItems: "flex-start"}}>
           <Typography className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
             Uploading to Validation <br />
             This step could take a few moments. <br />
@@ -230,13 +230,13 @@ const introText = () =>{
 
     {/* // Results */}
     {activeStep ===2 && (
-      <Grid container spacing={2} alignItems="flex-start" sx={{margin:"10px"}}>
-          <Grid xs={12}>
+      <Grid container spacing={2} sx={{margin:"10px", alignItems: "flex-start"}}>
+          <Grid size={12}>
             <div className="d-inline-block text-left" style={{ display:"inline-block", margin:"10px" }} >
               {renderResults()}
             </div>
           </Grid>
-          <Grid xs={12} alignItems="flex-end" justifyContent="flex-end" container > 
+          <Grid size={12} container sx={{alignItems: "flex-end", justifyContent: "flex-end"}} >
               <Button variant="contained" className="m-2" onClick={()=>window.location.reload()}>Restart</Button>
               <Button variant="contained" className="m-2" onClick={()=>handleCancel()}>Close</Button>
           </Grid>
@@ -250,7 +250,7 @@ const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/s
 
   return (
     <div className="row">
-      
+
       <h4>{toTitleCase(props.type)} Metadata Upload</h4>
       <div className=' col-sm-2' id='stepContainer'>
         <Stepper activeStep={activeStep} orientation="vertical">
@@ -267,13 +267,13 @@ const exampleFile ="https://hubmapconsortium.github.io/ingest-validation-tools/s
               </Step>
             );
           })}
-        </Stepper>             
+        </Stepper>
       </div>
-      
+
       <div className=' col-sm-10'>
         {introText()}
       </div>
-      
+
     </div>
   );
 };

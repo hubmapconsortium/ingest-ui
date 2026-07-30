@@ -7,7 +7,6 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 export const renderTableBody = () => {
-    // console.debug("typeof", this.state.uploadedSources, typeof this.state.uploadedSources);
     if(this.props.bulkType.toLowerCase() === "samples" && this.state.uploadedSources){
       return(
         <TableBody>

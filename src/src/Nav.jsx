@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react'
-import {Link} from 'react-router-dom'
+import {Link} from 'react-router'
 import AppBar from '@mui/material/AppBar'
 import Alert from "@mui/material/Alert";
 import Box from '@mui/material/Box'
@@ -9,13 +9,14 @@ import Menu from '@mui/material/Menu'
 import Container from '@mui/material/Container'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
-import LoadingButton from '@mui/lab/LoadingButton'
+import LoadingButton from '@mui/material/Button'
 import {ingest_api_users_groups} from './service/ingest_api';
 import useMediaQuery from '@mui/material/useMediaQuery'
 import AddBoxIcon from '@mui/icons-material/AddBox'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DashboardIcon from '@mui/icons-material/Dashboard'
+import {clearUnprotectedLocalStorage} from "./utils/protected_storage";
 
 const MENU_SECTIONS = [
   {
@@ -65,7 +66,6 @@ export const Navigation = (props) => {
   const userInfo = JSON.parse(localStorage.getItem("info")) ? JSON.parse(localStorage.getItem("info")) : null
 
   useEffect(() => {
-    // console.debug('%c◉ userGroup UseEffect ', 'color:#00ff7b', );
     try{
       let userGroups = JSON.parse(localStorage.getItem("userGroups")) ? JSON.parse(localStorage.getItem("userGroups")) : null
       if(!userGroups || userGroups === null){
@@ -139,8 +139,10 @@ export const Navigation = (props) => {
           anchorEl={anchorEl}
           open={open}
           onClose={handleClose}
-          MenuListProps={{
-            'aria-labelledby': `${IDLabel}IndividualButton`
+          slotProps={{
+            list: {
+              'aria-labelledby': `${IDLabel}IndividualButton`
+            }
           }}>
           {section.items.map((item, index) => {
             return(renderMenuButton(item.to, item.label, index))
@@ -176,7 +178,7 @@ export const Navigation = (props) => {
 
   function clearLocalStorage(){
     try{
-      window.localStorage.clear();
+      clearUnprotectedLocalStorage(window.localStorage);
       console.debug('Local storage cleared via Logout+modifier');
     }catch(err){
       console.error('Error clearing localStorage', err);

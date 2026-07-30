@@ -8,7 +8,6 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import {ingest_api_validate_contributors} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
-// import {COLUMN_DEF_CONTRIBUTORS} from '../../components/search/table_constants.jsx';
 import {COLUMN_DEF_CONTRIBUTORS} from '../../components/ui/tableBuilder.jsx';
 
 export function ContributorsTable({ contributors, onContributorsChange, permissions }) {
@@ -17,7 +16,6 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
   let [contributorValidationErrors, setContributorValidationErrors] = useState([]);
   let [contributorRows, setContributorRows] = useState([]);
   let [formErrors, setFormErrors] = useState({});
-  // console.debug('%c◉ permissions ', 'color:#00ff7b', permissions);
 
   // Sync localContributors with prop changes
   useEffect(() => {
@@ -26,14 +24,12 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
 
   useEffect(() => {
     if (onContributorsChange) {
-      //console.debug('%c◉ if onContributorsChange ', 'color:#00ff7b',contributorRows );
       onContributorsChange({data: contributorRows, errors: contributorValidationErrors});
     }
   }, [contributorRows, contributorValidationErrors]);
 
   // Handle file upload and parse contributors
   function handleFileGrab(e, type) {
-    // console.debug('%c◉ FILEGRAb ', 'color:#00ff7b', );
     setContributorValidationErrors([])
     setContributorRows([])
     setValidatingContributorsUpload(true)
@@ -41,7 +37,6 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile = new File([grabbedFile], newName);
     if (newFile && newFile.name.length > 0) {
-      //console.debug('%c◉ HAVE FILE ', 'color:#00ff7b', newFile);
       setFormErrors((prevValues) => ({
         ...prevValues,
         'contributors': "",
@@ -63,40 +58,29 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
         .then((res) => {
           
           if(res.status === 200){
-            // console.debug('%c◉ Success ', 'color:#00ff7b', res);
             setContributorValidationErrors()
             setFormErrors((prevValues) => ({
               ...prevValues,
               'contributors': "",
             }))
             setValidatingContributorsUpload(false)
-            // console.debug('%c◉ res.data ', 'color:#00ff7b', res.data);
           }else if(res?.res?.response?.data){
             let errorSet = res.res.response.data.description
-            // console.debug('%c◉ typeof res?.res?.response?.data?.description ', 'color:#00ff7b',typeof res?.res?.response?.data?.description );
             if(res?.res?.response?.data?.code === 406 && typeof res?.res?.response?.data?.description?.description === 'string'){
               let parsedPreflight = ParsePreflightString(decodeURI(errorSet?.description));
-              // console.debug('%c◉ parsedPreflight ', 'color:#00ff7b',parsedPreflight );
               let errString;
               let name = res?.res?.response?.data?.description?.name ? res?.res?.response?.data?.description?.name : null;
               for (let i = 0; i < parsedPreflight.length; i++) {
-                // console.debug('%c◉ parsedPreflight[i] ', 'color:#00ff7b', parsedPreflight[i]);
                 const item = parsedPreflight[i];
                 const itemStr = (item && typeof item === 'object') ? JSON.stringify(item) : String(item);
                 errString = itemStr;
-                // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
                 if (item && typeof item === 'object') {
-                  // console.debug('%c◉ item ', 'color:#00ff7b', item);
                   for (const [key, value] of Object.entries(item)) {
                     // name = key;
-                    // console.debug('%c◉ key,value ', 'color:#00ff7b', key, value);
-                    // console.debug('%c◉ val ', 'color:#00ff7b', value);
                     if (item && typeof item === 'object') {
                       for (const [k, v] of Object.entries(value)) {
-                          // console.debug('%c◉ kv ', 'color:#00ff7b', k,v);
                           errString = `${key}: \n ${k} |  ${v}`;
                       }
-                      // console.debug('%c◉ errString ', 'color:#00ff7b', errString);
                     }else{
                       errString = `${key}: ${value}`;
                     }
@@ -110,9 +94,8 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                   "name": name ? name : "",
                 }])
                 setValidatingContributorsUpload(false)
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
-                //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
               }
             }else if(!errorSet[0].row){
               // Non Row based Response
@@ -123,9 +106,8 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                   "row": ""
                 }])
                 setValidatingContributorsUpload(false)
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
-                //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
               }
             }else{
               //  IVT Row by Row Error Handling
@@ -134,9 +116,8 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
                 setContributorValidationErrors(errorSet);
                 setValidatingContributorsUpload(false)
                 highlightTableErrors(errorSet);
-              }catch(error){
+              }catch{
                 setValidatingContributorsUpload(false)
-                // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
               }
             }
             setFormErrors((prevValues) => ({
@@ -150,11 +131,9 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
           setValidatingContributorsUpload(false)
         })
         .catch(() => {
-          //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
         });
         
     } else {
-      //console.debug("No Data??");
     }
   }
   function handleFileWipe(e) {
@@ -165,7 +144,6 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
 
   function highlightTableErrors(errorSet){
 
-    //console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0){
       for (const error of errorSet) {
         let errorRow = document.querySelector(`[aria-rowindex="${error.row}" ]`);
@@ -196,9 +174,9 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
             rows={rows}
             columns={COLUMN_DEF_CONTRIBUTORS}
             loading={validatingContributorsUpload}
-            density="compact"
             logLevel="info"
             initialState={{
+              density: "compact",
               pagination: {
                 paginationModel: { pageSize: 10, page: 0 },
               },
@@ -235,7 +213,6 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
   }
   // Renders contributor errors as HTML list
   function renderContributorErrors() {
-    //console.debug('%c◉  contributorValidationErrors', 'color:#00e5ff', contributorValidationErrors);
     // const result = errorString
 
     return (

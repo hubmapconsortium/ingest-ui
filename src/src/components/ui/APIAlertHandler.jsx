@@ -40,7 +40,7 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
       // ddLog('error', loginError, ddMeta); 
       ddLog('error', msg, { api_alert: { title, details, extra } });
     } catch (e) {
-      try { console.warn('ddLog for APIAlert failed', e); } catch (_) {}
+      try { console.warn('ddLog for APIAlert failed', e); } catch {}
     }
   }, []);
 

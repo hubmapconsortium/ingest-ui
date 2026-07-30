@@ -117,6 +117,23 @@ body {
 .MuiDataGrid-main {
   font-family: 'Inter var', sans-serif!important;
 }
+.MuiTypography-body1 {
+  letter-spacing: 0.00938em;
+}
+.MuiTypography-body2 {
+  letter-spacing: 0.01071em;
+}
+.MuiButton-root {
+  letter-spacing: 0.02857em;
+}
+.MuiTypography-caption {
+  letter-spacing: 0.03333em;
+}
+.MuiTooltip-tooltip {
+  font-family: 'Inter var', 'Inter', Helvetica, Arial, sans-serif!important;
+  font-size: 0.6875rem!important;
+  font-weight: 500!important;
+}
 :root {
   --HBM_Smoke: #F4F4F4;
   --HBM_SmokeCL: #F4F4F420;
@@ -1115,10 +1132,45 @@ svg.invalid {
   border-radius: 0 0 4px 4px !important;
 }
 
-.HDT .MuiDataGrid-toolbarContainer {
+.HDT {
+  font-family: 'Inter var', 'Inter', Helvetica, Arial, sans-serif !important;
+}
+.HDT .MuiDataGrid-toolbar {
   /* background: #444a65!important ; */
   background: linear-gradient(180deg, #585E7A 0%,  #444A65 100%) !important;
   border-bottom: 1px solid #ffffff35;
+  color: #fff;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 4px 0;
+  min-height: unset;
+}
+.HDT .MuiDataGrid-toolbar.SearchDataGridToolbar {
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.HDT .MuiDataGrid-toolbar .MuiButtonBase-root,
+.HDT .MuiDataGrid-toolbar .MuiInputBase-root,
+.HDT .MuiDataGrid-toolbar .MuiInputBase-input,
+.HDT .MuiDataGrid-toolbar .MuiSvgIcon-root,
+.HDT .MuiDataGrid-toolbar .MuiDataGrid-toolbarLabel {
+  color: #fff !important;
+  font-family: 'Inter var', sans-serif !important;
+}
+.HDT .MuiDataGrid-toolbar .MuiButtonBase-root {
+  font-size: 13px;
+}
+.HDT .MuiDataGrid-toolbar .MuiInputBase-input::placeholder {
+  color: rgba(255, 255, 255, 0.78);
+  opacity: 1;
+}
+.HDT .MuiDataGrid-toolbar .MuiDataGrid-toolbarDivider {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.HDT .MuiDataGrid-toolbar .MuiButtonBase-root:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 .HDT .MuiDataGrid-row:hover {
   background-color: inherit;
@@ -1284,6 +1336,8 @@ svg.invalid {
 .HDT .MuiDataGrid-columnHeaders,
 .HDT .MuiDataGrid-container--top,
 .HDT .MuiDataGrid-container--top [role="row"],
+.HDT .MuiDataGrid-filler,
+.HDT .MuiDataGrid-scrollbarFiller,
 .HDT .MuiDataGrid-columnHeader,
 .HDT .MuiDataGrid-footerContainer,
 .HDT .thead-dark {
@@ -1296,6 +1350,8 @@ svg.invalid {
 .HDT.errorSetTable .MuiDataGrid-columnHeaders,
 .HDT.errorSetTable .MuiDataGrid-container--top,
 .HDT.errorSetTable .MuiDataGrid-container--top [role="row"],
+.HDT.errorSetTable .MuiDataGrid-filler,
+.HDT.errorSetTable .MuiDataGrid-scrollbarFiller,
 .HDT.errorSetTable .MuiDataGrid-columnHeader,
 .HDT.errorSetTable .MuiDataGrid-footerContainer,
 .HDT.errorSetTable .thead-dark{
@@ -1306,6 +1362,8 @@ svg.invalid {
 .HDT.successReg .MuiDataGrid-columnHeaders,
 .HDT.successReg .MuiDataGrid-container--top,
 .HDT.successReg .MuiDataGrid-container--top [role="row"],
+.HDT.successReg .MuiDataGrid-filler,
+.HDT.successReg .MuiDataGrid-scrollbarFiller,
 .HDT.successReg .MuiDataGrid-columnHeader,
 .HDT.successReg .MuiDataGrid-footerContainer,
 .HDT.successReg .thead-dark{
@@ -1419,10 +1477,15 @@ svg.invalid {
 .HDT .MuiDataGrid-footerContainer button,
 .HDT .MuiDataGrid-footerContainer svg,
 .HDT .MuiDataGrid-footerContainer div,
-.HDT .MuiDataGrid-toolbarContainer button,
-.HDT .MuiDataGrid-footerContainer p  {
-  color: #fff;
+.HDT .MuiDataGrid-footerContainer p {
+  color: #fff !important;
   font-family: 'Inter var', sans-serif!important;
+}
+.HDT .MuiDataGrid-columnHeader .MuiDataGrid-sortButton {
+  background-color: transparent !important;
+}
+.HDT .MuiDataGrid-columnHeader .MuiDataGrid-sortButton:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 .HDT .MuiDataGrid-footerContainer .MuiSelect-select  {
   background-color: #444a65;
@@ -1430,7 +1493,7 @@ svg.invalid {
 .HDT .MuiDataGrid-footerContainer p {
   margin: 0;
 }
-.HDT .MuiDataGrid-cellContent {
+.HDT .MuiDataGrid-cell {
   font-family: 'Inter var', sans-serif!important;
   font-weight: 350;
 } 
@@ -1612,6 +1675,45 @@ svg.invalid {
 }
 .newBadge .MuiSvgIcon-root{
   color:#ffffff!important;
+}
+
+.searchFieldLabel {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.searchFieldLabel > .MuiSvgIcon-root,
+.searchFieldLabel > .MuiTypography-root {
+  align-self: flex-start;
+  margin-top: 0 !important;
+}
+
+.searchFieldLabel > .MuiSvgIcon-root,
+.searchFieldLabel > .MuiTypography-overline {
+  flex: 0 0 auto;
+}
+
+.searchFieldLabel > .MuiTypography-overline {
+  white-space: nowrap;
+}
+
+.searchFieldLabel > .MuiTypography-root {
+  line-height: 1.5;
+}
+
+.searchFieldLabel > .MuiTypography-caption {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: 4px;
+}
+
+@media (max-width: 767.98px) {
+  .advancedSearchColumn {
+    flex-basis: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
 }
 
 /* Gently brighten form-header panels and strengthen their border inward. */

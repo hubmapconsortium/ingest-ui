@@ -28,7 +28,7 @@ export const CollectionFormFields = ({
   <>
     {CollectionFieldSet.map((field, index) => (
       <TextField
-        InputLabelProps={{ shrink: true }}
+        slotProps={{ inputLabel: { shrink: true } }}
         key={field.id + "_" + index}
         required={field.required}
         type={field.type}

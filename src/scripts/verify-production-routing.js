@@ -95,7 +95,7 @@ function safeBuildPath(urlPath) {
     if (stat.isFile()) {
       return filePath;
     }
-  } catch (error) {
+  } catch {
     return indexPath;
   }
 

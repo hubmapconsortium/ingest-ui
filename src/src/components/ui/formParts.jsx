@@ -3,7 +3,7 @@ import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import ClearIcon from "@mui/icons-material/Clear";
 import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
 import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import LoadingButton from '@mui/lab/LoadingButton';
+import LoadingButton from '@mui/material/Button';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -46,30 +46,28 @@ export const FormHeader = (props) => {
   let details = (props.entityData[0]!=="new") ? `${entityData.entity_type}: ${entityData.hubmap_id}` : `New ${props.entityData[1]}`;
   let permissions = props.permissions;
   let globusURL = props.globusURL;
-  // console.debug('%c◉ FormHeader ', 'color:#00ff7b', entityData,permissions,globusURL);
   document.title = `HuBMAP Ingest Portal | ${details}`; //@TODO - somehow handle this detection in App
   let entityType = entityData.entity_type ? entityData.entity_type : entityData[1];
   let subType = entityType === "Bulk" ? entityData[2] : null;
-  // console.debug('%c◉ subType ', 'color:#00ff7b', subType, entityData, entityData[0], entityData[1], entityData[2]);
   if (entityType === "Epicollection"){
     entityType = "EPICollection"
   }
   console.debug('%c◉ entityData ', 'color:#00ff7b', entityData);
   return (
-    <Grid container className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
+    <Grid container size={12} className="FormHead" sx={{marginBottom: "5px", padding: "10px", position: "relative"}} >
       {entityData[0] !== "new" && (<>
           <Typography sx={{display: "inline-block", marginBottom: "-5px"}} variant='caption'>{entityType}</Typography>
-          <Grid item xs={12} className="topHeader" > 
+          <Grid size={12} className="topHeader" >
             <span style={{
-              fontSize: "1.6em", 
-              verticalAlign: "text-bottom", 
-              direction:"row", 
-              alignItems:"left", 
+              fontSize: "1.6em",
+              verticalAlign: "text-bottom",
+              direction:"row",
+              alignItems:"left",
               justifyContent:"flex-start",
                 'path': {
-                  verticalAlign: "text-bottom", 
-                  direction:"row", 
-                  alignItems:"left", 
+                  verticalAlign: "text-bottom",
+                  direction:"row",
+                  alignItems:"left",
                 },
             }}>{IconSelection(entityType)}</span><Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}>{entityData.hubmap_id} </Typography>
           </Grid>
@@ -81,8 +79,8 @@ export const FormHeader = (props) => {
   )
 }
 
-// Returns a styalized Icon based on the Entity Type & Status 
-export function IconSelection(entity_type,status){  
+// Returns a styalized Icon based on the Entity Type & Status
+export function IconSelection(entity_type,status){
   let style = {fontSize: "1.5em", verticalAlign: "text-bottom", direction:"row", alignItems:"center", justifyContent:"flex-start"}
   let newSX={"&&": {color: status?"white":""}}
   switch
@@ -131,7 +129,7 @@ export function TaskAssignment({
           name="ingest_task"
           value={formValues ? formValues.ingest_task : ""}
           error={formErrors.ingest_task}
-          InputLabelProps={{ shrink: ((uuid || (formValues?.ingest_task)) ? true : false) }}
+          slotProps={{ inputLabel: { shrink: ((uuid || (formValues?.ingest_task)) ? true : false) } }}
           onChange={handleInputChange}
           fullWidth
           disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false}
@@ -220,7 +218,7 @@ export function GroupModal ({
     closeGroupModal
   }){
     let userGroups = JSON.parse(localStorage.getItem("userGroups")) || [];
-    let [selectedGroup, setSelectedGroup] = userGroups.find(g => g.selected)?.displayname || "";  
+    let [selectedGroup, setSelectedGroup] = userGroups.find(g => g.selected)?.displayname || "";
     return (
        <Dialog aria-labelledby="group-dialog" open={open}>
         <DialogTitle >
@@ -242,7 +240,7 @@ export function GroupModal ({
                 </option>
               );
             })}
-          </select>               
+          </select>
          </DialogContent>
            <DialogActions>
             <Button
@@ -254,10 +252,10 @@ export function GroupModal ({
            variant="outlined"
             onClick={(e) => closeGroupModal(e)}>
             Cancel
-          </Button>          
+          </Button>
           </DialogActions>
         </Dialog>
-    
+
     );
 }
 
@@ -290,9 +288,9 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-export function NewBadge(type, mini){ 
+export function NewBadge(type, mini){
   console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
-  let NewBadgeStyle 
+  let NewBadgeStyle
   if (mini){
     NewBadgeStyle = {
       fontFamily: "'Inter var', Helvetica, sans-serif!important",
@@ -319,7 +317,7 @@ export function NewBadge(type, mini){
       verticalAlign: "super"
     }
   }
-  return (  
+  return (
     <Chip style={NewBadgeStyle} className={ "newBadge " + badgeClass("NEW")} icon={mini ? null : IconSelection(type,"new")} label={"NEW"} size="small" />
   )
 }
@@ -341,20 +339,20 @@ function revisionLinksTime(entityData){
       </Typography>
     )}
     {entityData.previous_revision_uuid &&(
-      <Typography 
+      <Typography
         component="div"
         onClick={() => window.open(type+"/"+entityData.previous_revision_uuid, "_blank")}
         className="tiltLeftIcon hoverRiseContainer"
-        variant="caption" 
+        variant="caption"
         sx={{display: "inline-block", width: "100%", marginTop: "5px"}} >
         <UpdateIcon className="iconEffect" sx={{transform: "scaleX(-1)", marginRight: "5px"}} />
         This {entityData.entity_type} has a <strong><Typography className="hoverRise" sx={fauxHrefStyle}> previous version</Typography> </strong>
-      </Typography> 
+      </Typography>
     )}
   </>)
 }
 
-// The TopLeftmost part of the Form Header 
+// The TopLeftmost part of the Form Header
 function topHeader(entityData, entityType, subType){
   let type = entityType
   let organ_types = JSON.parse(localStorage.getItem("organs"));
@@ -362,14 +360,14 @@ function topHeader(entityData, entityType, subType){
     console.debug('%c◉ SETTYPE ', 'color:#00ff7b', subType, type);
     type = subType ? toTitleCase(subType) : "Entity"
   }
-  
+
   return entityData[0] !== "new" ? (
-    <Grid item xs={6} className="entityDataHead" >
+    <Grid size={6} className="entityDataHead" >
       {entityData.status && (<>
-        <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>   
+        <Typography sx={{width: "auto", float: "left", marginRight: "10px"}}><strong>Status: </strong></Typography>
         {entityData.pipeline_message ? (
           <Tooltip
-            placement="bottom-start" 
+            placement="bottom-start"
             title={
               <Box>
                 <Typography variant="caption">
@@ -388,10 +386,10 @@ function topHeader(entityData, entityType, subType){
           <strong>Priority Projects:</strong> {entityData.priority_project_list?.length > 1
             ? entityData.priority_project_list.join(", ")
             : entityData.priority_project_list?.[0]}
-        </Typography>   
+        </Typography>
       )}
       {entityData.organ	 && (
-        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong> 
+        <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Organ: </strong>
           <OrganIcon organ={entityData.organ} /> {organ_types[entityData.organ]}
         </Typography>
       )}
@@ -400,23 +398,23 @@ function topHeader(entityData, entityType, subType){
       {(entityData.entity_type === "Donor" || entityData.entity_type ==="Sample") && (
         <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Submission ID:  </strong> {entityData.submission_id}</Typography>
       )}
-      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>  
+      <Typography variant="caption" sx={{display: "inline-block", width: "100%"}}><strong>Entry Date: </strong> {tsToDate(entityData.created_timestamp)}</Typography>
     </Grid>
   ) : (
     <React.Fragment>
-      <Grid item xs={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >  
+      <Grid size={["Upload","EPICollection"].includes(entityData[1]) ? 9 : 6} className="" >
       <Typography variant='h4' sx={{fontWeight:300, display: "inline-block", fontSize: "1em"}}> Registering a&nbsp;</Typography>{NewBadge(null, true)}   <br />
         <Typography sx={{fontWeight:300, display: "inline-block", fontSize: "1.4em"}}>{IconSelection(entityType)}</Typography> <Typography variant='h3' sx={{fontWeight:300, display: "inline-block", fontSize: "2.4em"}}> {type} </Typography>
       </Grid>
-        
+
       {entityData[1] === "Upload" && (
-        <Grid item xs={6} className="" >
+        <Grid size={6} className="" >
           <Typography sx={{marginRight: "10px"}} >
             Register a new Data Upload that will be used to bulk upload data, which will be organized by HIVE into multiple datasets. For more information about registering and uploading data see the <a href="https://docs.hubmapconsortium.org/data-submission/" target="_blank" >Data Submission Guide</a>.
           </Typography>
         </Grid>
       )}
-        
+
     </React.Fragment>
   );
 }
@@ -438,33 +436,33 @@ function infoPanels(entityData,permissions,globusURL){
   }
 
   return (
-    <Grid item xs={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
-      { entityData.creation_action && entityData.creation_action !== "" && (<Box > 
+    <Grid size={(isEPICollection && entityData[0]==="new" )? 3 : 6} className="">
+      { entityData.creation_action && entityData.creation_action !== "" && (<Box >
         <ReturnCreationActionDetail creation_action={entityData.creation_action} />
       </Box>)}
-        
+
       <Box sx={{position: "absolute", right: "0px", top: linkBuffers, textAlign: "right"}}>
         {entityData.next_revision_uuid || entityData.previous_revision_uuid ? revisionLinksTime(entityData) : ""}
       </Box>
 
       {globusURL&& (
-        <Alert 
+        <Alert
           className="formHeaderInfoPanel"
-          severity="info" 
-          sx={{ 
-            width: "100%", 
+          severity="info"
+          sx={{
+            width: "100%",
             padding: "10px",
             margin: "10px auto",
-            border:"1px solid #00003305", 
+            border:"1px solid #00003305",
           }}
           iconMapping={{info: <OpenInNewIcon />}}>
           <Typography className="" sx={{ fontSize: "0.9rem", fontWeight:"700" }}>
             <a href={globusURL}
               target='_blank'
-              rel='noopener noreferrer'>   
+              rel='noopener noreferrer'>
                 {(entityData.status && (entityData.status.toUpperCase() ==="REORGANIZED" || entityData.status.toUpperCase() ==="SUBMITTED")) && (
                   <>Open data repository {" "}</>
-                )}  
+                )}
                 {entityData.status && entityData.status.toUpperCase() !=="REORGANIZED" && entityData.status.toUpperCase() !=="SUBMITTED" && (
                   <>To add or modify data files, go to the data repository {" "}</>
                 )}
@@ -473,19 +471,19 @@ function infoPanels(entityData,permissions,globusURL){
         </Alert>
       )}
 
-      {permissions.has_write_priv && 
-        ( 
+      {permissions.has_write_priv &&
+        (
           (entityData[0] === "new" && HIPPATypes.includes(entityData[1])) ||
           (HIPPATypes.includes(entityData.entity_type))
-        ) && 
+        ) &&
         (<HIPPA />)
       }
-      
+
     {entityData && ((entityData.data_access_level && entityData.data_access_level === "public") || (entityData.status && ["published","retracted"].includes(entityData.status.toLowerCase()))) && (
         // They might not have write access but not because of data_access_level
-        <Alert 
+        <Alert
           className="formHeaderInfoPanel"
-          severity="warning" 
+          severity="warning"
           iconMapping={{warning: <VpnLockIcon />}}
           sx={{
             minWidth: "100%",
@@ -507,11 +505,11 @@ function infoPanels(entityData,permissions,globusURL){
         </Typography>
       )}
       {!permissions.has_write_priv && !permissions.has_admin_priv && (
-        
-        <Alert  
+
+        <Alert
           className="formHeaderInfoPanel formHeaderInfoPanelMuted"
-          variant="caption" 
-          severity="info" 
+          variant="caption"
+          severity="info"
           sx={{
             color: "rgba(0, 0, 0, 0.38)",
             background:"#00000006",
@@ -537,8 +535,8 @@ export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submit
     return (
         <Dialog
           sx={{ '& .MuiDialog-paper': { width: '80%', maxHeight: 435 } }}
-          maxWidth="xs" 
-          aria-labelledby="submit-dialog" 
+          maxWidth="xs"
+          aria-labelledby="submit-dialog"
           open={showSubmitModal}>
           <DialogContent>
             <h4>Preparing to Submit</h4>
@@ -547,12 +545,12 @@ export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submit
               2	&#41; uploaded to the globus folder?</div>
           </DialogContent>
             <DialogActions>
-            <LoadingButton 
-              loading={submitting} 
+            <LoadingButton
+              loading={submitting}
               name="submit_modal"
-              sx={{width:"150px"}} 
-              loadingIndicator="Submitting..." 
-              variant="outlined" 
+              sx={{width:"150px"}}
+              loadingIndicator="Submitting..."
+              variant="outlined"
               onClick={ (e) => handleSubmitAction(e)}>
             Submit
             </LoadingButton>
@@ -560,10 +558,10 @@ export function RenderSubmitModal({showSubmitModal, setIsSubmitModalOpen, submit
             className="btn btn-secondary"
             onClick={() => setIsSubmitModalOpen(false)}>
             Cancel
-          </Button>          
+          </Button>
           </DialogActions>
         </Dialog>
-    
+
     );
   }
 
@@ -594,10 +592,10 @@ export function UserGroupSelectMenu(formValues, menu){
           </option>
         );
       }
-      
+
     }
     return menuArray;
-  } 
+  }
 }
 
 // Checks if the entityType in the URL matches the type of entity requested
@@ -612,7 +610,6 @@ export function redirectToEntityRoute(entityType, uuid) {
 }
 
 export function FormCheckRedirect(uuid,entityType,form){
-  // console.debug('%c◉ FormCheckRedirect ', 'color:#ff0073', uuid,entityType,form);
   if(entityType !== form){
     // @TODO: Move this sort of handling/detection to the outer app, or into component
     redirectToEntityRoute(entityType, uuid);
@@ -628,7 +625,7 @@ export function combineTypeOptionsComplete(blackList,whitelist){
   combinedList.push( {  // @TODO: Find out why Importing Warps this
     donor: "Donor" ,
     sample: "Sample",
-    dataset: "Dataset", 
+    dataset: "Dataset",
     upload: "Data Upload",
     publication: "Publication",
     collection: "Collection"});
@@ -644,7 +641,7 @@ export function combineTypeOptionsComplete(blackList,whitelist){
     combinedList[0] = Object.fromEntries(
       Object.entries(combinedList[0]).filter(([key]) => whitelist.includes(key))
     );
-  } 
+  }
 
   // NEXT: Sample Categories
   combinedList.push(SAMPLE_CATEGORIES);
@@ -657,10 +654,8 @@ export function combineTypeOptionsComplete(blackList,whitelist){
       organs[value] = "\u00A0\u00A0\u00A0\u00A0\u00A0" + key; // Gives it that Indent
     } );
     combinedList.push(organs.sort());
-    // console.debug('%c⊙', 'color:#00ff7b', "combinedList", combinedList);
     return combinedList;
   } catch (error){
-    // console.debug("%c⭗", "color:#ff005d", "combinedList error", error);
     var errStringMSG = "";
     typeof error.type === "string"
       ? (errStringMSG = "Error on Organ Assembly")
@@ -669,7 +664,7 @@ export function combineTypeOptionsComplete(blackList,whitelist){
   }
 };
 
-// Returns a sorted Map of Organs (accounting for L/R) for use in Search Filters 
+// Returns a sorted Map of Organs (accounting for L/R) for use in Search Filters
 export function handleSortOrgans(organList){
   let sortedDataProp = {};
   let sortedDataArray = [];
@@ -686,11 +681,11 @@ export function handleSortOrgans(organList){
   return sortedMap;
 };
 
-export function CombinedEmbeddedEntityOptions(){ 
+export function CombinedEmbeddedEntityOptions(){
   let coreList = {
     donor: "Donor" ,
     sample: "Sample",
-    dataset: "Dataset", 
+    dataset: "Dataset",
     upload: "Data Upload",
     publication: "Publication",
     collection: "Collection",
@@ -700,7 +695,6 @@ export function CombinedEmbeddedEntityOptions(){
   // menuMap is stored with lowercase keys; just read it and lowercase the current form
   const menuFilterMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
   const currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '').toLowerCase();
-  // console.debug('%c◉ fields ', 'color:#E7EEFF;background: #C800FF;padding:200', window.location.pathname, currentForm, menuFilterMap[currentForm]);
 
   const entry = menuFilterMap[currentForm] || {};
 
@@ -735,7 +729,7 @@ export function CombinedEmbeddedEntityOptions(){
       </option>
     )
   }
-  
+
   return (<>
     <option aria-label="None" value="&nbsp;" />
     <optgroup label="Entity Types">
@@ -767,15 +761,13 @@ export function CombinedWholeEntityOptions({
   restrictions,
   embedded
   }){
-  
+
   let organs = [];
   let organList = handleSortOrgans(JSON.parse(localStorage.getItem("organs")))
-  // console.debug('%c◉ organList ', 'color:#00fzof7b', organList, organList.length);
   try {
     organList.forEach((value, key) => {
       organs[value] = key;
     });
-    // console.debug('%c◉ organs ', 'color:#00ff7b', organs, organs.length );
     return (
       <FormControl size="small" sx={{width:"100%"}}>
         {embedded && (
@@ -787,9 +779,9 @@ export function CombinedWholeEntityOptions({
             <Typography variant="overline" id="group_label" sx={{fontWeight:"700", color:"#fff", display:"inline-flex"}}> Type | </Typography>  <Typography variant="caption" id="group_label" sx={{color:"#fff"}}>Select a type to search for:</Typography>
           </Box>
         )}
-        
-        <Select 
-          native 
+
+        <Select
+          native
           fullWidth
           label="Type"
           id="entity_type"
@@ -800,20 +792,20 @@ export function CombinedWholeEntityOptions({
           disabled={restrictions && restrictions.entityType?true:false}>
           <CombinedEmbeddedEntityOptions />
         </Select>
-      
+
       </FormControl>
     )
   }catch(error){
     let msg = typeof error.type === "string" ? "Error on Organ Assembly" : error;
     console.debug('%c◉ ERROR  ', 'color:#ff005d', msg, error);
     return (<Typography> ERROR: {error.toString()} </Typography>)
-  }  
+  }
 };
 
 // Returns a Feedback Dialog Modal for displaying Warnings, Errors, etc
-export function FeedbackDialog( { 
-  showMessage, 
-  setShowMessage, 
+export function FeedbackDialog( {
+  showMessage,
+  setShowMessage,
   message,
   title,
   summary,
@@ -828,23 +820,23 @@ export function FeedbackDialog( {
   if (!message || message.length <= 0){
     defaultSummary = "No Known Problems or Messages";
   }
-  
+
   return (
-    <Dialog 
+    <Dialog
       maxWidth="sm"
-      open={showMessage} 
+      open={showMessage}
       sx={{margin: "auto", marginBottom: "0px"}}
       fullWidth={true}>
       <DialogTitle sx={{
-        background: `linear-gradient(180deg,${messageColor} 0%, ${altColorLight} 100%)`, 
-        border: `1px solid ${messageColor}`, 
-        color: "white", 
+        background: `linear-gradient(180deg,${messageColor} 0%, ${altColorLight} 100%)`,
+        border: `1px solid ${messageColor}`,
+        color: "white",
         padding: "2px 10px 0px 10px",
         borderTopLeftRadius: "4px",
-        borderTopRightRadius: "4px",}}> 
+        borderTopRightRadius: "4px",}}>
         <FontAwesomeIcon icon={icon?icon:faBell} sx={{marginRight: "10px"}} /> {title?title:"Attention: "}
       </DialogTitle>
-      <DialogContent sx={{border: `1px solid ${messageColor}`}}> 
+      <DialogContent sx={{border: `1px solid ${messageColor}`}}>
         <Typography sx={{fontSize: "0.9rem", marginBottom: "10px", marginTop: "10px"}}>
           {summary?summary:defaultSummary}
         </Typography >
@@ -865,11 +857,11 @@ export function FeedbackDialog( {
                         borderBottom: "1px solid #444a6520"
                       }}>
                       <Typography component="span" >
-                        <FontAwesomeIcon 
+                        <FontAwesomeIcon
                           className='messageIcon'
-                          icon={icon?icon:faCircleExclamation} 
-                          color={altColorLight} 
-                          style={{marginRight: "10px"}}/> 
+                          icon={icon?icon:faCircleExclamation}
+                          color={altColorLight}
+                          style={{marginRight: "10px"}}/>
                         {match ? match[1] : item}
                       </Typography>
                       {match && match[2] && (
@@ -889,24 +881,24 @@ export function FeedbackDialog( {
         )) : ""}
       </DialogContent>
       <DialogActions sx={{
-        background: "rgb(207, 211, 226)", 
-        padding: "6px 10px", 
-        display: "flex", 
-        border: `1px solid ${messageColor}`, 
+        background: "rgb(207, 211, 226)",
+        padding: "6px 10px",
+        display: "flex",
+        border: `1px solid ${messageColor}`,
         borderTop: "none",
         borderBottomLeftRadius: "4px",
         borderBottomRightRadius: "4px"}}>
         {note && (
-          noteWrap(note)  
+          noteWrap(note)
         )}
         {((!message || message.length <= 0) && (!summary || summary.length<=0)) && (!note || note.length<=0) && (
-          errorNote(errorNote)  
+          errorNote(errorNote)
         )}
-        
+
         <Button
           size="small"
           sx={{
-            background: "white", 
+            background: "white",
             color: "#444a65",
             "&:hover": {
               backgroundColor: "#444a65",
@@ -960,21 +952,21 @@ export function SnackbarFeedback(props){
     setSnackbarController(prev => ({...prev, open: false}))
   }
   return(
-    <Snackbar 
-      open={snackbarController.open} 
+    <Snackbar
+      open={snackbarController.open}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right'
       }}
-      autoHideDuration={snackbarController.hide ? snackbarController.hide : 6000} 
+      autoHideDuration={snackbarController.hide ? snackbarController.hide : 6000}
       onClose={closeSnack}>
       <Alert
         onClose={closeSnack}
         severity={snackbarController.status}
         variant="filled"
-        sx={{ 
+        sx={{
           width: '100%',
-          backgroundColor: snackbarController.color ? snackbarController : 
+          backgroundColor: snackbarController.color ? snackbarController :
             snackbarController.status === "error" ? "#f44336" : "#4caf50",
         }}>
         {snackbarController.message}
@@ -1002,7 +994,7 @@ export function ParsePreflightString(s) {
   let obj;
   try {
     obj = JSON.parse(s);
-  } catch (err) {
+  } catch {
     // fallback: try to recover minimal structure if JSON.parse still fails
     // create a best-effort object by extracting the Preflight value substring
     const m = s.match(/["']?Preflight["']?\s*[:=]\s*["']?(.+)["']?\s*}$/);
@@ -1064,7 +1056,7 @@ function ReturnCreationActionDetail({ creation_action }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "row", position: "absolute", top:"-15px", right:"-15px", color: "#dddddd", overflow: "hidden", whiteSpace: "nowrap"}}>
       <Collapse
-        in={openCollapse === true ? true : false} 
+        in={openCollapse === true ? true : false}
         orientation="horizontal"
         easing="ease-out">
         <Typography variant="caption">{label}</Typography>

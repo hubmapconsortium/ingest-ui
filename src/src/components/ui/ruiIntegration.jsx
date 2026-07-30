@@ -39,7 +39,6 @@ class RUIIntegration extends Component {
       }
     });
     this.setState({ ruiOrganMap: organMap });
- // console.debug('%c◉ organMap ', 'color:#9000FF', organMap);
   }
 
   /**
@@ -60,12 +59,9 @@ class RUIIntegration extends Component {
    */
 
   componentDidMount() {
-  // console.log('RUI...', this.props)
     this.setRUIOrganMap();
     this.setState({organ_types: JSON.parse(localStorage.getItem("organs"))}, () => {
-      // console.log(this.state.organ_types);
       }, () => {
-      // console.log('ERROR: ubkg_api_get_organ_type_set')
       });
 
     this.updateRUIConfig();
@@ -87,7 +83,6 @@ class RUIIntegration extends Component {
   }
 
   handleCloseScreenClick = () => {
-  // console.debug('%c◉ Closing,  handleCloseScreenClick', 'color:#00ff7b', );
     this.setState({ close_rui: true });
     this.props.closeRUIModal();
   }
@@ -106,7 +101,6 @@ class RUIIntegration extends Component {
     const user_name = this.props.user || "";
     let location;
     if(this.props.location && this.props.location !== "") {
-    // console.debug('%c◉ TYPEOF ', 'color:#00ff7b', typeof this.props.location, this.props.location);
       if(typeof this.props.location === "string"){
         location = JSON.parse(this.props.location);
       }else if(typeof this.props.location === "object") {
@@ -130,7 +124,6 @@ class RUIIntegration extends Component {
       side: organ_side
     };
     rui.register = function (str) {
-    // console.log(str);
       self.setState({ jsonRUI: str });
       self.props.handleJsonRUI(str);
       self.handleCloseScreenClick();
@@ -140,7 +133,6 @@ class RUIIntegration extends Component {
       return [];
     };
     rui.cancelRegistration = function () {
-    // console.log("cancelRegistration",str);
       self.setState({ close_rui: true });
       self.props.closeRUIModal();
     };

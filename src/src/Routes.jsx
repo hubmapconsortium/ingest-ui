@@ -1,4 +1,4 @@
-import {Navigate, Route, Routes} from "react-router-dom";
+import {Navigate, Route, Routes} from "react-router";
 import Alert from "@mui/material/Alert";
 
 import Login from "./components/ui/login";

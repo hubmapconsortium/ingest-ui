@@ -67,7 +67,7 @@ function serializeAny(value, maxLen = 2000){
       return v;
     });
     return raw && raw.length > maxLen ? `${raw.slice(0, maxLen)}…[truncated]` : raw;
-  }catch(e){
+  }catch{
     return trimText(String(value), maxLen);
   }
 }
@@ -92,7 +92,7 @@ function isReactRouterFutureFlagWarning(value){
     // if it's a JSON/stringified thing, stringify and test
     const s = typeof value === 'object' ? JSON.stringify(value) : String(value);
     return /React Router Future Flag Warning/i.test(s);
-  }catch(e){
+  }catch{
     return false;
   }
 }
@@ -114,7 +114,7 @@ function shouldIgnoreMessage(level, message, meta){
 function isAlreadyLogged(obj){
   try{
     return !!(obj && typeof obj === 'object' && obj[LOGGED_FLAG]);
-  }catch(e){
+  }catch{
     return false;
   }
 }
@@ -126,11 +126,11 @@ function markAsLogged(obj, marker = true){
     try{
       Object.defineProperty(obj, LOGGED_FLAG, { value: marker, configurable: true, enumerable: false, writable: true });
       return true;
-    }catch(e){
+    }catch{
       // fallback to direct assignment if defineProperty fails
-      try{ obj[LOGGED_FLAG] = marker; return true; }catch(e2){ return false; }
+      try{ obj[LOGGED_FLAG] = marker; return true; }catch{ return false; }
     }
-  }catch(e){ return false; }
+  }catch{ return false; }
 }
 
 function buildStructuredPayload({ level, message, source, meta, args, error }){
@@ -189,7 +189,7 @@ function buildStructuredPayload({ level, message, source, meta, args, error }){
       if(payload.meta.reason && !payload.meta.error){
         payload.meta.error = typeof payload.meta.reason === 'object' ? payload.meta.reason : { message: serializeAny(payload.meta.reason, 2000) };
       }
-    }catch(e){ /* ignore normalization errors */ }
+    }catch{ /* ignore normalization errors */ }
   }
 
   // Ensure any error objects include an `kind` field for consistent Datadog querying.
@@ -223,8 +223,8 @@ function buildStructuredPayload({ level, message, source, meta, args, error }){
       } else if(payload.meta && payload.meta.error && payload.meta.error.kind){
         payload.error_kind = String(payload.meta.error.kind);
       }
-    }catch(e){}
-  }catch(e){/* ignore */}
+    }catch{}
+  }catch{/* ignore */}
 
   return payload;
 }
@@ -244,9 +244,9 @@ function sendToDatadog(level, message, payload, errorObj){
           console.log('DOGLOG_PAYLOAD', payload);
           if(errorObj) console.log('DOGLOG_ERROR_OBJ', errorObj);
           if(console.groupEnd) console.groupEnd();
-        }catch(e){ /* swallow debug dump errors */ }
+        }catch{ /* swallow debug dump errors */ }
       }
-    }catch(e){ /* ignore dump gating errors */ }
+    }catch{ /* ignore dump gating errors */ }
     if(datadogLogs && datadogLogs.logger){
       const fn = datadogLogs.logger[ddLevel];
       if(typeof fn === 'function'){
@@ -281,7 +281,7 @@ export function initDoglog(){
       const cfg = datadogLogs.getInitConfiguration();
       sdkInitialized = !!cfg;
     }
-  }catch(e){ /* ignore detection errors */ }
+  }catch{ /* ignore detection errors */ }
 
   if(!sdkInitialized){
     try{
@@ -315,10 +315,10 @@ export function initDoglog(){
       if(info.uuid) user.id = info.uuid;
       if(Object.keys(user).length>0){
         _globalContext.user = user;
-        try{ datadogLogs.logger?.setContext?.({ user }); }catch(e){}
+        try{ datadogLogs.logger?.setContext?.({ user }); }catch{}
       }
     }
-  }catch(e){ /* ignore parse errors */ }
+  }catch{ /* ignore parse errors */ }
 
   // preserve originals
   const _consoleError = console.error.bind(console);
@@ -338,14 +338,14 @@ export function initDoglog(){
     try{
       const s = JSON.stringify(a0);
       return s.length>200 ? s.slice(0,200) + '...' : s;
-    }catch(e){ return String(a0); }
+    }catch{ return String(a0); }
   }
 
   function safeSend(level, message, meta){
     if(shouldIgnoreMessage(level, message, meta)) return;
     const maybeError = meta && meta.error instanceof Error ? meta.error : undefined;
     // ensure errors include a kind when possible
-    try{ if(maybeError && !maybeError.kind){ maybeError.kind = meta?.source || 'error'; } }catch(e){}
+    try{ if(maybeError && !maybeError.kind){ maybeError.kind = meta?.source || 'error'; } }catch{}
     if(maybeError && isAlreadyLogged(maybeError)) return;
     const payload = buildStructuredPayload({ level, message, source: meta?.source || 'app', meta, args: meta?.args || [], error: maybeError });
     // Mark error as logged before sending to prevent other wrappers from duplicating the event
@@ -411,7 +411,7 @@ export function ddLog(level, message, meta){
     const safeLevel = normalizeLevel(level);
     if(shouldIgnoreMessage(safeLevel, message, meta)) return;
     const maybeError = meta && meta.error instanceof Error ? meta.error : undefined;
-    try{ if(maybeError && !maybeError.kind){ maybeError.kind = meta?.source || 'error'; } }catch(e){}
+    try{ if(maybeError && !maybeError.kind){ maybeError.kind = meta?.source || 'error'; } }catch{}
     if(maybeError && isAlreadyLogged(maybeError)) return;
     const payload = buildStructuredPayload({
       level: safeLevel,

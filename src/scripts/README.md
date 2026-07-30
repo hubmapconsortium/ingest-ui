@@ -18,6 +18,8 @@ Install the repository-managed Git hooks once per clone:
 npm run hooks:install
 ```
 
-The pre-commit hook runs `npm run secrets:scan` against staged additions and
-blocks likely credential literals without printing their values. Run
-`npm run secrets:self-test` to verify the scanner rules.
+The pre-commit hook first mirrors the staged `src/App.css` content to
+`src/assets/App.css` and stages that generated copy. It then runs
+`npm run secrets:scan` against staged additions and blocks likely credential
+literals without printing their values. Run `npm run secrets:self-test` to
+verify the scanner rules.

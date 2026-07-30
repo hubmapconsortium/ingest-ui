@@ -1,7 +1,6 @@
 import {useEffect,useState,useMemo} from "react";
-import { useLocation } from 'react-router-dom';
-import {DataGrid,GridToolbar} from "@mui/x-data-grid";
-// import { DataGrid } from '@material-ui/data-grid';
+import { useLocation } from 'react-router';
+import {DataGrid} from "@mui/x-data-grid";
 import {SAMPLE_CATEGORIES} from "../constants";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -61,7 +60,7 @@ export function EmbeddedSearch({
     const pick = (segments[0] && String(segments[0]).toLowerCase() === 'new') ? segments[segments.length - 1] : segments[0];
     try {
       return decodeURIComponent(String(pick)).toLowerCase();
-    } catch (e) {
+    } catch {
       return String(pick).toLowerCase();
     }
   }, [location?.pathname]);
@@ -102,6 +101,8 @@ export function EmbeddedSearch({
       "specimen_type",
       "organ",
       "registered_doi",
+      "dataset_type",
+      "sample_category",
     ];
     const hf = [...base];
     if (colDefDep && colDefDep !== COLUMN_DEF_MIXED) {
@@ -144,7 +145,6 @@ export function EmbeddedSearch({
 
   useEffect(() => {
     var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
-    // console.debug('%c◉ searchFilters ', 'color:#1900FF', searchFilterParams);
     setTableLoading(true);
     if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
       let entityTypes = {
@@ -308,7 +308,6 @@ export function EmbeddedSearch({
   }
 
   function handleTableCellClickDefault(params) {
-    // console.log("Inner Search Table handleTableCellClick", params)
     if (params.field === "uuid") return; // skip this field
     if (params.hasOwnProperty("row")) {
       var typeText = params.row.entity_type.toLowerCase();
@@ -420,13 +419,14 @@ export function EmbeddedSearch({
     console.debug('%c◉ results.colDef ', 'color:#9900FF', results.colDef);
 
     return (
-      <div style={{height: 590, width: "100%" }}>
+      <div style={{height: 590, width: "100%", position: "relative" }}>
         <Box className="sourceShade" sx={{
           opacity: tableLoading ? 1 : 0,
           backgroundColor: "#444a65",
           background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
           width: "100%",
           maxWidth: "1266px",
+          pointerEvents: "none",
           height: "48px",
           position: "absolute",
           color: "white",
@@ -456,9 +456,8 @@ export function EmbeddedSearch({
           }}
           id="SearchDataGrid"
           className="SearchGridWrap associationTable HDT"
-          columnBuffer={2}
+          columnBufferPx={300}
           columns={results.colDef}
-          columnThreshold={2}
           columnVisibilityModel={columnFilters}
           disableColumnMenu={true}
           hideFooterSelectedRowCount
@@ -472,12 +471,12 @@ export function EmbeddedSearch({
           paginationMode="server"
           rowCount={results.rowCount}
           rows={results.dataRows}
-          slots={{ toolbar: GridToolbar }}
+          showToolbar
           slotProps={{
             toolbar: {
               csvOptions: csvOptions,
             },
-            columnsPanel: {
+            columnsManagement: {
               getTogglableColumns,
             },
           }}
@@ -527,7 +526,7 @@ export function EmbeddedSearch({
             container
             spacing={3}
             sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
-            <Grid item xs={6}>
+            <Grid size={6}>
             <FormControl sx={{ width: "100%", marginTop: "26px", display: "block" }} >
               <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
               <Select
@@ -550,7 +549,7 @@ export function EmbeddedSearch({
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <InputLabel htmlFor="entity_type" id="entity_type_label">Type</InputLabel>
               <Select
                 native 
@@ -565,7 +564,7 @@ export function EmbeddedSearch({
                 <CombinedEmbeddedEntityOptions />
                 </Select>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
             <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
             <TextField
               labelid="keywords_label"
@@ -578,8 +577,8 @@ export function EmbeddedSearch({
               onChange={(e) => handleInputChange(e)}/>
               
             </Grid>
-            <Grid item xs={2}></Grid>
-            <Grid item xs={4}>
+            <Grid size={2}></Grid>
+            <Grid size={4}>
               <Button
                 fullWidth
                 color="primary"
@@ -589,7 +588,7 @@ export function EmbeddedSearch({
                 Search
               </Button>
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -601,7 +600,7 @@ export function EmbeddedSearch({
               </Button>
             </Grid>
 
-            <Grid item xs={2}></Grid>
+            <Grid size={2}></Grid>
           </Grid>
 
           {/* </FormControl> */}

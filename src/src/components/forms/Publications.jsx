@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import { Typography } from "@mui/material";
 import Alert from "@mui/material/Alert";
 import AlertTitle from '@mui/material/AlertTitle';
@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import InputLabel from "@mui/material/InputLabel";
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import {RevertFeature} from "../../utils/revertModal";
 import {
   entity_api_get_entity,

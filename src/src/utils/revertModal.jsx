@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
+import LoadingButton from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -11,13 +11,13 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import {getPublishStatusColor} from "./badgeClasses";
-import ReactTooltip from "react-tooltip";
+import { Tooltip } from "react-tooltip";
 // removed unused imports Popover and InputLabel
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import {entity_api_update_entity} from '../service/entity_api';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 export const RevertFeature = (props) => {
   const navigate = useNavigate();
@@ -64,17 +64,15 @@ export const RevertFeature = (props) => {
 
   return (
     <>
-      <ReactTooltip
+      <Tooltip
         id='revert_tooltip'
         className='zindex-tooltip revertTooltip'
         place='top'
-        variant='light'
-        // border="#000000"
-        effect='solid'>
+        variant='light'>
         <p sx={{ color: "black!important", maxWidth: "160px", fontSize: "inherent"}}>
           Revert this <span sx={{color: 'red'}}>{type}</span> back to <span label='New' className={ 'badge '+getPublishStatusColor('NEW')}>New</span> <span label='Valid' className={ 'badge '+getPublishStatusColor('VALID')}>Valid</span> <br /> <span label='Invalid' className={ 'badge '+getPublishStatusColor('INVALID')}>Invalid</span> <span label='qa' className={ 'badge '+getPublishStatusColor('QA')}>QA</span> <span label='qa' className={ 'badge '+getPublishStatusColor('APPROVAL')}>Approval</span> <span label='Submitted' className={ 'badge '+getPublishStatusColor('SUBMITTED')}>Submitted</span>  <br /> or <span label='Incomplete' className={ 'badge '+getPublishStatusColor('INCOMPLETE')}>Incomplete</span> status</p> 
-      </ReactTooltip>
-      <Button variant="contained" onClick={() => handleClickOpen()} data-tip data-for='revert_tooltip'> Revert </Button>
+      </Tooltip>
+      <Button variant="contained" onClick={() => handleClickOpen()} data-tooltip-id='revert_tooltip'> Revert </Button>
       <Dialog onClose={handleClose} aria-labelledby="Revert-Dialog" open={open ? open.toString() : false} fullWidth={true} maxWidth={"sm"}>
         <React.Fragment>
           <DialogTitle sx={{ m: 0, p: 2, background: "#444a65", color: "White" }} id="customized-dialog-title">

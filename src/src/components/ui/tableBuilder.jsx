@@ -28,12 +28,11 @@ export const COLUMN_DEF_DONOR = [
   	{ field: 'lab_donor_id', headerName: 'Lab ID', width: 190},
   	{ field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
-  	// { field: 'lab_donor_id', headerName: 'LABID', hide: true}
 ];
 
 // SAMPLE COLUMNS
 export const COLUMN_DEF_SAMPLE = [
-    { field: 'created_by_user_displayname', headerName: 'Created By', width: 210, hidden: true},
+    { field: 'created_by_user_displayname', headerName: 'Created By', width: 210},
   	{ field: 'hubmap_id', headerName: 'HubMAP ID', width: 180 },
   	{ field: 'submission_id', headerName: 'Submission ID', width: 150 },
   	{
@@ -48,11 +47,11 @@ export const COLUMN_DEF_SAMPLE = [
     { field: 'group_name', headerName: 'Group Name', width: 250},
   	{ field: 'created_by_user_email', headerName: 'Created By', width: 250},
   	// hidden fields for computed fields below
-    { field: 'entity_type', headerName: 'Type', hide: true, filterable: false, sortable: false},
-    { field: 'lab_donor_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
-    { field: 'lab_tissue_sample_id', headerName: 'LABID', hide: true, filterable: false, sortable: false},
-    { field: 'organ', headerName: 'OrganCode', hide: true, filterable: false, sortable: false},
-    { field: 'sample_category', headerName: 'Sample Category', hide: true, filterable: false, sortable: false},
+    { field: 'entity_type', headerName: 'Type', filterable: false, sortable: false},
+    { field: 'lab_donor_id', headerName: 'LABID', filterable: false, sortable: false},
+    { field: 'lab_tissue_sample_id', headerName: 'LABID', filterable: false, sortable: false},
+    { field: 'organ', headerName: 'OrganCode', filterable: false, sortable: false},
+    { field: 'sample_category', headerName: 'Sample Category', filterable: false, sortable: false},
  ];
 
 // DATASET COLUMNS
@@ -141,7 +140,7 @@ export const COLUMN_DEF_DATASET = [
         return <StatusBadge status={params.value}/>;
       }
   },{
-    field: 'dataset_type', headerName: 'Dataset Type', width: 170, hide: true,renderCell: params => {
+    field: 'dataset_type', headerName: 'Dataset Type', width: 170, renderCell: params => {
       return (
         <Typography variant="caption" sx={{overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}> {params.value}</Typography>                 
       );
@@ -153,7 +152,7 @@ export const COLUMN_DEF_DATASET = [
         <Button
           className='btn `btn-link'
           onClick={() => handleDataClick(params.value)}>
-          <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+          <FontAwesomeIcon icon={faFolder}/>
         </Button>                         
       );
     }
@@ -180,7 +179,7 @@ export const COLUMN_DEF_DATASET_MINI = [
       <StatusBadge status={params.value}/>
     )
   },
-  { field: 'uuid', headerName: 'UUID', hide: true, filterable: false, sortable: false},
+  { field: 'uuid', headerName: 'UUID', filterable: false, sortable: false},
 ];
 // PUBLICATION COLUMNS
 export const COLUMN_DEF_PUBLICATION = [
@@ -201,7 +200,7 @@ export const COLUMN_DEF_PUBLICATION = [
       <button
         className='btn btn-link'
         onClick={() => handleDataClick(params.value)}>
-        <FontAwesomeIcon icon={faFolder} data-tip data-for='folder_tooltip'/>
+        <FontAwesomeIcon icon={faFolder}/>
       </button>                         
       </React.Fragment>
     )
@@ -260,7 +259,6 @@ export const COLUMN_DEF_UPLOADS = [
     // This is just so it's included in the requested columns
     field: "registered_doi",
     headerName: "registered_doi",
-    hide: true,
   },
 ];
 
@@ -297,7 +295,6 @@ export const COLUMN_DEF_EPICOLLECTION = [
     // This is just so it's included in the requested columns
     field: "registered_doi",
     headerName: "registered_doi",
-    hide: true,
   },
 ];
 
@@ -324,7 +321,6 @@ export const COLUMN_DEF_MIXED = [
     sortable: false,
     valueGetter: getLabId,
     renderCell: params => {
-      // console.debug('%c◉ computed_lab_id_type ', 'color:#00ff7b', params);
       if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
         return nullCell();
       }
@@ -346,14 +342,6 @@ export const COLUMN_DEF_MIXED = [
       }
   },
   },
-  { field: 'entity_type', 
-    headerName: 'Entity Type', 
-    flex: 1,
-    minWidth: 150,
-    renderCell: params => { 
-      return (toTitleCase(params.row.entity_type))
-    }
-  },
   { field: "type",
     headerName: "Type",
     flex: 1,
@@ -370,6 +358,14 @@ export const COLUMN_DEF_MIXED = [
         return <Typography variant="caption" sx={{color:"#dedede",}}>{icon}{typeVal}</Typography>
       }
       return (renderFieldIcons(params) )
+    }
+  },
+  { field: 'entity_type',
+    headerName: 'Entity Type',
+    flex: 1,
+    minWidth: 150,
+    renderCell: params => {
+      return (toTitleCase(params.row.entity_type))
     }
   }, 
   { field: 'group_name', headerName: 'Group Name', flex: 1, minWidth: 200},
@@ -448,7 +444,6 @@ export const COLUMN_DEF_BULK_SAMPLES = [
     sortable: false,
     valueGetter: getTypeValue,
     renderCell: (params) => {
-      // console.debug('%c◉COLUMN_DEF_BULK_SAMPLES  sample_category', 'color:#00ff7b', params);
       return toTitleCase(params.row.sample_category);
     },
   },
@@ -538,10 +533,10 @@ export const COLUMN_DEF_BULK_SAMPLES_SUCCESS = [
 
 // DONORS
 export const COLUMN_DEF_BULK_DONORS = [
-  { field: "lab_id", headerName: "Lab ID", width: 150 },
-  { field: "lab_name", headerName: "Lab Name", width: 150 },
-  { field: "selection_protocol", headerName: "Protocol", width: 150 },
-  { field: "description", headerName: "Description", width: 200 },
+  { field: "lab_id", headerName: "Lab ID", flex: 1, minWidth: 150 },
+  { field: "lab_name", headerName: "Lab Name", flex: 1, minWidth: 150 },
+  { field: "selection_protocol", headerName: "Protocol", flex: 1.5, minWidth: 180 },
+  { field: "description", headerName: "Description", flex: 2, minWidth: 220 },
 ];
 export const COLUMN_DEF_BULK_DONORS_SUCCESS = [
   { field: 'hubmap_id', 
@@ -594,7 +589,6 @@ function entityIconsBasic(entity_type){
 }
 
   export function renderFieldIcons(params){
-  // console.debug('%c◉ params.value ', 'color:#00ff7b', params.value);
   return(
     <div>
       {params.row.organ && (
@@ -620,7 +614,6 @@ function getRowFromGridValue(valueOrParams, row) {
 
 function getLabId(valueOrParams, row) {
  const resolvedRow = getRowFromGridValue(valueOrParams, row);
- // console.debug('row:', resolvedRow)
   try {
     return resolvedRow['lab_donor_id'] || resolvedRow['lab_tissue_sample_id'] || resolvedRow['lab_dataset_id']
   } catch { }
@@ -629,7 +622,6 @@ return ""
 }
 function getTypeValue(valueOrParams, row) {
   const resolvedRow = getRowFromGridValue(valueOrParams, row);
-  // console.debug('%c◉ getTypeValue row ', 'color:#00ff7b', resolvedRow);
   try {
     return resolvedRow['display_subtype'] || resolvedRow['organ'] || resolvedRow['specimen_type'] || resolvedRow['entity_type']
    }catch{
@@ -638,7 +630,6 @@ function getTypeValue(valueOrParams, row) {
 }
 function getStatusAccess(valueOrParams, row) {
   const resolvedRow = getRowFromGridValue(valueOrParams, row);
-  // console.debug('%c◉ getStatusAccess row ', 'color:#00ff7b', resolvedRow);
   if(resolvedRow['status']){
     return ['status', resolvedRow['status']]
   }else if(resolvedRow['data_access_level']){
@@ -649,7 +640,6 @@ function getStatusAccess(valueOrParams, row) {
 }
 
 function renderStatusAccess(params) {
-  // console.debug('%c◉ renderStatusAccess params ', 'color:#996eff', params);
   if (params.value[0]==="status") {
     return (
       <StatusBadge status={params.value[1].toString()}/>
@@ -672,8 +662,7 @@ function doiLink(doi_url,registered_doi) {
       );
     }
     
-  } catch(error) {
-    // console.debug('%c⭗', 'color:#ff005d', "doiLink Error: ", error );
+  } catch {
   }
   return "";
 }

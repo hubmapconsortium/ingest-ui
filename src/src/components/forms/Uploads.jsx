@@ -1,5 +1,5 @@
 import {Fragment, useEffect, useState, useMemo} from "react";
-import {useParams} from "react-router-dom";
+import {useParams} from "react-router";
 import {
   ingest_api_allowable_edit_states, 
   ingest_api_create_upload,
@@ -30,7 +30,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from "@mui/material/LinearProgress";
 import NativeSelect from '@mui/material/NativeSelect';
@@ -148,9 +148,6 @@ export const UploadForm = (props) => {
               redirectToEntityRoute(entityType, uuid);
             }else{
               const entityData = response.results;
-              // console.group("Entity Info");
-              // console.table(entityData);
-              // console.groupEnd();
               setEntityData(entityData)
               setFormValues({
                 title: entityData.title,
@@ -198,7 +195,6 @@ export const UploadForm = (props) => {
       let url = new URL(window.location.href);
       let params = Object.fromEntries(url.searchParams.entries());
       if(Object.keys(params).length > 0){
-        // console.debug('%c◉ URL params ', 'color:#00ff7b', params);
         setFormValues((prevValues) => ({
           ...prevValues,
           ...params
@@ -235,7 +231,6 @@ export const UploadForm = (props) => {
   }, [uuid]);
 
   function handleInputChange(e){
-    // console.debug('%c◉ e', 'color:#00ff7b', e);
 
     if(e && e.target){
       const{id, value} = e.target;
@@ -256,8 +251,6 @@ export const UploadForm = (props) => {
     setValidationError(null);
     setValErrorMessages(null);
     let errors = 0;
-    // console.debug('%c◉  Form Values:', 'color:#00ff7b' );
-    // console.table(formValues );
 
     // Requireds
     let requiredFields = ["title", "description", "intended_organ", "intended_dataset_type"]; 
@@ -305,13 +298,11 @@ export const UploadForm = (props) => {
     // Final Judgement
     setFormErrors(newFormErrors);
     setValErrorMessages(e_messages);
-    // console.debug('%c◉ newFormErrors ', 'color:#00ff7b', newFormErrors);
     if(errors>0){
      setValidationError("Please Review the following fields and try again.");
     }else{
       setValidationError(null);
     }    
-    // console.debug('%c◉ ERRORTEST ', 'color:#00ff7b', );
     // return false;
     return errors === 0;
   }
@@ -326,7 +317,6 @@ export const UploadForm = (props) => {
   }
 
   function processResults(response){
-    // console.debug('%c◉ ✅ Processing Results: ', 'color:#00ff7b', response);
     if (response.status === 200) {
       props.onUpdated(response.results);
     } else {
@@ -335,8 +325,6 @@ export const UploadForm = (props) => {
   }
 
   function wrapUp(error){
-    // console.error('%c◉⚠️ WRAP UP ERROR: ', 'color:#ff005d', error);
-    // console.error(error.error.response.data);
     setPageErrors(error?.error?.response?.data ? error.error.response.data : error);
     setIsProcessing(false);
     setProcessingButton(false);
@@ -368,13 +356,9 @@ export const UploadForm = (props) => {
         ...(((formValues.ingest_task && formValues.ingest_task !== entityData.ingest_task) && permissions.has_admin_priv) && {ingest_task: formValues.ingest_task}),
         ...((!uuid) && {group_uuid: selectedGroupUUID	}),
       }
-      // console.group("Form valid, sending following info:");
-      // console.table(cleanForm);
-      // console.groupEnd();
 
       switch(target){
         case "Create":
-          // console.debug('%c◉ Create ', 'color:#00ff7b');
           ingest_api_create_upload(JSON.stringify(cleanForm))
             .then((response) => {
               if(response.status === 200){
@@ -389,7 +373,6 @@ export const UploadForm = (props) => {
           break;
 
         case "Save":
-          // console.debug('%c◉ Save ', 'color:#00ff7b');
           entity_api_update_entity(entityData.hubmap_id,JSON.stringify(cleanForm))
             .then((response) => {
               processResults(response);
@@ -400,7 +383,6 @@ export const UploadForm = (props) => {
           break;
 
         case "Submit":
-          // console.debug('%c◉ Submit ', 'color:#00ff7b');
           // We open that follow up Modal first now,
           // then from THERE, continue submitting
           setSubmitProcessModal(false);
@@ -415,7 +397,6 @@ export const UploadForm = (props) => {
                 }else if (cleanForm.priority_project_list.length === 1){
                   slackMessage.message += `\nThis data will be used for the ${cleanForm.priority_project_list[0]} project.`
                 }
-                // console.debug('%c◉ slackMessage ', 'color:#00ff7b', slackMessage);
                 ingest_api_notify_slack(slackMessage)
                   .then((slackRes) => {
                     if (slackRes.status === 200) {
@@ -437,10 +418,8 @@ export const UploadForm = (props) => {
           break;
          
         case "Validate":
-          // console.debug('%c◉ Validate ', 'color:#2158FF');
           ingest_api_validate_entity(uuid, "uploads")
             .then((response) => {
-              // console.debug("Response from validate", response);
               setEntityValidation({
                 open:true,
                 message:response
@@ -458,7 +437,6 @@ export const UploadForm = (props) => {
           break;
 
         case "Reorganize":
-          // console.debug('%c◉ Reorganize ', 'color:#00ff7b');
           ingest_api_reorganize_upload(uuid)
             .then((response) => {
               processResults(response)
@@ -469,14 +447,12 @@ export const UploadForm = (props) => {
           break;
 
         default:
-          // console.debug('%c◉ Default ', 'color:#00ff7b');
           break;
       }
 
     }else{
       setIsProcessing(false);
       setProcessingButton(false);
-      // console.debug('%c◉ Invalid ', 'color:#ff005d');
     }
     
   }
@@ -729,7 +705,7 @@ export const UploadForm = (props) => {
             helperText={"A name for this upload. This will be used internally by Consortium members for the purposes of finding this Data Upload"}
             value={formValues ? formValues.title : ""}
             error={formErrors.title}
-            InputLabelProps={{shrink: ((uuid || (formValues?.title )) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.title )) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -743,7 +719,7 @@ export const UploadForm = (props) => {
             helperText={"A full description of this Data Upload which will be used internally by the Consortium (not displayed publicly) for the purposes of searching for the Data Upload."}
             value={formValues ? formValues.description : ""}
             error={formErrors.description}
-            InputLabelProps={{shrink: ((uuid || (formValues?.description)) ? true:false)}}
+            slotProps={{inputLabel: {shrink: ((uuid || (formValues?.description)) ? true:false)}}}
             onChange={(e) => handleInputChange(e)}
             fullWidth
             disabled={!permissions.has_write_priv}
@@ -797,7 +773,7 @@ export const UploadForm = (props) => {
             {/* Dataset */}
             <Box className=" col-6" > 
               <Grid container spacing={2}>
-                <Grid item xs={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
+                <Grid size={12} className={`${formErrors.intended_dataset_type ? "invalid" : "valid"}`} >
                   <InputLabel sx={permissions.has_write_priv ? {color: "rgba(0, 0, 0, 0.6)"} : {color: "rgba(0, 0, 0, 0.3)"}} htmlFor="intended_dataset_type">
                     Intended Dataset Type *
                   </InputLabel>
@@ -834,7 +810,6 @@ export const UploadForm = (props) => {
                 <Box>
                   <DatePicker
                     openTo="month"
-                    clearable
                     value={(formValues && formValues.anticipated_complete_upload_month) ? dayjs(formValues.anticipated_complete_upload_month, "YYYY-MM") : dayjs("")}
                     onChange={(e) => handleInputChange(e)}
                     format="YYYY-MM"
@@ -860,7 +835,7 @@ export const UploadForm = (props) => {
                 helperText={"The total number of datasets that this Upload will eventually contain."}
                 value={formValues ? formValues.anticipated_dataset_count : ""}
                 error={formErrors.anticipated_dataset_count}
-                InputLabelProps={{shrink: ((uuid || (formValues?.anticipated_dataset_count )) ? true:false)}}
+                slotProps={{inputLabel: {shrink: ((uuid || (formValues?.anticipated_dataset_count )) ? true:false)}}}
                 onChange={(e) => handleInputChange(e)}
                 fullWidth
                 disabled={!permissions.has_write_priv}
@@ -879,7 +854,7 @@ export const UploadForm = (props) => {
                     id="ingest_task"
                     value={formValues ? formValues.ingest_task : ""}
                     error={formErrors.ingest_task}
-                    InputLabelProps={{shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}
+                    slotProps={{inputLabel: {shrink: ((uuid || (formValues?.ingest_task)) ? true:false)}}}
                     onChange={(e) => handleInputChange(e)}
                     fullWidth
                     disabled={(permissions.has_admin_priv && entityData.status === "Reorganized") || permissions.has_admin_priv === false }

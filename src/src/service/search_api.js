@@ -14,16 +14,6 @@ const options = {
     },
   };
 
-const SEARCH_API_TIMEOUT_MS = parseInt(
-  process.env.REACT_APP_SEARCH_API_TIMEOUT_MS || process.env.REACT_APP_AXIOS_TIMEOUT_MS || "6000",
-  10
-);
-
-const searchRequestOptions = {
-  ...options,
-  timeout: SEARCH_API_TIMEOUT_MS,
-};
-
 function parseSearchError(error) {
   const status = error?.response?.status;
   const isNetworkOrCors = !error?.response;
@@ -61,7 +51,7 @@ function parseSearchError(error) {
 export function api_validate_token(){
   let payload = search_api_filter_es_query_builder("test", 1, 1);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       return {status: res.status};
     } )
@@ -78,7 +68,7 @@ export function api_validate_token(){
 export function api_search(params){
   let payload = search_api_filter_es_query_builder(params, 0, 100);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
       let hits = res.data.hits.hits;
 
@@ -102,9 +92,8 @@ export function api_search(params){
 export function api_search2(params, from, size, fields, searchMode){
   let payload = search_api_filter_es_query_builder(params, from, size, fields, searchMode);
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
-      // console.debug("API api_search2 res", res);
       let hits = res.data.hits.hits;
       let entities = [];
       hits.forEach((s) => {
@@ -146,7 +135,6 @@ export function search_api_filter_es_query_builder(
 
   // if no field criteria is sent just default to a (keeps prior behavior)
   if (Object.keys(fields).length === 0 && fields.constructor === Object){
-    // console.debug("full search")
     boolQuery.must(
       esb.matchQuery(
         "entity_type",
@@ -168,7 +156,6 @@ export function search_api_filter_es_query_builder(
     }
     // Specimen Types
     if (fields["sample_category"]){
-      // console.debug("sample_category", fields["sample_category"]);
       if (fields["sample_category"] !== "donor"){
         boolQuery.must(
           esb.matchQuery("sample_category.keyword", fields["sample_category"])
@@ -223,6 +210,21 @@ export function search_api_filter_es_query_builder(
     );
   }
 
+  // Date ranges are applied in Elasticsearch so filtering remains accurate
+  // across every server-paginated results page, not just the visible rows.
+  if (fields["date_from"] || fields["date_to"]) {
+    const dateRange = esb.rangeQuery("created_timestamp");
+    // A lone date means that exact calendar day; two dates form a range.
+    const dateFrom = fields["date_from"] || fields["date_to"];
+    const dateTo = fields["date_to"] || fields["date_from"];
+    // HuBMAP maps these fields as epoch-millisecond longs. Sending an ISO
+    // string makes Search API/Elasticsearch try (and fail) to parse it as a
+    // Java Long.
+    dateRange.gte(Date.parse(`${dateFrom}T00:00:00.000Z`));
+    dateRange.lte(Date.parse(`${dateTo}T23:59:59.999Z`));
+    boolQuery.filter(dateRange);
+  }
+
   // keywords handling: preserve HBM exact-match behavior, otherwise use
   // multiMatch for non-wildcard keywords. Wildcard keywords are handled
   // after this block by adding a queryStringQuery as a MUST so other
@@ -248,7 +250,6 @@ export function search_api_filter_es_query_builder(
     //   boolQuery.must(
     //     esb.matchQuery("hubmap_id.keyword", fields["keywords"])
     //   );
-    //   console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
     // } 
   
     if (!hasWildcard) {
@@ -319,7 +320,6 @@ export function search_api_filter_es_query_builder(
   }
 
   console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
-  // console.groupEnd();
   return requestBody.toJSON();
   
 }
@@ -329,7 +329,6 @@ export function search_api_filter_es_query_builder(
  *
  */
 export function search_api_es_query_ids(IDs,types,colFields){
-  // console.debug('%c◉ search_api_es_query_ids', 'color:#00ff7b', IDs, IDs.length, types, colFields);
   const idsearch = esb.boolQuery()
     .should([
         esb.termsQuery('uuid.keyword', IDs.filter(id => !id.includes('.'))),
@@ -347,12 +346,9 @@ export function search_api_es_query_ids(IDs,types,colFields){
         "excludes": ["*.NO_SUCH_THING"]
       } )
 
-  // console.debug('%c◉ requestBody ', 'color:#00ff7b', requestBody.toJSON());
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), searchRequestOptions)
+    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), options)
     .then((res) => {
-      // console.debug("API api_search2 res", res);
-      // console.debug('%c◉ res ', 'color:#00ff7b', res);
       let hits = res.data.hits.hits;
       let entities = [];
       hits.forEach((s) => {
@@ -383,12 +379,6 @@ export function search_api_search_group_list(){
       return groups;
     } )
     .catch((err) => {
-      // console.debug(
-      //   "%c⭗",
-      //   "color:#ff005d",
-      //   "search_api_search_group_list error",
-      //   err
-      // );
       return err;
     } );
 }
@@ -405,7 +395,6 @@ export function search_api_get_assay_type(assay){
         }
       } );
 
-      // console.debug(found_dt);
       return {status: res.status, results: found_dt};
     } )
     .catch((error) => {
@@ -432,11 +421,9 @@ export function search_api_get_assay_set(scope){
       .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
       .then((res) => {
         let data = res.data;
-        // console.debug("API get_processed_assays data", data, mapCheck);
         return {data};
       } )
       .catch((error) => {
-        // console.debug("search_api_get_assay_set", error, error.response);
         if (error.response){
           return {
             status: error.response.status,

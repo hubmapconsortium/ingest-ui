@@ -37,7 +37,6 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
 //         return {data}
 //       })
 //       .catch(error => {
-//         console.debug('%c⭗', 'color:#ff005d', "ubkg_api_get_assaytype", error, error.response);
 //         var errorResp = captureError(error);
 //         return errorResp
 //       });
@@ -64,7 +63,6 @@ export function ubkg_api_get_organ_type_set(format) {
         }
       })
       .catch(error => {
-        // console.debug("ubkg_api_get_organ_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -82,7 +80,6 @@ export function ubkg_api_get_organs_full() {
         return data;
       })
       .catch(error => {
-        // console.debug("ubkg_api_get_organs_full", error, error.response);
         captureError(error);
       });
 };
@@ -121,7 +118,6 @@ export function ubkg_api_get_upload_dataset_types() {
         return data;
       })
       .catch(error => {
-        // console.debug("ubkg_api_get_dataset_type_set", error, error.response);
         captureError(error);
       });
 };
@@ -162,8 +158,6 @@ export function ubkg_api_generate_display_subtype(entity) {
 }
 
 function captureError (error){
-
-  // console.debug("Error Format CHeck", error);
 
   if(error.response ){
     if(error.response.data ){

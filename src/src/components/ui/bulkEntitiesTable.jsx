@@ -5,14 +5,20 @@ import {
   DataGrid, 
   useGridApiRef,
   useGridApiContext,
-  GridToolbarContainer,
-  GridToolbarColumnsButton,
-  GridToolbarFilterButton,
-  GridToolbarDensitySelector,
+  useGridSelector,
+  gridDensitySelector,
+  ColumnsPanelTrigger,
+  FilterPanelTrigger,
+  Toolbar,
+  ToolbarButton,
 } from "@mui/x-data-grid";
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import DensityMediumIcon from '@mui/icons-material/DensityMedium';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import Papa from 'papaparse';
 import InputLabel from "@mui/material/InputLabel";
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Select from "@mui/material/Select";
 import Collapse from '@mui/material/Collapse';
@@ -26,7 +32,7 @@ import {
 import {ParsePreflightString} from '../ui/formParts.jsx';
 import ErrorList from './ErrorList';
 import {ParseRegErrorFrame, parseErrorMessage, TableErrorRowProcessing} from '../../utils/error_helper.jsx';
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "@mui/material/Button";
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import {
   COLUMN_DEF_BULK_SAMPLES, 
@@ -137,7 +143,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       });
       
     } else {
-      //console.debug("No Data??");
     }
   }
 
@@ -168,7 +173,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   function handleFileUpload(newFile){
     ingest_api_bulk_entities_upload(type+"s", newFile)
       .then((res) => {
-        // console.debug('%c◉ ingest_api_bulk_entities_upload res ', 'color:#fff; background:#0033FF;',res.status, res, res?.results?.temp_id);
         if(res.status === 200 || res.status === 201){
           setFileData({
             ...fileData,
@@ -189,7 +193,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
             // Replace validation errors with the normalized set
             setBulkEntityValidationErrors(errorSet)
             highlightTableErrors(errorSet);
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
         }else if(res?.res?.response?.data){
@@ -223,9 +227,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "name": name ? name : "",
               }])
               //setValidatingBulkEntityUpload(false)
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
-              //console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#00ff7b', error);
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
@@ -236,7 +239,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
                 "error": errorSet.toString(),
                 "row": ""
               }])
-            }catch(error){
+            }catch{
               // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
@@ -245,9 +248,8 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               errorSet = errorSet.sort((a, b) => a.row - b.row);
               setBulkEntityValidationErrors(errorSet);
               highlightTableErrors(errorSet);
-            }catch(error){
+            }catch{
               //setValidatingBulkEntityUpload(false)
-              // console.debug('%c◉ parsedErrorRows trycatch  ', 'color:#00ff7b', error);
             }
           }
           // - [autoSHH] console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
@@ -262,7 +264,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
-          }catch(error){
+          }catch{
             // - [autoSHH] console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
           
@@ -288,17 +290,10 @@ export function BulkEntitiesTable({ type,onDataChange }) {
         let outerTable = document.getElementsByClassName("HDTdynamic")
         if(newHeight > 350){ newHeight = 300; console.log("2Big")}
         outerTable[0].setAttribute("style", `height: ${newHeight+100}px!important;`);
-        // console.debug('%c◉ outerTable.style.height ', 'color:#00ff7b', outerTable[0]);
       })          
       
       .catch(() => {
-        //console.debug('%c◉ FAILURE ', 'color:#ff005d', error);
       });
-  }
-
-  function handleTriggerUpload() {
-    // - [autoSHH] console.debug('%c◉ handleTriggerUpload', 'color:#4000FF');
-    document.getElementById('uploadBulk').click();
   }
 
   function handleFileWipe() {
@@ -483,7 +478,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
     }else{
       try{
         dimSpotlight();
-      }catch(err){
+      }catch{
         // - [autoSHH] console.debug('highlightTableErrors clear error', err);
       }
     }
@@ -536,7 +531,6 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       selectedRow.classList.add('Mui-selected');
     }
     e?.currentTarget?.setAttribute('data-selected', 'true');
-    // console.debug('%c◉ selectedRow ', 'color:#00ff7b', selectedRow);
   }
 
   function setSelectionListRow(e, item, target){
@@ -647,6 +641,12 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   function CustomToolbarExportAllRows() {
     const apiRefLocal = useGridApiContext();
     const apiInst = apiRefLocal && apiRefLocal.current ? apiRefLocal.current : apiRefLocal;
+    const density = useGridSelector(apiRefLocal, gridDensitySelector);
+    const [densityAnchorEl, setDensityAnchorEl] = useState(null);
+    const handleDensityChange = (nextDensity) => {
+      apiRefLocal.current.setDensity(nextDensity);
+      setDensityAnchorEl(null);
+    };
     const handleExportAll = () => {
       const api = apiInst;
       if (!api) return;
@@ -657,14 +657,53 @@ export function BulkEntitiesTable({ type,onDataChange }) {
       }
     };
     return (
-      <GridToolbarContainer>
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <Button size="small" onClick={handleExportAll} sx={{ ml: 1 }} startIcon={<SaveAltIcon />}>
+      <Toolbar aria-label="Bulk registration table controls">
+        <ColumnsPanelTrigger
+          aria-label="Show columns"
+          render={<ToolbarButton />}
+        >
+          <ViewColumnIcon fontSize="small" />
+        </ColumnsPanelTrigger>
+        <FilterPanelTrigger
+          aria-label="Show filters"
+          render={<ToolbarButton />}
+        >
+          <FilterListIcon fontSize="small" />
+        </FilterPanelTrigger>
+        <ToolbarButton
+          aria-label={`Change density; currently ${density}`}
+          aria-controls={densityAnchorEl ? 'bulk-density-menu' : undefined}
+          aria-haspopup="menu"
+          aria-expanded={densityAnchorEl ? 'true' : undefined}
+          onClick={(event) => setDensityAnchorEl(event.currentTarget)}
+        >
+          <DensityMediumIcon fontSize="small" />
+        </ToolbarButton>
+        <Menu
+          id="bulk-density-menu"
+          anchorEl={densityAnchorEl}
+          open={Boolean(densityAnchorEl)}
+          onClose={() => setDensityAnchorEl(null)}
+          slotProps={{ list: { 'aria-label': 'Table density' } }}
+        >
+          {['compact', 'standard', 'comfortable'].map((option) => (
+            <MenuItem
+              key={option}
+              selected={density === option}
+              onClick={() => handleDensityChange(option)}
+            >
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </MenuItem>
+          ))}
+        </Menu>
+        <ToolbarButton
+          aria-label="Export all rows"
+          onClick={handleExportAll}
+          render={<Button size="small" sx={{ ml: 1 }} startIcon={<SaveAltIcon />} />}
+        >
           Export All
-        </Button>
-      </GridToolbarContainer>
+        </ToolbarButton>
+      </Toolbar>
     );
   }
 
@@ -684,9 +723,10 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           getRowId={(row) => row.uuid || row.id}
           columns={columnsSuccess}
           loading={loaders.uploadTable}
+          showToolbar
           slots={{ toolbar: CustomToolbarExportAllRows }} 
-          density="compact"
           logLevel="info"
+          initialState={{ density: "compact" }}
           hideFooterSelectedRowCount
           rowCount={successRows && successRows.length >0 ? successRows.length : 0}
           sx={{
@@ -712,9 +752,9 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           rows={errorRows}
           columns={errCols}
           loading={loaders.registration}
-          density="compact"
           logLevel="info"
           initialState={{
+            density: "compact",
             // pagination: {
             //   paginationModel: { pageSize: 10, page: 0 },
             // },
@@ -779,7 +819,7 @@ export function BulkEntitiesTable({ type,onDataChange }) {
   
     <Box className="uploadManager" sx={{ display: "inline-block", width: "100%", mt: 2 }}>
       {fileData.registered === false && (
-        <Box className="text-left" onClick={(e)=>handleTriggerUpload(e)}>
+        <Box className="text-left">
           <input
             accept=".tsv, .csv"
             type="file"

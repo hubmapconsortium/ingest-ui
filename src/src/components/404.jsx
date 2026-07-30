@@ -1,5 +1,5 @@
 import { Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import HomeIcon from '@mui/icons-material/Home';
 
 export default function NotFound({ entityID: entityIDProp } = {}) {

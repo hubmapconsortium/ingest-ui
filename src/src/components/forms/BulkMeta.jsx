@@ -11,7 +11,7 @@ export const BulkMetaForm = (props) => {
   const [pageErrors] = useState(null);
   let [snackbarController, setSnackbarController] = useState({
     open: false,
-    message: "", 
+    message: "",
     status: "info"
   });
   let tsvURL = `https://raw.githubusercontent.com/hubmapconsortium/dataset-metadata-spreadsheet/main/sample-${props.type.toLowerCase()}/latest/sample-${props.type.toLowerCase()}.tsv`
@@ -22,11 +22,11 @@ export const BulkMetaForm = (props) => {
   return(
     <Box>
       <Grid container className="mb-3 mt-3" spacing={1} >
-        <Grid item lassName="topHeader" > 
+        <Grid size="auto" className="topHeader" >
             {NewBadge(props.type,"new")}
             <h3 style={{margin: "4px 5px", display: "inline-table", width:"100%",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.type)}s`}<br/></h3>
         </Grid>
-        <Grid item xs={8} className="">
+        <Grid size={8} className="">
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
             To bulk register {props.type} metadata, upload your tsv file here. Please refer to the format specified in this <a href={tsvURL} target='_blank' rel="noreferrer">Example TSV File</a>. For further details, please see the <a href={docURL} target='_blank' rel="noreferrer">Metadata Upload Documentation</a> for sections.<br />
             <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
@@ -35,7 +35,7 @@ export const BulkMetaForm = (props) => {
       </Grid>
 
       {/* Wizard */}
-      <BulkMetaTable 
+      <BulkMetaTable
         tsvfile={tsvFile}
         tsvURL={tsvURL}
         docURL={docURL}
@@ -50,7 +50,7 @@ export const BulkMetaForm = (props) => {
           }
         }}
       />
-    
+
       {pageErrors && (
         <Alert variant="filled" severity="error" className="pageErrors">
           <strong>Error:</strong> {JSON.stringify(pageErrors)}
@@ -59,5 +59,5 @@ export const BulkMetaForm = (props) => {
       <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
     </Box>
   );
-  
+
 }
