@@ -14,6 +14,7 @@ import {BulkEntityForm} from "./components/forms/BulkEntity";
 import {BulkMetaForm} from "./components/forms/BulkMeta";
 import NotFound from "./components/404";
 import {EntityRedirectResolver} from "./components/EntityRedirectResolver";
+import BulkRegistrationsDashboard from "./components/ui/BulkRegistrationsDashboard";
 
 function SearchRoute({onUrlChange}) {
   return <Search urlChange={(event, params, details) => onUrlChange(event, params, details)}/>;
@@ -90,6 +91,7 @@ export function AuthenticatedRoutes({
 
       <Route path="/bulk/donors" element={<BulkEntityForm reportError={reportError} bulkType="donor" />} />
       <Route path="/bulk/samples" element={<BulkEntityForm reportError={reportError} bulkType="sample" />} />
+      <Route path="/bulk/dashboard" element={<BulkRegistrationsDashboard />} />
 
       <Route path="/metadata">
         <Route index element={<BulkMetaForm reportError={reportError} type="block" />} />
