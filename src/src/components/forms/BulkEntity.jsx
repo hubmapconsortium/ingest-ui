@@ -31,11 +31,7 @@ export const BulkEntityForm = (props) => {
         `batches/${bulkRegistrationMessage.batchId}`,
       )
         .then((resp) => {
-          if (batchIsComplete(resp.data.status) || batchIsComplete(bulkRegistrationMessage?.batch?.status)) {
-            // STOP checking the status all is complete
-            clearInterval(st)
-            return 
-          }
+          
           let cssBadge;
           switch(resp?.data?.status) {
             case 'success':
@@ -48,10 +44,19 @@ export const BulkEntityForm = (props) => {
               cssBadge = 'PROCESSING';
               break;
           }
+          const hasAlreadyCompletedStatus = batchIsComplete(bulkRegistrationMessage?.batch?.status)
+          if (batchIsComplete(resp.data.status) || hasAlreadyCompletedStatus) {
+            // STOP checking the status because all is complete
+            clearInterval(st)
+            if (hasAlreadyCompletedStatus) {
+              // don't make anymore state updates, return
+              return 
+            }
+          }
           setBulkRegistrationMessage({...bulkRegistrationMessage, cssBadge, batch: resp?.data})
         })
         .catch((error) => {});
-    }, 3000); //every 3 seconds
+    }, 1000); //every 3 seconds
   };
 
   if (bulkRegistrationMessage?.batchId && !batchIsComplete(bulkRegistrationMessage?.batch?.status)) {
@@ -59,13 +64,14 @@ export const BulkEntityForm = (props) => {
   }
 
   const defaultStatus = "NEW"
-  const currentStatus = bulkRegistrationMessage?.cssBadge ? bulkRegistrationMessage.cssBadge : defaultStatus
+  const cssStatusBadge = bulkRegistrationMessage?.cssBadge ? bulkRegistrationMessage.cssBadge : defaultStatus
+  const jobStatus = cssStatusBadge // (bulkRegistrationMessage?.batch?.status || defaultStatus).toUpperCase()
 
   return(
     <Box>
       <Grid container className="mb-3 mt-3" spacing={1}>
         <Grid size="auto" className="topHeader" >
-            {NewBadge(props.bulkType, true, currentStatus)}
+            {NewBadge(props.bulkType, true, cssStatusBadge, jobStatus)}
             <h3 style={{margin: "4px 5px", display: "inline-table", width:"100%",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.bulkType)}s`}<br/></h3>
         </Grid>
         {!bulkRegistrationMessage && <Grid size={8} className="">
