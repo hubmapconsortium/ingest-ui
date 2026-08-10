@@ -266,6 +266,27 @@ export function ingest_api_bulk_entities_upload(type, data) {
       });
 };
 
+
+export function ingest_api_bulk_batch_id_status(path) { 
+  const options = {
+    headers: {
+      Authorization: "Bearer " + globalToken, 
+      "Content-Type": "application/json"
+    }};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/${path}`;
+  return axios.get(url, options);
+};
+
+export function ingest_api_bulk_batch_id_retry(batchId) { 
+  const options = {
+    headers: {
+      Authorization: "Bearer " + globalToken, 
+      "Content-Type": "application/json"
+    }};
+  let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/bulk/retry/${batchId}`;
+  return axios.post(url, options)
+};
+
 /* 
  * ingest_api_bulk_entities - Registers / Inserts bulk entries based on ID of .TSV file upload
  *
