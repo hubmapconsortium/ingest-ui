@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import TablePagination from '@mui/material/TablePagination';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
@@ -41,11 +42,49 @@ export const batchStatusBadge = (status) => {
 }
 
 const getAction = (row) => {
-  if (row.failed_count > 0) {
-    return <Button>Retry</Button>
+  const retryFailedJobs = () => {
+    ingest_api_bulk_batch_id_retry (row.batch_id,)
+        .then((resp) => {
+          window.location.reload()
+        })
+        .catch((error) => {});
   }
-  return <Button>View All</Button>
+
+  const getPortalLink = () => {
+    const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
+    const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
+    window.location = `https://portal.hubmapconsortium.org/search/samples?q=${query}`
+  }
+
+  if (row.failed_count > 0) {
+    return <Button onClick={retryFailedJobs}>Retry</Button>
+  }
+  return <Button onClick={getPortalLink}>View All</Button>
 }
+
+  const SortableTableCell = ({order, orderBy, handleSortRequest, name, field}) => {
+    return (
+      <TableCell>
+        <TableSortLabel
+          active={orderBy === field}
+          direction={orderBy === field ? order : "asc"}
+          onClick={() => handleSortRequest(field)}
+        >
+          {name}
+        </TableSortLabel>
+      </TableCell>
+    );
+  };
+
+const sortData = (array, comparator, orderDirection) => {
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+      if (a[0][comparator] < b[0][comparator]) return orderDirection === 'asc' ? -1 : 1;
+      if (a[0][comparator] > b[0][comparator]) return orderDirection === 'asc' ? 1 : -1;
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  };
 
 function Row(props) {
   const { row } = props;
@@ -55,6 +94,21 @@ function Row(props) {
     const badge = batchStatusBadge(status)
     return NewBadge('', true, badge.cssBadge, badge.status);
   }
+
+  const [order, setOrder] = useState('asc')
+  const [orderBy, setOrderBy] = useState('entity_uuid')
+
+
+  const handleSortRequest = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortableTableCell = (name, field) => {
+    return <SortableTableCell order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
+  }
+
 
   return (
     <>
@@ -88,13 +142,13 @@ function Row(props) {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow className='thead-dark border border-1'>
-                    <TableCell>HuBMAP ID</TableCell>
-                    <TableCell>Status</TableCell>
+                    {sortableTableCell('HuBMAP ID', 'hubmap_id')}
+                    {sortableTableCell('Status', 'status')}
                     <TableCell align="right">Details</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody className='border'>
-                  {row.jobs.map((job) => (
+                  {sortData(row.jobs, orderBy, order).map((job) => (
                     <TableRow key={job.entity_uuid}>
                       <TableCell component="th" scope="row">
                         <a target='_blank' href={`https://portal.hubmapconsortium.org/browse/sample/${job.entity_uuid}`}>{job.hubmap_id}<ArrowOutwardIcon sx={{ fontSize: 16 }} /></a> 
@@ -136,9 +190,22 @@ Row.propTypes = {
 
 
 export default function BulkRegistrationsDashboard({}) {
+  let interval
   const [rows, setRows] = useState([])
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [order, setOrder] = useState('asc')
+  const [orderBy, setOrderBy] = useState('batch_id')
+
+
+  const handleSortRequest = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortedRows = sortData(rows, orderBy, order);
 
   const fetchData = async () => {
     ingest_api_bulk_batch_id_status(
@@ -151,7 +218,10 @@ export default function BulkRegistrationsDashboard({}) {
   }
 
   useEffect(() => {
-    fetchData()
+    clearInterval(interval)
+    interval = setInterval(() => {
+      fetchData()
+    }, 5000) // every 5 seconds grab fresh results
   }, [])
 
   const handleChangePage = (event, newPage) => {
@@ -162,6 +232,10 @@ export default function BulkRegistrationsDashboard({}) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const sortableTableCell = (name, field) => {
+    return <SortableTableCell order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
+  }
   
   return (
     <div>
@@ -173,15 +247,15 @@ export default function BulkRegistrationsDashboard({}) {
           <TableHead>
             <TableRow className="thead-dark">
               <TableCell />
-              <TableCell>Batch ID</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell>Status</TableCell>
+              {sortableTableCell('Batch ID', 'batch_id')}
+              {sortableTableCell('Created At', 'created_at')}
+              {sortableTableCell('Status', 'status')}
               <TableCell>Completed At</TableCell>
               <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {sortedRows.map((row) => (
               <Row key={row.batch_id} row={row} />
             ))}
           </TableBody>
