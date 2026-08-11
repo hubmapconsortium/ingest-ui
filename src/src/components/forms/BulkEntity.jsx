@@ -8,6 +8,7 @@ import {NewBadge,SnackbarFeedback} from "../ui/formParts";
 import {BulkEntitiesTable} from '../ui/bulkEntitiesTable';
 import LinearProgress from '@mui/material/LinearProgress';
 import {ingest_api_bulk_batch_id_status} from '../../service/ingest_api';
+import { batchStatusBadge } from "../ui/BulkRegistrationsDashboard";
 
 export const BulkEntityForm = (props) => {
   const [pageErrors] = useState(null);
@@ -31,19 +32,6 @@ export const BulkEntityForm = (props) => {
         `batches/${bulkRegistrationMessage.batchId}`,
       )
         .then((resp) => {
-          
-          let cssBadge;
-          switch(resp?.data?.status) {
-            case 'success':
-              cssBadge = 'VALID';
-              break;
-            case 'failed': 
-              cssBadge = 'ERROR';
-              break;
-            default:
-              cssBadge = 'PROCESSING';
-              break;
-          }
           const hasAlreadyCompletedStatus = batchIsComplete(bulkRegistrationMessage?.batch?.status)
           if (batchIsComplete(resp.data.status) || hasAlreadyCompletedStatus) {
             // STOP checking the status because all is complete
@@ -53,7 +41,7 @@ export const BulkEntityForm = (props) => {
               return 
             }
           }
-          setBulkRegistrationMessage({...bulkRegistrationMessage, cssBadge, batch: resp?.data})
+          setBulkRegistrationMessage({...bulkRegistrationMessage, batch: resp?.data})
         })
         .catch((error) => {});
     }, 1000); //every 3 seconds
@@ -63,15 +51,13 @@ export const BulkEntityForm = (props) => {
     getBatchIdStatus()
   }
 
-  const defaultStatus = "NEW"
-  const cssStatusBadge = bulkRegistrationMessage?.cssBadge ? bulkRegistrationMessage.cssBadge : defaultStatus
-  const jobStatus = cssStatusBadge // (bulkRegistrationMessage?.batch?.status || defaultStatus).toUpperCase()
+  const badge = batchStatusBadge(bulkRegistrationMessage?.batch?.status)
 
   return(
     <Box>
       <Grid container className="mb-3 mt-3" spacing={1}>
         <Grid size="auto" className="topHeader" >
-            {NewBadge(props.bulkType, true, cssStatusBadge, jobStatus)}
+            {NewBadge(props.bulkType, true, badge.cssBadge, badge.status)}
             <h3 style={{margin: "4px 5px", display: "inline-table", width:"100%",verticalAlign: "bottom"}}>{`Bulk ${toTitleCase(props.bulkType)}s`}<br/></h3>
         </Grid>
         {!bulkRegistrationMessage && <Grid size={8} className="">
