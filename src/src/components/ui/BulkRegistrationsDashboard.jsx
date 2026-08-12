@@ -42,6 +42,8 @@ export const batchStatusBadge = (status) => {
   return {status: normalizedStatus, cssBadge}
 }
 
+const colSpan = 7
+
 const getAction = (row) => {
   const retryFailedJobs = () => {
     ingest_api_bulk_batch_id_retry (row.batch_id,)
@@ -54,7 +56,7 @@ const getAction = (row) => {
   const getPortalLink = () => {
     const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
     const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
-    window.location = `https://portal.hubmapconsortium.org/search/samples?q=${query}`
+    window.location = `https://portal.hubmapconsortium.org/search/${row.entity_type}?q=${query}`
   }
 
   if (row.failed_count > 0) {
@@ -126,13 +128,14 @@ function Row(props) {
         <TableCell component="th">
           {row.batch_id} <CopyToClipboard text={row.batch_id} />
         </TableCell>
+        <TableCell>{row.entity_type.charAt(0).toUpperCase() + row.entity_type.slice(1)}</TableCell>
         <TableCell>{row.created_at}</TableCell>
         <TableCell>{getBadge(row.status)}</TableCell>
         <TableCell>{row.completed_at}</TableCell>
         <TableCell align="right">{getAction(row)}</TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={colSpan}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <div style={{display: 'flex'}} className='mb-3'>
@@ -182,6 +185,7 @@ Row.propTypes = {
       }),
     ).isRequired,
     status: PropTypes.string.isRequired,
+    entity_type: PropTypes.string,
     completed_at: PropTypes.string,
     success_count: PropTypes.number.isRequired,
     failed_count: PropTypes.number.isRequired,
@@ -191,7 +195,6 @@ Row.propTypes = {
 
 
 export default function BulkRegistrationsDashboard({}) {
-  let interval
   const [rows, setRows] = useState([])
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -209,22 +212,43 @@ export default function BulkRegistrationsDashboard({}) {
   const sortedRows = sortData(rows, orderBy, order);
 
   const fetchData = async () => {
-    // TODO get batches then promise.all
-    ingest_api_bulk_batch_id_status(
-        `batches/0cb897a594db11f1849f2629690aeea3`,
-      )
-        .then((resp) => {
-          setRows([resp.data])
-        })
-        .catch((error) => {});
-  }
+    ingest_api_bulk_batch_id_status(`batches`)
+      .then(async (resp) => {
+        const batches = resp.data.batches
+        const batchIds = []
+        const batchIdToEntityType = {}
+        for (const b of batches) {
+          batchIds.push(b.batch_id)
+          batchIdToEntityType[b.batch_id] = b.entity_type
+        }
+        
+        const promises = []
+        for (const id of batchIds) {
+          promises.push(ingest_api_bulk_batch_id_status(
+          `batches/${id}`,
+        ))
+        }
+        const results = await Promise.allSettled(promises)
+        const validResults = []
+        for (const r of results) {
+          if (r.status === 'fulfilled') {
+            validResults.push({...r.value.data, entity_type: batchIdToEntityType[r.value.data.batch_id]})
+          }
+        }
+        setRows(validResults)
+      })
+      .catch((error) => {
+        console.error('BulkRegistrationsDashboard.fetchData.Error', error)
+      });
+  };
 
+  const seconds = 10
   useEffect(() => {
-    clearInterval(interval)
-    interval = setInterval(() => {
+   const intervalId = setInterval(() => {
       fetchData()
-    }, 5000) // every 5 seconds grab fresh results
-    //fetchData()
+    }, 1000 * seconds) // every 10 seconds grab fresh results
+    fetchData()
+    return () => clearInterval(intervalId);
   }, [])
 
   const handleChangePage = (event, newPage) => {
@@ -239,6 +263,8 @@ export default function BulkRegistrationsDashboard({}) {
   const sortableTableCell = (name, field) => {
     return <SortableTableCell order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
   }
+
+  
   
   return (
     <div>
@@ -251,6 +277,7 @@ export default function BulkRegistrationsDashboard({}) {
             <TableRow className="thead-dark">
               <TableCell />
               {sortableTableCell('Batch ID', 'batch_id')}
+              {sortableTableCell('Entity Type', 'entity_type')}
               {sortableTableCell('Created At', 'created_at')}
               {sortableTableCell('Status', 'status')}
               <TableCell>Completed At</TableCell>
@@ -261,7 +288,7 @@ export default function BulkRegistrationsDashboard({}) {
             {sortedRows.map((row) => (
               <Row key={row.batch_id} row={row} />
             ))}
-            <TableRow ><TableCell colspan="6" className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
+            <TableRow ><TableCell colSpan={colSpan} className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
             
           </TableBody>
         </Table>
