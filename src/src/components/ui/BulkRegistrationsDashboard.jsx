@@ -20,6 +20,7 @@ import CopyToClipboard from './CopyToClipboard';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { ingest_api_bulk_batch_id_status, ingest_api_bulk_batch_id_retry } from 'src/service/ingest_api';
 import { NewBadge } from './formParts';
+import CircularProgress from '@mui/material/CircularProgress';
 
 export const batchStatusBadge = (status) => {
   let cssBadge = 'NEW';
@@ -208,6 +209,7 @@ export default function BulkRegistrationsDashboard({}) {
   const sortedRows = sortData(rows, orderBy, order);
 
   const fetchData = async () => {
+    // TODO get batches then promise.all
     ingest_api_bulk_batch_id_status(
         `batches/0cb897a594db11f1849f2629690aeea3`,
       )
@@ -222,6 +224,7 @@ export default function BulkRegistrationsDashboard({}) {
     interval = setInterval(() => {
       fetchData()
     }, 5000) // every 5 seconds grab fresh results
+    //fetchData()
   }, [])
 
   const handleChangePage = (event, newPage) => {
@@ -258,6 +261,8 @@ export default function BulkRegistrationsDashboard({}) {
             {sortedRows.map((row) => (
               <Row key={row.batch_id} row={row} />
             ))}
+            <TableRow ><TableCell colspan="6" className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
+            
           </TableBody>
         </Table>
         <div className="SearchGridWrap HDT">
