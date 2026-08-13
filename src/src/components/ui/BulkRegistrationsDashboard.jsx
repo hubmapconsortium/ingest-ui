@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -65,9 +65,9 @@ const getAction = (row) => {
   return <Button onClick={getPortalLink}>View All</Button>
 }
 
-  const SortableTableCell = ({order, orderBy, handleSortRequest, name, field}) => {
+  const SortableTableCell = ({order, orderBy, handleSortRequest, name, field, sx}) => {
     return (
-      <TableCell>
+      <TableCell sx={sx}>
         <TableSortLabel
           active={orderBy === field}
           direction={orderBy === field ? order : "asc"}
@@ -89,9 +89,36 @@ const sortData = (array, comparator, orderDirection) => {
     return stabilizedThis.map((el) => el[0]);
   };
 
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
 function Row(props) {
   const { row } = props;
   const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const getBadge = (status) => {
     const badge = batchStatusBadge(status)
@@ -108,14 +135,24 @@ function Row(props) {
     setOrderBy(property);
   };
 
-  const sortableTableCell = (name, field) => {
-    return <SortableTableCell order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
+  const sortableTableCell = (name, field, sx) => {
+    return <SortableTableCell sx={sx} order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
   }
+
+  const getRows = useCallback((rows) => {
+    return [...rows]
+        .sort(getComparator(order, orderBy))
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+  }, [order, orderBy, page, rowsPerPage]);
+
 
 
   return (
     <>
-      <TableRow sx={{ '& > .MuiTableCell-root': { borderBottom: 'unset' } }} className='border-bottom'>
+      <TableRow
+        sx={{ "& > .MuiTableCell-root": { borderBottom: "unset" } }}
+        className="border-bottom"
+      >
         <TableCell>
           <IconButton
             aria-label="expand row"
@@ -128,41 +165,84 @@ function Row(props) {
         <TableCell component="th">
           {row.batch_id} <CopyToClipboard text={row.batch_id} />
         </TableCell>
-        <TableCell>{row.entity_type.charAt(0).toUpperCase() + row.entity_type.slice(1)}</TableCell>
+        <TableCell>
+          {row.entity_type.charAt(0).toUpperCase() + row.entity_type.slice(1)}
+        </TableCell>
         <TableCell>{row.created_at}</TableCell>
         <TableCell>{getBadge(row.status)}</TableCell>
         <TableCell>{row.completed_at}</TableCell>
         <TableCell align="right">{getAction(row)}</TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={colSpan}>
+        <TableCell
+          style={{ paddingBottom: 0, paddingTop: 0 }}
+          colSpan={colSpan}
+        >
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
-              <div style={{display: 'flex'}} className='mb-3'>
-                 <span style={{alignSelf: 'flex-start', flexGrow: '2'}}><Typography variant="h6" gutterBottom component="span">Batch Registrations</Typography> &nbsp;</span>
-                 <span style={{alignSelf: 'flex-end', flexGrow: '2', textAlign: 'right'}}><span>{NewBadge('', true, 'VALID', row.success_count)} registered</span>, <span>{NewBadge('', true, 'ERROR', row.failed_count)} failed</span></span>
+              <div style={{ display: "flex" }} className="mb-3">
+                <span style={{ alignSelf: "flex-start", flexGrow: "2" }}>
+                  <Typography variant="h6" gutterBottom component="span">
+                    Batch Registrations
+                  </Typography>{" "}
+                  &nbsp;
+                </span>
+                <span
+                  style={{
+                    alignSelf: "flex-end",
+                    flexGrow: "2",
+                    textAlign: "right",
+                  }}
+                >
+                  <span>
+                    {NewBadge("", true, "VALID", row.success_count)} registered
+                  </span>
+                  ,{" "}
+                  <span>
+                    {NewBadge("", true, "ERROR", row.failed_count)} failed
+                  </span>
+                </span>
               </div>
-              
+
               <Table size="small" aria-label="purchases">
                 <TableHead>
-                  <TableRow className='thead-dark border border-1'>
-                    {sortableTableCell('HuBMAP ID', 'hubmap_id')}
-                    {sortableTableCell('Status', 'status')}
+                  <TableRow className="thead-dark border border-1">
+                    {sortableTableCell("HuBMAP ID", "hubmap_id", {width: 200})}
+                    {sortableTableCell("Status", "status")}
                     <TableCell align="right">Details</TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody className='border'>
-                  {sortData(row.jobs, orderBy, order).map((job) => (
+                <TableBody className="border">
+                  {getRows(sortData(row.jobs, orderBy, order)).map((job) => (
                     <TableRow key={job.entity_uuid}>
                       <TableCell component="th" scope="row">
-                        <a target='_blank' href={`https://portal.hubmapconsortium.org/browse/sample/${job.entity_uuid}`}>{job.hubmap_id}<ArrowOutwardIcon sx={{ fontSize: 16 }} /></a> 
+                        {job.hubmap_id && <a
+                          target="_blank"
+                          href={`https://portal.hubmapconsortium.org/browse/sample/${job.entity_uuid}`}
+                        >
+                          {job.hubmap_id}
+                          <ArrowOutwardIcon sx={{ fontSize: 16 }} />
+                        </a>}
                       </TableCell>
                       <TableCell>{getBadge(job.status)}</TableCell>
-                      <TableCell align="right">{job.error_detail}</TableCell>
+                      <TableCell align="right" style={{overflowY: 'auto', maxHeight: 200}}><code>{job.error_detail}</code></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              <div className="SearchGridWrap HDT">
+                <div className="MuiDataGrid-footerContainer">
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    component="div"
+                    count={row.jobs.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                </div>
+              </div>
             </Box>
           </Collapse>
         </TableCell>
@@ -197,7 +277,7 @@ Row.propTypes = {
 export default function BulkRegistrationsDashboard({}) {
   const [rows, setRows] = useState([])
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [order, setOrder] = useState('asc')
   const [orderBy, setOrderBy] = useState('batch_id')
@@ -244,11 +324,11 @@ export default function BulkRegistrationsDashboard({}) {
 
   const seconds = 10
   useEffect(() => {
-   const intervalId = setInterval(() => {
-      fetchData()
-    }, 1000 * seconds) // every 10 seconds grab fresh results
+  //  const intervalId = setInterval(() => {
+  //     fetchData()
+  //   }, 1000 * seconds) // every 10 seconds grab fresh results
     fetchData()
-    return () => clearInterval(intervalId);
+    //return () => clearInterval(intervalId);
   }, [])
 
   const handleChangePage = (event, newPage) => {
@@ -263,6 +343,14 @@ export default function BulkRegistrationsDashboard({}) {
   const sortableTableCell = (name, field) => {
     return <SortableTableCell order={order} orderBy={orderBy} handleSortRequest={handleSortRequest} name={name} field={field} />
   }
+
+   const visibleRows = useMemo(
+    () =>
+      [...sortedRows]
+        .sort(getComparator(order, orderBy))
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [order, orderBy, page, rowsPerPage, sortedRows],
+  );
 
   
   
@@ -285,7 +373,7 @@ export default function BulkRegistrationsDashboard({}) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedRows.map((row) => (
+            {visibleRows.map((row) => (
               <Row key={row.batch_id} row={row} />
             ))}
             <TableRow ><TableCell colSpan={colSpan} className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
