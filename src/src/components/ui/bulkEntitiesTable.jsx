@@ -41,9 +41,10 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
+import CopyToClipboard from './CopyToClipboard.jsx';
 // lodash removed (not used)
 
-export function BulkEntitiesTable({ type,onDataChange }) {
+export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessage }) {
   const apiRef = useGridApiRef();
 
   let [pageErrors, setPageErrors] = useState(null);
@@ -327,26 +328,39 @@ export function BulkEntitiesTable({ type,onDataChange }) {
           serverResp = resp;
         }
         // - [autoSHH] console.debug('%c◉ serverResp ', 'color:#00ff7b', serverResp);
-        if(resp.status && resp.status === 201 && resp.results){
-          var respData = resp.results.data;
-          // - [autoSHH] console.debug("respData",respData);
-          var dataRows = [];
-          for (var [, value] of Object.entries(respData)) {
-            // - [autoSHH] console.debug("value",value);
-            dataRows.push(value);
+        if(resp.status){
+          if (resp.status === 202) {
+            // API is formatted: {Bulk upload request submitted successfully : "batch_id = 6f4c727894ed11f1a0832629690aeea3"}
+            const responseKeys = Object.keys(serverResp.results)
+            if (responseKeys.length) {
+              const messageValue = serverResp.results[responseKeys[0]].split('=')
+              const batchId = messageValue.length > 1 ? messageValue[1].trim() : null;
+              const body = <span>{responseKeys[0]}. {batchId && <span>With a batch ID: <em>{batchId} <CopyToClipboard text={batchId} /></em></span>}</span>
+              setBulkRegistrationMessage({body, batchId, message: responseKeys[0]})
+            }
+            // TODO: add bulk status here
           }
-          setBulkEntityRows(dataRows.length > 0 ? dataRows : [])
-          setFileData({
-            ...fileData,
-            registered: true,
-            regValidation:{
-              success: dataRows,
-              error: [],
-              errorMessages: [],
-            },
-          });
-            
-          setPageErrors(null);
+          if (resp.status === 201 && resp.results) {
+            let respData = resp.results.data;
+            // - [autoSHH] console.debug("respData",respData);
+            let dataRows = [];
+            for (var [, value] of Object.entries(respData)) {
+              // - [autoSHH] console.debug("value",value);
+              dataRows.push(value);
+            }
+            setBulkEntityRows(dataRows.length > 0 ? dataRows : [])
+            setFileData({
+              ...fileData,
+              registered: true,
+              regValidation:{
+                success: dataRows,
+                error: [],
+                errorMessages: [],
+              },
+            });
+              
+            setPageErrors(null);
+          }
 
         } else if (
           (resp.response && resp.response.status && resp.response.status === 504) ||

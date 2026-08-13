@@ -288,7 +288,7 @@ export function StatusBadge(status){
 }
 
 // Returns Special a Chip / Badge with NEW text and color (Purple)
-export function NewBadge(type, mini){
+export function NewBadge(type, mini, status = 'NEW', label = 'NEW'){
   console.debug('%c◉ NewBadge ', 'color:#00ff7b', type);
   let NewBadgeStyle
   if (mini){
@@ -318,7 +318,7 @@ export function NewBadge(type, mini){
     }
   }
   return (
-    <Chip style={NewBadgeStyle} className={ "newBadge " + badgeClass("NEW")} icon={mini ? null : IconSelection(type,"new")} label={"NEW"} size="small" />
+    <Chip style={NewBadgeStyle} className={ "newBadge " + badgeClass(status)} icon={mini ? null : IconSelection(type,"new")} label={label} size="small" />
   )
 }
 
