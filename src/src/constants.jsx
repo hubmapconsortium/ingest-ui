@@ -94,6 +94,6 @@ export const ES_SEARCHABLE_WILDCARDS = [
 
   export const URLS = {
     dataPortal: {
-      base: process.REACT_APP_DATA_PORTAL_URL
+      base: process.env.REACT_APP_DATA_PORTAL_URL
     }
   }
