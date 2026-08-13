@@ -70,6 +70,6 @@ favorites.json
 # *.~lock
 # *.~lock.*
 # Disabling so Dependabot can figure itself out
-package-lock.json
+# package-lock.json
 
 .idea
