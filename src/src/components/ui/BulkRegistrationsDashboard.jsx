@@ -324,11 +324,11 @@ export default function BulkRegistrationsDashboard({}) {
 
   const seconds = 10
   useEffect(() => {
-  //  const intervalId = setInterval(() => {
-  //     fetchData()
-  //   }, 1000 * seconds) // every 10 seconds grab fresh results
+   const intervalId = setInterval(() => {
+      fetchData()
+    }, 1000 * seconds) // every 10 seconds grab fresh results
     fetchData()
-    //return () => clearInterval(intervalId);
+    return () => clearInterval(intervalId);
   }, [])
 
   const handleChangePage = (event, newPage) => {
