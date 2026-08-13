@@ -91,3 +91,9 @@ export const ES_SEARCHABLE_WILDCARDS = [
   "uuid",
 
   ];
+
+  export const URLS = {
+    dataPortal: {
+      base: process.REACT_APP_DATA_PORTAL_URL
+    }
+  }

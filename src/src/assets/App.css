@@ -1480,7 +1480,7 @@ svg.invalid {
 .HDT .MuiDataGrid-footerContainer p,
 .HDT .Mui-active,
 .HDT .Mui-active .MuiTableSortLabel-icon,
-.HDT .Mui-active:hover {
+.HDT .MuiTableSortLabel-root:hover {
   color: #fff !important;
   font-family: 'Inter var', sans-serif!important;
 }
