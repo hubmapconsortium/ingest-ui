@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState, useRef} from "react";
 import { toTitleCase } from "../../utils/string_helper";
 import Box from "@mui/material/Box";
 import Typography from '@mui/material/Typography';
@@ -18,38 +18,50 @@ export const BulkEntityForm = (props) => {
     message: "",
     status: "info"
   });
-  let st
+  const intervalId = useRef(null)
 
   const [tsvFile] = useState(null);
   let [TMError, setTMError] = useState(false);
   const [bulkRegistrationMessage, setBulkRegistrationMessage] = useState(null)
 
-  const batchIsComplete = (status) => (['success','failed'].indexOf(status) !== -1)
+  const batchIsComplete = (completedAt) => completedAt !== null && completedAt !== undefined
+
+  const seconds = 5
+
   const getBatchIdStatus = () => {
-    clearInterval(st);
-    st = setInterval(() => {
-      ingest_api_bulk_batch_id_status(
-        `batches/${bulkRegistrationMessage.batchId}`,
-      )
-        .then((resp) => {
-          const hasAlreadyCompletedStatus = batchIsComplete(bulkRegistrationMessage?.batch?.status)
-          if (batchIsComplete(resp.data.status) || hasAlreadyCompletedStatus) {
-            // STOP checking the status because all is complete
-            clearInterval(st)
-            if (hasAlreadyCompletedStatus) {
-              // don't make anymore state updates, return
-              return 
-            }
+    ingest_api_bulk_batch_id_status(
+      `batches/${bulkRegistrationMessage.batchId}`,
+    )
+      .then((resp) => {
+        const hasAlreadyCompletedStatus = batchIsComplete(bulkRegistrationMessage?.batch?.completed_at)
+        const isComplete = batchIsComplete(resp?.data?.completed_at) || hasAlreadyCompletedStatus
+        if (isComplete) {
+          // STOP checking the status because all is complete
+          clearInterval(intervalId.current)
+          if (hasAlreadyCompletedStatus) {
+            // don't make anymore state updates, return
+            return 
           }
+        }
+        if (bulkRegistrationMessage?.batch?.status !== resp?.data.status || isComplete) {
           setBulkRegistrationMessage({...bulkRegistrationMessage, batch: resp?.data})
-        })
-        .catch((error) => {});
-    }, 1000); //every 3 seconds
+        }
+        
+      })
+      .catch((error) => {
+        console.error('BulkEntity.Error', error)
+      });
   };
 
-  if (bulkRegistrationMessage?.batchId && !batchIsComplete(bulkRegistrationMessage?.batch?.status)) {
-    getBatchIdStatus()
-  }
+  useEffect(() => {
+    if (bulkRegistrationMessage?.batchId && !batchIsComplete(bulkRegistrationMessage?.batch?.completed_at)) {
+      intervalId.current = setInterval(() => {
+        getBatchIdStatus()
+      }, 1000 * seconds); //every 5 seconds
+      getBatchIdStatus() // run immediately so the progress bar gets shown on change
+    }
+    return () => clearInterval(intervalId.current);
+  }, [bulkRegistrationMessage])
 
   const badge = batchStatusBadge(bulkRegistrationMessage?.batch?.status)
 

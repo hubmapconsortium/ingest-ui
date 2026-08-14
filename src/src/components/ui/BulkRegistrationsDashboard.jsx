@@ -21,6 +21,7 @@ import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { ingest_api_bulk_batch_id_status, ingest_api_bulk_batch_id_retry } from 'src/service/ingest_api';
 import { NewBadge } from './formParts';
 import CircularProgress from '@mui/material/CircularProgress';
+import { URLS } from '../../constants';
 
 export const batchStatusBadge = (status) => {
   let cssBadge = 'NEW';
@@ -56,7 +57,7 @@ const getAction = (row) => {
   const getPortalLink = () => {
     const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
     const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
-    window.location = `https://portal.hubmapconsortium.org/search/${row.entity_type}?q=${query}`
+    window.location = `${URLS.dataPortal.base}/search/${row.entity_type}?q=${query}`
   }
 
   if (row.failed_count > 0) {
@@ -218,7 +219,7 @@ function Row(props) {
                       <TableCell component="th" scope="row">
                         {job.hubmap_id && <a
                           target="_blank"
-                          href={`https://portal.hubmapconsortium.org/browse/sample/${job.entity_uuid}`}
+                          href={`${URLS.dataPortal.base}/browse/${row.entity_type}/${job.entity_uuid}`}
                         >
                           {job.hubmap_id}
                           <ArrowOutwardIcon sx={{ fontSize: 16 }} />
