@@ -210,6 +210,8 @@ function Row(props) {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow className="thead-dark border border-1">
+                    {row.status === 'running' && <TableRow ><TableCell colSpan={colSpan} className='text-center'>
+                      <div className='mx-auto'><CircularProgress size={16} aria-label="Running..." /></div></TableCell></TableRow >}
                     {sortableTableCell("HuBMAP ID", "hubmap_id", {width: 200})}
                     {sortableTableCell("Status", "status")}
                     <TableCell align="right">Details</TableCell>
