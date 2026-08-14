@@ -57,7 +57,7 @@ const getAction = (row) => {
   const getPortalLink = () => {
     const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
     const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
-    window.location = `${URLS.dataPortal.base}/search/${row.entity_type}?q=${query}`
+    window.location = `${URLS.dataPortal.base}/search/${row.entity_type}s?q=${query}`
   }
 
   if (row.failed_count > 0) {
