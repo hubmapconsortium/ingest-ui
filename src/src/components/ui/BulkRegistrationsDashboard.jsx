@@ -16,6 +16,8 @@ import Paper from '@mui/material/Paper';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import EditIcon from '@mui/icons-material/Edit';
 import CopyToClipboard from './CopyToClipboard';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { ingest_api_bulk_batch_id_status, ingest_api_bulk_batch_id_retry } from 'src/service/ingest_api';
@@ -65,7 +67,7 @@ const getAction = (row, setOnRetry) => {
   if (row.failed_count > 0) {
     return <Button onClick={retryFailedJobs}>Retry</Button>
   }
-  return <Button onClick={getPortalLink}>View All <ArrowOutwardIcon sx={{ fontSize: 16 }} /></Button>
+  return <Button onClick={getPortalLink}><Tooltip title={'View all registered on the Data Portal'}>View All <ArrowOutwardIcon sx={{ fontSize: 16 }} /></Tooltip></Button>
 }
 
   const SortableTableCell = ({order, orderBy, handleSortRequest, name, field, sx}) => {
@@ -213,7 +215,8 @@ function Row(props) {
                     {row.status === 'running' && <TableRow ><TableCell colSpan={colSpan} className='text-center'>
                       <div className='mx-auto'><CircularProgress size={16} aria-label="Running..." /></div></TableCell></TableRow >}
                     {sortableTableCell("HuBMAP ID", "hubmap_id", {width: 200})}
-                    {sortableTableCell("Status", "status")}
+                    {sortableTableCell("Status", "status", {width: 150})}
+                    <TableCell>Edit</TableCell>
                     <TableCell align="right">Details</TableCell>
                   </TableRow>
                 </TableHead>
@@ -221,15 +224,17 @@ function Row(props) {
                   {getRows(sortData(row.jobs, orderBy, order)).map((job) => (
                     <TableRow key={job.entity_uuid}>
                       <TableCell component="th" scope="row">
-                        {job.hubmap_id && <a
+                        {job.hubmap_id && <Tooltip title={`View ${job.hubmap_id} on the Data Portal`}><a
                           target="_blank"
                           href={`${URLS.dataPortal.base}/browse/${row.entity_type}/${job.entity_uuid}`}
                         >
                           {job.hubmap_id}
                           <ArrowOutwardIcon sx={{ fontSize: 16 }} />
-                        </a>}
+                        </a></Tooltip>}
+                        
                       </TableCell>
                       <TableCell>{getBadge(job.status)}</TableCell>
+                      <TableCell><Tooltip title={`Edit ${job.hubmap_id}`}><a href={`/${row.entity_type}/${job.entity_uuid}`}><EditIcon sx={{fontSize: 16}} /></a></Tooltip></TableCell>
                       <TableCell align="right" style={{overflowY: 'auto', maxHeight: 200}}><code>{job.error_detail}</code></TableCell>
                     </TableRow>
                   ))}
