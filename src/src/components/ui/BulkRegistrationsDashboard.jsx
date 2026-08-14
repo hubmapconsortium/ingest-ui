@@ -45,11 +45,13 @@ export const batchStatusBadge = (status) => {
 
 const colSpan = 7
 
-const getAction = (row) => {
+const getAction = (row, setOnRetry) => {
+
   const retryFailedJobs = () => {
-    ingest_api_bulk_batch_id_retry (row.batch_id,)
+    setOnRetry(new Date().getTime())
+    ingest_api_bulk_batch_id_retry (row.batch_id)
         .then((resp) => {
-          window.location.reload()
+          console.debug('retryFailedJobs', resp)
         })
         .catch((error) => {});
   }
@@ -63,7 +65,7 @@ const getAction = (row) => {
   if (row.failed_count > 0) {
     return <Button onClick={retryFailedJobs}>Retry</Button>
   }
-  return <Button onClick={getPortalLink}>View All</Button>
+  return <Button onClick={getPortalLink}>View All <ArrowOutwardIcon sx={{ fontSize: 16 }} /></Button>
 }
 
   const SortableTableCell = ({order, orderBy, handleSortRequest, name, field, sx}) => {
@@ -107,7 +109,7 @@ function getComparator(order, orderBy) {
 }
 
 function Row(props) {
-  const { row } = props;
+  const { row, setOnRetry } = props;
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
@@ -172,7 +174,7 @@ function Row(props) {
         <TableCell>{row.created_at}</TableCell>
         <TableCell>{getBadge(row.status)}</TableCell>
         <TableCell>{row.completed_at}</TableCell>
-        <TableCell align="right">{getAction(row)}</TableCell>
+        <TableCell align="right">{getAction(row, setOnRetry)}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell
@@ -280,9 +282,9 @@ export default function BulkRegistrationsDashboard({}) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [order, setOrder] = useState('asc')
-  const [orderBy, setOrderBy] = useState('batch_id')
-
+  const [order, setOrder] = useState('desc')
+  const [orderBy, setOrderBy] = useState('created_at')
+  const [onRetry, setOnRetry] = useState(null)
 
   const handleSortRequest = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -317,6 +319,7 @@ export default function BulkRegistrationsDashboard({}) {
           }
         }
         setRows(validResults)
+        setOnRetry(false)
       })
       .catch((error) => {
         console.error('BulkRegistrationsDashboard.fetchData.Error', error)
@@ -328,9 +331,15 @@ export default function BulkRegistrationsDashboard({}) {
    const intervalId = setInterval(() => {
       fetchData()
     }, 1000 * seconds) // every 10 seconds grab fresh results
-    fetchData()
+    
     return () => clearInterval(intervalId);
   }, [])
+
+  useEffect(() => {
+    if (onRetry !== false) {
+      fetchData()
+    }
+  }, [onRetry])
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -369,16 +378,15 @@ export default function BulkRegistrationsDashboard({}) {
               {sortableTableCell('Entity Type', 'entity_type')}
               {sortableTableCell('Created At', 'created_at')}
               {sortableTableCell('Status', 'status')}
-              <TableCell>Completed At</TableCell>
+              {sortableTableCell('Completed At', 'completed_at')}
               <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {(sortedRows.length <= 0 || onRetry !== false) && <TableRow ><TableCell colSpan={colSpan} className='text-center'><div className='mx-auto'><CircularProgress aria-label="Loading..." /></div></TableCell></TableRow >}
             {visibleRows.map((row) => (
-              <Row key={row.batch_id} row={row} />
+              <Row key={row.batch_id} row={row} setOnRetry={setOnRetry} />
             ))}
-            <TableRow ><TableCell colSpan={colSpan} className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
-            
           </TableBody>
         </Table>
         <div className="SearchGridWrap HDT">
