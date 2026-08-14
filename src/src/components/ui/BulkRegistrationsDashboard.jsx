@@ -234,7 +234,7 @@ function Row(props) {
                         
                       </TableCell>
                       <TableCell>{getBadge(job.status)}</TableCell>
-                      <TableCell><Tooltip title={`Edit ${job.hubmap_id}`}><a href={`/${row.entity_type}/${job.entity_uuid}`}><EditIcon sx={{fontSize: 16}} /></a></Tooltip></TableCell>
+                      <TableCell>{!job.error_detail && job.status === 'success' && <Tooltip title={`Edit ${job.hubmap_id}`}><a href={`/${row.entity_type}/${job.entity_uuid}`}><EditIcon sx={{fontSize: 16}} /></a></Tooltip>}</TableCell>
                       <TableCell align="right" style={{overflowY: 'auto', maxHeight: 200}}><code>{job.error_detail}</code></TableCell>
                     </TableRow>
                   ))}
