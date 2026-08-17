@@ -284,7 +284,7 @@ export function ingest_api_bulk_batch_id_retry(batchId) {
       "Content-Type": "application/json"
     }};
   let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/bulk/retry/${batchId}`;
-  return axios.post(url, options)
+  return axios.post(url, {}, options)
 };
 
 /* 

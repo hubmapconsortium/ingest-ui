@@ -16,6 +16,8 @@ import Paper from '@mui/material/Paper';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import EditIcon from '@mui/icons-material/Edit';
 import CopyToClipboard from './CopyToClipboard';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import { ingest_api_bulk_batch_id_status, ingest_api_bulk_batch_id_retry } from 'src/service/ingest_api';
@@ -45,11 +47,13 @@ export const batchStatusBadge = (status) => {
 
 const colSpan = 7
 
-const getAction = (row) => {
+const getAction = (row, setOnRetry) => {
+
   const retryFailedJobs = () => {
-    ingest_api_bulk_batch_id_retry (row.batch_id,)
+    setOnRetry(new Date().getTime())
+    ingest_api_bulk_batch_id_retry (row.batch_id)
         .then((resp) => {
-          window.location.reload()
+          console.debug('retryFailedJobs', resp)
         })
         .catch((error) => {});
   }
@@ -57,13 +61,13 @@ const getAction = (row) => {
   const getPortalLink = () => {
     const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
     const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
-    window.location = `${URLS.dataPortal.base}/search/${row.entity_type}?q=${query}`
+    window.open(`${URLS.dataPortal.base}/search/${row.entity_type}s?q=${query}`, '_blank')
   }
 
   if (row.failed_count > 0) {
     return <Button onClick={retryFailedJobs}>Retry</Button>
   }
-  return <Button onClick={getPortalLink}>View All</Button>
+  return <Button onClick={getPortalLink}><Tooltip title={'View all registered on the Data Portal'}>View All <ArrowOutwardIcon sx={{ fontSize: 16 }} /></Tooltip></Button>
 }
 
   const SortableTableCell = ({order, orderBy, handleSortRequest, name, field, sx}) => {
@@ -107,7 +111,7 @@ function getComparator(order, orderBy) {
 }
 
 function Row(props) {
-  const { row } = props;
+  const { row, setOnRetry } = props;
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
@@ -172,7 +176,7 @@ function Row(props) {
         <TableCell>{row.created_at}</TableCell>
         <TableCell>{getBadge(row.status)}</TableCell>
         <TableCell>{row.completed_at}</TableCell>
-        <TableCell align="right">{getAction(row)}</TableCell>
+        <TableCell align="right">{getAction(row, setOnRetry)}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell
@@ -208,8 +212,11 @@ function Row(props) {
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow className="thead-dark border border-1">
+                    {row.status === 'running' && <TableRow ><TableCell colSpan={colSpan} className='text-center'>
+                      <div className='mx-auto'><CircularProgress size={16} aria-label="Running..." /></div></TableCell></TableRow >}
                     {sortableTableCell("HuBMAP ID", "hubmap_id", {width: 200})}
-                    {sortableTableCell("Status", "status")}
+                    {sortableTableCell("Status", "status", {width: 150})}
+                    <TableCell>Edit</TableCell>
                     <TableCell align="right">Details</TableCell>
                   </TableRow>
                 </TableHead>
@@ -217,15 +224,17 @@ function Row(props) {
                   {getRows(sortData(row.jobs, orderBy, order)).map((job) => (
                     <TableRow key={job.entity_uuid}>
                       <TableCell component="th" scope="row">
-                        {job.hubmap_id && <a
+                        {job.hubmap_id && <Tooltip title={`View ${job.hubmap_id} on the Data Portal`}><a
                           target="_blank"
                           href={`${URLS.dataPortal.base}/browse/${row.entity_type}/${job.entity_uuid}`}
                         >
                           {job.hubmap_id}
                           <ArrowOutwardIcon sx={{ fontSize: 16 }} />
-                        </a>}
+                        </a></Tooltip>}
+                        
                       </TableCell>
                       <TableCell>{getBadge(job.status)}</TableCell>
+                      <TableCell>{!job.error_detail && job.status === 'success' && <Tooltip title={`Edit ${job.hubmap_id}`}><a href={`/${row.entity_type}/${job.entity_uuid}`}><EditIcon sx={{fontSize: 16}} /></a></Tooltip>}</TableCell>
                       <TableCell align="right" style={{overflowY: 'auto', maxHeight: 200}}><code>{job.error_detail}</code></TableCell>
                     </TableRow>
                   ))}
@@ -280,9 +289,9 @@ export default function BulkRegistrationsDashboard({}) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const [order, setOrder] = useState('asc')
-  const [orderBy, setOrderBy] = useState('batch_id')
-
+  const [order, setOrder] = useState('desc')
+  const [orderBy, setOrderBy] = useState('created_at')
+  const [onRetry, setOnRetry] = useState(null)
 
   const handleSortRequest = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -317,6 +326,7 @@ export default function BulkRegistrationsDashboard({}) {
           }
         }
         setRows(validResults)
+        setOnRetry(false)
       })
       .catch((error) => {
         console.error('BulkRegistrationsDashboard.fetchData.Error', error)
@@ -328,9 +338,15 @@ export default function BulkRegistrationsDashboard({}) {
    const intervalId = setInterval(() => {
       fetchData()
     }, 1000 * seconds) // every 10 seconds grab fresh results
-    fetchData()
+    
     return () => clearInterval(intervalId);
   }, [])
+
+  useEffect(() => {
+    if (onRetry !== false) {
+      fetchData()
+    }
+  }, [onRetry])
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -369,16 +385,15 @@ export default function BulkRegistrationsDashboard({}) {
               {sortableTableCell('Entity Type', 'entity_type')}
               {sortableTableCell('Created At', 'created_at')}
               {sortableTableCell('Status', 'status')}
-              <TableCell>Completed At</TableCell>
+              {sortableTableCell('Completed At', 'completed_at')}
               <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {(sortedRows.length <= 0 || onRetry !== false) && <TableRow ><TableCell colSpan={colSpan} className='text-center'><div className='mx-auto'><CircularProgress aria-label="Loading..." /></div></TableCell></TableRow >}
             {visibleRows.map((row) => (
-              <Row key={row.batch_id} row={row} />
+              <Row key={row.batch_id} row={row} setOnRetry={setOnRetry} />
             ))}
-            <TableRow ><TableCell colSpan={colSpan} className='text-center'>{sortedRows.length <= 0 && <div className='mx-auto'><CircularProgress aria-label="Loading..." /></div>}</TableCell></TableRow >
-            
           </TableBody>
         </Table>
         <div className="SearchGridWrap HDT">
