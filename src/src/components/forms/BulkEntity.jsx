@@ -76,12 +76,12 @@ export const BulkEntityForm = (props) => {
           <Typography variant="caption" style={{ display: "inline-block", fontSize: "" }}>
             To bulk register multiple {props.bulkType.toLowerCase()}s at one time, upload a tsv file here in the format specified by this <a href={`https://raw.githubusercontent.com/hubmapconsortium/ingest-ui/main/src/src/assets/Documents/example-${props.bulkType.toLowerCase()}-registrations.tsv`} target='_blank' rel="noreferrer">Example TSV File</a>. Include one line per {props.bulkType.toLowerCase()} to register. {toTitleCase(props.bulkType)} metadata must be provided separately. <br />
             See the <a href={docs} target="_blank">{toTitleCase(props.bulkType)} Bulk Registration</a> page for further details.<br/>
-            <span className={TMError ? "rowLimitClass error" : "rowLimitClass"}><strong> There is a 40 row limit on uploaded files.</strong></span><br />
+            <br />
           </Typography>
         </Grid>}
         {bulkRegistrationMessage && <div style={{width: '70%'}}>
           <Alert severity={bulkRegistrationMessage.status || 'success'}>{bulkRegistrationMessage.body}</Alert>
-          <p><small>You may view the status of all registrations at the <a href="/bulk/dashboard">Submitted Registrations</a> page.</small></p>
+          <p className="mt-3">You may view <span><a href={`/bulk/dashboard?batchId=${bulkRegistrationMessage.batchId}`}>the status of this request</a></span> and all other bulk registrations at the <a href="/bulk/dashboard">Submitted Registrations</a> page.</p>
           {bulkRegistrationMessage.batch && ['running', 'partial'].indexOf(bulkRegistrationMessage.batch?.status) !== -1 && <LinearProgress aria-label="Bulk status ..." />}
         </div>}
       </Grid>
