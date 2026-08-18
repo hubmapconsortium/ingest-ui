@@ -58,16 +58,9 @@ const getAction = (row, setOnRetry) => {
         .catch((error) => {});
   }
 
-  const getPortalLink = () => {
-    const ids = JSON.stringify(row.jobs.map((r) => r.hubmap_id))
-    const query = LZString.compressToEncodedURIComponent(`{"search":"","sortField":{"field":"created_timestamp","direction":"desc"},"filters":{"hubmap_id":{"values":${ids},"type":"TERM"}},"includeSupersededEntities":false}`)
-    window.open(`${URLS.dataPortal.base}/search/${row.entity_type}s?q=${query}`, '_blank')
-  }
-
   if (row.failed_count > 0) {
     return <Button onClick={retryFailedJobs}>Retry</Button>
   }
-  return <Button onClick={getPortalLink}><Tooltip title={'View all registered on the Data Portal'}>View All <ArrowOutwardIcon sx={{ fontSize: 16 }} /></Tooltip></Button>
 }
 
   const SortableTableCell = ({order, orderBy, handleSortRequest, name, field, sx}) => {
@@ -209,11 +202,10 @@ function Row(props) {
                 </span>
               </div>
 
-              <Table size="small" aria-label="purchases">
+              <Table size="small" aria-label="Submitted Registrations">
                 <TableHead>
                   <TableRow className="thead-dark border border-1">
-                    {row.status === 'running' && <TableRow ><TableCell colSpan={colSpan} className='text-center'>
-                      <div className='mx-auto'><CircularProgress size={16} aria-label="Running..." /></div></TableCell></TableRow >}
+                    
                     {sortableTableCell("HuBMAP ID", "hubmap_id", {width: 200})}
                     {sortableTableCell("Status", "status", {width: 150})}
                     <TableCell>Edit</TableCell>
@@ -221,6 +213,8 @@ function Row(props) {
                   </TableRow>
                 </TableHead>
                 <TableBody className="border">
+                  {row.status === 'running' && <TableRow ><TableCell colSpan={4} className='text-center'>
+                      <div className='mx-auto'><CircularProgress size={16} aria-label="Running..." /></div></TableCell></TableRow >}
                   {getRows(sortData(row.jobs, orderBy, order)).map((job) => (
                     <TableRow key={job.entity_uuid}>
                       <TableCell component="th" scope="row">

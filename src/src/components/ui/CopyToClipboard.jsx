@@ -36,7 +36,7 @@ function CopyToClipboard({text, timeout = 3000}) {
                   },
                 }}
               >
-                <sup onClick={handleTooltipOpen}><ContentCopyIcon /></sup>
+                <sup onClick={handleTooltipOpen}><ContentCopyIcon sx={{ fontSize: 20 }}/></sup>
               </Tooltip>
             </span>
           </ClickAwayListener>
