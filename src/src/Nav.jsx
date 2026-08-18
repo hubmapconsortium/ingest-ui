@@ -16,6 +16,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox'
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import DashboardIcon from '@mui/icons-material/Dashboard'
+import Divider from '@mui/material/Divider'
 import {clearUnprotectedLocalStorage} from "./utils/protected_storage";
 
 const MENU_SECTIONS = [
@@ -34,8 +35,10 @@ const MENU_SECTIONS = [
     key: 'B',
     label: 'Bulk',
     items: [
+      {to: '/bulk/dashboard', label: 'Submitted Registrations'},
       {to: '/bulk/donors', label: 'Donors'},
       {to: '/bulk/samples', label: 'Samples'},
+      {component: <Divider />},
       {to: '/new/upload', label: 'Data'}
     ]
   },
@@ -145,7 +148,7 @@ export const Navigation = (props) => {
             }
           }}>
           {section.items.map((item, index) => {
-            return(renderMenuButton(item.to, item.label, index))
+            return(item.component ? item.component : renderMenuButton(item.to, item.label, index))
           })}
         </Menu>
       </React.Fragment>
