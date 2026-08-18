@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -108,6 +108,16 @@ function Row(props) {
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const hasInitialized = useRef(false)
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    const batchId = query.get('batchId')
+    if (row.batch_id === batchId && !hasInitialized.current) {
+      hasInitialized.current = true
+      setOpen(true)
+    }
+  }, [])
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
