@@ -41,7 +41,6 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
-import CopyToClipboard from './CopyToClipboard.jsx';
 // lodash removed (not used)
 
 export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessage }) {
