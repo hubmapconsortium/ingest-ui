@@ -41,7 +41,6 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
-import CopyToClipboard from './CopyToClipboard.jsx';
 // lodash removed (not used)
 
 export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessage }) {
@@ -335,7 +334,7 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
             if (responseKeys.length) {
               const messageValue = serverResp.results[responseKeys[0]].split('=')
               const batchId = messageValue.length > 1 ? messageValue[1].trim() : null;
-              const body = <span>{responseKeys[0]}. {batchId && <span>With a batch ID: <em>{batchId} <CopyToClipboard text={batchId} /></em></span>}</span>
+              const body = <span>{responseKeys[0]}.</span>
               setBulkRegistrationMessage({body, batchId, message: responseKeys[0]})
             }
             // TODO: add bulk status here
