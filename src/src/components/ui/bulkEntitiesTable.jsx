@@ -337,9 +337,9 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
               const body = <span>{responseKeys[0]}.</span>
               setBulkRegistrationMessage({body, batchId, message: responseKeys[0]})
             }
-            // TODO: add bulk status here
+            
           }
-          if (resp.status === 201 && resp.results) {
+          else if (resp.status === 201 && resp.results) {
             let respData = resp.results.data;
             // - [autoSHH] console.debug("respData",respData);
             let dataRows = [];
@@ -359,6 +359,8 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
             });
               
             setPageErrors(null);
+          } else {
+            setBulkRegistrationMessage({body: 'An error occured with this request', status: 'error', message: `${resp.status}`})
           }
 
         } else if (
@@ -579,7 +581,7 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
             </Typography>
           )}
         </Box>
-        <Box className="errorListWrap">
+        <Box className="errorListWrap" style={{overflowY: 'auto', maxHeight: '500px'}}>
           <ErrorList
             errors={bulkEntityValidationErrors}
             onHover={({ event, item }) => {
