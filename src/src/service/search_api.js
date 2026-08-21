@@ -90,6 +90,9 @@ export function api_search(params){
 }
 
 export function api_search2(params, from, size, fields, searchMode){
+  if (params.sort_field && params.sort_field.indexOf('.keyword') === -1) {
+    params.sort_field = `${params.sort_field}.keyword`
+  }
   let payload = search_api_filter_es_query_builder(params, from, size, fields, searchMode);
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
