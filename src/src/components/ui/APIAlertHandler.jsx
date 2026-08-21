@@ -7,7 +7,6 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import SyncProblemIcon from "@mui/icons-material/SyncProblem";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ddLog } from "../../utils/doglog";
 import { useEffect } from "react";
 
 const baseChevronStyle = {
@@ -35,10 +34,7 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
   useEffect(() => {
     try {
       const msg = `${title} - ${typeof details === 'string' ? details : JSON.stringify(details)}`;
-      // try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch(e){}
-
-      // ddLog('error', loginError, ddMeta); 
-      ddLog('error', msg, { api_alert: { title, details, extra } });
+      // TODO add log
     } catch (e) {
       try { console.warn('ddLog for APIAlert failed', e); } catch {}
     }
