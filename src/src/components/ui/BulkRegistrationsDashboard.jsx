@@ -304,6 +304,7 @@ export default function BulkRegistrationsDashboard({}) {
   };
 
   const sortedRows = sortData(rows, orderBy, order);
+  const [rowMessage, setRowMessage] = useState(null);
 
   const fetchData = async () => {
     ingest_api_bulk_batch_id_status(`batches`)
@@ -329,8 +330,12 @@ export default function BulkRegistrationsDashboard({}) {
             validResults.push({...r.value.data, entity_type: batchIdToEntityType[r.value.data.batch_id]})
           }
         }
+        if (validResults.length <= 0) {
+          setRowMessage('No submitted registrations.')
+        }
         setRows(validResults)
         setOnRetry(false)
+        
       })
       .catch((error) => {
         console.error('BulkRegistrationsDashboard.fetchData.Error', error)
@@ -394,7 +399,16 @@ export default function BulkRegistrationsDashboard({}) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {(sortedRows.length <= 0 || onRetry !== false) && <TableRow ><TableCell colSpan={colSpan} className='text-center'><div className='mx-auto'><CircularProgress aria-label="Loading..." /></div></TableCell></TableRow >}
+            {(sortedRows.length <= 0 || onRetry !== false) && (
+              <TableRow>
+                <TableCell colSpan={colSpan} className="text-center">
+                  <div className="mx-auto">
+                    {!rowMessage && <CircularProgress aria-label="Loading..." />}
+                    {rowMessage && <span>{rowMessage}</span>}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
             {visibleRows.map((row) => (
               <Row key={row.batch_id} row={row} setOnRetry={setOnRetry} />
             ))}
