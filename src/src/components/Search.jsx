@@ -69,6 +69,7 @@ import {api_search2} from "../service/search_api";
 import {OrganIcons} from "./ui/icons"
 import {ES_SEARCHABLE_FIELDS} from "../constants";
 import { useLocation, useNavigate } from 'react-router';
+import { getOrganTermByUserKeyword } from "../utils/ubkg";
 
 const SIMPLE_COLUMNS = ["Donor", "Dataset", "Publication", "Upload", "Collection", "EPICollection"];
 
@@ -1730,17 +1731,23 @@ export function Search({
     var keywords = formFilters.keywords;
 
     var url = new URL(window.location); // Only used outside in basic / homepage Mode
-
+    let targetField
     if (keywords) {
-      params["keywords"] = keywords.trim();
-      url.searchParams.set("keywords", keywords);
+      const parsedKeywords = getOrganTermByUserKeyword(keywords.trim())
+      if (parsedKeywords) {
+        targetField = 'organ.keyword'
+        setFormFilters((prevValues) => ({...prevValues,
+          target_field: targetField,}))
+      }
+      params["keywords"] = parsedKeywords || keywords.trim();
+      url.searchParams.set("keywords", keywords.trim());
     } else {
       url.searchParams.delete("keywords");
     }
     // If the user selected a specific target field for keyword search, include it
-    if (formFilters.target_field) {
-      params["target_field"] = formFilters.target_field;
-      url.searchParams.set("target_field", formFilters.target_field);
+    if (formFilters.target_field || targetField) {
+      params["target_field"] = formFilters.target_field || targetField;
+      url.searchParams.set("target_field", formFilters.target_field || targetField);
     } else {
       url.searchParams.delete("target_field");
     }
