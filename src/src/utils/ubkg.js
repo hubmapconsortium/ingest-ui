@@ -44,11 +44,3 @@ export const getOrganTermByUserKeyword = (str) => {
   }
   return res
 }
-
-export const flipObj = (obj, lowercase = false) => {
-    return Object.keys(obj).reduce((ret, key) => {
-      let newKey = lowercase ? obj[key].toLowerCase() : obj[key];
-      ret[newKey] = key;
-      return ret;
-    }, {})
-}
