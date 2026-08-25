@@ -41,6 +41,7 @@ import {
   COLUMN_DEF_BULK_SAMPLES_SUCCESS,
   COLUMN_DEF_BULK_DONORS_SUCCESS } from '../ui/tableBuilder';
 import Button from "@mui/material/Button";
+import { logger } from '../../utils/logger.js';
 // lodash removed (not used)
 
 export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessage }) {
@@ -360,6 +361,11 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
               
             setPageErrors(null);
           } else {
+            const errorData = {
+              message: `BulkEntitiesTable.handleRegister.ln364 ${resp.status}`,
+              error_details: resp,
+            };
+            logger.all.error(errorData);
             setBulkRegistrationMessage({body: 'An error occured with this request', status: 'error', message: `${resp.status}`})
           }
 

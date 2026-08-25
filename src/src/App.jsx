@@ -41,6 +41,7 @@ import APIAlertHandler from "./components/ui/APIAlertHandler";
 import ConsolePopoverTools from "./components/ui/ConsolePopoverTools";
 import AppFooter from "./components/ui/AppFooter";
 import {requestStorageReset} from "./utils/version_storage";
+import { logger } from "./utils/logger";
 
 export function App(){
   let navigate = useNavigate();
@@ -88,17 +89,13 @@ export function App(){
       const causeMeta = loginErrorCause && !(loginErrorCause instanceof Error)
         ? loginErrorCause
         : undefined;
-      const ddMeta = {
-        source: 'auth.login_error',
-        auth: { login_error: loginError },
-        cause: causeMeta,
+      const errorData = {
+        message: 'auth.login_error',
+        error_details: errorObj.message || causeMeta,
       };
-      if(errorObj){
-        try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch{}
-      }
-      // TODO add log
+      logger.all.error(errorData)
     }catch(e){
-      console.warn('loginError ddLog failed', e);
+      logger.warn('App.useEffect.loginError', e)
     }
   }, [loginError, loginErrorCause]);
   
@@ -396,14 +393,19 @@ export function App(){
 
             }else{
               setExpiredKey(true);
-              // TODO add log
-              // try{ ddMeta.error = { kind: 'auth', message: errorObj.message, stack: errorObj.stack }; }catch(e){}
+              const errorMessage = `Unable to reach Search API during session validation. ${APIErrorTip}`
+              const errorDetails = results.error?.message || results.error
+              const errorData = {
+                message: `App.ln395 ${errorMessage}`,
+                error_details: errorDetails,
+              };
+              logger.all.error(errorData)
 
               setLoginErrorWithLog("Unable to validate your session due to a network/CORS issue. Please try again later. If the problem persists, contact help@hubmapconsortium.org", results.error);
               setAPIErrQueue((prev) => [...prev,[
                   "API Error - Search API",
-                  `Unable to reach Search API during session validation. ${APIErrorTip}`,
-                  results.error?.message || results.error,
+                  errorMessage,
+                  errorDetails,
                 ],
               ]);
               
@@ -435,17 +437,20 @@ export function App(){
       }
     }
   
-    function loadFailed(error,errorTitle, errorDetail){
-      // TODO add log / refactor
-      reportError(error);
-      console.debug('%c◉ errorTitle, error, errorDetail ', 'color:#00ff7b', errorTitle, error, errorDetail);
-      let ddMeta = {source: 'LocalStorage.login_error',auth: { login_error: loginError },cause: null,};
+    function loadFailed(error, errorTitle, errorDetail){
+      const errorData = {
+        message: `App.loadFailed.ln441 ${errorTitle}`,
+        error_details: errorDetail,
+      };
+      logger.all.error(errorData);
 
-      try{ ddMeta.error = { kind: 'auth', message: error.message, stack: error.stack }; }catch{}
+      reportError(error);
+      logger.debug('%c◉ errorTitle, error, errorDetail ', 'color:#00ff7b', errorTitle, error, errorDetail);
     }
   }, []);
 
   useEffect(() => {
+    logger.setLevel(process.env.REACT_APP_LOG_LEVEL);
   }, []);
 
   function Logout(){
