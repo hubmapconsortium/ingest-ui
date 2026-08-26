@@ -260,6 +260,11 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
           }))
         }else if(res?.error?.response?.data?.error){ // 400 / too many
           // - [autoSHH] console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
+          const errorData = {
+              message: `BulkEntitiesTable.handleUpload.ln263 ${res.error?.status}`,
+              error_details: res?.error?.response?.data?.error,
+            };
+          logger.all.error(errorData);
           try{
             setBulkEntityValidationErrors([{
               "name": "Too Many",
@@ -270,13 +275,15 @@ export function BulkEntitiesTable({ type, onDataChange, setBulkRegistrationMessa
           }
           
         }else{
+          const errorData = {
+              message: `BulkEntitiesTable.handleFileUpload.ln273 ${res.status}`,
+              error_details: res,
+            };
+            logger.all.error(errorData);
           setPageErrors((prevValues) => ({
             ...prevValues,
             'bulkEntity': "An error occurred during file upload. Please review the message and try again. || "+res.toString(),
           }))
-          
-          console.error("IDK" , res);
-          //setValidatingBulkEntityUpload(false)
         }
         //setValidatingBulkEntityUpload(false)
         setLoaders((prev) => ({ ...prev, uploadTable: false, }));

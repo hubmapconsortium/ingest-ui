@@ -36,21 +36,21 @@ export const logger = {
   },
 
   toIngest: (level, data) => {
-    const body = { ...data, timestamp: (new Date()).getTime(), log_level: level, browser_info: logger.getBrowserInfo() };
+    const body = { page_path: window.location.pathname, ...data, timestamp: (new Date()).getTime(), log_level: level, browser_info: logger.getBrowserInfo() };
     const options = {
       headers: {
         Authorization: "Bearer " + globalToken,
         "Content-Type": "application/json",
       },
     };
-    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/ingest-ui-client-logs`;
+    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/logs`;
     return axios.post(url, body, options);
   },
 
   setLevel: (level) => {
     log.setLevel(level)
   },
-  
+
   _all: (level, data, ...msg) => {
     if (msg[0]) {
         log[level](...msg)
