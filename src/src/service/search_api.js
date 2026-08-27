@@ -264,9 +264,14 @@ export function search_api_filter_es_query_builder(
         // only those fields. Use a simple_query_string over the provided
         // fields so the query only searches those fields (no cross-field
         // multi_match behavior).
-        boolQuery.filter(
-          esb.simpleQueryStringQuery(fields["keywords"]).fields(keywordSearchFields).defaultOperator('and')
-        );
+        if (Array.isArray(fields.keywords)) {
+          boolQuery.filter(esb.termsQuery(fields.target_field, fields.keywords))
+        } else {
+            boolQuery.filter(
+            esb.simpleQueryStringQuery(fields["keywords"]).fields(keywordSearchFields).defaultOperator('and')
+          );
+        }
+        
       } else {
         // no explicit target_field: keep legacy multiMatch behavior
         if(hasHBMID){
