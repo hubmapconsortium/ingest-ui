@@ -8,6 +8,7 @@ import SyncProblemIcon from "@mui/icons-material/SyncProblem";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
+import { logger } from "../../utils/logger";
 
 const baseChevronStyle = {
   cursor: "pointer",
@@ -34,9 +35,12 @@ function APIErrorItem({ err, idx, setAPIErrQueue }) {
   useEffect(() => {
     try {
       const msg = `${title} - ${typeof details === 'string' ? details : JSON.stringify(details)}`;
-      // TODO add log
+      logger.all.error({
+        message: `APIErrorItem.useEffect.ln37`,
+        error_details: msg,
+      })
     } catch (e) {
-      try { console.warn('ddLog for APIAlert failed', e); } catch {}
+      try { logger.warn('APIErrorItem.useEffect failed', e); } catch {}
     }
   }, []);
 
