@@ -43,7 +43,7 @@ export const logger = {
         "Content-Type": "application/json",
       },
     };
-    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/logs`;
+    let url = `${process.env.REACT_APP_DATAINGEST_API_URL}/client-logs`;
     return axios.post(url, body, options);
   },
 
