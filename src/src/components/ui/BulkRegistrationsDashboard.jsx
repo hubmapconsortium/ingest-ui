@@ -24,6 +24,7 @@ import { ingest_api_bulk_batch_id_status, ingest_api_bulk_batch_id_retry } from 
 import { NewBadge } from './formParts';
 import CircularProgress from '@mui/material/CircularProgress';
 import { URLS } from '../../constants';
+import { logger } from '../../utils/logger';
 
 export const batchStatusBadge = (status) => {
   let cssBadge = 'NEW';
@@ -55,7 +56,12 @@ const getAction = (row, setOnRetry) => {
         .then((resp) => {
           console.debug('retryFailedJobs', resp)
         })
-        .catch((error) => {});
+        .catch((error) => {
+          logger.all.error({
+              message: `BulkRegistrationsDashboard.retryFailedJobs.ln60 ${row.batch_id}`,
+              error_details: error,
+            })
+        });
   }
 
   if (row.failed_count > 0) {
