@@ -18,7 +18,7 @@
     "axios": "^1.18.1",
     "bootstrap": "^5.2.0-beta1",
     "dayjs": "^1.11.21",
-    "dompurify": "^3.4.12",
+    "dompurify": "^3.4.13",
     "elastic-builder": "^4.1.0",
     "env-cmd": "^11.0.0",
     "papaparse": "^5.5.4",
