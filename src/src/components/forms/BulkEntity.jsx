@@ -9,6 +9,7 @@ import {BulkEntitiesTable} from '../ui/bulkEntitiesTable';
 import LinearProgress from '@mui/material/LinearProgress';
 import {ingest_api_bulk_batch_id_status} from '../../service/ingest_api';
 import { batchStatusBadge } from "../ui/BulkRegistrationsDashboard";
+import { logger } from "../../utils/logger";
 
 export const BulkEntityForm = (props) => {
   const [pageErrors] = useState(null);
@@ -93,7 +94,7 @@ export const BulkEntityForm = (props) => {
         setBulkRegistrationMessage={setBulkRegistrationMessage}
         // columns={columns}
         onDataChange ={({data, errors})=>{
-          console.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);
+          logger.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);
           if(errors[0]?.name === "Too Many"){
             setTMError(true);
           }else{

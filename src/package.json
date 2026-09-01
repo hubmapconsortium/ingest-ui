@@ -30,7 +30,6 @@
     "xac-loglevel": "github:x-atlas-consortia/xac-loglevel#1.0.4"
   },
   "devDependencies": {
-    "@datadog/datadog-ci": "^5.21.2",
     "@eslint/js": "^10.0.1",
     "@vitejs/plugin-react": "^6.0.4",
     "cypress": "^15.19.0",

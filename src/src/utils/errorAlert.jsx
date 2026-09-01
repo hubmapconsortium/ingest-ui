@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Alert from '@mui/material/Alert';
+import { logger } from "./logger";
 
 function getNestedError(error) {
   let nestedError = error;
@@ -114,11 +115,11 @@ export function getSampleGenerationError(error) {
 export const RenderError = (props) => {
   var [errorMSG, setErrorMSG] = useState(true);
   useEffect(() => {
-    console.debug("USEEFFECT", props.errorMSG);
+    logger.all.error({message: 'RenderError', error_details: props.errorMSG});
     setErrorMSG(props.error);
   }, [props.error, props.errorMSG]);
 
-  console.debug("RenderError", errorMSG);
+  logger.debug("RenderError", errorMSG);
   if (errorMSG) {
     var errorString = "";
     typeof errorMSG.type === 'string'

@@ -1,6 +1,6 @@
-import {Fragment, useEffect, useState} from "react";
-import {useParams, useNavigate} from "react-router";
-import {ingest_api_allowable_edit_states} from "../../service/ingest_api";
+import { Fragment, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router";
+import { ingest_api_allowable_edit_states } from "../../service/ingest_api";
 import {
   entity_api_get_entity,
   entity_api_update_entity,
@@ -8,53 +8,63 @@ import {
 } from "../../service/entity_api";
 import {
   validateProtocolIODOI,
-  validateSingleProtocolIODOI
+  validateSingleProtocolIODOI,
 } from "../../utils/validators";
 import { humanize } from "../../utils/string_helper";
 
 import LoadingButton from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
-import NativeSelect from '@mui/material/NativeSelect';
+import NativeSelect from "@mui/material/NativeSelect";
 import InputLabel from "@mui/material/InputLabel";
 import AlertTitle from "@mui/material/AlertTitle";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import Grid from '@mui/material/Grid';
+import Grid from "@mui/material/Grid";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
-import {FormHeader,UserGroupSelectMenu,prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback} from "../ui/formParts";
-import { DonorFormFields,DonorFieldSet } from "../ui/fields/DonorFormFields";
-import { SIMPLE_ENTITY_ACTIONS, getSimpleEntityActions } from "../formActionRules/simpleEntityActionRules";
+import {
+  FormHeader,
+  UserGroupSelectMenu,
+  prefillFormValuesFromUrl,
+  redirectToEntityRoute,
+  SnackbarFeedback,
+} from "../ui/formParts";
+import { DonorFormFields, DonorFieldSet } from "../ui/fields/DonorFormFields";
+import {
+  SIMPLE_ENTITY_ACTIONS,
+  getSimpleEntityActions,
+} from "../formActionRules/simpleEntityActionRules";
 import NotFound from "../404";
+import { logger } from "../../utils/logger";
 
 export const DonorForm = (props) => {
   let navigate = useNavigate();
-  let[entityData, setEntityData] = useState({
+  let [entityData, setEntityData] = useState({
     lab_donor_id: "",
     label: "",
     protocol_url: "",
     description: "",
     group_uuid: "",
   });
-  let[isLoading, setLoading] = useState(true);
-  let[isProcessing, setIsProcessing] = useState(false);
-  let[permissions,setPermissions] = useState({ 
+  let [isLoading, setLoading] = useState(true);
+  let [isProcessing, setIsProcessing] = useState(false);
+  let [permissions, setPermissions] = useState({
     has_admin_priv: false,
     has_publish_priv: false,
     has_submit_priv: false,
-    has_write_priv: false
+    has_write_priv: false,
   });
-  let[pageErrors, setPageErrors] = useState(null);
-  let[notFound, setNotFound] = useState(false);
+  let [pageErrors, setPageErrors] = useState(null);
+  let [notFound, setNotFound] = useState(false);
   const [valErrorMessages, setValErrorMessages] = useState([]);
-  let[formErrors, setFormErrors] = useState({
+  let [formErrors, setFormErrors] = useState({
     lab_donor_id: "",
     label: "",
     protocol_url: "",
     description: "",
   });
-  var[formValues, setFormValues] = useState({
+  var [formValues, setFormValues] = useState({
     lab_donor_id: "",
     label: "",
     protocol_url: "",
@@ -62,29 +72,29 @@ export const DonorForm = (props) => {
   });
   let [snackbarController, setSnackbarController] = useState({
     open: false,
-    message: "", 
-    status: "info"
+    message: "",
+    status: "info",
   });
 
-  const{uuid} = useParams();
+  const { uuid } = useParams();
   // TODO: Polish Process for loading the requested Entity, If Requested
   // (Including the Entity Type redirect)
   useEffect(() => {
     setNotFound(false);
-    if(uuid && uuid !== ""){
+    if (uuid && uuid !== "") {
       entity_api_get_entity(uuid)
         .then((response) => {
-          if(response.status === 404 || response.status === 400){
+          if (response.status === 404 || response.status === 400) {
             setNotFound(true);
             return;
           }
-          if(response.status === 200){
+          if (response.status === 200) {
             const entityType = response.results.entity_type;
-            if(entityType !== "Donor"){
+            if (entityType !== "Donor") {
               // Are we sure we're loading a Donor?
               // @TODO: Move this sort of handling/detection to the outer app, or into component
               redirectToEntityRoute(entityType, uuid);
-            }else{
+            } else {
               const entityData = response.results;
               setEntityData(entityData);
               setFormValues({
@@ -93,13 +103,15 @@ export const DonorForm = (props) => {
                 protocol_url: entityData.protocol_url,
                 description: entityData.description,
                 group_uuid: entityData.group_uuid,
-                group_name: entityData.group_name
+                group_name: entityData.group_name,
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   const updatedPermissions = {
                     ...response.results,
-                    ...(entityData.data_access_level === "public" && { has_write_priv: false }),
+                    ...(entityData.data_access_level === "public" && {
+                      has_write_priv: false,
+                    }),
                   };
                   setPermissions(updatedPermissions);
                 })
@@ -107,18 +119,18 @@ export const DonorForm = (props) => {
                   setPageErrors(error);
                 });
             }
-          }else{
+          } else {
             setPageErrors(response);
           }
         })
         .catch((error) => {
-          if(error.status === 404 || error.status === 400){
+          if (error.status === 404 || error.status === 400) {
             setNotFound(true);
             return;
           }
           setPageErrors(error);
         });
-    }else{
+    } else {
       setPermissions({
         has_write_priv: true,
       });
@@ -130,127 +142,138 @@ export const DonorForm = (props) => {
     setLoading(false);
   }, [uuid]);
 
-  function handleInputChange(e){
-    const{id, value} = e.target;
+  function handleInputChange(e) {
+    const { id, value } = e.target;
     setFormValues((prevValues) => ({
       ...prevValues,
       [id]: value,
     }));
   }
 
-  function validateDOI(protocolDOI){
+  function validateDOI(protocolDOI) {
     if (!validateProtocolIODOI(protocolDOI)) {
       setFormErrors((prevValues) => ({
         ...prevValues,
-          'protocol_url': "Please enter a valid protocols.io URL"
-        }));
-      return [1,"Please enter a valid protocols.io URL"]
+        protocol_url: "Please enter a valid protocols.io URL",
+      }));
+      return [1, "Please enter a valid protocols.io URL"];
     } else if (!validateSingleProtocolIODOI(protocolDOI)) {
       setFormErrors((prevValues) => ({
         ...prevValues,
-          'protocol_url': "Please enter only one valid protocols.io URL"
-        }));
-      return [1,"Please enter only one valid protocols.io URL"]
-    }else{
+        protocol_url: "Please enter only one valid protocols.io URL",
+      }));
+      return [1, "Please enter only one valid protocols.io URL"];
+    } else {
       setFormErrors((prevValues) => ({
         ...prevValues,
-          'protocol_url': ""
-        }));
-      return [0,""]
+        protocol_url: "",
+      }));
+      return [0, ""];
     }
   }
 
-  function validateForm(){
-    console.debug('%c◉ validateForm ', 'color:#00ff7b', );
+  function validateForm() {
     setValErrorMessages(null);
     let errors = 0;
     let e_messages = [];
     let newFormErrors = {};
     let requiredFields = ["label", "protocol_url"];
-    requiredFields.forEach(field => {
+    requiredFields.forEach((field) => {
       if (!formValues[field] || formValues[field] === "") {
-        let fieldName = DonorFieldSet.find(f => f.id === field)?.label || humanize(field);
-        console.debug('%c◉ fieldName ', 'color:#00ff7b', fieldName);
-        newFormErrors[field] = fieldName+" | is a required field"
-        e_messages.push(fieldName+" | is a required field");
+        let fieldName =
+          DonorFieldSet.find((f) => f.id === field)?.label || humanize(field);
+        newFormErrors[field] = fieldName + " | is a required field";
+        e_messages.push(fieldName + " | is a required field");
         errors++;
       }
     });
     // Formatting Validation
-    let doiVal = validateDOI(formValues['protocol_url']);
+    let doiVal = validateDOI(formValues["protocol_url"]);
     errors += doiVal[0];
-    if(doiVal[0]>0){
+    if (doiVal[0] > 0) {
       e_messages.push(doiVal[1]);
-      newFormErrors['protocol_url'] = true
+      newFormErrors["protocol_url"] = true;
     }
     // End Validation
     setFormErrors(newFormErrors);
     setValErrorMessages(errors > 0 ? e_messages : null);
-    console.debug('%c◉ errorcount ', 'color:#00ff7b', errors);
+    logger.all.error({
+      message: "DonorForm.validateForm",
+      error_details: errors,
+    });
     return errors === 0;
   }
 
-  function handleSubmit(e){
-    e.preventDefault()    
+  function handleSubmit(e) {
+    e.preventDefault();
     setIsProcessing(true);
 
-    if(validateForm()){
-      let cleanForm ={
+    if (validateForm()) {
+      let cleanForm = {
         lab_donor_id: formValues.lab_donor_id,
         label: formValues.label,
         protocol_url: formValues.protocol_url,
         description: formValues.description,
-      }
-      console.debug('%c◉ cleanForm ', 'color:#00ff7b', cleanForm, uuid);
-      if(uuid){
+      };
+      logger.debug(
+        "%c◉ DonorForm.handleSubmit cleanForm ",
+        "color:#008000",
+        cleanForm,
+        uuid,
+      );
+      if (uuid) {
         // We're in Edit mode
-        entity_api_update_entity(entityData.hubmap_id,JSON.stringify(cleanForm))
+        entity_api_update_entity(
+          entityData.hubmap_id,
+          JSON.stringify(cleanForm),
+        )
           .then((response) => {
-            if(response.status === 200){
+            if (response.status === 200) {
               props.onUpdated(response.results);
-            }else{
-              wrapUp(response)
+            } else {
+              wrapUp(response);
             }
           })
           .catch((error) => {
-            wrapUp(error)
+            wrapUp(error);
           });
-      }else{
+      } else {
         // We're in Create mode
         // They might not have changed the Group Selector, so lets check for the value
         let selectedGroup = document.getElementById("group_uuid");
-        if(selectedGroup?.value){
-          cleanForm = {...cleanForm, group_uuid: selectedGroup.value};
+        if (selectedGroup?.value) {
+          cleanForm = { ...cleanForm, group_uuid: selectedGroup.value };
         }
-        entity_api_create_entity("donor",JSON.stringify(cleanForm))
+        entity_api_create_entity("donor", JSON.stringify(cleanForm))
           .then((response) => {
-            if(response.status === 200){
+            if (response.status === 200) {
               props.onCreated(response.results);
-            }else{
-              wrapUp(response.error ? response.error : response)
+            } else {
+              wrapUp(response.error ? response.error : response);
             }
           })
           .catch((error) => {
-            wrapUp(error)
+            wrapUp(error);
           });
       }
-    }else{
+    } else {
       setIsProcessing(false);
     }
   }
 
-  function wrapUp(error){
+  function wrapUp(error) {
     setPageErrors(error);
     setIsProcessing(false);
   }
 
-  function buttonEngine(){
+  function buttonEngine() {
     const actionRenderers = {
       [SIMPLE_ENTITY_ACTIONS.cancel]: () => (
         <Button
           variant="contained"
           className="m-2 cancelButton"
-          onClick={() => navigate("/")}>
+          onClick={() => navigate("/")}
+        >
           Cancel
         </Button>
       ),
@@ -259,7 +282,8 @@ export const DonorForm = (props) => {
           variant="contained"
           loading={isProcessing}
           className="m-2 creationButton"
-          onClick={(e) => handleSubmit(e)}>
+          onClick={(e) => handleSubmit(e)}
+        >
           Generate ID
         </LoadingButton>
       ),
@@ -268,14 +292,15 @@ export const DonorForm = (props) => {
           loading={isProcessing}
           variant="contained"
           className="m-2 updateButton"
-          onClick={(e) => handleSubmit(e)}>
+          onClick={(e) => handleSubmit(e)}
+        >
           Update
         </LoadingButton>
       ),
     };
 
-    return(
-      <Box sx={{textAlign: "right"}}>
+    return (
+      <Box sx={{ textAlign: "right" }}>
         {getSimpleEntityActions({ uuid, permissions }).map((action) => (
           <Fragment key={action.id}>{actionRenderers[action.id]()}</Fragment>
         ))}
@@ -283,15 +308,18 @@ export const DonorForm = (props) => {
     );
   }
 
-  if(notFound){
-    return(<NotFound entityID={uuid} />);
-  }else if(isLoading ||(!entityData && !formValues && uuid) ){
-    return(<LinearProgress />);
-  }else{
-    return(
+  if (notFound) {
+    return <NotFound entityID={uuid} />;
+  } else if (isLoading || (!entityData && !formValues && uuid)) {
+    return <LinearProgress />;
+  } else {
+    return (
       <Box>
-        <Grid container className=''>
-          <FormHeader entityData={uuid ? entityData : ["new","Donor"]} permissions={permissions} />
+        <Grid container className="">
+          <FormHeader
+            entityData={uuid ? entityData : ["new", "Donor"]}
+            permissions={permissions}
+          />
         </Grid>
         <form className="entityForm">
           <DonorFormFields
@@ -301,12 +329,15 @@ export const DonorForm = (props) => {
             handleInputChange={handleInputChange}
             uuid={uuid}
           />
-          
+
           {/* Group */}
           {/* Data is viewable in form header & cannot be changed, so only show on Creation */}
           {!uuid && (
-            <Box className="my-3">           
-              <InputLabel sx={{color: "rgba(0, 0, 0, 0.38)"}} htmlFor="group_uuid">
+            <Box className="my-3">
+              <InputLabel
+                sx={{ color: "rgba(0, 0, 0, 0.38)" }}
+                htmlFor="group_uuid"
+              >
                 Group
               </InputLabel>
               <NativeSelect
@@ -319,8 +350,9 @@ export const DonorForm = (props) => {
                   BorderTopLeftRadius: "4px",
                   BorderTopRightRadius: "4px",
                 }}
-                disabled={uuid?true:false}
-                value={formValues.group_uuid ? formValues.group_uuid : ""}>
+                disabled={uuid ? true : false}
+                value={formValues.group_uuid ? formValues.group_uuid : ""}
+              >
                 <UserGroupSelectMenu formValues={formValues} />
               </NativeSelect>
             </Box>
@@ -336,14 +368,17 @@ export const DonorForm = (props) => {
           )}
           {buttonEngine()}
         </form>
-      
+
         {pageErrors && (
           <Alert variant="filled" severity="error" className="pageErrors">
             <strong>Error:</strong> {JSON.stringify(pageErrors)}
           </Alert>
         )}
-        <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
+        <SnackbarFeedback
+          snackbarController={snackbarController}
+          setSnackbarController={setSnackbarController}
+        />
       </Box>
     );
   }
-}
+};
