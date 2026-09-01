@@ -1,5 +1,6 @@
 import React from "react";
 import ErrorPage from "./errorPage";
+import { logger } from "./logger";
 
 export default class StandardErrorBoundary extends React.Component {
     constructor(props) {
@@ -29,7 +30,7 @@ export default class StandardErrorBoundary extends React.Component {
     render() {
         // if an error occurred
         if (this.state.hasError) {
-            console.debug('%c⭗ Has Error Confirmed', 'color:#ff005d', typeof this.state.error);
+            logger.all.error({message: 'StandardErrorBoundary.render', error_details: this.state.error})
             return <ErrorPage errorValue={this.state.error}/>;
         } else {
             // default behavior

@@ -16,6 +16,7 @@ import ErrorList from './ErrorList';
 import {ParseBadJSON} from '../../utils/error_helper.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import Button from "@mui/material/Button";
+import { logger } from '../../utils/logger.js';
 // lodash removed (not used)
 
 export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
@@ -45,17 +46,15 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
   // Handle file upload and parse bulkMeta
   function handleFileGrab(e) {
     dimSpotlight();
-    console.debug('%c◉handleFileGrab Grabbing file ', 'color:#00ff7b');
+    logger.debug('%c◉handleFileGrab Grabbing file ', 'color:#008000', e);
     setBulkMetaValidationErrors([])
     // highlightTableErrors("clear");
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
     
     var grabbedFile = e.target.files[0];
-    console.debug('%c◉ grabbedFile ', 'color:#00ff7b', grabbedFile, e.target, e.target.files);
     var newName = grabbedFile.name.replace(/ /g, '_')
     var newFile = new File([grabbedFile], newName);
     
-    console.debug('%c◉ newFile ', 'background:#00ff7b', newFile);
     if (newFile && newFile.name.length > 0) {
       setFileData ({
         file: newFile,
@@ -70,10 +69,10 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
         skipEmptyLines: true,
         header: true,
         complete: data => {
-          console.debug('%c◉PAPA COMPLESE data ', 'color:#00ff7b', data.data);
+          logger.debug('%c◉PAPA COMPLESE data ', 'color:#008000', data.data);
           // If none of the file fields are accounted for in expected columns, don't set the table data
           let detectedFields = data?.meta?.fields || [];
-          console.debug(data?.meta?.fields, columns.map(c => c.field));
+          logger.debug(data?.meta?.fields, columns.map(c => c.field));
           // Map detected field names (e.g. "lab_id") into DataGrid column defs
           if (detectedFields && detectedFields.length > 0) {
             const mappedColumns = detectedFields.map((fieldName) => ({
@@ -81,7 +80,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
               headerName: toTitleCase(fieldName.replace(/_/g, ' ')),
               flex: 1,
             }));
-            console.debug('%c◉ mappedColumns ', 'color:#00ff7b', mappedColumns);
+            logger.debug('%c◉ mappedColumns ', 'color:#008000', mappedColumns);
             setColumns(mappedColumns);
           }
           setBulkMetaRows(data.data);
@@ -92,7 +91,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             captured: true,
           });
           setLoaders((prev) => ({ ...prev, uploadTable: false }));
-          console.debug('%c◉ parsed fileData ', 'background:#E096FF', fileData, newFile, bulkMetaRows, data?.data);
+          logger.debug('%c◉ parsed fileData ', 'background:#E096FF', fileData, newFile, bulkMetaRows, data?.data);
         }
       });
       
@@ -103,7 +102,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
 
   useEffect(() => {
     onDataChange({data: bulkMetaRows, errors: bulkMetaValidationErrors})
-    console.debug('%c◉ bulkMetaRows ', 'color:#00ff7b', bulkMetaRows);
   }, [bulkMetaRows, bulkMetaValidationErrors, onDataChange])
 
   // Clear any active spotlight timeout on unmount
@@ -125,16 +123,13 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
   }, [bulkMetaValidationErrors]);
 
   function handleFileUpload(){
-    console.debug('%c◉ fileData ', 'color:#0033FF', fileData, file);
     setLoaders((prev) => ({ ...prev, uploadTable: true }));
     let newFile = file;
     let data = fileData.rows;
-    console.debug('%c◉ handleFileUpload newFile ', 'color:#fff; background:#0033FF;', newFile, data);
+    logger.debug('%c◉ handleFileUpload newFile ', 'color:#fff; background:#0033FF;', newFile, data);
     ingest_api_upload_bulk_metadata(toTitleCase(type), newFile)
       .then((res) => {
-        console.debug('%c◉ res ', ' background:#0033FF;', res);
         if(res.status >= 200 && res.status < 300){
-          console.debug('%c◉ RES ACCEPTED ', 'color:#0033FF');
             setFileData({
             ...fileData,
             uploaded: true,
@@ -147,11 +142,10 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             }])
         }else if(res?.error?.response?.data?.data || res?.error){
           let respSet = res?.error?.response?.data?.data || res?.error
-          console.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
+          logger.debug('%c◉ res?.error? Object Array ', 'background:#0033FF', respSet);
           
           try{
             const obj = res?.error?.response?.data?.error;
-            console.debug('%c◉ OBJ ', 'color:#FF00BF', obj, typeof obj);
             let errorsArray = [];
             const validationPrefix = "Errors occurred during validation. Error validating metadata: ";
             if (typeof obj === "string" && obj.startsWith(validationPrefix)) {
@@ -160,40 +154,40 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
               const arrayMatch = obj.match(/\[(.*)\]/s);
               if (arrayMatch) {
                 let arrayStr = arrayMatch[0];
-                console.debug('%c◉ Extracted Array String ', 'color:#00ff7b', arrayStr);  
+                logger.debug('%c◉ Extracted Array String ', 'color:#008000', arrayStr);  
                 // Convert Python-style single quotes to double quotes for JSON parsing
                 arrayStr = arrayStr.replace(/'/g, '"');
                 
                 try {
                   const parsed = JSON.parse(arrayStr);
-                  console.debug('%c◉ Parsed Errors Array ', 'color:#00ff7b', parsed);
+                  logger.debug('%c◉ Parsed Errors Array ', 'color:#008000', parsed);
                   errorsArray = parsed.map((errObj, index) => ({
                     name: `Error ${index + 1}`,
                     ...errObj
                   }));
                 } catch (e) {
-                  console.debug('%c◉ JSON Parse Error ', 'color:#FF006A', e);
+                  logger.all.error({message: 'BulkMetaTable.handleFileUpload', error_details: e})
                   // Possibly chock full of unquoted keys or other JSON no-nos, so use the arrArray we built with regex parsing
                   try {
                     let cleansedArray = ParseBadJSON(arrayStr);
-                    console.debug('%c◉ Cleansed Errors Array ', 'color:#00ff7b', cleansedArray);
+                    logger.debug('%c◉ Cleansed Errors Array ', 'color:#008000', cleansedArray);
                     errorsArray = cleansedArray.map((errObj, index) => ({
                       name: `Error ${index + 1}`,
                       ...errObj
                     }));
                   }catch(parseError){
-                    console.debug('%c◉ ParseBadJSON Error ', 'color:#FF006A', parseError);
+                    logger.debug('%c◉ ParseBadJSON Error ', 'color:#FF006A', parseError);
                     // Fallback: treat as a single error string if all parsing fails
                     errorsArray = [{ name: "Error", error: obj }];
                   }
                 }
               } else {
-                console.debug('%c◉ No Array Found in Error String ', 'color:#FF006A');
+                logger.debug('%c◉ No Array Found in Error String ', 'color:#FF006A');
                 // Fallback: treat as a single error string
                 errorsArray = [{ name: "Error", error: obj }];
               }
             } else {
-              console.debug('%c◉ Error String does not match expected format ', 'color:#FF006A');
+              logger.debug('%c◉ Error String does not match expected format ', 'color:#FF006A');
               // Default: split by comma and process as before
               const errorsRaw = obj.split(", ");
               errorsArray = errorsRaw.map((err, index) => {
@@ -207,14 +201,14 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
                 };
               });
             }
-            console.debug('%c◉ errorsArray ', 'color:#00ff7b', errorsArray);
+            logger.debug('%c◉ errorsArray ', 'color:#008000', errorsArray);
             setBulkMetaValidationErrors(errorsArray);
             
           }catch(error){
-            console.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
+            logger.debug('%c◉trycatch  errorPreprocessCheck', 'color:#FF006A', error);
           }
         }else if(res?.res?.response?.data){
-          console.debug('%c◉ .res?.response?.data Errors ', 'background:#0033FF', );
+          logger.all.error({message: 'BulkMetaTable.hanldeFileUpload.ln211', error_details: res.res.response.data})
           let errorSet = res.res.response.data.description
           if(res?.res?.response?.data?.code === 406 && typeof res?.res?.response?.data?.description?.description === 'string'){
             // THis might just be a metadata issue
@@ -246,7 +240,6 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             }
           }else if(!errorSet[0].row){
             // Non Row based Response
-            console.debug('%c◉ Nonrow ', 'background:#0033FF', );
             try{
               setBulkMetaValidationErrors([{
                 "column": "",
@@ -254,7 +247,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
                 "row": ""
               }])
             }catch(error){
-              console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
+              logger.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
             }
           }else{
             //  IVT Row by Row Error Handling
@@ -265,20 +258,20 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
             }catch{
             }
           }
-          console.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#00ff7b', );
+          logger.debug('%c◉ "Please Review the following validation errors and re-upload your file." ', 'color:#008000', );
           setPageErrors((prevValues) => ({
             ...prevValues,
             'bulkMeta': "Please Review the following validation errors and re-upload your file.",
           }))
         }else if(res?.error?.response?.data?.error){ // 400 / too many
-          console.debug('%c◉ 400! ', 'color:#00ff7b', res?.error?.response?.data?.error );
+          logger.debug('%c◉ 400! ', 'color:#008000', res?.error?.response?.data?.error );
           try{
             setBulkMetaValidationErrors([{
               "name": "Too Many",
               "error": res?.error?.response?.data?.error,
             }])
           }catch(error){
-            console.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
+            logger.debug('%c◉trycatch  errorPreprocessCheck', 'background:#0033FF', error);
           }
   
         }else if(res?.error){
@@ -296,19 +289,15 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
         }
         //setValidatingBulkMetaUpload(false)
         setLoaders((prev) => ({ ...prev, uploadTable: false, }));
-        let showGroupCheck = calcRegDisabled();
-        if(userGroups.length > 1 && showGroupCheck === true ){
-          console.debug('%c◉ SHOWING ', 'color:#00ff7b', );
-          // setLoaders((prev) => ({ ...prev, showGroupSelect: true }));
-        } 
+        
       })
-      .catch(() => {
+      .catch((error_details) => {
+        logger.all.error({message: 'BulkMetaTable.handleFileUpload.ln295' , error_details})
       });
-      console.debug('%c◉ DATA CHECKIN: ', 'background:#EEA3FF', bulkMetaRows, fileData);
   }
 
   function handleFileWipe() {
-    console.debug('%c◉ FILE WIPE ', 'color:#4000FF');
+    logger.debug('%c◉ BulkMetaTable.handleFileWipe', 'color:#4000FF');
     setBulkMetaRows([]); 
     setFileData({
       file:null,
@@ -320,7 +309,7 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
   }
 
   function highlightTableErrors(errorSet){
-    console.debug('%c◉ highlightTableErrors ', 'color:#D0FF00', errorSet);
+    logger.debug('%c◉ BulkMetaTable.highlightTableErrors ', 'color:#D0FF00', errorSet);
     if(errorSet && errorSet.length > 0 && errorSet!== "clear"){
       dimSpotlight();
       for (const error of errorSet) {
@@ -346,8 +335,8 @@ export function BulkMetaTable({ type,onDataChange, tsvURL, docURL }) {
     }else{
       try{
         dimSpotlight();
-      }catch(err){
-        console.debug('highlightTableErrors clear error', err);
+      }catch(error_details){
+        logger.all.error({message: 'BulkMetaTable.highlightTableErrors clear error', error_details})
       }
     }
   }

@@ -1,142 +1,153 @@
-import ArticleIcon from '@mui/icons-material/Article';
-import BubbleChartIcon from '@mui/icons-material/BubbleChart';
-import CollectionsBookmarkIcon from '@mui/icons-material/CollectionsBookmark';
-import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import PersonIcon from '@mui/icons-material/Person';
-import PublicOffIcon from '@mui/icons-material/PublicOff';
-import PublicIcon from '@mui/icons-material/Public';
-import TableChartIcon from '@mui/icons-material/TableChart';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faNewspaper, faCube, faStar,faCodeMerge, faDiagramProject} from "@fortawesome/free-solid-svg-icons";
+import ArticleIcon from "@mui/icons-material/Article";
+import BubbleChartIcon from "@mui/icons-material/BubbleChart";
+import CollectionsBookmarkIcon from "@mui/icons-material/CollectionsBookmark";
+import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import PersonIcon from "@mui/icons-material/Person";
+import PublicOffIcon from "@mui/icons-material/PublicOff";
+import PublicIcon from "@mui/icons-material/Public";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faNewspaper,
+  faCube,
+  faStar,
+  faCodeMerge,
+  faDiagramProject,
+} from "@fortawesome/free-solid-svg-icons";
+import { logger } from "../../utils/logger";
 
 // @TODO: Strip the Status/Style wrapping back into where its being used &
 // only return the icon here.
-export function EntityIcons(entity_type, status){  
-  let style = {fontSize: "1.5em", "verticalAlign": "text-bottom"}
-  let newSX={"&&": {color: status?"white":""}}
-  switch
-  (entity_type && entity_type.toLowerCase()){
+export function EntityIcons(entity_type, status) {
+  let style = { fontSize: "1.5em", verticalAlign: "text-bottom" };
+  let newSX = { "&&": { color: status ? "white" : "" } };
+  switch (entity_type && entity_type.toLowerCase()) {
     case "donor":
-      return <PersonIcon style={style} sx={newSX} />
+      return <PersonIcon style={style} sx={newSX} />;
     case "sample":
-      return <BubbleChartIcon style={style} sx={newSX} />
+      return <BubbleChartIcon style={style} sx={newSX} />;
     case "dataset":
-      return <TableChartIcon style={style} sx={newSX} />
+      return <TableChartIcon style={style} sx={newSX} />;
     case "upload":
-      return <DriveFolderUploadIcon style={style} sx={newSX} />
+      return <DriveFolderUploadIcon style={style} sx={newSX} />;
     case "publication":
-      return <ArticleIcon style={style} sx={newSX} />
+      return <ArticleIcon style={style} sx={newSX} />;
     case "collection":
-      return <CollectionsBookmarkIcon style={style} sx={newSX} />
+      return <CollectionsBookmarkIcon style={style} sx={newSX} />;
     case "eppicollection":
-      return <CollectionsBookmarkIcon style={style} sx={newSX} />
+      return <CollectionsBookmarkIcon style={style} sx={newSX} />;
     default:
-      return <BubbleChartIcon style={style} />
+      return <BubbleChartIcon style={style} />;
   }
 }
 
-export function EntityIconsBasic(entity_type, size){
-  console.debug('%c◉ entity_type ', 'color:#00ff7b', entity_type);
-  let style = {marginRight: "5px"};
-  switch
-  (entity_type && entity_type.toLowerCase()){
+export function EntityIconsBasic(entity_type, size) {
+  let style = { marginRight: "5px" };
+  switch (entity_type && entity_type.toLowerCase()) {
     case "donor":
-      return <PersonIcon size={size?size:"0.5em"} sx={style}/>;
+      return <PersonIcon size={size ? size : "0.5em"} sx={style} />;
     case "sample":
-      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
+      return <BubbleChartIcon size={size ? size : "0.5em"} sx={style} />;
     case "dataset":
-      return <TableChartIcon size={size?size:"0.5em"} sx={style}/>
+      return <TableChartIcon size={size ? size : "0.5em"} sx={style} />;
     case "upload":
-      return <DriveFolderUploadIcon size={size?size:"0.5em"} sx={style}/>
+      return <DriveFolderUploadIcon size={size ? size : "0.5em"} sx={style} />;
     case "publication":
-      return <ArticleIcon size={size?size:"0.5em"} sx={style}/>
+      return <ArticleIcon size={size ? size : "0.5em"} sx={style} />;
     case "collection":
-      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+      return (
+        <CollectionsBookmarkIcon size={size ? size : "0.5em"} sx={style} />
+      );
     case "eppicollection":
-      return <CollectionsBookmarkIcon size={size?size:"0.5em"} sx={style}/>
+      return (
+        <CollectionsBookmarkIcon size={size ? size : "0.5em"} sx={style} />
+      );
     default:
-      return <BubbleChartIcon size={size?size:"0.5em"} sx={style}/>
+      return <BubbleChartIcon size={size ? size : "0.5em"} sx={style} />;
   }
 }
 
-export function OrganDetails(){
-  console.debug('%c◉ OrganDetails ', 'color:#00ff7b', );
+export function OrganDetails() {
   // let organs =  JSON.parse(localStorage.getItem("organs"))
-  let organsFull = JSON.parse(localStorage.getItem("organs_full"))
+  let organsFull = JSON.parse(localStorage.getItem("organs_full"));
   const iconMap = {};
   if (Array.isArray(organsFull)) {
     organsFull.forEach((entry) => {
-      console.debug('%c◉ entry ', 'color:#00ff7b', entry);
       try {
         if (entry && entry.rui_code) {
           iconMap[entry.rui_code] = OrganIcons(entry.rui_code);
         }
-      } catch (err) {
-        console.debug('%c◉ OrganDetails: skipped entry', 'color:#FF8800', err);
+      } catch (error_details) {
+        logger.all.error({
+          message: "OrganDetails: skipped entry",
+          error_details,
+        });
       }
     });
   }
-  console.debug('%c◉ iconMap ', 'color:#00ff7b', iconMap);
   return iconMap;
 }
 
-export function OrganIcons(organ){  
-  const BASE_ICON_URL = 'https://cdn.humanatlas.io/ui/humanatlas.io/assets/icons/organ/'
+export function OrganIcons(organ) {
+  const BASE_ICON_URL =
+    "https://cdn.humanatlas.io/ui/humanatlas.io/assets/icons/organ/";
   // let prependURL = `${BASE_ICON_URL}`
-  let iconMap={
-    "AD": `${BASE_ICON_URL}adipose-tissue`,
-    "BD": `${BASE_ICON_URL}blood`,
-    "BL": `${BASE_ICON_URL}bladder`,
-    "BM": `${BASE_ICON_URL}bone-marrow`,
-    "BR": `${BASE_ICON_URL}brain`,
-    "BV": `${BASE_ICON_URL}vasculature-thick`,
-    "HT": `${BASE_ICON_URL}heart`,
-    "ID": `${BASE_ICON_URL}intervertebral-disc`,
-    "LA": `${BASE_ICON_URL}larynx`,
-    "LB": `${BASE_ICON_URL}extrapulmonary-bronchus`,
-    "LE": `${BASE_ICON_URL}eye`,
-    "LF": `${BASE_ICON_URL}fallopian-tube-left`,
-    "LI": `${BASE_ICON_URL}large-intestine`,
-    "LK": `${BASE_ICON_URL}kidney-left`,
-    "LL": `${BASE_ICON_URL}lung-left`,
-    "LN": `${BASE_ICON_URL}knee`,
-    "LO": `${BASE_ICON_URL}ovary-left`,
-    "LT": `${BASE_ICON_URL}palatine-tonsil`,
-    "LU": `${BASE_ICON_URL}ureter-left`,
-    "LV": `${BASE_ICON_URL}liver`,
-    "LY": `${BASE_ICON_URL}lymph-nodes`,
-    "MB": `${BASE_ICON_URL}manubrium`,
-    "MH": `${BASE_ICON_URL}mouth`,
-    "ML": `${BASE_ICON_URL}breast`,
-    "MR": `${BASE_ICON_URL}breast`,
-    "PA": `${BASE_ICON_URL}pancreas`,
-    "PL": `${BASE_ICON_URL}placenta`,
-    "PR": `${BASE_ICON_URL}prostate`,
-    "PV": `${BASE_ICON_URL}pelvis`,
-    "RB": `${BASE_ICON_URL}extrapulmonary-bronchus`,
-    "RE": `${BASE_ICON_URL}eye`,
-    "RF": `${BASE_ICON_URL}fallopian-tube-right`,
-    "RK": `${BASE_ICON_URL}kidney-right`,
-    "RL": `${BASE_ICON_URL}lung-right`,
-    "RN": `${BASE_ICON_URL}knee`,
-    "RO": `${BASE_ICON_URL}ovary-right`,
-    "RT": `${BASE_ICON_URL}palatine-tonsil`,
-    "RU": `${BASE_ICON_URL}ureter-right`,
-    "SC": `${BASE_ICON_URL}spinal-cord`,
-    "SI": `${BASE_ICON_URL}small-intestine`,
-    "SK": `${BASE_ICON_URL}skin`,
-    "SP": `${BASE_ICON_URL}spleen`,
-    "ST": `${BASE_ICON_URL}sternum`,
-    "TH": `${BASE_ICON_URL}thymus`,
-    "TR": `${BASE_ICON_URL}trachea`,
-    "UT": `${BASE_ICON_URL}uterus`,
-    "VL": `${BASE_ICON_URL}lymphatic-vasculature`,
-  }
-  let iconURL = iconMap[organ]? iconMap[organ] + ".svg" : `${BASE_ICON_URL}all-organs.svg`
-  return iconURL
+  let iconMap = {
+    AD: `${BASE_ICON_URL}adipose-tissue`,
+    BD: `${BASE_ICON_URL}blood`,
+    BL: `${BASE_ICON_URL}bladder`,
+    BM: `${BASE_ICON_URL}bone-marrow`,
+    BR: `${BASE_ICON_URL}brain`,
+    BV: `${BASE_ICON_URL}vasculature-thick`,
+    HT: `${BASE_ICON_URL}heart`,
+    ID: `${BASE_ICON_URL}intervertebral-disc`,
+    LA: `${BASE_ICON_URL}larynx`,
+    LB: `${BASE_ICON_URL}extrapulmonary-bronchus`,
+    LE: `${BASE_ICON_URL}eye`,
+    LF: `${BASE_ICON_URL}fallopian-tube-left`,
+    LI: `${BASE_ICON_URL}large-intestine`,
+    LK: `${BASE_ICON_URL}kidney-left`,
+    LL: `${BASE_ICON_URL}lung-left`,
+    LN: `${BASE_ICON_URL}knee`,
+    LO: `${BASE_ICON_URL}ovary-left`,
+    LT: `${BASE_ICON_URL}palatine-tonsil`,
+    LU: `${BASE_ICON_URL}ureter-left`,
+    LV: `${BASE_ICON_URL}liver`,
+    LY: `${BASE_ICON_URL}lymph-nodes`,
+    MB: `${BASE_ICON_URL}manubrium`,
+    MH: `${BASE_ICON_URL}mouth`,
+    ML: `${BASE_ICON_URL}breast`,
+    MR: `${BASE_ICON_URL}breast`,
+    PA: `${BASE_ICON_URL}pancreas`,
+    PL: `${BASE_ICON_URL}placenta`,
+    PR: `${BASE_ICON_URL}prostate`,
+    PV: `${BASE_ICON_URL}pelvis`,
+    RB: `${BASE_ICON_URL}extrapulmonary-bronchus`,
+    RE: `${BASE_ICON_URL}eye`,
+    RF: `${BASE_ICON_URL}fallopian-tube-right`,
+    RK: `${BASE_ICON_URL}kidney-right`,
+    RL: `${BASE_ICON_URL}lung-right`,
+    RN: `${BASE_ICON_URL}knee`,
+    RO: `${BASE_ICON_URL}ovary-right`,
+    RT: `${BASE_ICON_URL}palatine-tonsil`,
+    RU: `${BASE_ICON_URL}ureter-right`,
+    SC: `${BASE_ICON_URL}spinal-cord`,
+    SI: `${BASE_ICON_URL}small-intestine`,
+    SK: `${BASE_ICON_URL}skin`,
+    SP: `${BASE_ICON_URL}spleen`,
+    ST: `${BASE_ICON_URL}sternum`,
+    TH: `${BASE_ICON_URL}thymus`,
+    TR: `${BASE_ICON_URL}trachea`,
+    UT: `${BASE_ICON_URL}uterus`,
+    VL: `${BASE_ICON_URL}lymphatic-vasculature`,
+  };
+  let iconURL = iconMap[organ]
+    ? iconMap[organ] + ".svg"
+    : `${BASE_ICON_URL}all-organs.svg`;
+  return iconURL;
 }
 
-export function OrganIcon({organ, alt, size = 25, style = {}}) {
+export function OrganIcon({ organ, alt, size = 25, style = {} }) {
   const isLeftKnee = organ === "LN";
   return (
     <img
@@ -149,41 +160,35 @@ export function OrganIcon({organ, alt, size = 25, style = {}}) {
         verticalAlign: "middle",
         filter: "brightness(0) saturate(100%) invert(13%)",
         ...style,
-        ...(isLeftKnee ? {transform: "scaleX(-1)"} : {}),
+        ...(isLeftKnee ? { transform: "scaleX(-1)" } : {}),
       }}
     />
   );
 }
 
-export function CreationActionIcon(action){
-  if(action?.action ){
-    action = action.action
+export function CreationActionIcon(action) {
+  if (action?.action) {
+    action = action.action;
   }
-  console.debug('%c◉ CreationActionIcon ', 'color:#00ff7b',action );
+  logger.debug("%c◉ CreationActionIcon ", "color:#008000", action);
   switch (action) {
     case "Create Dataset Activity":
-      console.log('%c◉ Create Dataset Activity Found', 'background:#8b6eff; color:#fff');
-      return (<FontAwesomeIcon icon={faCube} />);
+      return <FontAwesomeIcon icon={faCube} />;
     case "Create Publication Activity":
-      console.log('%c◉ Create Publication Activity Found', 'background:#8b6eff; color:#fff');
-      return (<FontAwesomeIcon icon={faNewspaper} />);
+      return <FontAwesomeIcon icon={faNewspaper} />;
     case "External Process":
-      console.log('%c◉ External Process Found', 'background:#8b6eff; color:#fff');
-      return (<FontAwesomeIcon icon={faStar} />);
+      return <FontAwesomeIcon icon={faStar} />;
     case "Multi-Assay Split":
-      console.log('%c◉ Multi-Assay Split Found', 'background:#8b6eff; color:#fff');
-      return (<FontAwesomeIcon icon={faDiagramProject} />);
+      return <FontAwesomeIcon icon={faDiagramProject} />;
     case "Central Process":
-      console.log('%c◉ Central Process Found', 'background:#8b6eff; color:#fff');
-      return (<FontAwesomeIcon icon={faCodeMerge} />);
+      return <FontAwesomeIcon icon={faCodeMerge} />;
     default:
       return null;
   }
 }
 
-export function AccessLevelIcon(level){
-  console.debug('%c◉ AccessLevelIcon ', 'color:#487cff', level);
-  switch(level){
+export function AccessLevelIcon(level) {
+  switch (level) {
     case "Public":
       return <PublicIcon />;
     case "Private":
@@ -195,12 +200,27 @@ export function AccessLevelIcon(level){
   }
 }
 
-export function RUIIcon(size){
-  // Scraped from: 
+export function RUIIcon(size) {
+  // Scraped from:
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${size} ${size}` } fill="none" xmlns="http://www.w3.org/2000/svg" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">
-      <path d="M6.80697 4.04111C6.54665 3.52941 4.5 3.56532 4.5 4.15782V8.50282C4.85906 7.82055 5.36175 7.22805 5.98113 6.75225C6.00806 5.79168 6.29531 4.85805 6.81595 4.04111H6.80697Z" fill="white"></path>
-      <path d="M18.19 11.8066C18.19 11.8066 17.418 8.61068 15.3983 7.7309C14.8058 7.54238 13.0913 8.03613 14.1326 10.5677C13.8813 10.2715 12.9208 8.4042 13.7287 7.20124C14.2942 6.46511 15.1649 6.02522 16.0985 5.99829C16.6909 5.99829 17.1846 5.52249 17.1846 4.92999C17.1846 4.83124 17.1757 4.72351 17.1397 4.62476C16.9692 3.45772 15.4432 3.61931 15.4432 3.61931C15.4432 3.61931 11.4755 3.53851 10.533 6.15988C10.533 2.98192 14.5994 2.96397 14.5994 2.96397C14.5994 1.97647 11.1883 1.37499 9.01597 3.05374C6.08064 5.31601 6.10757 9.21216 8.45045 12.1657C7.09499 11.259 6.23324 9.75977 6.14347 8.1259C5.75748 8.61966 4.60848 10.4331 4.94061 13.7457C5.42535 18.746 16.0536 22.7499 17.804 20.2183C19.5544 17.6867 18.208 11.7886 18.208 11.7886L18.19 11.8066ZM12.7592 16.6005C12.7592 17.0314 12.7592 17.4623 12.7592 17.9022C12.7592 18.1535 12.6874 18.1894 12.4719 18.0727C11.7538 17.6598 11.0447 17.2468 10.3265 16.8428C10.0842 16.6992 9.96748 16.5017 9.97646 16.2144C9.97646 15.4065 9.97646 14.5985 9.97646 13.7906C9.97646 13.5033 10.0393 13.4674 10.2817 13.611C11.0177 14.033 11.7448 14.4639 12.4899 14.8858C12.6874 15.0025 12.7682 15.1551 12.7682 15.3795C12.7682 15.7925 12.7682 16.2144 12.7682 16.6274L12.7592 16.6005ZM12.7143 14.4818C11.9693 14.0599 11.2242 13.629 10.4881 13.1981C10.2547 13.0634 10.2637 12.9916 10.4881 12.848C11.1973 12.435 11.9154 12.022 12.6335 11.6091C12.849 11.4834 13.0734 11.4744 13.2978 11.6091C14.0159 12.031 14.743 12.444 15.4611 12.8569C15.6945 12.9916 15.6945 13.0634 15.4611 13.1981C14.7161 13.629 13.98 14.0599 13.2349 14.4818C13.1631 14.5267 13.0734 14.5536 12.9836 14.5895C12.8938 14.5536 12.7951 14.5267 12.7143 14.4818ZM15.6676 16.8159C14.9315 17.2378 14.1954 17.6688 13.4504 18.0907C13.2709 18.1984 13.1901 18.1446 13.1901 17.9201C13.1901 17.4802 13.1901 17.0314 13.1901 16.5915C13.1901 16.1785 13.1901 15.7745 13.1901 15.3616C13.1901 15.1282 13.2709 14.9666 13.4773 14.8499C14.2224 14.428 14.9674 13.9881 15.7125 13.5661C15.9189 13.4494 15.9907 13.4943 15.9907 13.7277C15.9907 14.5716 15.9907 15.4155 15.9907 16.2593C15.9907 16.5107 15.883 16.6902 15.6676 16.8159Z" fill="white"></path>
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${size} ${size}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      fit=""
+      preserveAspectRatio="xMidYMid meet"
+      focusable="false"
+    >
+      <path
+        d="M6.80697 4.04111C6.54665 3.52941 4.5 3.56532 4.5 4.15782V8.50282C4.85906 7.82055 5.36175 7.22805 5.98113 6.75225C6.00806 5.79168 6.29531 4.85805 6.81595 4.04111H6.80697Z"
+        fill="white"
+      ></path>
+      <path
+        d="M18.19 11.8066C18.19 11.8066 17.418 8.61068 15.3983 7.7309C14.8058 7.54238 13.0913 8.03613 14.1326 10.5677C13.8813 10.2715 12.9208 8.4042 13.7287 7.20124C14.2942 6.46511 15.1649 6.02522 16.0985 5.99829C16.6909 5.99829 17.1846 5.52249 17.1846 4.92999C17.1846 4.83124 17.1757 4.72351 17.1397 4.62476C16.9692 3.45772 15.4432 3.61931 15.4432 3.61931C15.4432 3.61931 11.4755 3.53851 10.533 6.15988C10.533 2.98192 14.5994 2.96397 14.5994 2.96397C14.5994 1.97647 11.1883 1.37499 9.01597 3.05374C6.08064 5.31601 6.10757 9.21216 8.45045 12.1657C7.09499 11.259 6.23324 9.75977 6.14347 8.1259C5.75748 8.61966 4.60848 10.4331 4.94061 13.7457C5.42535 18.746 16.0536 22.7499 17.804 20.2183C19.5544 17.6867 18.208 11.7886 18.208 11.7886L18.19 11.8066ZM12.7592 16.6005C12.7592 17.0314 12.7592 17.4623 12.7592 17.9022C12.7592 18.1535 12.6874 18.1894 12.4719 18.0727C11.7538 17.6598 11.0447 17.2468 10.3265 16.8428C10.0842 16.6992 9.96748 16.5017 9.97646 16.2144C9.97646 15.4065 9.97646 14.5985 9.97646 13.7906C9.97646 13.5033 10.0393 13.4674 10.2817 13.611C11.0177 14.033 11.7448 14.4639 12.4899 14.8858C12.6874 15.0025 12.7682 15.1551 12.7682 15.3795C12.7682 15.7925 12.7682 16.2144 12.7682 16.6274L12.7592 16.6005ZM12.7143 14.4818C11.9693 14.0599 11.2242 13.629 10.4881 13.1981C10.2547 13.0634 10.2637 12.9916 10.4881 12.848C11.1973 12.435 11.9154 12.022 12.6335 11.6091C12.849 11.4834 13.0734 11.4744 13.2978 11.6091C14.0159 12.031 14.743 12.444 15.4611 12.8569C15.6945 12.9916 15.6945 13.0634 15.4611 13.1981C14.7161 13.629 13.98 14.0599 13.2349 14.4818C13.1631 14.5267 13.0734 14.5536 12.9836 14.5895C12.8938 14.5536 12.7951 14.5267 12.7143 14.4818ZM15.6676 16.8159C14.9315 17.2378 14.1954 17.6688 13.4504 18.0907C13.2709 18.1984 13.1901 18.1446 13.1901 17.9201C13.1901 17.4802 13.1901 17.0314 13.1901 16.5915C13.1901 16.1785 13.1901 15.7745 13.1901 15.3616C13.1901 15.1282 13.2709 14.9666 13.4773 14.8499C14.2224 14.428 14.9674 13.9881 15.7125 13.5661C15.9189 13.4494 15.9907 13.4943 15.9907 13.7277C15.9907 14.5716 15.9907 15.4155 15.9907 16.2593C15.9907 16.5107 15.883 16.6902 15.6676 16.8159Z"
+        fill="white"
+      ></path>
     </svg>
-  )
+  );
 }

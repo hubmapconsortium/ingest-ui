@@ -2,17 +2,20 @@
 
 import axios from "axios";
 import esb from "elastic-builder";
-import {ES_SEARCHABLE_FIELDS,ES_SEARCHABLE_WILDCARDS} from "../constants";
-import {ingest_api_all_user_groups} from "./ingest_api";
-export {esb};
+import { ES_SEARCHABLE_FIELDS, ES_SEARCHABLE_WILDCARDS } from "../constants";
+import { ingest_api_all_user_groups } from "./ingest_api";
+import { logger } from "../utils/logger";
+export { esb };
 
-const globalToken = localStorage.getItem("info") ? JSON.parse(localStorage.getItem("info")).groups_token : null;
+const globalToken = localStorage.getItem("info")
+  ? JSON.parse(localStorage.getItem("info")).groups_token
+  : null;
 const options = {
-    headers: {
-      Authorization: "Bearer " + globalToken,
-      "Content-Type": "application/json",
-    },
-  };
+  headers: {
+    Authorization: "Bearer " + globalToken,
+    "Content-Type": "application/json",
+  },
+};
 
 function parseSearchError(error) {
   const status = error?.response?.status;
@@ -48,16 +51,16 @@ function parseSearchError(error) {
  * return:  { status}
  */
 // Something of a hack to validate the auth token
-export function api_validate_token(){
+export function api_validate_token() {
   let payload = search_api_filter_es_query_builder("test", 1, 1);
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
-      return {status: res.status};
-    } )
+      return { status: res.status };
+    })
     .catch((error) => {
-      return {error};
-    } );
+      return { error };
+    });
 }
 
 /*
@@ -65,7 +68,7 @@ export function api_validate_token(){
  *
  * return:  { status, results}
  */
-export function api_search(params){
+export function api_search(params) {
   let payload = search_api_filter_es_query_builder(params, 0, 100);
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
@@ -75,25 +78,31 @@ export function api_search(params){
       let entities = {};
       hits.forEach((s) => {
         let uuid = s["_source"]["uuid"];
-        if (entities[uuid]){
+        if (entities[uuid]) {
           entities[s["_source"]["uuid"]].push(s["_source"]);
         } else {
           entities[s["_source"]["uuid"]] = [s["_source"]];
         }
-      } );
+      });
 
-      return {status: res.status, results: entities};
-    } )
+      return { status: res.status, results: entities };
+    })
     .catch((error) => {
-      return {error};
-    } );
+      return { error };
+    });
 }
 
-export function api_search2(params, from, size, fields, searchMode){
-  if (params.sort_field && params.sort_field.indexOf('.keyword') === -1) {
-    params.sort_field = `${params.sort_field}.keyword`
+export function api_search2(params, from, size, fields, searchMode) {
+  if (params.sort_field && params.sort_field.indexOf(".keyword") === -1) {
+    params.sort_field = `${params.sort_field}.keyword`;
   }
-  let payload = search_api_filter_es_query_builder(params, from, size, fields, searchMode);
+  let payload = search_api_filter_es_query_builder(
+    params,
+    from,
+    size,
+    fields,
+    searchMode,
+  );
   return axios
     .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, payload, options)
     .then((res) => {
@@ -103,16 +112,16 @@ export function api_search2(params, from, size, fields, searchMode){
         let data = s["_source"];
         data["id"] = s["_source"]["uuid"];
         entities.push(data);
-      } );
+      });
       return {
         status: res.status,
         results: entities,
         total: res.data.hits.total.value,
       };
-    } )
+    })
     .catch((error) => {
-      return {error: parseSearchError(error)};
-    } );
+      return { error: parseSearchError(error) };
+    });
 }
 
 /*
@@ -124,7 +133,7 @@ export function search_api_filter_es_query_builder(
   from,
   size,
   colFields,
-  searchMode
+  searchMode,
 ) {
   let requestBody = esb.requestBodySearch();
   let boolQuery = "";
@@ -132,56 +141,58 @@ export function search_api_filter_es_query_builder(
   // queryStringQuery as an additional MUST instead of short-circuiting the
   // whole builder. This preserves group/entity/organ filters while still
   // allowing wildcard searches across the wildcard-capable fields.
-  const hasWildcard = fields && fields["keywords"] && fields["keywords"].indexOf("*") > -1;
-  const hasHBMID = fields["keywords"] && fields["keywords"].indexOf("HBM") === 0;
+  const hasWildcard =
+    fields && fields["keywords"] && fields["keywords"].indexOf("*") > -1;
+  const hasHBMID =
+    fields["keywords"] && fields["keywords"].indexOf("HBM") === 0;
   boolQuery = esb.boolQuery();
 
   // if no field criteria is sent just default to a (keeps prior behavior)
-  if (Object.keys(fields).length === 0 && fields.constructor === Object){
+  if (Object.keys(fields).length === 0 && fields.constructor === Object) {
     boolQuery.must(
       esb.matchQuery(
         "entity_type",
-        "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
-      )
+        "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection",
+      ),
     );
   } else {
     // FIELD PROCESSING
     // Group
-    if (fields["group_name"]){
+    if (fields["group_name"]) {
       boolQuery.must(
-        esb.matchQuery("group_name.keyword", fields["group_name"])
+        esb.matchQuery("group_name.keyword", fields["group_name"]),
       );
-    } else if (fields["group_uuid"]){
+    } else if (fields["group_uuid"]) {
       // this'll be from the dropdown,
       boolQuery.must(
-        esb.matchQuery("group_uuid.keyword", fields["group_uuid"])
+        esb.matchQuery("group_uuid.keyword", fields["group_uuid"]),
       );
     }
     // Specimen Types
-    if (fields["sample_category"]){
-      if (fields["sample_category"] !== "donor"){
+    if (fields["sample_category"]) {
+      if (fields["sample_category"] !== "donor") {
         boolQuery.must(
-          esb.matchQuery("sample_category.keyword", fields["sample_category"])
+          esb.matchQuery("sample_category.keyword", fields["sample_category"]),
         );
       } else {
         boolQuery.must(esb.matchQuery("entity_type.keyword", "Donor"));
       }
-    } 
+    }
     // Organ
-    else if (fields["organ"]){
+    else if (fields["organ"]) {
       boolQuery.must(esb.matchQuery("organ.keyword", fields["organ"]));
-    } 
+    }
     // Entity Type
-    else if (fields["entity_type"]){
-      if(["Data Upload"].includes(fields["entity_type"])){
+    else if (fields["entity_type"]) {
+      if (["Data Upload"].includes(fields["entity_type"])) {
         fields["entity_type"] = "Upload";
       }
-      if (fields["entity_type"] === "DonorSample"){
+      if (fields["entity_type"] === "DonorSample") {
         // hack to deal with no type selected from the UI, this clues from the donor/sample filer
         boolQuery.must(esb.matchQuery("entity_type", "Donor OR Sample"));
       } else {
         boolQuery.must(
-          esb.matchQuery("entity_type.keyword", fields["entity_type"])
+          esb.matchQuery("entity_type.keyword", fields["entity_type"]),
         );
       }
     }
@@ -190,27 +201,31 @@ export function search_api_filter_es_query_builder(
       boolQuery.must(
         esb.matchQuery(
           "entity_type",
-          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection"
-        )
+          "Donor OR Sample OR Dataset OR Upload OR Publication OR Collection OR Epicollection",
+        ),
       ); // default everything ; this maybe temp
     }
   }
   // Status
-  if (fields["status"]){
-    console.debug('%c◉ HAVE STATUS ', 'color:#00ff7b', fields["status"]);
-    let queryString = fields["status"].join(" OR ");
-    boolQuery.must(
-      esb.matchQuery("status", queryString)
+  if (fields["status"]) {
+    logger.debug(
+      "%c◉ search_api HAVE STATUS ",
+      "color:#008000",
+      fields["status"],
     );
+    let queryString = fields["status"].join(" OR ");
+    boolQuery.must(esb.matchQuery("status", queryString));
   }
 
   // Excluded status: allow client to specify statuses to NOT include
   if (fields["status_not"]) {
-    console.debug('%c◉ EXCLUDE STATUS ', 'color:#ff8800', fields["status_not"]);
-    let notQueryString = fields["status_not"].join(" OR ");
-    boolQuery.mustNot(
-      esb.matchQuery("status", notQueryString)
+    logger.debug(
+      "%c◉ search_api EXCLUDE STATUS ",
+      "color:#ff8800",
+      fields["status_not"],
     );
+    let notQueryString = fields["status_not"].join(" OR ");
+    boolQuery.mustNot(esb.matchQuery("status", notQueryString));
   }
 
   // Date ranges are applied in Elasticsearch so filtering remains accurate
@@ -241,20 +256,23 @@ export function search_api_filter_es_query_builder(
     if (Array.isArray(fields["target_field"])) {
       keywordSearchFields = fields["target_field"];
       wildcardSearchFields = fields["target_field"];
-    } else if (typeof fields["target_field"] === 'string' && fields["target_field"].length > 0) {
+    } else if (
+      typeof fields["target_field"] === "string" &&
+      fields["target_field"].length > 0
+    ) {
       keywordSearchFields = [fields["target_field"]];
       wildcardSearchFields = [fields["target_field"]];
     }
   }
 
-  if (fields["keywords"]){
+  if (fields["keywords"]) {
     // if (fields["keywords"] && fields["keywords"].indexOf("HBM") === 0){
     //   // exact HubMAP id match stays the same
     //   boolQuery.must(
     //     esb.matchQuery("hubmap_id.keyword", fields["keywords"])
     //   );
-    // } 
-  
+    // }
+
     if (!hasWildcard) {
       // non-wildcard: if the UI asked to target a specific field, require the
       // keyword to match that field (or one of the provided fields). Otherwise
@@ -265,18 +283,25 @@ export function search_api_filter_es_query_builder(
         // fields so the query only searches those fields (no cross-field
         // multi_match behavior).
         boolQuery.filter(
-          esb.simpleQueryStringQuery(fields["keywords"]).fields(keywordSearchFields).defaultOperator('and')
+          esb
+            .simpleQueryStringQuery(fields["keywords"])
+            .fields(keywordSearchFields)
+            .defaultOperator("and"),
         );
       } else {
         // no explicit target_field: keep legacy multiMatch behavior
-        if(hasHBMID){
+        if (hasHBMID) {
           boolQuery.must(
-            esb.matchQuery("hubmap_id.keyword", fields["keywords"])
+            esb.matchQuery("hubmap_id.keyword", fields["keywords"]),
           );
-          console.debug('%c◉ MUSTMATCH HBM ', 'color:#00ff7b', fields["keywords"] );
-        }else{
+          logger.debug(
+            "%c◉ search_api MUSTMATCH HBM ",
+            "color:#008000",
+            fields["keywords"],
+          );
+        } else {
           boolQuery.filter(
-            esb.multiMatchQuery(keywordSearchFields, fields["keywords"])
+            esb.multiMatchQuery(keywordSearchFields, fields["keywords"]),
           );
         }
       }
@@ -285,14 +310,14 @@ export function search_api_filter_es_query_builder(
 
   // If we have a wildcard keyword, add it as an additional MUST so it
   // coexists with other filters rather than replacing them. Respect target field if provided.
-  if (hasWildcard){
-    if(hasHBMID){
+  if (hasWildcard) {
+    if (hasHBMID) {
       boolQuery.must(
-        esb.queryStringQuery(fields["keywords"]).fields(["hubmap_id.keyword"])
+        esb.queryStringQuery(fields["keywords"]).fields(["hubmap_id.keyword"]),
       );
-    }else{
+    } else {
       boolQuery.must(
-        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields)
+        esb.queryStringQuery(fields["keywords"]).fields(wildcardSearchFields),
       );
     }
   }
@@ -300,11 +325,20 @@ export function search_api_filter_es_query_builder(
   // Keep the original timestamp sort for embedded searches. The main search
   // view still opts into custom sorting via the `newTable` marker.
   const allowCustomSort = searchMode === "newTable";
-  const sortField = allowCustomSort && (fields && fields["sort_field"]) ? fields["sort_field"] : "last_modified_timestamp";
-  const sortDir = allowCustomSort && (fields && fields["sort_dir"]) ? fields["sort_dir"] : "asc";
+  const sortField =
+    allowCustomSort && fields && fields["sort_field"]
+      ? fields["sort_field"]
+      : "last_modified_timestamp";
+  const sortDir =
+    allowCustomSort && fields && fields["sort_dir"]
+      ? fields["sort_dir"]
+      : "asc";
 
-  if (fields["keywords"] && fields["keywords"].indexOf("HBM") > -1 && !hasWildcard){
-    console.debug('%c⊙', 'color:#00ff7b', "BOOLQUERY", fields );
+  if (
+    fields["keywords"] &&
+    fields["keywords"].indexOf("HBM") > -1 &&
+    !hasWildcard
+  ) {
     requestBody
       .query(boolQuery)
       .from(from)
@@ -322,35 +356,49 @@ export function search_api_filter_es_query_builder(
       .trackTotalHits(true);
   }
 
-  console.debug('%c◉ requestBody Total: ', 'color:#00ff7b', requestBody.toJSON() );
+  logger.debug(
+    "%c◉ search_api requestBody Total: ",
+    "color:#008000",
+    requestBody.toJSON(),
+  );
   return requestBody.toJSON();
-  
 }
- 
+
 /*
  * Elasticsearch Special query builder for returning multiple entities by UUID/Hubmap_id
  *
  */
-export function search_api_es_query_ids(IDs,types,colFields){
-  const idsearch = esb.boolQuery()
+export function search_api_es_query_ids(IDs, types, colFields) {
+  const idsearch = esb
+    .boolQuery()
     .should([
-        esb.termsQuery('uuid.keyword', IDs.filter(id => !id.includes('.'))),
-        esb.termsQuery('hubmap_id.keyword',IDs.filter(id => id.includes('.')))
+      esb.termsQuery(
+        "uuid.keyword",
+        IDs.filter((id) => !id.includes(".")),
+      ),
+      esb.termsQuery(
+        "hubmap_id.keyword",
+        IDs.filter((id) => id.includes(".")),
+      ),
     ])
-    .minimumShouldMatch(1)
+    .minimumShouldMatch(1);
 
-    let requestBody = esb.requestBodySearch();
-    requestBody
-      .query(idsearch)
-      .size(IDs.length)
-      .source( {
-        // "includes": [ "uuid", "hubmap_id", "entity_type"],
-        "includes": colFields,
-        "excludes": ["*.NO_SUCH_THING"]
-      } )
+  let requestBody = esb.requestBodySearch();
+  requestBody
+    .query(idsearch)
+    .size(IDs.length)
+    .source({
+      // "includes": [ "uuid", "hubmap_id", "entity_type"],
+      includes: colFields,
+      excludes: ["*.NO_SUCH_THING"],
+    });
 
   return axios
-    .post(`${process.env.REACT_APP_SEARCH_API_URL}/search`, requestBody.toJSON(), options)
+    .post(
+      `${process.env.REACT_APP_SEARCH_API_URL}/search`,
+      requestBody.toJSON(),
+      options,
+    )
     .then((res) => {
       let hits = res.data.hits.hits;
       let entities = [];
@@ -358,57 +406,57 @@ export function search_api_es_query_ids(IDs,types,colFields){
         let data = s["_source"];
         data["id"] = s["_source"]["uuid"];
         entities.push(data);
-      } );
+      });
       return {
         status: res.status,
         results: entities,
         total: res.data.hits.total.value,
       };
-    } )
+    })
     .catch((error) => {
-      return {error};
-    } );
+      return { error };
+    });
   // return requestBody.toJSON();
 }
 
 // this WAS a  function that reads from a static file groups.jsx
-export function search_api_search_group_list(){
+export function search_api_search_group_list() {
   ingest_api_all_user_groups(
-    JSON.parse(localStorage.getItem("info")).groups_token
+    JSON.parse(localStorage.getItem("info")).groups_token,
   )
     .then((res) => {
       // no need to filter out the data_providers, the ingest api does that for us
       let groups = res.results;
       return groups;
-    } )
+    })
     .catch((err) => {
       return err;
-    } );
+    });
 }
 
-export function search_api_get_assay_type(assay){
+export function search_api_get_assay_type(assay) {
   return axios
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype`)
     .then((res) => {
       let data = res.data;
       var found_dt = undefined;
       data.result.forEach((s) => {
-        if (s["name"] === assay){
+        if (s["name"] === assay) {
           found_dt = s;
         }
-      } );
+      });
 
-      return {status: res.status, results: found_dt};
-    } )
+      return { status: res.status, results: found_dt };
+    })
     .catch((error) => {
-      return {error};
-    } );
+      return { error };
+    });
 }
 
-export function search_api_get_assay_set(scope){
+export function search_api_get_assay_set(scope) {
   // Scope informs either Primary, Alt, or All
   var target = "";
-  switch (scope){
+  switch (scope) {
     case "primary":
       target = "?primary=true";
       break;
@@ -424,32 +472,32 @@ export function search_api_get_assay_set(scope){
       .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype` + target)
       .then((res) => {
         let data = res.data;
-        return {data};
-      } )
+        return { data };
+      })
       .catch((error) => {
-        if (error.response){
+        if (error.response) {
           return {
             status: error.response.status,
             results: error.response.data,
           };
         } else {
-          return {error};
+          return { error };
         }
-      } )
+      })
   );
 }
 
-export function search_api_get_assay_primaries(){
+export function search_api_get_assay_primaries() {
   return axios
     .get(`${process.env.REACT_APP_SEARCH_API_URL}/assaytype?primary=true`)
     .then((res) => {
       let data = res.data;
       let dtListMapped = data.result.map((value) => {
         return value;
-      } );
-      return {status: res.status, data: dtListMapped};
-    } )
+      });
+      return { status: res.status, data: dtListMapped };
+    })
     .catch((error) => {
-      return {error};
-    } );
+      return { error };
+    });
 }

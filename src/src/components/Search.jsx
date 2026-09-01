@@ -1,4 +1,11 @@
-import {useEffect,useState,useCallback,useMemo,useReducer,useRef} from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import {
   ColumnsPanelTrigger,
   DataGrid,
@@ -11,50 +18,50 @@ import {
   useGridApiContext,
   useGridSelector,
 } from "@mui/x-data-grid";
-import {SAMPLE_CATEGORIES} from "../constants";
-import {Link} from "react-router";
+import { SAMPLE_CATEGORIES } from "../constants";
+import { Link } from "react-router";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Chip from '@mui/material/Chip';
-import ManageSearchIcon from '@mui/icons-material/ManageSearch';
+import Chip from "@mui/material/Chip";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ClearIcon from '@mui/icons-material/Clear';
-import GradeIcon from '@mui/icons-material/Grade';
-import FormControl from '@mui/material/FormControl';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import GroupsIcon from '@mui/icons-material/Groups';
-import Collapse from '@mui/material/Collapse';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import Popover from '@mui/material/Popover';
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ClearIcon from "@mui/icons-material/Clear";
+import GradeIcon from "@mui/icons-material/Grade";
+import FormControl from "@mui/material/FormControl";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import GroupsIcon from "@mui/icons-material/Groups";
+import Collapse from "@mui/material/Collapse";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import Popover from "@mui/material/Popover";
 import GridLoader from "react-spinners/GridLoader";
-import SearchIcon from '@mui/icons-material/Search';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutlineOutlined';
-import {CombinedWholeEntityOptions} from "./ui/formParts";
-import {RenderError} from "../utils/errorAlert";
-import {badgeClass} from "../utils/badgeClasses";
-import SaveAsIcon from '@mui/icons-material/SaveAs';
-import CloudSyncIcon from '@mui/icons-material/CloudSync';
-import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
-import SwapVertIcon from '@mui/icons-material/SwapVert';
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import DensityMediumIcon from '@mui/icons-material/DensityMedium';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import PrintIcon from '@mui/icons-material/Print';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
-import dayjs from 'dayjs';
-import {DayPicker} from '@daypicker/react';
-import '@daypicker/react/style.css';
-import {toTitleCase} from "../utils/string_helper";
+import SearchIcon from "@mui/icons-material/Search";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlineOutlined";
+import { CombinedWholeEntityOptions } from "./ui/formParts";
+import { RenderError } from "../utils/errorAlert";
+import { badgeClass } from "../utils/badgeClasses";
+import SaveAsIcon from "@mui/icons-material/SaveAs";
+import CloudSyncIcon from "@mui/icons-material/CloudSync";
+import TroubleshootIcon from "@mui/icons-material/Troubleshoot";
+import SwapVertIcon from "@mui/icons-material/SwapVert";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import DensityMediumIcon from "@mui/icons-material/DensityMedium";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import PrintIcon from "@mui/icons-material/Print";
+import ViewColumnIcon from "@mui/icons-material/ViewColumn";
+import dayjs from "dayjs";
+import { DayPicker } from "@daypicker/react";
+import "@daypicker/react/style.css";
+import { toTitleCase } from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -65,43 +72,51 @@ import {
   COLUMN_DEF_UPLOADS,
   COLUMN_DEF_MIXED,
 } from "./ui/tableBuilder";
-import {api_search2} from "../service/search_api";
-import {OrganIcons} from "./ui/icons"
-import {ES_SEARCHABLE_FIELDS} from "../constants";
-import { useLocation, useNavigate } from 'react-router';
+import { api_search2 } from "../service/search_api";
+import { OrganIcons } from "./ui/icons";
+import { ES_SEARCHABLE_FIELDS } from "../constants";
+import { useLocation, useNavigate } from "react-router";
+import { logger } from "../utils/logger";
 
-const SIMPLE_COLUMNS = ["Donor", "Dataset", "Publication", "Upload", "Collection", "EPICollection"];
+const SIMPLE_COLUMNS = [
+  "Donor",
+  "Dataset",
+  "Publication",
+  "Upload",
+  "Collection",
+  "EPICollection",
+];
 
 const CORE_ENTITY_TYPE_VALUE_MAP = {
-  donor: 'donor',
-  sample: 'sample',
-  dataset: 'dataset',
-  upload: 'upload',
-  'data upload': 'upload',
-  publication: 'publication',
-  collection: 'collection',
-  epicollection: 'epicollection',
-  'epi collection': 'epicollection',
+  donor: "donor",
+  sample: "sample",
+  dataset: "dataset",
+  upload: "upload",
+  "data upload": "upload",
+  publication: "publication",
+  collection: "collection",
+  epicollection: "epicollection",
+  "epi collection": "epicollection",
 };
 
 function normalizeEntityTypeValue(rawValue) {
   if (rawValue === undefined || rawValue === null) return rawValue;
   const trimmed = String(rawValue).trim();
-  if (!trimmed) return '';
+  if (!trimmed) return "";
   const normalized = CORE_ENTITY_TYPE_VALUE_MAP[trimmed.toLowerCase()];
   return normalized || trimmed;
 }
 
 function buildDefaultFormFilters() {
   return {
-    keywords: '',
-    group_uuid: '',
-    entity_type: '',
-    target_field: '',
-    date_from: '',
-    date_to: '',
-    sort_field: '',
-    sort_dir: '',
+    keywords: "",
+    group_uuid: "",
+    entity_type: "",
+    target_field: "",
+    date_from: "",
+    date_to: "",
+    sort_field: "",
+    sort_dir: "",
   };
 }
 
@@ -109,21 +124,23 @@ export function Search({
   searchFilters: initialSearchFilters,
   restrictions,
   urlChange,
-}){
-
+}) {
   // TABLE & FILTER VALUES
-  var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
+  var allGroups = localStorage.getItem("allGroups")
+    ? JSON.parse(localStorage.getItem("allGroups"))
+    : [];
   var [chipSelect, setChipSelect] = useState([]);
   var [chipExclude, setChipExclude] = useState([]);
   var [pulseMap, setPulseMap] = useState({});
   // rename local state to avoid shadowing the incoming prop 'initialSearchFilters'
-  var [searchFiltersState, setSearchFiltersState] = useState(initialSearchFilters);
+  var [searchFiltersState, setSearchFiltersState] =
+    useState(initialSearchFilters);
   var [formFilters, setFormFilters] = useState(
-    initialSearchFilters ?
-    initialSearchFilters : {});
+    initialSearchFilters ? initialSearchFilters : {},
+  );
   var [page, setPage] = useState(0);
-  var [pageSize,setPageSize] = useState(100);
-  var [advancedSearch,setAdvancedSearch] = useState(false);
+  var [pageSize, setPageSize] = useState(100);
+  var [advancedSearch, setAdvancedSearch] = useState(false);
   const [dateRangeAnchorEl, setDateRangeAnchorEl] = useState(null);
   var [sortDir, setSortDir] = useState("asc");
   const [sortField, setSortField] = useState("last_modified_timestamp");
@@ -137,13 +154,15 @@ export function Search({
     const container = searchGridContainer;
     if (!container) return undefined;
 
-    function updateNarrowState(width = container.getBoundingClientRect().width) {
+    function updateNarrowState(
+      width = container.getBoundingClientRect().width,
+    ) {
       setIsNarrow(width < 775);
     }
 
     updateNarrowState();
 
-    if (typeof ResizeObserver !== 'undefined') {
+    if (typeof ResizeObserver !== "undefined") {
       const observer = new ResizeObserver((entries) => {
         const width = entries[0]?.contentRect?.width;
         updateNarrowState(width);
@@ -153,14 +172,14 @@ export function Search({
     }
 
     const handleWindowResize = () => updateNarrowState();
-    window.addEventListener('resize', handleWindowResize);
-    return () => window.removeEventListener('resize', handleWindowResize);
+    window.addEventListener("resize", handleWindowResize);
+    return () => window.removeEventListener("resize", handleWindowResize);
   }, [searchGridContainer]);
 
   useEffect(() => {
     if (!formFilters.date_from) {
       if (formFilters.date_to) {
-        setFormFilters((previous) => ({...previous, date_to: ''}));
+        setFormFilters((previous) => ({ ...previous, date_to: "" }));
       }
     }
   }, [formFilters.date_from, formFilters.date_to]);
@@ -183,9 +202,14 @@ export function Search({
   });
   var [saveName, setSaveName] = useState("");
   const [saveSectionOpen, setSaveSectionOpen] = useState(false);
-  const [savedSnack, setSavedSnack] = useState({ open: false, message: '', severity: 'info' });
+  const [savedSnack, setSavedSnack] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
-  const closeSavedSnack = () => setSavedSnack({ open: false, message: '', severity: 'info' });
+  const closeSavedSnack = () =>
+    setSavedSnack({ open: false, message: "", severity: "info" });
 
   // TABLE DATA + LOADING: useReducer to update related fields atomically
   const initialSearchState = {
@@ -206,7 +230,10 @@ export function Search({
     }
   }
 
-  const [searchState, dispatchSearchState] = useReducer(searchReducer, initialSearchState);
+  const [searchState, dispatchSearchState] = useReducer(
+    searchReducer,
+    initialSearchState,
+  );
 
   // ERROR THINGS
   var [error, setError] = useState();
@@ -221,13 +248,12 @@ export function Search({
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
       COLUMN_DEF_DONOR,
-      COLUMN_DEF_MIXED
+      COLUMN_DEF_MIXED,
     );
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
   }
-  function errorReporting(){
-  }
+  function errorReporting() {}
 
   // If URL contains search params, prefill form and trigger a search.
   // Listen to location.search so Back/Forward navigation re-applies URL-driven searches.
@@ -237,7 +263,8 @@ export function Search({
   useEffect(() => {
     try {
       // If the component was explicitly given initialSearchFilters, prefer that
-      if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0) return;
+      if (initialSearchFilters && Object.keys(initialSearchFilters).length > 0)
+        return;
       if (!locationSearch) return;
       const params = new URLSearchParams(locationSearch);
       const entries = Array.from(params.entries());
@@ -248,9 +275,13 @@ export function Search({
       // Populate form fields from URL (map group_uuid allcom -> empty for the form)
       const newForm = { ...formFilters };
       if (paramsObj.keywords) newForm.keywords = paramsObj.keywords;
-      if (paramsObj.group_uuid) newForm.group_uuid = paramsObj.group_uuid === 'allcom' ? '' : paramsObj.group_uuid;
+      if (paramsObj.group_uuid)
+        newForm.group_uuid =
+          paramsObj.group_uuid === "allcom" ? "" : paramsObj.group_uuid;
       if (paramsObj.entity_type) {
-        const normalizedEntityType = normalizeEntityTypeValue(paramsObj.entity_type);
+        const normalizedEntityType = normalizeEntityTypeValue(
+          paramsObj.entity_type,
+        );
         newForm.entity_type = normalizedEntityType;
         paramsObj.entity_type = normalizedEntityType;
       }
@@ -268,14 +299,19 @@ export function Search({
       if (paramsObj.sort_field) {
         newForm.sort_field = paramsObj.sort_field;
         setSortField(paramsObj.sort_field);
-        setSortModel([{ field: paramsObj.sort_field, sort: paramsObj.sort_dir || paramsObj.sort || 'asc' }]);
+        setSortModel([
+          {
+            field: paramsObj.sort_field,
+            sort: paramsObj.sort_dir || paramsObj.sort || "asc",
+          },
+        ]);
       }
 
       // status may be repeated or comma-separated
-      const statusParams = params.getAll('status');
+      const statusParams = params.getAll("status");
       if (statusParams && statusParams.length > 0) {
         const statusList = statusParams
-          .flatMap((s) => s.split(','))
+          .flatMap((s) => s.split(","))
           .map((s) => s.trim())
           .filter(Boolean);
         if (statusList.length > 0) {
@@ -284,10 +320,10 @@ export function Search({
         }
       }
       // excluded status (does not include) may be provided as `status_not`
-      const statusNotParams = params.getAll('status_not');
+      const statusNotParams = params.getAll("status_not");
       if (statusNotParams && statusNotParams.length > 0) {
         const statusNotList = statusNotParams
-          .flatMap((s) => s.split(','))
+          .flatMap((s) => s.split(","))
           .map((s) => s.trim())
           .filter(Boolean);
         if (statusNotList.length > 0) {
@@ -306,10 +342,14 @@ export function Search({
       // reset pagination to first page
       setPage(0);
       // Do we need to open the Advanced Fields view?
-      if(paramsObj.target_field || paramsObj.status || paramsObj.date_from || paramsObj.date_to){
+      if (
+        paramsObj.target_field ||
+        paramsObj.status ||
+        paramsObj.date_from ||
+        paramsObj.date_to
+      ) {
         setAdvancedSearch(true);
       }
-
     } catch {
       // ignore URL parse errors for now
     }
@@ -333,7 +373,7 @@ export function Search({
             const v = o[k];
             if (Array.isArray(v)) {
               copy[k] = [...v].slice().sort();
-            } else if (v && typeof v === 'object') {
+            } else if (v && typeof v === "object") {
               copy[k] = JSON.stringify(v);
             } else if (v === undefined || v === null) {
               copy[k] = "";
@@ -377,7 +417,8 @@ export function Search({
   }, []);
 
   const canSaveCurrentSearch = hasSearched && !fieldsChanged;
-  const saveSearchDisabledMessage = "Apply your changes first by clicking \"Search\"";
+  const saveSearchDisabledMessage =
+    'Apply your changes first by clicking "Search"';
 
   useEffect(() => {
     if (!canSaveCurrentSearch) {
@@ -388,8 +429,8 @@ export function Search({
   // small stable helper for building columnVisibility model
   const buildColumnFilter = useCallback((arr) => {
     let obj = {};
-    arr.forEach(value => {
-        obj[value] = false;
+    arr.forEach((value) => {
+      obj[value] = false;
     });
     return obj;
   }, []);
@@ -409,7 +450,7 @@ export function Search({
       hiddenFields.push("entity_type");
       hiddenFields.push("sample_category");
     }
-    if (searchState.colDef === COLUMN_DEF_MIXED ){
+    if (searchState.colDef === COLUMN_DEF_MIXED) {
       hiddenFields.push("uuid");
     }
     return buildColumnFilter(hiddenFields);
@@ -419,58 +460,69 @@ export function Search({
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
 
   // compact locale text (icon-only) for narrow screens
-  const compactLocaleText = useMemo(() => ({
-    toolbarColumns: '',
-    toolbarColumnsLabel: '',
-    toolbarFilters: '',
-    toolbarFiltersLabel: '',
-    toolbarDensity: '',
-    toolbarDensityLabel: '',
-    toolbarExport: '',
-    toolbarExportLabel: '',
-    toolbarExportCSV: '',
-    toolbarExportPrint: '',
-  }), []);
+  const compactLocaleText = useMemo(
+    () => ({
+      toolbarColumns: "",
+      toolbarColumnsLabel: "",
+      toolbarFilters: "",
+      toolbarFiltersLabel: "",
+      toolbarDensity: "",
+      toolbarDensityLabel: "",
+      toolbarExport: "",
+      toolbarExportLabel: "",
+      toolbarExportCSV: "",
+      toolbarExportPrint: "",
+    }),
+    [],
+  );
 
   const toolbarButtonSx = {
     minWidth: 0,
-    width: '100%',
-    justifyContent: 'center',
-    whiteSpace: 'nowrap',
+    width: "100%",
+    justifyContent: "center",
+    whiteSpace: "nowrap",
   };
 
   const toolbarIconOnlyButtonSx = {
     minWidth: 0,
-    width: '100%',
+    width: "100%",
     px: 0.75,
-    justifyContent: 'center',
-    '& .MuiButton-startIcon': {
+    justifyContent: "center",
+    "& .MuiButton-startIcon": {
       marginRight: 0,
     },
-    '& .MuiButton-startIcon + *': {
-      display: 'none',
+    "& .MuiButton-startIcon + *": {
+      display: "none",
     },
   };
 
   const toolbarItemSx = isNarrow
-    ? { flex: '1 1 0', minWidth: 0, display: 'flex' }
-    : { flex: '0 0 auto', display: 'flex' };
+    ? { flex: "1 1 0", minWidth: 0, display: "flex" }
+    : { flex: "0 0 auto", display: "flex" };
 
   function applySort(nextField, nextDir, showColumnSort = true) {
     setSortField(nextField);
     setSortDir(nextDir);
     setSortModel(showColumnSort ? [{ field: nextField, sort: nextDir }] : []);
-    setFormFilters((prev) => ({ ...prev, sort_field: nextField, sort_dir: nextDir }));
+    setFormFilters((prev) => ({
+      ...prev,
+      sort_field: nextField,
+      sort_dir: nextDir,
+    }));
     const url = new URL(window.location);
-    url.searchParams.set('sort_field', nextField);
-    url.searchParams.set('sort_dir', nextDir);
-    window.history.pushState({}, '', url);
+    url.searchParams.set("sort_field", nextField);
+    url.searchParams.set("sort_dir", nextDir);
+    window.history.pushState({}, "", url);
     setPage(0);
-    setSearchFiltersState((prev) => ({ ...(prev || {}), sort_field: nextField, sort_dir: nextDir }));
+    setSearchFiltersState((prev) => ({
+      ...(prev || {}),
+      sort_field: nextField,
+      sort_dir: nextDir,
+    }));
   }
 
   function handleSortToggle() {
-    const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+    const newDir = sortDir === "asc" ? "desc" : "asc";
     applySort(sortField, newDir, sortModel.length > 0);
   }
 
@@ -480,12 +532,14 @@ export function Search({
       applySort(nextSort.field, nextSort.sort);
       return;
     }
-    applySort('last_modified_timestamp', 'asc', false);
+    applySort("last_modified_timestamp", "asc", false);
   }
 
-  const activeSortLabel = sortModel.length > 0
-    ? searchState.colDef.find((column) => column.field === sortField)?.headerName || sortField
-    : 'Last Modified Date';
+  const activeSortLabel =
+    sortModel.length > 0
+      ? searchState.colDef.find((column) => column.field === sortField)
+          ?.headerName || sortField
+      : "Last Modified Date";
 
   // Custom toolbar keeps all controls in one responsive row so the sort button shares space evenly.
   function CustomToolbar(props) {
@@ -506,50 +560,52 @@ export function Search({
         className="SearchDataGridToolbar"
         aria-label="Search table controls"
         sx={{
-          width: '100%',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
+          width: "100%",
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
           gap: 1,
-          flexWrap: 'nowrap',
+          flexWrap: "nowrap",
         }}
       >
         <Box sx={toolbarItemSx}>
           <Tooltip title="Select columns">
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box sx={{ width: "100%", display: "flex" }}>
               <ColumnsPanelTrigger
                 render={renderToolbarButton({
                   startIcon: <ViewColumnIcon />,
                   sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
                 })}
               >
-                {isNarrow ? '' : 'Columns'}
+                {isNarrow ? "" : "Columns"}
               </ColumnsPanelTrigger>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip title="Show filters">
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box sx={{ width: "100%", display: "flex" }}>
               <FilterPanelTrigger
                 render={renderToolbarButton({
                   startIcon: <FilterListIcon />,
                   sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
                 })}
               >
-                {isNarrow ? '' : 'Filters'}
+                {isNarrow ? "" : "Filters"}
               </FilterPanelTrigger>
             </Box>
           </Tooltip>
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip title="Density">
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box sx={{ width: "100%", display: "flex" }}>
               <ToolbarButton
                 aria-label={`Change density; currently ${density}`}
-                aria-controls={densityAnchorEl ? 'search-density-menu' : undefined}
+                aria-controls={
+                  densityAnchorEl ? "search-density-menu" : undefined
+                }
                 aria-haspopup="menu"
-                aria-expanded={densityAnchorEl ? 'true' : undefined}
+                aria-expanded={densityAnchorEl ? "true" : undefined}
                 onClick={(event) => setDensityAnchorEl(event.currentTarget)}
                 render={
                   <Button
@@ -559,16 +615,16 @@ export function Search({
                   />
                 }
               >
-                {isNarrow ? '' : `Density: ${density}`}
+                {isNarrow ? "" : `Density: ${density}`}
               </ToolbarButton>
               <Menu
                 id="search-density-menu"
                 anchorEl={densityAnchorEl}
                 open={Boolean(densityAnchorEl)}
                 onClose={() => setDensityAnchorEl(null)}
-                slotProps={{ list: { 'aria-label': 'Table density' } }}
+                slotProps={{ list: { "aria-label": "Table density" } }}
               >
-                {['compact', 'standard', 'comfortable'].map((option) => (
+                {["compact", "standard", "comfortable"].map((option) => (
                   <MenuItem
                     key={option}
                     selected={density === option}
@@ -583,7 +639,7 @@ export function Search({
         </Box>
         <Box sx={toolbarItemSx}>
           <Tooltip title="Download as CSV">
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box sx={{ width: "100%", display: "flex" }}>
               <ExportCsv
                 options={props.csvOptions}
                 render={renderToolbarButton({
@@ -591,7 +647,7 @@ export function Search({
                   sx: isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx,
                 })}
               >
-                {isNarrow ? '' : 'Export CSV'}
+                {isNarrow ? "" : "Export CSV"}
               </ExportCsv>
             </Box>
           </Tooltip>
@@ -599,7 +655,7 @@ export function Search({
         {!isNarrow && (
           <Box sx={toolbarItemSx}>
             <Tooltip title="Print">
-              <Box sx={{ width: '100%', display: 'flex' }}>
+              <Box sx={{ width: "100%", display: "flex" }}>
                 <ExportPrint
                   render={renderToolbarButton({
                     startIcon: <PrintIcon />,
@@ -614,9 +670,9 @@ export function Search({
         )}
         <Box sx={toolbarItemSx}>
           <Tooltip
-            title={`Toggle sort (currently ${sortDir === 'asc' ? 'ascending' : 'descending'} by ${activeSortLabel})`}
+            title={`Toggle sort (currently ${sortDir === "asc" ? "ascending" : "descending"} by ${activeSortLabel})`}
           >
-            <Box sx={{ width: '100%', display: 'flex' }}>
+            <Box sx={{ width: "100%", display: "flex" }}>
               <ToolbarButton
                 onClick={handleSortToggle}
                 render={
@@ -627,45 +683,51 @@ export function Search({
                     size="small"
                     sx={isNarrow ? toolbarIconOnlyButtonSx : toolbarButtonSx}
                   />
-                }>
-                {isNarrow ? '' : `Sort ${activeSortLabel}: ${sortDir === 'asc' ? 'Ascending' : 'Descending'}`}
+                }
+              >
+                {isNarrow
+                  ? ""
+                  : `Sort ${activeSortLabel}: ${sortDir === "asc" ? "Ascending" : "Descending"}`}
               </ToolbarButton>
             </Box>
           </Tooltip>
         </Box>
-        <Box sx={{ marginLeft: 'auto', flex: '0 0 auto' }}>
+        <Box sx={{ marginLeft: "auto", flex: "0 0 auto" }}>
           <Tooltip title="Search table help">
             <ToolbarButton
               render={<IconButton color="inherit" size="small" />}
               aria-label="Open search table help"
-              aria-controls={tableHelpAnchorEl ? 'search-table-help' : undefined}
+              aria-controls={
+                tableHelpAnchorEl ? "search-table-help" : undefined
+              }
               aria-haspopup="dialog"
               aria-expanded={Boolean(tableHelpAnchorEl)}
-              onClick={(event) => setTableHelpAnchorEl(event.currentTarget)}>
+              onClick={(event) => setTableHelpAnchorEl(event.currentTarget)}
+            >
               <HelpOutlineIcon fontSize="small" />
             </ToolbarButton>
           </Tooltip>
           <Popover
             id="search-table-help"
             open={Boolean(tableHelpAnchorEl)}
-            anchorEl={() => document.getElementById('SearchDataGrid')}
+            anchorEl={() => document.getElementById("SearchDataGrid")}
             onClose={() => setTableHelpAnchorEl(null)}
             onClick={() => setTableHelpAnchorEl(null)}
-            anchorOrigin={{ vertical: 'center', horizontal: 'center' }}
-            transformOrigin={{ vertical: 'center', horizontal: 'center' }}
+            anchorOrigin={{ vertical: "center", horizontal: "center" }}
+            transformOrigin={{ vertical: "center", horizontal: "center" }}
             slotProps={{
               backdrop: {
                 sx: {
-                  backgroundColor: 'rgba(45, 49, 68, 0.18)',
-                  transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                  backgroundColor: "rgba(45, 49, 68, 0.18)",
+                  transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
                 },
               },
               paper: {
                 sx: {
                   width: 290,
                   p: 1.5,
-                  color: '#444a65',
-                  border: '1px solid #444a6540',
+                  color: "#444a65",
+                  border: "1px solid #444a6540",
                 },
               },
             }}
@@ -673,19 +735,49 @@ export function Search({
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
               Search table shortcuts
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '7px 12px', alignItems: 'baseline' }}>
-              <Typography component="kbd" variant="caption" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Click</Typography>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "auto 1fr",
+                gap: "7px 12px",
+                alignItems: "baseline",
+              }}
+            >
+              <Typography
+                component="kbd"
+                variant="caption"
+                sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+              >
+                Click
+              </Typography>
               <Typography variant="caption">Open the entity</Typography>
-              <Typography component="kbd" variant="caption" sx={{ fontWeight: 700, whiteSpace: 'nowrap' }}>Ctrl/⌘+ Click</Typography>
+              <Typography
+                component="kbd"
+                variant="caption"
+                sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+              >
+                Ctrl/⌘+ Click
+              </Typography>
               <Typography variant="caption">Open in a new tab</Typography>
             </Box>
-            <Typography variant="caption" component="p" sx={{ mt: 1.25, mb: 0, color: '#666b80' }}>
-              Use the toolbar to show columns, filter rows, change density, sort, or export results.
+            <Typography
+              variant="caption"
+              component="p"
+              sx={{ mt: 1.25, mb: 0, color: "#666b80" }}
+            >
+              Use the toolbar to show columns, filter rows, change density,
+              sort, or export results.
             </Typography>
             <Typography
               variant="caption"
               component="p"
-              sx={{ mt: 1.25, mb: 0, textAlign: 'center', color: '#85899a', fontStyle: 'italic' }}
+              sx={{
+                mt: 1.25,
+                mb: 0,
+                textAlign: "center",
+                color: "#85899a",
+                fontStyle: "italic",
+              }}
             >
               (click anywhere to close)
             </Typography>
@@ -696,36 +788,50 @@ export function Search({
   }
 
   // stable handlers
-  const handleTableCellClickDefault = useCallback((params, event, details) => {
-    console.debug('%c◉ handleTableCellClickDefault ', 'color:#00ff7b', params, params?.field);
-    console.debug('%c◉ details ', 'color:#00ff7b', details);
-    console.debug('%c◉ event ', 'color:#00ff7b', event);
-    let row = event.hasOwnProperty("row") ? event.row : params.row;
-    let field = params.hasOwnProperty("row") ? params.field : event.field;
-    if (field === "uuid") return; // skip this field
-    if (row) {
-      var typeText = row.entity_type.toLowerCase();
-      let target = typeText + "/" + row.uuid
-      console.debug('%c◉ target ', 'color:#00ff7b', target);
-      urlChange(event, target);
-    }
-  }, [urlChange]);
+  const handleTableCellClickDefault = useCallback(
+    (params, event, details) => {
+      logger.debug(
+        "%c◉ handleTableCellClickDefault ",
+        "color:#008000",
+        params,
+        params?.field,
+      );
+      logger.debug("%c◉ details ", "color:#008000", details);
+      logger.debug("%c◉ event ", "color:#008000", event);
+      let row = event.hasOwnProperty("row") ? event.row : params.row;
+      let field = params.hasOwnProperty("row") ? params.field : event.field;
+      if (field === "uuid") return; // skip this field
+      if (row) {
+        var typeText = row.entity_type.toLowerCase();
+        let target = typeText + "/" + row.uuid;
+        logger.debug("%c◉ target ", "color:#008000", target);
+        urlChange(event, target);
+      }
+    },
+    [urlChange],
+  );
 
   const handlePageChange = useCallback((pageInfo) => {
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }, []);
 
-  const onCellClickHandler = useCallback((params, event, details) => {
-    return handleTableCellClickDefault(params, event, details);
-  }, [handleTableCellClickDefault]);
+  const onCellClickHandler = useCallback(
+    (params, event, details) => {
+      return handleTableCellClickDefault(params, event, details);
+    },
+    [handleTableCellClickDefault],
+  );
 
   useEffect(() => {
     // If URL/initial filters were applied, and we don't yet have searchFiltersState, skip the default search
-    console.debug('%c◉ searchFiltersState ', 'color:#00ff7b', searchFiltersState);
-    console.debug('%c◉ urlParamsAppliedRef ', 'color:#00ff7b', urlParamsAppliedRef, urlParamsAppliedRef.current);
+    logger.debug(
+      "%c◉ searchFiltersState ",
+      "color:#008000",
+      searchFiltersState,
+    );
     if (!searchFiltersState && urlParamsAppliedRef.current) {
-      console.debug('%c◉ Init/Url ', 'color:#00ff7b', );
+      logger.debug("%c◉ Init/Url ", "color:#008000");
       return;
     }
     var searchFilterParams = searchFiltersState ? searchFiltersState : {};
@@ -735,26 +841,52 @@ export function Search({
     // Will run automatically once searchFilters is updated
     // (Hence populating formFilters & converting to searchFilters on click)
     // Let's make sure the casing is right on the entity based fields\
-    console.debug('%c◉ searchFilterParams ', 'color:#002AFF', searchFilterParams);
-    if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
+    if (
+      searchFilterParams?.entity_type &&
+      searchFilterParams?.entity_type !== "----"
+    ) {
       let entityTypes = {
-        donor: "Donor" ,
+        donor: "Donor",
         sample: "Sample",
         dataset: "Dataset",
         upload: "Data Upload",
         publication: "Publication",
         collection: "Collection",
-        epicollection: "EPICollection"
-      }
-      console.debug('%c◉ SEARCHWHAT ', 'color:#002AFF', searchFilterParams, searchFilterParams?.entity_type, searchFiltersState, searchFiltersState?.entityType);
-      if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
-      } else if (SAMPLE_CATEGORIES.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
+        epicollection: "EPICollection",
+      };
+      logger.debug(
+        "%c◉ SEARCHWHAT ",
+        "color:#002AFF",
+        searchFilterParams,
+        searchFilterParams?.entity_type,
+        searchFiltersState,
+        searchFiltersState?.entityType,
+      );
+      if (
+        entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())
+      ) {
+        searchFilterParams.entity_type = toTitleCase(
+          searchFilterParams.entity_type,
+        );
+      } else if (
+        SAMPLE_CATEGORIES.hasOwnProperty(
+          searchFilterParams.entity_type.toLowerCase(),
+        )
+      ) {
+        searchFilterParams.sample_category =
+          searchFilterParams.entity_type.toLowerCase();
       } else {
-        if(searchFilterParams && searchFilterParams.entityType !=="DonorSample"){
-          console.debug('%c◉ searchFilterParams.entityType ', 'color:#00ff7b', searchFilterParams.entityType);
-          searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
+        if (
+          searchFilterParams &&
+          searchFilterParams.entityType !== "DonorSample"
+        ) {
+          logger.debug(
+            "%c◉ searchFilterParams.entityType ",
+            "color:#008000",
+            searchFilterParams.entityType,
+          );
+          searchFilterParams.organ =
+            searchFilterParams.entity_type.toUpperCase();
         }
       }
     }
@@ -762,12 +894,12 @@ export function Search({
     // That searchFilters Update thing above is triggered on search button click,
     // If we have restrictions, we still need to set the dropdowns accordingly
     // Before the user does anything
-    if(restrictions && restrictions.entityType){
-
+    if (restrictions && restrictions.entityType) {
       searchFilterParams.entity_type = toTitleCase(restrictions.entityType);
       setFormFilters((prevValues) => ({
         ...prevValues,
-      entity_type: restrictions.entityType,}));
+        entity_type: restrictions.entityType,
+      }));
     }
 
     var fieldSearchSet = resultFieldSet();
@@ -776,9 +908,10 @@ export function Search({
       page * pageSize,
       pageSize,
       fieldSearchSet,
-      "newTable"
-    ).then((response) => {
-        if(response.error){
+      "newTable",
+    )
+      .then((response) => {
+        if (response.error) {
           errorReporting(response.error);
           setErrorState(true);
           setError(response.error?.message || "Unable to reach Search API.");
@@ -787,19 +920,26 @@ export function Search({
         }
         if (response.total > 0 && response.status === 200) {
           let colDefs;
-          console.debug('%c◉ simpleColumns', 'color:#F6FF00', SIMPLE_COLUMNS);
-          console.debug('%c◉ searchFilterParams.entity_type', 'color:#F6FF00', searchFilterParams.entity_type);
-          console.debug('%c◉ simpleColumns.includes(searchFilterParams.entity_type) ', 'color:#002AFF', SIMPLE_COLUMNS.includes(searchFilterParams.entity_type));
-          if(searchFilterParams.entity_type === "Epicollection"){
+          logger.debug("%c◉ simpleColumns", "color:#F6FF00", SIMPLE_COLUMNS);
+          if (searchFilterParams.entity_type === "Epicollection") {
             searchFilterParams.entity_type = "EPICollection";
           }
-          if(SIMPLE_COLUMNS.includes(searchFilterParams.entity_type) ){
+          if (SIMPLE_COLUMNS.includes(searchFilterParams.entity_type)) {
             colDefs = columnDefType(searchFilterParams.entity_type);
-            console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs, searchFilterParams.entity_type);
-          }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
-            colDefs = COLUMN_DEF_MIXED
-          }else{
-            colDefs = COLUMN_DEF_MIXED
+            logger.debug(
+              "%c◉ colDefs ",
+              "color:#008000",
+              colDefs,
+              searchFilterParams.entity_type,
+            );
+          } else if (
+            !searchFilterParams.entity_type ||
+            searchFilterParams.entity_type === undefined ||
+            searchFilterParams.entity_type === "---"
+          ) {
+            colDefs = COLUMN_DEF_MIXED;
+          } else {
+            colDefs = COLUMN_DEF_MIXED;
           }
           dispatchSearchState({
             type: "SET",
@@ -822,25 +962,32 @@ export function Search({
           });
         } else {
           var errStringMSG = "";
-          var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
-            typeof errString.type === "string"
-              ? (errStringMSG = "Error on Search")
-              : (errStringMSG = errString);
-            setErrorState(true)
-            setError(errStringMSG)
-            dispatchSearchState({ type: "SET", payload: { loading: false } });
-          }
+          var errString =
+            response.results.data.error.root_cause[0].type +
+            " | " +
+            response.results.data.error.root_cause[0].reason;
+          typeof errString.type === "string"
+            ? (errStringMSG = "Error on Search")
+            : (errStringMSG = errString);
+          setErrorState(true);
+          setError(errStringMSG);
+          dispatchSearchState({ type: "SET", payload: { loading: false } });
+        }
       })
       .catch(() => {
         dispatchSearchState({ type: "SET", payload: { loading: false } });
         // errorReport(error)
         //props.reportError(error);
       });
-      console.debug('%c◉ searchFiltersState ', 'color:#00ff7b', searchFiltersState);
+    logger.debug(
+      "%c◉ searchFiltersState ",
+      "color:#008000",
+      searchFiltersState,
+    );
   }, [page, pageSize, searchFiltersState, restrictions]);
 
   function columnDefType(et) {
-    console.debug('%c◉ columnDefType ', 'color:#D0FF00', et );
+    logger.debug("%c◉ columnDefType ", "color:#D0FF00", et);
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -867,43 +1014,49 @@ export function Search({
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
-    const {name, value } = e.target;
-    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
+    const { name, value } = e.target;
+    logger.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
-          setFormFilters((prevValues) => ({...prevValues,
-            group_uuid: value,}));
+          setFormFilters((prevValues) => ({
+            ...prevValues,
+            group_uuid: value,
+          }));
         } else {
-          setFormFilters((prevValues) => ({...prevValues,
-            group_uuid: "",}));
+          setFormFilters((prevValues) => ({ ...prevValues, group_uuid: "" }));
         }
         break;
       case "entity_type":
-        console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
+        logger.debug("%c◉ Entity Time ", "color:#008000", value);
         if (value !== "---") {
-          console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
-          setFormFilters((prevValues) => ({...prevValues,
-            entity_type: value}));
-          } else {
-            console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
-            setFormFilters((prevValues) => ({...prevValues,
-            entity_type: "",}));
+          logger.debug(
+            "%c◉ Setting Entity Type from formFilters ",
+            "color:#008000",
+          );
+          setFormFilters((prevValues) => ({
+            ...prevValues,
+            entity_type: value,
+          }));
+        } else {
+          logger.debug(
+            "%c◉ Clearing Entity Type from formFilters ",
+            "color:#008000",
+          );
+          setFormFilters((prevValues) => ({ ...prevValues, entity_type: "" }));
         }
-        break
+        break;
       case "keywords":
-        setFormFilters((prevValues) => ({...prevValues,
-          keywords: value,}));
+        setFormFilters((prevValues) => ({ ...prevValues, keywords: value }));
         break;
       default:
-        setFormFilters((prevValues) => ({...prevValues,
-          [name]: value,}));
+        setFormFilters((prevValues) => ({ ...prevValues, [name]: value }));
         break;
     }
   }
 
-  function statusFilter(e, status){
-    console.debug('%c◉ e ', 'color:#00ff7b', e, status);
+  function statusFilter(e, status) {
+    logger.debug("%c◉ e ", "color:#008000", e, status);
     // Cycle: not selected -> included -> excluded -> not selected
     if (chipSelect.includes(status)) {
       // included -> move to excluded
@@ -925,7 +1078,7 @@ export function Search({
       });
     }
     // trigger one-shot pulse animation
-    setPulseMap((prev) => ({...prev, [status]: true}));
+    setPulseMap((prev) => ({ ...prev, [status]: true }));
   }
 
   // Saved-search helpers
@@ -935,14 +1088,17 @@ export function Search({
       if (!name) return;
       const params = {
         ...buildDefaultFormFilters(),
-        keywords: formFilters?.keywords || '',
-        group_uuid: formFilters?.group_uuid || '',
-        entity_type: normalizeEntityTypeValue(formFilters?.entity_type || formFilters?.entityType) || '',
-        target_field: formFilters?.target_field || '',
-        date_from: formFilters?.date_from || '',
-        date_to: formFilters?.date_to || '',
-        sort_dir: formFilters?.sort_dir || '',
-        sort_field: formFilters?.sort_field || '',
+        keywords: formFilters?.keywords || "",
+        group_uuid: formFilters?.group_uuid || "",
+        entity_type:
+          normalizeEntityTypeValue(
+            formFilters?.entity_type || formFilters?.entityType,
+          ) || "",
+        target_field: formFilters?.target_field || "",
+        date_from: formFilters?.date_from || "",
+        date_to: formFilters?.date_to || "",
+        sort_dir: formFilters?.sort_dir || "",
+        sort_field: formFilters?.sort_field || "",
       };
       // include status selections
       params.status = Array.isArray(chipSelect) ? chipSelect : [];
@@ -955,7 +1111,12 @@ export function Search({
       setSaveName("");
       setSaveSectionOpen(false);
       try {
-        setSavedSnack({ open: true, message: 'Search Values Saved to Local Storage. Select at any time to apply.', severity: 'success' });
+        setSavedSnack({
+          open: true,
+          message:
+            "Search Values Saved to Local Storage. Select at any time to apply.",
+          severity: "success",
+        });
         setTimeout(() => {
           closeSavedSnack();
         }, 3000);
@@ -963,7 +1124,10 @@ export function Search({
         // ignore
       }
     } catch (err) {
-      console.debug('Error saving search', err);
+      logger.all.error({
+        message: "Search.saveCurrentSearch Error saving search",
+        error_details: err,
+      });
     }
   }
 
@@ -971,23 +1135,32 @@ export function Search({
     if (!item || !item.params) return;
     const p = item.params;
     const defaults = buildDefaultFormFilters();
-    const normalizedEntityType = normalizeEntityTypeValue(p.entity_type || p.entityType);
+    const normalizedEntityType = normalizeEntityTypeValue(
+      p.entity_type || p.entityType,
+    );
     const nextFormFilters = {
       ...defaults,
-      keywords: p.keywords || '',
-      group_uuid: p.group_uuid || '',
-      entity_type: normalizedEntityType || '',
-      target_field: p.target_field || '',
-      date_from: p.date_from || '',
-      date_to: p.date_to || '',
-      sort_dir: p.sort_dir || '',
-      sort_field: p.sort_field || '',
+      keywords: p.keywords || "",
+      group_uuid: p.group_uuid || "",
+      entity_type: normalizedEntityType || "",
+      target_field: p.target_field || "",
+      date_from: p.date_from || "",
+      date_to: p.date_to || "",
+      sort_dir: p.sort_dir || "",
+      sort_field: p.sort_field || "",
     };
-    setSortDir(nextFormFilters.sort_dir || 'asc');
-    setSortField(nextFormFilters.sort_field || 'last_modified_timestamp');
-    setSortModel(nextFormFilters.sort_field
-      ? [{ field: nextFormFilters.sort_field, sort: nextFormFilters.sort_dir || 'asc' }]
-      : []);
+    setSortDir(nextFormFilters.sort_dir || "asc");
+    setSortField(nextFormFilters.sort_field || "last_modified_timestamp");
+    setSortModel(
+      nextFormFilters.sort_field
+        ? [
+            {
+              field: nextFormFilters.sort_field,
+              sort: nextFormFilters.sort_dir || "asc",
+            },
+          ]
+        : [],
+    );
     // Only populate the form fields and chips from the saved search.
     // Do NOT modify URL, paging, or trigger any search — leave the table unchanged.
     setFormFilters(nextFormFilters);
@@ -997,7 +1170,12 @@ export function Search({
     setFieldsChanged(true);
     // Show feedback snackbar
     try {
-      setSavedSnack({ open: true, message: 'Saved Values loaded successfully. Please click Search to apply changes', severity: 'info' });
+      setSavedSnack({
+        open: true,
+        message:
+          "Saved Values loaded successfully. Please click Search to apply changes",
+        severity: "info",
+      });
       setTimeout(() => {
         closeSavedSnack();
       }, 3000);
@@ -1007,7 +1185,7 @@ export function Search({
   }
 
   function deleteSavedSearch(name) {
-    const savedName = typeof name === 'string' ? name : name?.name;
+    const savedName = typeof name === "string" ? name : name?.name;
     if (!savedName) return;
     try {
       const newList = savedSearches.filter((s) => s.name !== savedName);
@@ -1015,7 +1193,11 @@ export function Search({
       localStorage.setItem("savedSearches", JSON.stringify(newList));
       // show snackbar indicating success
       try {
-        setSavedSnack({ open: true, message: `Saved Search ${savedName} was successfully deleted.`, severity: 'success' });
+        setSavedSnack({
+          open: true,
+          message: `Saved Search ${savedName} was successfully deleted.`,
+          severity: "success",
+        });
         setTimeout(() => {
           closeSavedSnack();
         }, 3000);
@@ -1023,132 +1205,174 @@ export function Search({
         // ignore
       }
     } catch (err) {
-      console.debug('Error deleting saved search', err);
+      logger.all.error({
+        message: "Search.deleteSavedSearch Error deleting saved search",
+        error_details: err,
+      });
     }
   }
 
   function renderStatusControls() {
     let colorMap = {
-      "QA": '#17a2b8',
-      "Approval": '#f5e537',
-      "Submitted": '#17a2b8',
-      "Reorganized": '#17a2b8',
-      "Published": '#0ecd3a',
-      "Valid": '#0ecd3a',
-      "Error": '#dc004e',
-      "Invalid": '#dc004e',
-      "Processing": '#424242',
-      "Retracted": '#424242',
-      "Incomplete": '#ffc107',
-      "New": '#9933cc',
-    }
-    let statusOptions = ["Published", "Retracted", "QA", "Approval", "Error", "Invalid", "Processing", "Submitted", "New", "Incomplete" , "Reorganized", "Valid"]
-    return(<>
-      {statusOptions.map((status, i) => {
-        const isSelected = chipSelect.includes(status);
-        const isExcluded = chipExclude.includes(status);
-        const baseBorder = `1px solid ${colorMap[status]}`;
-        const hoverGlow = (c) => `0 0 4px ${c}44`;
-        const activeGlow = (c) => `0 0 4px ${c}99`;
-        const isPulsing = !!pulseMap && !!pulseMap[status];
-        const sxSelected = {
-          // fontWeight: 'bold',
-          margin: "2px",
-          fontSize: '0.7rem',
-          backgroundColor: colorMap[status],
-          color: 'white',
-          border: baseBorder,
-          transition: 'border-color 10ms ease, box-shadow 20ms ease, background-color 20ms cubic-bezier(.2,.9,.3,1)',
-          boxShadow: hoverGlow(colorMap[status]),
-            '&:hover': {
+      QA: "#17a2b8",
+      Approval: "#f5e537",
+      Submitted: "#17a2b8",
+      Reorganized: "#17a2b8",
+      Published: "#0ecd3a",
+      Valid: "#0ecd3a",
+      Error: "#dc004e",
+      Invalid: "#dc004e",
+      Processing: "#424242",
+      Retracted: "#424242",
+      Incomplete: "#ffc107",
+      New: "#9933cc",
+    };
+    let statusOptions = [
+      "Published",
+      "Retracted",
+      "QA",
+      "Approval",
+      "Error",
+      "Invalid",
+      "Processing",
+      "Submitted",
+      "New",
+      "Incomplete",
+      "Reorganized",
+      "Valid",
+    ];
+    return (
+      <>
+        {statusOptions.map((status, i) => {
+          const isSelected = chipSelect.includes(status);
+          const isExcluded = chipExclude.includes(status);
+          const baseBorder = `1px solid ${colorMap[status]}`;
+          const hoverGlow = (c) => `0 0 4px ${c}44`;
+          const activeGlow = (c) => `0 0 4px ${c}99`;
+          const isPulsing = !!pulseMap && !!pulseMap[status];
+          const sxSelected = {
+            // fontWeight: 'bold',
+            margin: "2px",
+            fontSize: "0.7rem",
+            backgroundColor: colorMap[status],
+            color: "white",
+            border: baseBorder,
+            transition:
+              "border-color 10ms ease, box-shadow 20ms ease, background-color 20ms cubic-bezier(.2,.9,.3,1)",
+            boxShadow: hoverGlow(colorMap[status]),
+            "&:hover": {
               boxShadow: `0 0 6px ${colorMap[status]}44`,
               backgroundColor: `${colorMap[status]}44`,
             },
-          '&:active': {
-            boxShadow: activeGlow(colorMap[status]),
-          },
-        };
-        if (isPulsing) {
-          sxSelected.animation = 'chipPulse 30ms ease-out';
-          sxSelected['@keyframes chipPulse'] = {
-            '0%': { boxShadow: `0 0 6 ${colorMap[status]}00`},
-            '60%': { boxShadow: `0 0 6px ${colorMap[status]}88` },
-            '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
+            "&:active": {
+              boxShadow: activeGlow(colorMap[status]),
+            },
           };
-        }
-        const sxUnselected = {
-          fontSize: '0.7rem',
-          margin: "3px",
-          backgroundColor: `${colorMap[status]}11`,
-          color: colorMap[status],
-          border: baseBorder,
-          // slower first part when moving toward color
-          transition: 'border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 30ms cubic-bezier(.2,.8,.2,1), background-color 20ms cubic-bezier(.2,.8,.2,1), color 20ms ease',
-          boxShadow: `0 0 4px ${colorMap[status]}44`,
-          '&:hover': {
-            borderColor: colorMap[status],
-            boxShadow: hoverGlow(colorMap[status]),
+          if (isPulsing) {
+            sxSelected.animation = "chipPulse 30ms ease-out";
+            sxSelected["@keyframes chipPulse"] = {
+              "0%": { boxShadow: `0 0 6 ${colorMap[status]}00` },
+              "60%": { boxShadow: `0 0 6px ${colorMap[status]}88` },
+              "100%": { boxShadow: `0 0 6px ${colorMap[status]}55` },
+            };
+          }
+          const sxUnselected = {
+            fontSize: "0.7rem",
+            margin: "3px",
+            backgroundColor: `${colorMap[status]}11`,
+            color: colorMap[status],
+            border: baseBorder,
+            // slower first part when moving toward color
+            transition:
+              "border-color 10ms cubic-bezier(.2,.8,.2,1), box-shadow 30ms cubic-bezier(.2,.8,.2,1), background-color 20ms cubic-bezier(.2,.8,.2,1), color 20ms ease",
+            boxShadow: `0 0 4px ${colorMap[status]}44`,
+            "&:hover": {
+              borderColor: colorMap[status],
+              boxShadow: hoverGlow(colorMap[status]),
               // smooth background transition from white -> tinted color on hover (midway)
               backgroundColor: `${colorMap[status]}33`,
               // color: 'white',
             },
-          '&:active': {
-            // active click: snap to a stronger glow (will be followed by selection state change)
-            boxShadow: activeGlow(colorMap[status]),
-            backgroundColor: `${colorMap[status]}55`,
-            color: `${colorMap[status]}99`,
-          },
-        };
-        if (isPulsing) {
-          sxUnselected.animation = 'chipPulse 12ms ease-out';
-          sxUnselected['@keyframes chipPulse'] = {
-            '0%': { boxShadow: `0 0 0 ${colorMap[status]}00`},
-            '60%': { boxShadow: `0 0 6px ${colorMap[status]}99`},
-            '100%': { boxShadow: `0 0 6px ${colorMap[status]}55`},
+            "&:active": {
+              // active click: snap to a stronger glow (will be followed by selection state change)
+              boxShadow: activeGlow(colorMap[status]),
+              backgroundColor: `${colorMap[status]}55`,
+              color: `${colorMap[status]}99`,
+            },
           };
-        }
+          if (isPulsing) {
+            sxUnselected.animation = "chipPulse 12ms ease-out";
+            sxUnselected["@keyframes chipPulse"] = {
+              "0%": { boxShadow: `0 0 0 ${colorMap[status]}00` },
+              "60%": { boxShadow: `0 0 6px ${colorMap[status]}99` },
+              "100%": { boxShadow: `0 0 6px ${colorMap[status]}55` },
+            };
+          }
 
-        const sxExcluded = {
-          fontSize: '0.7rem',
-          margin: '3px',
-          backgroundColor: '#e6e6e6',
-          color: '#666',
-          textDecoration: 'line-through',
-          textDecorationColor: '#999',
-          border: '1px solid #cfcfcf',
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: '#dcdcdc',
-          },
-        };
-        return (
-          <Chip
-            key={i}
-            variant={isSelected ? 'filled' : 'outlined'}
-            sx={isSelected ? sxSelected : isExcluded ? sxExcluded : sxUnselected}
-            className={"badge-"+status+" "+ (isSelected ? badgeClass(status) : isExcluded ? 'statusChipExcluded' : 'statusChipUnselected')}
-            label={status.toUpperCase()}
-            size="small"
-            onClick={(e) => statusFilter(e, status)}
-          />
-        );
-      })}
-    </>)
+          const sxExcluded = {
+            fontSize: "0.7rem",
+            margin: "3px",
+            backgroundColor: "#e6e6e6",
+            color: "#666",
+            textDecoration: "line-through",
+            textDecorationColor: "#999",
+            border: "1px solid #cfcfcf",
+            boxShadow: "none",
+            "&:hover": {
+              backgroundColor: "#dcdcdc",
+            },
+          };
+          return (
+            <Chip
+              key={i}
+              variant={isSelected ? "filled" : "outlined"}
+              sx={
+                isSelected ? sxSelected : isExcluded ? sxExcluded : sxUnselected
+              }
+              className={
+                "badge-" +
+                status +
+                " " +
+                (isSelected
+                  ? badgeClass(status)
+                  : isExcluded
+                    ? "statusChipExcluded"
+                    : "statusChipUnselected")
+              }
+              label={status.toUpperCase()}
+              size="small"
+              onClick={(e) => statusFilter(e, status)}
+            />
+          );
+        })}
+      </>
+    );
   }
 
   function renderView() {
     return (
-      <div style={{ width: "100%", textAlign: "center"}} sx={{
+      <div
+        style={{ width: "100%", textAlign: "center" }}
+        sx={{
           backgroundColor: "#444a65",
-          background: "linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%)",
+          background:
+            "linear-gradient(180deg, rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%)",
           width: "100%",
           color: "white",
-          borderBottomRadius: "0.375rem"
-        }}>
-        { renderNewFilterControls()}
-        {searchState.dataRows && searchState.dataRows.length > 0 && renderTable()}
-        {searchState.dataRows && searchState.dataRows.length === 0 && !searchState.loading && (
-          <div className="text-center">No records were found using the provided criteria.</div>)}
+          borderBottomRadius: "0.375rem",
+        }}
+      >
+        {renderNewFilterControls()}
+        {searchState.dataRows &&
+          searchState.dataRows.length > 0 &&
+          renderTable()}
+        {searchState.dataRows &&
+          searchState.dataRows.length === 0 &&
+          !searchState.loading && (
+            <div className="text-center">
+              No records were found using the provided criteria.
+            </div>
+          )}
       </div>
     );
   }
@@ -1157,43 +1381,51 @@ export function Search({
     // inner buildColumnFilter removed - using memoized columnVisibilityModel
 
     return (
-      <Box ref={setSearchGridContainer} style={{height: 590, width: "100%" , position: "relative"}}>
-        <Box className="sourceShade" sx={{
-          opacity: searchState.loading ? 1 : 0,
-          backgroundColor: "#444a65",
-          background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
-          width: "100%",
-          maxWidth: "1266px",
-          pointerEvents: "none",
-          height: "48px",
-          position: "absolute",
-          color: "white",
-          zIndex: 999,
-          padding: "10px",
-          boxSizing: "border-box",
-          borderRadius: "0.375rem",
-          transitionProperty: "opacity",
-          transitionTimingFunction: "ease-in",
-          transitionDuration: "0.5s"
-        }}>
+      <Box
+        ref={setSearchGridContainer}
+        style={{ height: 590, width: "100%", position: "relative" }}
+      >
+        <Box
+          className="sourceShade"
+          sx={{
+            opacity: searchState.loading ? 1 : 0,
+            backgroundColor: "#444a65",
+            background:
+              "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
+            width: "100%",
+            maxWidth: "1266px",
+            pointerEvents: "none",
+            height: "48px",
+            position: "absolute",
+            color: "white",
+            zIndex: 999,
+            padding: "10px",
+            boxSizing: "border-box",
+            borderRadius: "0.375rem",
+            transitionProperty: "opacity",
+            transitionTimingFunction: "ease-in",
+            transitionDuration: "0.5s",
+          }}
+        >
           <GridLoader size="2px" color="white" width="30px" /> Loading ...
         </Box>
         <DataGrid
           sx={{
-            '.MuiTablePagination-select': {
-              'background': '#eee',
+            ".MuiTablePagination-select": {
+              background: "#eee",
             },
-            '.MuiTablePagination-displayedRows': {
-              'marginTop': '1em',
-              'marginBottom': '1em'
+            ".MuiTablePagination-displayedRows": {
+              marginTop: "1em",
+              marginBottom: "1em",
             },
-            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
-              'marginTop': '1em',
-              'marginBottom': '1em'
+            ".MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel":
+              {
+                marginTop: "1em",
+                marginBottom: "1em",
+              },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor: "#cacaca",
             },
-            '& .MuiDataGrid-row:hover': {
-              backgroundColor: '#cacaca'
-            }
           }}
           id="SearchDataGrid"
           className="SearchGridWrap HDT"
@@ -1218,7 +1450,7 @@ export function Search({
           slots={{ toolbar: CustomToolbar }}
           slotProps={{
             toolbar: {
-              csvOptions
+              csvOptions,
             },
             // columnsPanel: {
             //   getTogglableColumns,
@@ -1229,215 +1461,366 @@ export function Search({
     );
   }
 
-  function renderGroupField(){
+  function renderGroupField() {
     return (
-      <FormControl sx={{width: "100%"}} size="small">
-        <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-          <GroupsIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Group | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Select a group to filter by:</Typography>
+      <FormControl sx={{ width: "100%" }} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroiup">
+          <GroupsIcon
+            sx={{ marginRight: "5px", marginTop: "-4px", fontSize: "1.1em" }}
+          />
+          <Typography
+            variant="overline"
+            id="group_label"
+            sx={{ fontWeight: "700", color: "#fff", display: "inline-flex" }}
+          >
+            {" "}
+            Group |{" "}
+          </Typography>{" "}
+          <Typography variant="caption" id="group_label" sx={{ color: "#fff" }}>
+            Select a group to filter by:
+          </Typography>
         </Box>
         <Box>
           <Select
             fullWidth
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: "10px",
+              border: "1px solid #ccc",
+              fontSize: "0.9em",
+              width: "100%",
+            }}
             name="group_uuid"
-            value={formFilters.group_uuid?formFilters.group_uuid : ""}
-            onChange={(event) => handleInputChange(event)}>
-            <MenuItem key={0} value="allcom" sx={{color:"#ddd"}}>All Groups</MenuItem>
+            value={formFilters.group_uuid ? formFilters.group_uuid : ""}
+            onChange={(event) => handleInputChange(event)}
+          >
+            <MenuItem key={0} value="allcom" sx={{ color: "#ddd" }}>
+              All Groups
+            </MenuItem>
             {allGroups.map((group) => {
               return (
-                  <MenuItem sx={{fontSize: "0.8em"}} key={group.uuid} value={group.uuid}>{group.shortName}</MenuItem>
+                <MenuItem
+                  sx={{ fontSize: "0.8em" }}
+                  key={group.uuid}
+                  value={group.uuid}
+                >
+                  {group.shortName}
+                </MenuItem>
               );
             })}
           </Select>
         </Box>
       </FormControl>
-    )
+    );
   }
 
-  function renderTargetField(){
+  function renderTargetField() {
     const targetOptions = ES_SEARCHABLE_FIELDS.map((f) => {
       const clean = f.replace(/\.keyword$/i, "").replace(/[._]/g, " ");
       return { field: f, title: toTitleCase(clean) };
     });
-  return (
-      <FormControl sx={{width: "100%"}} size="small">
-        <Box className="searchFieldLabel" id="SearchLabelGroup" >
-          <TroubleshootIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Target | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Select the field you wish to target:</Typography>
+    return (
+      <FormControl sx={{ width: "100%" }} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroup">
+          <TroubleshootIcon
+            sx={{ marginRight: "5px", marginTop: "-4px", fontSize: "1.1em" }}
+          />
+          <Typography
+            variant="overline"
+            id="group_label"
+            sx={{ fontWeight: "700", color: "#fff", display: "inline-flex" }}
+          >
+            {" "}
+            Target |{" "}
+          </Typography>{" "}
+          <Typography variant="caption" id="group_label" sx={{ color: "#fff" }}>
+            Select the field you wish to target:
+          </Typography>
         </Box>
         <Box>
           <Select
             fullWidth
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: "10px",
+              border: "1px solid #ccc",
+              fontSize: "0.9em",
+              width: "100%",
+            }}
             name="target_field"
             id="target_field"
-            value={formFilters.target_field?formFilters.target_field : ""}
-            onChange={(event) => handleInputChange(event)}>
-            <MenuItem key={0} value="">&nbsp;</MenuItem>
+            value={formFilters.target_field ? formFilters.target_field : ""}
+            onChange={(event) => handleInputChange(event)}
+          >
+            <MenuItem key={0} value="">
+              &nbsp;
+            </MenuItem>
             {targetOptions.map((field) => {
               return (
-                  <MenuItem sx={{fontSize: "0.8em"}} key={field.field} value={field.field}>{field.title}</MenuItem>
+                <MenuItem
+                  sx={{ fontSize: "0.8em" }}
+                  key={field.field}
+                  value={field.field}
+                >
+                  {field.title}
+                </MenuItem>
               );
             })}
           </Select>
-          <Grid container spacing={1} sx={{mt: 2}}>
+          <Grid container spacing={1} sx={{ mt: 2 }}>
             <Grid size={12}>
-              <Box className="searchFieldLabel" id="SearchLabelGroup" >
-                <GradeIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-                <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Saved searches | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>Save and load pre-defined searches</Typography>
+              <Box className="searchFieldLabel" id="SearchLabelGroup">
+                <GradeIcon
+                  sx={{
+                    marginRight: "5px",
+                    marginTop: "-4px",
+                    fontSize: "1.1em",
+                  }}
+                />
+                <Typography
+                  variant="overline"
+                  id="group_label"
+                  sx={{
+                    fontWeight: "700",
+                    color: "#fff",
+                    display: "inline-flex",
+                  }}
+                >
+                  {" "}
+                  Saved searches |{" "}
+                </Typography>{" "}
+                <Typography
+                  variant="caption"
+                  id="status_label"
+                  sx={{ color: "#fff" }}
+                >
+                  Save and load pre-defined searches
+                </Typography>
               </Box>
-              <Box sx={{display: 'inline-block', alignItems: 'center', width: '100%'}}>
-              {savedSearches.length === 0 ? (
-                <Typography variant="caption" sx={{color: '#fff', alignSelf: 'center'}}>No saved searches</Typography>
-              ) : (
-                savedSearches.map((s, i) => (
-                  <Box
-                    key={i}
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      position: 'relative',
-                    }}>
-                    <Chip
-                      size="small"
-                      clickable
-                      onClick={(e) => { e.stopPropagation(); applySavedSearch(s); }}
-                      className="savedApply"
-                      onDelete={() => deleteSavedSearch(s.name)}
-                      label={s.name}
-                      sx={{
-                        // background: 'linear-gradient(180deg, #eceff3 0%, #d7dde5 100%)',
-                        background: 'none',
-                        color: '#fff',
-                        borderRadius: '999px',
-                        height: 24,
-                        px: 1.25,
-                        margin: "2px 2px 2px 0",
-                        border: '1px solid #b7c0cb',
-                        minWidth: 'auto',
-                        lineHeight: 1,
-                        transition: 'background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease',
-                        '& .MuiChip-deleteIcon': {
-                          color: '#8a95a3',
-                          transition: 'color 140ms ease, transform 140ms ease, opacity 140ms ease',
-                        },
-                        '& .MuiChip-deleteIcon:hover': {
-                          color: '#e53935',
-                          transform: 'scale(1.08)',
-                        },
-                        '&:hover': {
-                          background: 'linear-gradient(180deg, #f6f8fa 0%, #d9e0e8 100%)',
-                          color:'#232a33',
-                          borderColor: '#95a3b3',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                        },
-                      }}
-                    />
-                  </Box>
-                ))
-              )}
-              <Snackbar
-                open={savedSnack.open}
-                autoHideDuration={3000}
-                onClose={closeSavedSnack}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              <Box
+                sx={{
+                  display: "inline-block",
+                  alignItems: "center",
+                  width: "100%",
+                }}
               >
-                <Alert onClose={closeSavedSnack} severity={savedSnack.severity} sx={{ width: '100%' }}>
-                  {savedSnack.message}
-                </Alert>
-              </Snackbar>
+                {savedSearches.length === 0 ? (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "#fff", alignSelf: "center" }}
+                  >
+                    No saved searches
+                  </Typography>
+                ) : (
+                  savedSearches.map((s, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        position: "relative",
+                      }}
+                    >
+                      <Chip
+                        size="small"
+                        clickable
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          applySavedSearch(s);
+                        }}
+                        className="savedApply"
+                        onDelete={() => deleteSavedSearch(s.name)}
+                        label={s.name}
+                        sx={{
+                          // background: 'linear-gradient(180deg, #eceff3 0%, #d7dde5 100%)',
+                          background: "none",
+                          color: "#fff",
+                          borderRadius: "999px",
+                          height: 24,
+                          px: 1.25,
+                          margin: "2px 2px 2px 0",
+                          border: "1px solid #b7c0cb",
+                          minWidth: "auto",
+                          lineHeight: 1,
+                          transition:
+                            "background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease",
+                          "& .MuiChip-deleteIcon": {
+                            color: "#8a95a3",
+                            transition:
+                              "color 140ms ease, transform 140ms ease, opacity 140ms ease",
+                          },
+                          "& .MuiChip-deleteIcon:hover": {
+                            color: "#e53935",
+                            transform: "scale(1.08)",
+                          },
+                          "&:hover": {
+                            background:
+                              "linear-gradient(180deg, #f6f8fa 0%, #d9e0e8 100%)",
+                            color: "#232a33",
+                            borderColor: "#95a3b3",
+                            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                          },
+                        }}
+                      />
+                    </Box>
+                  ))
+                )}
+                <Snackbar
+                  open={savedSnack.open}
+                  autoHideDuration={3000}
+                  onClose={closeSavedSnack}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                >
+                  <Alert
+                    onClose={closeSavedSnack}
+                    severity={savedSnack.severity}
+                    sx={{ width: "100%" }}
+                  >
+                    {savedSnack.message}
+                  </Alert>
+                </Snackbar>
               </Box>
 
-              <Box sx={{display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, width: '100%'}}>
-                <Box sx={{ width: '100%' }}>
-                    <>
-                      <Tooltip title={!canSaveCurrentSearch ? saveSearchDisabledMessage : ''} arrow>
-                        <Box component="span" sx={{ display: 'inline-flex' }}>
-                      <Typography
-                        variant="caption"
-                        onClick={() => {
-                          if (!canSaveCurrentSearch) return;
-                          setSaveSectionOpen((prev) => !prev);
-                        }}
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  flexWrap: "wrap",
+                  mt: 1,
+                  width: "100%",
+                }}
+              >
+                <Box sx={{ width: "100%" }}>
+                  <>
+                    <Tooltip
+                      title={
+                        !canSaveCurrentSearch ? saveSearchDisabledMessage : ""
+                      }
+                      arrow
+                    >
+                      <Box component="span" sx={{ display: "inline-flex" }}>
+                        <Typography
+                          variant="caption"
+                          onClick={() => {
+                            if (!canSaveCurrentSearch) return;
+                            setSaveSectionOpen((prev) => !prev);
+                          }}
+                          sx={{
+                            color: canSaveCurrentSearch ? "#fff" : "#c8ced8",
+                            cursor: canSaveCurrentSearch
+                              ? "pointer"
+                              : "not-allowed",
+                            fontWeight: 700,
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            userSelect: "none",
+                            opacity: canSaveCurrentSearch ? 1 : 0.75,
+                          }}
+                        >
+                          Save current search as....
+                          {saveSectionOpen ? (
+                            <KeyboardArrowUpIcon fontSize="small" />
+                          ) : (
+                            <ExpandMoreIcon fontSize="small" />
+                          )}
+                        </Typography>
+                      </Box>
+                    </Tooltip>
+                    <Collapse
+                      in={saveSectionOpen && canSaveCurrentSearch}
+                      timeout={220}
+                      unmountOnExit
+                    >
+                      <Box
                         sx={{
-                          color: canSaveCurrentSearch ? '#fff' : '#c8ced8',
-                          cursor: canSaveCurrentSearch ? 'pointer' : 'not-allowed',
-                          fontWeight: 700,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          userSelect: 'none',
-                          opacity: canSaveCurrentSearch ? 1 : 0.75,
-                        }}>
-                        Save current search as....
-                        {saveSectionOpen ? <KeyboardArrowUpIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-                      </Typography>
-                        </Box>
-                      </Tooltip>
-                      <Collapse in={saveSectionOpen && canSaveCurrentSearch} timeout={220} unmountOnExit>
-                        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'flex-start' }}>
-                          <TextField
-                            size="small"
-                            className="savedSearchField"
-                            placeholder="Enter a label for your search"
-                            value={saveName}
-                            onChange={(e) => setSaveName(e.target.value)}
-                            disabled={!canSaveCurrentSearch}
-                            sx={{
-                              backgroundColor: '#fff',
-                              borderRadius: '10px',
-                              width: '100%',
-                              maxWidth: 360,
-                              "& .MuiInputBase-input": { fontSize: 12, height: 8, padding: 1 },
-                            }}
-                            slotProps={{ htmlInput: { 'aria-label': 'saved-search-name' } }}/>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            className="HBM_DarkBlueButton saveSearchInline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              saveCurrentSearch();
-                            }}
-                            disabled={!canSaveCurrentSearch || !saveName.trim()}
-                            startIcon={<SaveAsIcon />}
-                            sx={{
-                              whiteSpace: 'nowrap',
-                              minWidth: 72,
-                              height: 24,
-                              px: 1,
-                              borderRadius: '999px',
-                              boxShadow: 'none',
-                              fontSize: '0.68rem',
-                              lineHeight: 1,
-                              flexShrink: 0,
-                            }}
-                            aria-label="save-current-search-inline">
-                            Save
-                          </Button>
-                        </Box>
-                      </Collapse>
-                    </>
+                          mt: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 1,
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <TextField
+                          size="small"
+                          className="savedSearchField"
+                          placeholder="Enter a label for your search"
+                          value={saveName}
+                          onChange={(e) => setSaveName(e.target.value)}
+                          disabled={!canSaveCurrentSearch}
+                          sx={{
+                            backgroundColor: "#fff",
+                            borderRadius: "10px",
+                            width: "100%",
+                            maxWidth: 360,
+                            "& .MuiInputBase-input": {
+                              fontSize: 12,
+                              height: 8,
+                              padding: 1,
+                            },
+                          }}
+                          slotProps={{
+                            htmlInput: { "aria-label": "saved-search-name" },
+                          }}
+                        />
+                        <Button
+                          size="small"
+                          variant="contained"
+                          className="HBM_DarkBlueButton saveSearchInline"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            saveCurrentSearch();
+                          }}
+                          disabled={!canSaveCurrentSearch || !saveName.trim()}
+                          startIcon={<SaveAsIcon />}
+                          sx={{
+                            whiteSpace: "nowrap",
+                            minWidth: 72,
+                            height: 24,
+                            px: 1,
+                            borderRadius: "999px",
+                            boxShadow: "none",
+                            fontSize: "0.68rem",
+                            lineHeight: 1,
+                            flexShrink: 0,
+                          }}
+                          aria-label="save-current-search-inline"
+                        >
+                          Save
+                        </Button>
+                      </Box>
+                    </Collapse>
+                  </>
                 </Box>
               </Box>
-
             </Grid>
           </Grid>
         </Box>
       </FormControl>
-    )
+    );
   }
 
   function renderDateRangeField() {
     return (
-      <FormControl sx={{width: "100%", mt: 2, mb: 1}} size="small">
+      <FormControl sx={{ width: "100%", mt: 2, mb: 1 }} size="small">
         <Box className="searchFieldLabel">
-          <DateRangeIcon sx={{marginRight: "5px", marginTop: "-4px", fontSize: "1.1em"}} />
-          <Typography variant="overline" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}>Created date | </Typography>
-          <Typography variant="caption" sx={{color: "#fff"}}> select a date (or date range).</Typography>
+          <DateRangeIcon
+            sx={{ marginRight: "5px", marginTop: "-4px", fontSize: "1.1em" }}
+          />
+          <Typography
+            variant="overline"
+            sx={{ fontWeight: "700", color: "#fff", display: "inline-flex" }}
+          >
+            Created date |{" "}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "#fff" }}>
+            {" "}
+            select a date (or date range).
+          </Typography>
         </Box>
-        <Box sx={{display: "flex", gap: 1, alignItems: "stretch", minWidth: 0}}>
+        <Box
+          sx={{ display: "flex", gap: 1, alignItems: "stretch", minWidth: 0 }}
+        >
           <Button
             variant="outlined"
             aria-label="Choose date range"
@@ -1452,66 +1835,102 @@ export function Search({
               px: 1.25,
               justifyContent: "flex-start",
               textTransform: "none",
-              "&:hover": {backgroundColor: "#f7f8fa", borderColor: "#aeb6c0"},
+              "&:hover": { backgroundColor: "#f7f8fa", borderColor: "#aeb6c0" },
             }}
           >
             <Typography variant="body2" noWrap>
-              {formFilters.date_from ? dayjs(formFilters.date_from).format('MMM D, YYYY') : 'From'}
+              {formFilters.date_from
+                ? dayjs(formFilters.date_from).format("MMM D, YYYY")
+                : "From"}
             </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              mx: 1,
-              color: formFilters.date_to ? "#fff" : "rgba(255,255,255,0.42)",
-              backgroundColor: formFilters.date_to ? "#444a65" : "#eef1f4",
-              borderRadius: "999px",
-              px: 0.75,
-              transition: "color 160ms ease, background-color 160ms ease",
-              flexShrink: 0,
-            }}
-          >
-            to
-          </Typography>
-            <Typography variant="body2" noWrap sx={{color: formFilters.date_to ? "inherit" : "text.secondary"}}>
-              {formFilters.date_to ? dayjs(formFilters.date_to).format('MMM D, YYYY') : 'To'}
+            <Typography
+              variant="caption"
+              sx={{
+                mx: 1,
+                color: formFilters.date_to ? "#fff" : "rgba(255,255,255,0.42)",
+                backgroundColor: formFilters.date_to ? "#444a65" : "#eef1f4",
+                borderRadius: "999px",
+                px: 0.75,
+                transition: "color 160ms ease, background-color 160ms ease",
+                flexShrink: 0,
+              }}
+            >
+              to
+            </Typography>
+            <Typography
+              variant="body2"
+              noWrap
+              sx={{ color: formFilters.date_to ? "inherit" : "text.secondary" }}
+            >
+              {formFilters.date_to
+                ? dayjs(formFilters.date_to).format("MMM D, YYYY")
+                : "To"}
             </Typography>
           </Button>
           <Popover
             open={Boolean(dateRangeAnchorEl)}
             anchorEl={dateRangeAnchorEl}
             onClose={() => setDateRangeAnchorEl(null)}
-            anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
-            transformOrigin={{vertical: 'top', horizontal: 'left'}}
-            slotProps={{paper: {sx: {p: 1.5, mt: 0.5, borderRadius: 2}}}}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            slotProps={{ paper: { sx: { p: 1.5, mt: 0.5, borderRadius: 2 } } }}
           >
             <DayPicker
               mode="range"
               resetOnSelect
-              selected={formFilters.date_from ? {
-                from: dayjs(formFilters.date_from).toDate(),
-                to: formFilters.date_to ? dayjs(formFilters.date_to).toDate() : undefined,
-              } : undefined}
+              selected={
+                formFilters.date_from
+                  ? {
+                      from: dayjs(formFilters.date_from).toDate(),
+                      to: formFilters.date_to
+                        ? dayjs(formFilters.date_to).toDate()
+                        : undefined,
+                    }
+                  : undefined
+              }
               onSelect={(range) => {
-                const dateFrom = range?.from ? dayjs(range.from).format('YYYY-MM-DD') : '';
-                const dateTo = range?.to ? dayjs(range.to).format('YYYY-MM-DD') : '';
-                setFormFilters((previous) => ({...previous, date_from: dateFrom, date_to: dateTo}));
+                const dateFrom = range?.from
+                  ? dayjs(range.from).format("YYYY-MM-DD")
+                  : "";
+                const dateTo = range?.to
+                  ? dayjs(range.to).format("YYYY-MM-DD")
+                  : "";
+                setFormFilters((previous) => ({
+                  ...previous,
+                  date_from: dateFrom,
+                  date_to: dateTo,
+                }));
                 if (dateTo) setDateRangeAnchorEl(null);
               }}
-              disabled={{after: new Date()}}
+              disabled={{ after: new Date() }}
               animate
               style={{
-                '--rdp-accent-color': '#444a65',
-                '--rdp-accent-background-color': '#e4e8f0',
-                '--rdp-day-height': '38px',
-                '--rdp-day-width': '38px',
-                '--rdp-day_button-height': '36px',
-                '--rdp-day_button-width': '36px',
+                "--rdp-accent-color": "#444a65",
+                "--rdp-accent-background-color": "#e4e8f0",
+                "--rdp-day-height": "38px",
+                "--rdp-day-width": "38px",
+                "--rdp-day_button-height": "36px",
+                "--rdp-day_button-width": "36px",
               }}
             />
-            <Box sx={{display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #e3e6ea', pt: 1, mt: 0.5}}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                borderTop: "1px solid #e3e6ea",
+                pt: 1,
+                mt: 0.5,
+              }}
+            >
               <Button
                 size="small"
-                onClick={() => setFormFilters((previous) => ({...previous, date_from: '', date_to: ''}))}
+                onClick={() =>
+                  setFormFilters((previous) => ({
+                    ...previous,
+                    date_from: "",
+                    date_to: "",
+                  }))
+                }
               >
                 Clear
               </Button>
@@ -1522,38 +1941,57 @@ export function Search({
     );
   }
 
-  function renderKeywordField(){
+  function renderKeywordField() {
     return (
-      <FormControl sx={{width: "100%"}} size="small" >
-        <Box className="searchFieldLabel" id="SearchLabelGroiup" >
-          <ManageSearchIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-          <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Keyword | </Typography>  <Typography variant="caption" id="group_label" sx={{color: "#fff"}}>Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*</Typography>
+      <FormControl sx={{ width: "100%" }} size="small">
+        <Box className="searchFieldLabel" id="SearchLabelGroiup">
+          <ManageSearchIcon
+            sx={{ marginRight: "5px", marginTop: "-4px", fontSize: "1.1em" }}
+          />
+          <Typography
+            variant="overline"
+            id="group_label"
+            sx={{ fontWeight: "700", color: "#fff", display: "inline-flex" }}
+          >
+            {" "}
+            Keyword |{" "}
+          </Typography>{" "}
+          <Typography variant="caption" id="group_label" sx={{ color: "#fff" }}>
+            Enter a keyword or HuBMAP/Submission/Lab ID; For wildcard searches
+            use * e.g., VAN004*
+          </Typography>
         </Box>
         <Box>
           <TextField
             labelid="keywords_label"
             name="keywords"
             id="keywords"
-            sx={{backgroundColor: "#fff", borderRadius: "10px", border: "1px solid #ccc", fontSize: "0.9em", width: "100%"}}
+            sx={{
+              backgroundColor: "#fff",
+              borderRadius: "10px",
+              border: "1px solid #ccc",
+              fontSize: "0.9em",
+              width: "100%",
+            }}
             fullWidth
-            value={formFilters.keywords?formFilters.keywords : ""}
-            onChange={(e) => handleInputChange(e)}/>
+            value={formFilters.keywords ? formFilters.keywords : ""}
+            onChange={(e) => handleInputChange(e)}
+          />
         </Box>
       </FormControl>
-    )
+    );
   }
 
   function renderNewFilterControls() {
     return (
-
       <Box>
         {errorState && <RenderError error={error} />}
         <form
-          sx={{width: "100%", padding: "0px"}}
+          sx={{ width: "100%", padding: "0px" }}
           onSubmit={(e) => {
             handleSearchClick(e);
-          }}>
-
+          }}
+        >
           <Grid
             container
             spacing={0}
@@ -1568,120 +2006,253 @@ export function Search({
               borderTopRightRadius: "10px!important",
               borderTopLeftRadius: "10px!important",
               borderBottomRightRadius: "0px!important",
-              borderBottomLeftRadius: "0px!important"
-            }}>
-            <Grid size={12} sx={{display: "flex", flexFlow: "row", paddingLeft: "10px",borderLeft: "1px solid #fff"}}><Typography variant="h3">Search </Typography></Grid>
-            <Grid size={12} sx={{display: "flex", paddingLeft: "10px", flexFlow: "row", fontSize: "0.9em", borderLeft: "1px solid #fff", alignItems: "end", fontStyle: "italic"}}>
-              <Typography variant="" sx={{ color: "#fff"}}>
-                Use the filter controls to search for <Link to={"?entity_type=donor"} className="text-white">Donors</Link>, <Link to={"?entity_type=sample"} className="text-white">Samples</Link>, <Link to={"?entity_type=dataset"} className="text-white">Datasets</Link>, <Link to={"?entity_type=upload"} className="text-white">Data Uploads</Link>, <Link to={"?entity_type=publication"} className="text-white">Publications</Link>, or <Link to={"?entity_type=collection"} className="text-white">Collections</Link>. <br />If you know a specific ID you can enter it into the keyword field to locate individual entities.
-                </Typography>
-              </Grid>
-            <Grid size={12} sx={{display: "flex", flexFlow: "row", marginTop: "15px", }}>
-              <Grid size={6} sx={{padding: "4px"}} >{renderGroupField()}</Grid>
-              <Grid size={6} sx={{padding: "4px"}} >
-                <CombinedWholeEntityOptions
-                  formFilters = {formFilters}
-                  OrganIcons={OrganIcons}
-                  handleInputChange = {(e) => handleInputChange(e)}
-                  restrictions = {restrictions}/>
-              </Grid>
+              borderBottomLeftRadius: "0px!important",
+            }}
+          >
+            <Grid
+              size={12}
+              sx={{
+                display: "flex",
+                flexFlow: "row",
+                paddingLeft: "10px",
+                borderLeft: "1px solid #fff",
+              }}
+            >
+              <Typography variant="h3">Search </Typography>
             </Grid>
-            <Grid size={12} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px"}}>
-              {renderKeywordField()}
-            </Grid>
-            <Grid size={12} sx={{display: "flex", flexFlow: "row", margin: "0px", padding: "0px"}}>
-              <Typography variant="caption" sx={{marginLeft: "auto", marginRight: "auto", cursor: "pointer"}} onClick ={() => setAdvancedSearch(!advancedSearch)}>
-              {advancedSearch ? "Hide" : "Show"} Advanced Search {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}
+            <Grid
+              size={12}
+              sx={{
+                display: "flex",
+                paddingLeft: "10px",
+                flexFlow: "row",
+                fontSize: "0.9em",
+                borderLeft: "1px solid #fff",
+                alignItems: "end",
+                fontStyle: "italic",
+              }}
+            >
+              <Typography variant="" sx={{ color: "#fff" }}>
+                Use the filter controls to search for{" "}
+                <Link to={"?entity_type=donor"} className="text-white">
+                  Donors
+                </Link>
+                ,{" "}
+                <Link to={"?entity_type=sample"} className="text-white">
+                  Samples
+                </Link>
+                ,{" "}
+                <Link to={"?entity_type=dataset"} className="text-white">
+                  Datasets
+                </Link>
+                ,{" "}
+                <Link to={"?entity_type=upload"} className="text-white">
+                  Data Uploads
+                </Link>
+                ,{" "}
+                <Link to={"?entity_type=publication"} className="text-white">
+                  Publications
+                </Link>
+                , or{" "}
+                <Link to={"?entity_type=collection"} className="text-white">
+                  Collections
+                </Link>
+                . <br />
+                If you know a specific ID you can enter it into the keyword
+                field to locate individual entities.
               </Typography>
             </Grid>
-            <Collapse in={advancedSearch} sx={{width: "100%"}}>
-              <Grid container sx={{display: "flex", marginTop: "16px"}}>
-                <Grid className="advancedSearchColumn" size={6} sx={{padding: "4px"}}>
+            <Grid
+              size={12}
+              sx={{ display: "flex", flexFlow: "row", marginTop: "15px" }}
+            >
+              <Grid size={6} sx={{ padding: "4px" }}>
+                {renderGroupField()}
+              </Grid>
+              <Grid size={6} sx={{ padding: "4px" }}>
+                <CombinedWholeEntityOptions
+                  formFilters={formFilters}
+                  OrganIcons={OrganIcons}
+                  handleInputChange={(e) => handleInputChange(e)}
+                  restrictions={restrictions}
+                />
+              </Grid>
+            </Grid>
+            <Grid
+              size={12}
+              sx={{
+                display: "flex",
+                flexFlow: "row",
+                marginTop: "16px",
+                padding: "4px",
+              }}
+            >
+              {renderKeywordField()}
+            </Grid>
+            <Grid
+              size={12}
+              sx={{
+                display: "flex",
+                flexFlow: "row",
+                margin: "0px",
+                padding: "0px",
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                  cursor: "pointer",
+                }}
+                onClick={() => setAdvancedSearch(!advancedSearch)}
+              >
+                {advancedSearch ? "Hide" : "Show"} Advanced Search{" "}
+                {advancedSearch ? <KeyboardArrowUpIcon /> : <ExpandMoreIcon />}
+              </Typography>
+            </Grid>
+            <Collapse in={advancedSearch} sx={{ width: "100%" }}>
+              <Grid container sx={{ display: "flex", marginTop: "16px" }}>
+                <Grid
+                  className="advancedSearchColumn"
+                  size={6}
+                  sx={{ padding: "4px" }}
+                >
                   {renderTargetField()}
                 </Grid>
-                <Grid className="advancedSearchColumn" size={6} sx={{padding: "4px"}}>
-                  <Box className="searchFieldLabel" id="SearchLabelGroup" >
-                    <CloudSyncIcon sx={{marginRight: "5px",marginTop: "-4px", fontSize: "1.1em" }} />
-                    <Typography variant="overline" id="group_label" sx={{fontWeight: "700", color: "#fff", display: "inline-flex"}}> Status | </Typography>  <Typography variant="caption" id="status_label" sx={{color: "#fff"}}>The Status of the Entity</Typography>
+                <Grid
+                  className="advancedSearchColumn"
+                  size={6}
+                  sx={{ padding: "4px" }}
+                >
+                  <Box className="searchFieldLabel" id="SearchLabelGroup">
+                    <CloudSyncIcon
+                      sx={{
+                        marginRight: "5px",
+                        marginTop: "-4px",
+                        fontSize: "1.1em",
+                      }}
+                    />
+                    <Typography
+                      variant="overline"
+                      id="group_label"
+                      sx={{
+                        fontWeight: "700",
+                        color: "#fff",
+                        display: "inline-flex",
+                      }}
+                    >
+                      {" "}
+                      Status |{" "}
+                    </Typography>{" "}
+                    <Typography
+                      variant="caption"
+                      id="status_label"
+                      sx={{ color: "#fff" }}
+                    >
+                      The Status of the Entity
+                    </Typography>
                   </Box>
                   <Box
                     id="statusSelectionSection"
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      flexWrap: 'wrap',
-                      listStyle: 'none',
+                      display: "flex",
+                      justifyContent: "center",
+                      flexWrap: "wrap",
+                      listStyle: "none",
                       p: 0.5,
                       m: 0,
-                      boxShadow: "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
+                      boxShadow:
+                        "rgba(0, 0, 0, 0.2) 0px 2px 1px -1px, rgba(0, 0, 0, 0.14) 0px 1px 1px 0px, rgba(0, 0, 0, 0.12) 0px 1px 3px 0px",
                       padding: "8px",
                       backgroundColor: "rgb(255, 255, 255)",
                       borderRadius: "8px",
                       border: "thick double solid #ccc",
-                      width: "100%"
-                    }}>
-
+                      width: "100%",
+                    }}
+                  >
                     {renderStatusControls()}
                   </Box>
                   {renderDateRangeField()}
                 </Grid>
-
               </Grid>
-
             </Collapse>
 
-            <Grid size={12} container rowSpacing={1} columnSpacing={0} sx={{display: "flex", flexFlow: "row", marginTop: "16px", padding: "4px", minHeight: "60px" }}>
+            <Grid
+              size={12}
+              container
+              rowSpacing={1}
+              columnSpacing={0}
+              sx={{
+                display: "flex",
+                flexFlow: "row",
+                marginTop: "16px",
+                padding: "4px",
+                minHeight: "60px",
+              }}
+            >
               {/* <Grid size={2}> */}
+              <Button
+                className="m-1 HBM_DarkButton"
+                startIcon={<ClearIcon />}
+                sx={{
+                  width: "40%",
+                }}
+                variant="contained"
+                size="large"
+                onClick={(e) => handleClearFilter(e)}
+              >
+                Clear
+              </Button>
+              <Box
+                sx={{
+                  width: "70%",
+                  position: "relative",
+                  display: "inline-block",
+                }}
+              >
                 <Button
-                  className="m-1 HBM_DarkButton"
-                  startIcon={<ClearIcon />}
-                    sx={{
-                      width: "40%",
-                    }}
-                  variant="contained"
-                  size="large"
-                  onClick={(e) => handleClearFilter(e)}>
-                  Clear
-                </Button>
-              <Box sx={{width: '70%', position: 'relative', display: 'inline-block'}}>
-                <Button
-                  className={"m-1 HBM_DarkBlueButton" + (fieldsChanged ? " highlight" : "")}
+                  className={
+                    "m-1 HBM_DarkBlueButton" +
+                    (fieldsChanged ? " highlight" : "")
+                  }
                   id="applySearchButton"
                   size="large"
-                  sx={{width: "100%"}}
+                  sx={{ width: "100%" }}
                   startIcon={<SearchIcon />}
                   onClick={(e) => handleSearchClick(e)}
-                  variant="contained">
+                  variant="contained"
+                >
                   Search
                 </Button>
                 <Box
                   aria-hidden
                   sx={{
-                    height: '2px',
-                    position: 'absolute',
+                    height: "2px",
+                    position: "absolute",
                     left: 5,
                     right: 0,
                     bottom: -2,
-                    background: 'linear-gradient(90deg,#97cdf6, #90c1ea)',
-                    borderRadius: '2px',
-                    transformOrigin: 'left center',
-                    width: fieldsChanged ? '99%' : '0%',
-                    transition: 'width 260ms cubic-bezier(.2,.9,.3,1)',
-                    boxShadow: fieldsChanged ? '0 0 8px #97cdf6' : 'none'
+                    background: "linear-gradient(90deg,#97cdf6, #90c1ea)",
+                    borderRadius: "2px",
+                    transformOrigin: "left center",
+                    width: fieldsChanged ? "99%" : "0%",
+                    transition: "width 260ms cubic-bezier(.2,.9,.3,1)",
+                    boxShadow: fieldsChanged ? "0 0 8px #97cdf6" : "none",
                   }}
                 />
               </Box>
-           </Grid>
+            </Grid>
           </Grid>
         </form>
       </Box>
-    )
+    );
   }
 
   function handleClearFilter(e) {
     // Allow ctrl/meta + click to open a fresh search in a new tab (mirrors table behavior)
     if (e && (e.ctrlKey || e.metaKey)) {
-      window.open('/newSearch', '_blank');
+      window.open("/newSearch", "_blank");
       return;
     }
     // Reset local form state and push a fresh /newSearch entry so the
@@ -1693,7 +2264,7 @@ export function Search({
     });
 
     // Clear the URL (remove any search params) and record navigation
-    navigate('/newSearch');
+    navigate("/newSearch");
 
     // Ensure URL-driven guard won't block the default search and reset paging
     urlParamsAppliedRef.current = false;
@@ -1707,24 +2278,32 @@ export function Search({
     setFieldsChanged(false);
   }
 
-  function handleSearchClick(event,reset) {
-    if(event){event.preventDefault()}
+  function handleSearchClick(event, reset) {
+    if (event) {
+      event.preventDefault();
+    }
     dispatchSearchState({ type: "SET", payload: { loading: true } });
-    setPage(0)
-    console.debug('%c⊙handleSearchClick', 'color:#5789ff;background: #000;padding:200', formFilters );
+    setPage(0);
+    logger.debug(
+      "%c⊙handleSearchClick",
+      "color:#5789ff;background: #000;padding:200",
+      formFilters,
+    );
     let params = {}; // Will become the searchFilters
     var entityType;
-    if(reset){
+    if (reset) {
       entityType = "DonorSample";
       params["entity_type"] = "DonorSample";
     }
     var group_uuid = formFilters.group_uuid;
-    const normalizedEntityType = normalizeEntityTypeValue(formFilters.entity_type || formFilters.entityType);
-    if(normalizedEntityType){
+    const normalizedEntityType = normalizeEntityTypeValue(
+      formFilters.entity_type || formFilters.entityType,
+    );
+    if (normalizedEntityType) {
       entityType = normalizedEntityType;
-    }else if(formFilters.organ){
+    } else if (formFilters.organ) {
       entityType = formFilters.organ;
-    }else if(formFilters.sample_category){
+    } else if (formFilters.sample_category) {
       entityType = formFilters.sample_category;
     }
     var keywords = formFilters.keywords;
@@ -1767,16 +2346,16 @@ export function Search({
     // include sort direction if present
     if (formFilters.sort_field) {
       params["sort_field"] = formFilters.sort_field;
-      url.searchParams.set('sort_field', formFilters.sort_field);
+      url.searchParams.set("sort_field", formFilters.sort_field);
     } else {
-      url.searchParams.delete('sort_field');
+      url.searchParams.delete("sort_field");
     }
 
     if (formFilters.sort_dir) {
       params["sort_dir"] = formFilters.sort_dir;
-      url.searchParams.set('sort_dir', formFilters.sort_dir);
+      url.searchParams.set("sort_dir", formFilters.sort_dir);
     } else {
-      url.searchParams.delete('sort_dir');
+      url.searchParams.delete("sort_dir");
     }
 
     if (entityType && entityType !== "----" && entityType !== "DonorSample") {
@@ -1785,30 +2364,29 @@ export function Search({
     } else {
       url.searchParams.delete("entity_type");
     }
-    if(chipSelect.length > 0){
+    if (chipSelect.length > 0) {
       params["status"] = chipSelect;
-      url.searchParams.set('status', chipSelect.join(','));
+      url.searchParams.set("status", chipSelect.join(","));
     }
     if (chipExclude.length > 0) {
       params["status_not"] = chipExclude;
-      url.searchParams.set('status_not', chipExclude.join(','));
+      url.searchParams.set("status_not", chipExclude.join(","));
     } else {
-      url.searchParams.delete('status_not');
+      url.searchParams.delete("status_not");
     }
     if (chipSelect.length === 0) {
-      url.searchParams.delete('status');
+      url.searchParams.delete("status");
     }
 
     // If we're not in a special mode, push URL to window
     window.history.pushState({}, "", url);
-    document.title = "HuBMAP Ingest Portal Search"
+    document.title = "HuBMAP Ingest Portal Search";
     setSearchFiltersState(params);
     setHasSearched(true);
     // record last-applied filters so we can detect subsequent changes
     lastAppliedFiltersRef.current = params;
     setFieldsChanged(false);
-  };
+  }
 
   return renderView();
-
-};
+}

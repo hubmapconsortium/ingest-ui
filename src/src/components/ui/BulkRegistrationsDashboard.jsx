@@ -54,7 +54,7 @@ const getAction = (row, setOnRetry) => {
     setOnRetry(new Date().getTime())
     ingest_api_bulk_batch_id_retry (row.batch_id)
         .then((resp) => {
-          console.debug('retryFailedJobs', resp)
+          logger.debug('BulkRegistrationsDashboard.retryFailedJobs.then', resp)
         })
         .catch((error) => {
           logger.all.error({

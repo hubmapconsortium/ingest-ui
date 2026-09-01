@@ -38,7 +38,6 @@ export function entity_api_get_entity(uuid){
  * return:  { status, results}
  * */
 export function entity_api_get_filtered_entity(uuid, exclusions){ 
-  console.debug("Request > ");
   let filterString = exclusions ? `?exclude=${exclusions.join(',')}` : '';
   let url = `${process.env.REACT_APP_ENTITY_API_URL}/entities/${uuid}${filterString}`
   return axios 
