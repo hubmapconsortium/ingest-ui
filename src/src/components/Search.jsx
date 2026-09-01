@@ -1736,13 +1736,7 @@ export function Search({
       const parsedKeywords = getOrganTermByUserKeyword(keywords.trim())
       if (parsedKeywords && parsedKeywords.length) {
         targetField = 'organ.keyword'
-        setFormFilters((prevValues) => ({...prevValues,
-          target_field: targetField,}))
-      } else {
-        url.searchParams.delete("target_field");
-        setFormFilters((prevValues) => ({...prevValues,
-          target_field: undefined,}))
-      } 
+      }
       params["keywords"] = parsedKeywords || keywords.trim();
       url.searchParams.set("keywords", keywords.trim());
     } else {
