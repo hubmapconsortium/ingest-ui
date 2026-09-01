@@ -1739,6 +1739,7 @@ export function Search({
         setFormFilters((prevValues) => ({...prevValues,
           target_field: targetField,}))
       } else {
+        url.searchParams.delete("target_field");
         setFormFilters((prevValues) => ({...prevValues,
           target_field: undefined,}))
       } 
