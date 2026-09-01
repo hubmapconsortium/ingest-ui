@@ -44,5 +44,5 @@ export const getOrganTermByUserKeyword = (str) => {
     }
   }
 
-  return res
+  return res && res.length ? res : null
 }
