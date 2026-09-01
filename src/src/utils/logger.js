@@ -63,6 +63,15 @@ export const logger = {
   all: {
     error: (data, ...msg) => {
       logger._all('error', data, ...msg)
+    },
+    info: (data, ...msg) => {
+      logger._all('info', data, ...msg)
+    },
+    debug: (data, ...msg) => {
+      logger._all('debug', data, ...msg)
+    },
+    trace: (data, ...msg) => {
+      logger._all('trace', data, ...msg)
     }
   },
 
