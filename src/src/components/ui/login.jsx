@@ -1,27 +1,36 @@
+import { logger } from "../../utils/logger";
 
 const Login = () => {
   const login_url = `${process.env.REACT_APP_DATAINGEST_API_URL}/login`;
-  function cleanLogin(e){
+  function cleanLogin(e) {
     e.preventDefault();
-    console.debug('%c◉ Purging storage... ', 'color:#00ff7b');
-    localStorage.removeItem('info');
-    localStorage.removeItem('organs');
-    localStorage.removeItem('datatypes');
-    localStorage.removeItem('allGroups');
-    localStorage.removeItem('userGroups');
-    console.debug('%c◉ Goodbye! 👋', 'color:#00ff7b');
+    localStorage.removeItem("info");
+    localStorage.removeItem("organs");
+    localStorage.removeItem("datatypes");
+    localStorage.removeItem("allGroups");
+    localStorage.removeItem("userGroups");
+    logger.debug("%c◉ Goodbye! 👋", "color:#008000");
     window.location = `${process.env.REACT_APP_DATAINGEST_API_URL}/login`;
   }
   return (
     <div className="alert alert-info" role="alert">
       <h1>HuBMAP Data Ingest</h1>
-        <p>User authentication is required to register donors, samples, tissues and datasets.  Please click the button below and you will be redirected to a login page. There you can login with your institutional credentials. Thank you!</p>
-        <hr />
-        <a className="btn btn-primary btn-lg" onClick={(e) => cleanLogin(e)} href={login_url} >
-          Log in with your institutional credentials
-        </a>
+      <p>
+        User authentication is required to register donors, samples, tissues and
+        datasets. Please click the button below and you will be redirected to a
+        login page. There you can login with your institutional credentials.
+        Thank you!
+      </p>
+      <hr />
+      <a
+        className="btn btn-primary btn-lg"
+        onClick={(e) => cleanLogin(e)}
+        href={login_url}
+      >
+        Log in with your institutional credentials
+      </a>
     </div>
-  )
+  );
 };
 
 export default Login;

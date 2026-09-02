@@ -2,11 +2,13 @@
 // @TODO: Figure out where this is being used over the version in src/utils/badgeClasses.jsx
 // & consolidate the two
 
+import { logger } from "./logger";
+
 export function getPublishStatusColor(status, itemID) {
 	var badge_class = "";
   if(status=== undefined || !status){
     badge_class = "badge-danger";
-    console.log("No Status Value for ID "+itemID)
+    logger.debug(`getPublishStatusColor.No status ${itemID}`)
   }else{
 	switch (status.toUpperCase()) {
         case "NEW":

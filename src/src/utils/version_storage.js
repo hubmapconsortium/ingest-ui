@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 import {clearUnprotectedLocalStorage} from "./protected_storage";
 
 export const APP_VERSION_STORAGE_KEY = "ingest-ui-version";
@@ -47,7 +48,7 @@ export function prepareVersionedStorage({
   } catch (error) {
     // Storage may be unavailable (for example, in a privacy-restricted browser).
     // Do not prevent the application from loading in that case.
-    console.debug("Unable to prepare versioned local storage", error);
+    logger.all.error({message: 'version_storage.prepareVersionedStorage Unable to prepare versioned local storage', error_details: error})
   }
 
   return true;
@@ -60,6 +61,6 @@ export function requestStorageReset(storage = window.localStorage) {
       process.env.npm_package_version || "pending"
     );
   } catch (error) {
-    console.debug("Unable to mark local storage for reset", error);
+    logger.all.error({message: 'version_storage.requestStorageReset Unable to mark local storage for rese', error_details: error})
   }
 }

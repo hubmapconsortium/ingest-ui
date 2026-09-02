@@ -4,6 +4,7 @@ import { ubkg_api_get_organ_type_set, ubkg_api_get_organs_full, ubkg_api_get_dat
 import { ingest_api_users_groups, ingest_api_all_groups } from '../service/ingest_api';
 import { OrganDetails } from '../components/ui/icons';
 import { removeLocalStorageItem } from './protected_storage';
+import { logger } from './logger';
 export function getItem(key) {
   try {
     const raw = window.localStorage.getItem(key);
@@ -13,8 +14,8 @@ export function getItem(key) {
     } catch {
       return raw;
     }
-  } catch (err) {
-    console.debug('local_storage.getItem error', err);
+  } catch (error_details) {
+    logger.all.error({message: 'local_storage.getItem', error_details})
     return null;
   }
 }
@@ -27,8 +28,8 @@ export function setItem(key, value) {
       window.localStorage.setItem(key, JSON.stringify(value));
     }
     return true;
-  } catch (err) {
-    console.debug('local_storage.setItem error', err);
+  } catch (error_details) {
+      logger.all.error({message: 'local_storage.setItem', error_details})
     return false;
   }
 }
@@ -36,8 +37,8 @@ export function setItem(key, value) {
 export function removeItem(key) {
   try {
     return removeLocalStorageItem(window.localStorage, key);
-  } catch (err) {
-    console.debug('local_storage.removeItem error', err);
+  } catch (error_details) {
+    logger.all.error({message: 'local_storage.removeItem', error_details})
     return false;
   }
 }
@@ -48,8 +49,8 @@ export function removeItems(keys) {
       removeLocalStorageItem(window.localStorage, k);
     }
     return true;
-  } catch (err) {
-    console.debug('local_storage.removeItems error', err);
+  } catch (error_details) {
+    logger.all.error({message: 'local_storage.removeItems', error_details})
     return false;
   }
 }
@@ -62,8 +63,8 @@ export function ensureMenuMap(defaultMap) {
       return defaultMap;
     }
     return existing;
-  } catch (err) {
-    console.debug('local_storage.ensureMenuMap error', err);
+  } catch (error_details) {
+    logger.all.error({message: 'local_storage.ensureMenuMap', error_details})
     setItem('menuMap', defaultMap);
     return defaultMap;
   }
@@ -80,9 +81,9 @@ export async function ensureOrgansCached(loadCountCb) {
       try {
         const icons = OrganDetails();
         setItem('organ_icons', icons);
-      } catch (e) {
+      } catch (error_details) {
         // ignore icon generation errors
-        console.debug('OrganDetails error', e);
+        logger.all.error({message: 'local_storage.ensureOrgansCached.ln86', error_details})
       }
       if (res !== undefined) {
         setItem('organs', res);
@@ -93,7 +94,7 @@ export async function ensureOrgansCached(loadCountCb) {
     if (typeof loadCountCb === 'function') loadCountCb();
     return organs;
   } catch (err) {
-    console.debug('ensureOrgansCached error', err);
+    logger.all.error({message: 'local_storage.ensureOrgansCached', error_details: err})
     throw err;
   }
 }
@@ -112,7 +113,7 @@ export async function ensureOrgansFullCached(loadCountCb) {
     if (typeof loadCountCb === 'function') loadCountCb();
     return organsFull;
   } catch (err) {
-    console.debug('ensureOrgansFullCached error', err);
+    logger.all.error({message: 'local_storage.ensureOrgansFullCached', error_details: err})
     throw err;
   }
 }
@@ -129,7 +130,7 @@ export async function ensureDatasetTypesCached(loadCountCb) {
     if (typeof loadCountCb === 'function') loadCountCb();
     return dt;
   } catch (err) {
-    console.debug('ensureDatasetTypesCached error', err);
+    logger.all.error({message: 'local_storage.ensureDatasetTypesCached', error_details: err})
     throw err;
   }
 }
@@ -148,7 +149,7 @@ export async function ensureUserGroupsCached(loadCountCb) {
     if (typeof loadCountCb === 'function') loadCountCb();
     return existing;
   } catch (err) {
-    console.debug('ensureUserGroupsCached error', err);
+    logger.all.error({message: 'local_storage.ensureUserGroupsCached', error_details: err})
     throw err;
   }
 }
@@ -168,7 +169,7 @@ export async function ensureAllGroupsCached(loadCountCb) {
     if (typeof loadCountCb === 'function') loadCountCb();
     return existing;
   } catch (err) {
-    console.debug('ensureAllGroupsCached error', err);
+    logger.all.error({message: 'local_storage.ensureAllGroupsCached', error_details: err})
     throw err;
   }
 }

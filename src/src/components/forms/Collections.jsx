@@ -11,13 +11,33 @@ import NativeSelect from "@mui/material/NativeSelect";
 import LoadingButton from "@mui/material/Button";
 import { BulkSelector } from "../ui/bulkSelector";
 import { ContributorsTable } from "../ui/contributorsTable";
-import { FormHeader, UserGroupSelectMenu,prefillFormValuesFromUrl,redirectToEntityRoute,SnackbarFeedback } from "../ui/formParts";
-import { CollectionFormFields, CollectionFieldSet } from "../ui/fields/CollectionFormFields";
-import {entity_api_create_entity, entity_api_update_entity, entity_api_get_filtered_entity } from "../../service/entity_api";
-import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from "../../service/ingest_api";
+import {
+  FormHeader,
+  UserGroupSelectMenu,
+  prefillFormValuesFromUrl,
+  redirectToEntityRoute,
+  SnackbarFeedback,
+} from "../ui/formParts";
+import {
+  CollectionFormFields,
+  CollectionFieldSet,
+} from "../ui/fields/CollectionFormFields";
+import {
+  entity_api_create_entity,
+  entity_api_update_entity,
+  entity_api_get_filtered_entity,
+} from "../../service/entity_api";
+import {
+  ingest_api_publish_collection,
+  ingest_api_allowable_edit_states,
+} from "../../service/ingest_api";
 import { validateRequired } from "../../utils/validators";
-import { DOI_COLLECTION_ACTIONS, getDoiCollectionActions } from "../formActionRules/doiCollectionActionRules";
+import {
+  DOI_COLLECTION_ACTIONS,
+  getDoiCollectionActions,
+} from "../formActionRules/doiCollectionActionRules";
 import NotFound from "../404";
+import { logger } from "../../utils/logger";
 
 export const CollectionForm = (props) => {
   const navigate = useNavigate();
@@ -25,12 +45,15 @@ export const CollectionForm = (props) => {
   const [entityData, setEntityData] = useState();
   let [loading, setLoading] = useState({
     page: true,
-    button: {save: false, publish: false, }
+    button: { save: false, publish: false },
   });
   const [valErrorMessages, setValErrorMessages] = useState([]);
   const [pageErrors, setPageErrors] = useState(null);
   const [notFound, setNotFound] = useState(false);
-  const [permissions, setPermissions] = useState({ has_write_priv: false, has_admin_priv: false, });
+  const [permissions, setPermissions] = useState({
+    has_write_priv: false,
+    has_admin_priv: false,
+  });
   const [formValues, setFormValues] = useState({
     title: "",
     description: "",
@@ -44,16 +67,24 @@ export const CollectionForm = (props) => {
   let [snackbarController, setSnackbarController] = useState({
     open: false,
     message: "",
-    status: "info"
+    status: "info",
   });
   const memoizedUserGroupSelectMenu = React.useMemo(
-    () => <UserGroupSelectMenu />, []
+    () => <UserGroupSelectMenu />,
+    [],
   );
 
   useEffect(() => {
     setNotFound(false);
     if (uuid && uuid !== "") {
-      entity_api_get_filtered_entity(uuid,["datasets.antibodies", "datasets.contacts", "datasets.contributors", "datasets.files", "datasets.metadata", "datasets.ingest_metadata"])
+      entity_api_get_filtered_entity(uuid, [
+        "datasets.antibodies",
+        "datasets.contacts",
+        "datasets.contributors",
+        "datasets.files",
+        "datasets.metadata",
+        "datasets.ingest_metadata",
+      ])
         .then((response) => {
           if (response.status === 404 || response.status === 400) {
             setNotFound(true);
@@ -77,21 +108,22 @@ export const CollectionForm = (props) => {
               });
               const datasets = entityData.datasets || [];
               setBulkSelection({
-                uuids: datasets.map(obj => obj.uuid),
-                data: datasets
+                uuids: datasets.map((obj) => obj.uuid),
+                data: datasets,
               });
               ingest_api_allowable_edit_states(entityData.uuid || uuid)
                 .then((response) => {
                   const permissionSet = {
                     ...response.results,
-                    ...((entityData?.doi_url || entityData?.registered_doi) && { has_write_priv: false }),
+                    ...((entityData?.doi_url || entityData?.registered_doi) && {
+                      has_write_priv: false,
+                    }),
                   };
                   setPermissions(permissionSet);
                 })
                 .catch((error) => {
                   setPageErrors(error);
-                }); 
-              
+                });
             }
           } else {
             setPageErrors(response);
@@ -109,7 +141,7 @@ export const CollectionForm = (props) => {
       setPermissions({ has_write_priv: true });
     }
     // setLoading(false);
-    setLoading(prevVals => ({ ...prevVals, page: false }));
+    setLoading((prevVals) => ({ ...prevVals, page: false }));
   }, [uuid]);
 
   const handleInputChange = useCallback((e) => {
@@ -119,36 +151,48 @@ export const CollectionForm = (props) => {
 
   function handleContributorsChange(newContributors) {
     processContacts(newContributors.data);
-    if(newContributors.errors && newContributors.errors.length>0){
-      setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
+    if (newContributors.errors && newContributors.errors.length > 0) {
+      setFormErrors((prev) => ({
+        ...prev,
+        contributors: "There are errors in the contributors data",
+      }));
     }
-    if(newContributors.errors && newContributors.errors.length>0){
-      setFormErrors(prev => ({...prev, contributors: "There are errors in the contributors data"}))
-    }else if(!newContributors.errors || newContributors.errors.length===0){
-      setFormErrors(prev => ({...prev, contributors: ""}))
+    if (newContributors.errors && newContributors.errors.length > 0) {
+      setFormErrors((prev) => ({
+        ...prev,
+        contributors: "There are errors in the contributors data",
+      }));
+    } else if (!newContributors.errors || newContributors.errors.length === 0) {
+      setFormErrors((prev) => ({ ...prev, contributors: "" }));
     }
   }
 
-  function processContacts(data){
-    var contributors = []
-    var contacts = []
+  function processContacts(data) {
+    var contributors = [];
+    var contacts = [];
     for (const row of data) {
-      contributors.push(row)
-      if (row?.is_contact && ( row?.is_contact === "TRUE"|| row?.is_contact.toLowerCase()==="yes" )){
-        contacts.push(row)
-      } 
+      contributors.push(row);
+      if (
+        row?.is_contact &&
+        (row?.is_contact === "TRUE" || row?.is_contact.toLowerCase() === "yes")
+      ) {
+        contacts.push(row);
+      }
     }
-    setDeliniatedContacts({contacts: contacts, contributors: contributors})
+    setDeliniatedContacts({ contacts: contacts, contributors: contributors });
   }
 
   const handleBulkSelectionChange = (uuids, hids, string, data) => {
-    console.debug(`%c◉ hBSC uuids:  ${uuids.length}  `,'color:#E7EEFF;background: #C800FF;padding:200', uuids);
-    console.debug(`%c◉ hBSC hids:   ${hids.length}  `,'color:#E7EEFF;background: #9000FF;padding:200', hids);
-    console.debug(`%c◉ hBSC string: ${string.length}  `,'color:#E7EEFF;background: #833EF9;padding:200', string);
-    console.debug(`%c◉ hBSC data:   ${data.length}  `,'color:#E7EEFF;background: #0800FF;padding:200', data );
-    setFormValues(prev => ({
+    logger.debug(
+      `%c◉ Collections.handleBulkSelectionChange`,
+      "color:#E7EEFF;background: #C800FF;padding:200",
+      uuids,
+      hids,
+      string,
+    );
+    setFormValues((prev) => ({
       ...prev,
-      dataset_uuids: uuids
+      dataset_uuids: uuids,
     }));
     setBulkSelection({ uuids, data });
   };
@@ -160,29 +204,48 @@ export const CollectionForm = (props) => {
     let requiredFields = ["title", "description"];
     for (let field of requiredFields) {
       if (!validateRequired(formValues[field])) {
-        let fieldName = CollectionFieldSet.find(f => f.id === field)?.label || field;
+        let fieldName =
+          CollectionFieldSet.find((f) => f.id === field)?.label || field;
         e_messages.push(fieldName + " is a required field");
-        setFormErrors((prevValues) => ({ ...prevValues, [field]: " Required" }));
+        setFormErrors((prevValues) => ({
+          ...prevValues,
+          [field]: " Required",
+        }));
         errors++;
       } else {
         setFormErrors((prevValues) => ({ ...prevValues, [field]: "" }));
       }
     }
 
-    let datasetUUIDs = entityData?.datasets ? entityData.datasets.map(d => d.uuid) : bulkSelection.uuids;
-    if( (!bulkSelection.data || bulkSelection.data.length <= 0) && 
-        (!datasetUUIDs || datasetUUIDs.length <= 0) ){
-        e_messages.push("Please select at least one Associated Dataset");
-        errors++;
-      setFormErrors((prevValues) => ({ ...prevValues, ["dataset_uuids"]: "Required" }));
-    } else if (bulkSelection.data.length > 0 && formValues["dataset_uuids"].length <= 0) {
-      setFormValues((prevValues) => ({ ...prevValues, dataset_uuids: bulkSelection.data.map(obj => obj.uuid) }));
+    let datasetUUIDs = entityData?.datasets
+      ? entityData.datasets.map((d) => d.uuid)
+      : bulkSelection.uuids;
+    if (
+      (!bulkSelection.data || bulkSelection.data.length <= 0) &&
+      (!datasetUUIDs || datasetUUIDs.length <= 0)
+    ) {
+      e_messages.push("Please select at least one Associated Dataset");
+      errors++;
+      setFormErrors((prevValues) => ({
+        ...prevValues,
+        ["dataset_uuids"]: "Required",
+      }));
+    } else if (
+      bulkSelection.data.length > 0 &&
+      formValues["dataset_uuids"].length <= 0
+    ) {
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        dataset_uuids: bulkSelection.data.map((obj) => obj.uuid),
+      }));
     }
 
     // ALso Invalid if The Contirbutors section has errors
-    if (formErrors.contributors && formErrors.contributors.length>0){
-      errors++
-      e_messages.push("Please correct the errors in the Contributors section, then try again.");
+    if (formErrors.contributors && formErrors.contributors.length > 0) {
+      errors++;
+      e_messages.push(
+        "Please correct the errors in the Contributors section, then try again.",
+      );
     }
 
     setValErrorMessages(errors > 0 ? e_messages : null);
@@ -190,7 +253,10 @@ export const CollectionForm = (props) => {
   };
 
   const handleSubmit = (e) => {
-    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: true } }));
+    setLoading((prevVals) => ({
+      ...prevVals,
+      button: { ...prevVals.button, save: true },
+    }));
     e.preventDefault();
     if (validateForm()) {
       // setIsProcessing(true);
@@ -198,29 +264,58 @@ export const CollectionForm = (props) => {
         let updateForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
-          ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
-          ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
-        }
-        console.debug('%c◉ updateForm ', 'color:#00ff7b', updateForm);
-        entity_api_update_entity(entityData.hubmap_id, JSON.stringify(updateForm))
+          dataset_uuids: bulkSelection.data.map((d) => d.uuid),
+          ...(deliniatedContacts.contacts
+            ? { contacts: deliniatedContacts.contacts }
+            : {}),
+          ...(deliniatedContacts.contributors
+            ? { contributors: deliniatedContacts.contributors }
+            : {}),
+        };
+        logger.debug(
+          "%c◉ CollectionForm.handleSubmit updateForm ",
+          "color:#008000",
+          updateForm,
+        );
+        entity_api_update_entity(
+          entityData.hubmap_id,
+          JSON.stringify(updateForm),
+        )
           .then((response) => {
-            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+            setLoading((prevVals) => ({
+              ...prevVals,
+              button: { ...prevVals.button, save: false },
+            }));
             if (response.status < 300) {
-              console.debug('%c◉ response.results ', 'color:#00ff7b', response.results);
-              let respMessage = response.results.message.replace(/\b[0-9a-f]{32}\b/i, entityData.hubmap_id);
+              logger.all.warn({
+                message: "CollectionForm.handleSubmit.entity_api_update_entity",
+                error_details: response.results,
+              });
+              let respMessage = response.results.message.replace(
+                /\b[0-9a-f]{32}\b/i,
+                entityData.hubmap_id,
+              );
               const out = {
-                message:respMessage
-              }
-              setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+                message: respMessage,
+              };
+              setLoading((prevVals) => ({
+                ...prevVals,
+                button: { ...prevVals.button, save: false },
+              }));
               props.onUpdated(out);
             } else {
               setPageErrors(response);
-              setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+              setLoading((prevVals) => ({
+                ...prevVals,
+                button: { ...prevVals.button, save: false },
+              }));
             }
           })
           .catch((error) => {
-            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+            setLoading((prevVals) => ({
+              ...prevVals,
+              button: { ...prevVals.button, save: false },
+            }));
             props.reportError(error);
             setPageErrors(error);
           });
@@ -228,20 +323,31 @@ export const CollectionForm = (props) => {
         let newForm = {
           title: formValues.title,
           description: formValues.description,
-          dataset_uuids: bulkSelection.data.map(d => d.uuid), 
+          dataset_uuids: bulkSelection.data.map((d) => d.uuid),
           group_uuid: formValues.group_uuid,
-          ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
-          ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
-        }
+          ...(deliniatedContacts.contacts
+            ? { contacts: deliniatedContacts.contacts }
+            : {}),
+          ...(deliniatedContacts.contributors
+            ? { contributors: deliniatedContacts.contributors }
+            : {}),
+        };
         let selectedGroup = document.getElementById("group_uuid");
         if (selectedGroup?.value) {
           newForm = { ...newForm, group_uuid: selectedGroup.value };
         }
-        console.debug('%c◉ newForm','color:#E7EEFF;background: #9359FF;padding:200', newForm);
+        logger.debug(
+          "%c◉ CollectionForm.handleSubmit newForm",
+          "color:#E7EEFF;background: #9359FF;padding:200",
+          newForm,
+        );
 
         entity_api_create_entity("collection", JSON.stringify(newForm))
           .then((response) => {
-            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+            setLoading((prevVals) => ({
+              ...prevVals,
+              button: { ...prevVals.button, save: false },
+            }));
             if (response.status === 200) {
               props.onCreated(response.results);
             } else {
@@ -249,34 +355,51 @@ export const CollectionForm = (props) => {
             }
           })
           .catch((error) => {
-            setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+            setLoading((prevVals) => ({
+              ...prevVals,
+              button: { ...prevVals.button, save: false },
+            }));
             setPageErrors(error);
           });
       }
     } else {
-        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
+      setLoading((prevVals) => ({
+        ...prevVals,
+        button: { ...prevVals.button, save: false },
+      }));
     }
   };
 
   const handlePublish = (e) => {
     e.preventDefault();
-    setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: true } }));
+    setLoading((prevVals) => ({
+      ...prevVals,
+      button: { ...prevVals.button, publish: true },
+    }));
     ingest_api_publish_collection(uuid)
       .then((response) => {
-        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
+        setLoading((prevVals) => ({
+          ...prevVals,
+          button: { ...prevVals.button, publish: false },
+        }));
         if (response.status < 300) {
           let fullResponse = response;
           fullResponse.message = "Collection Published Successfully";
           props.onUpdated(fullResponse);
         } else {
-          console.error('%c◉ Publish Error ', 'color:#2158FF', response );
-          let error = response.results.error ? response.results.error : response;
+          console.error("%c◉ Publish Error ", "color:#2158FF", response);
+          let error = response.results.error
+            ? response.results.error
+            : response;
           setPageErrors(error);
         }
       })
       .catch((error) => {
-        setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, publish: false } }));
-        console.error('%c◉ Page error ', 'color:#2158FF', );
+        setLoading((prevVals) => ({
+          ...prevVals,
+          button: { ...prevVals.button, publish: false },
+        }));
+        console.error("%c◉ Page error ", "color:#2158FF");
         props.reportError(error);
         setPageErrors(error);
       });
@@ -298,39 +421,47 @@ export const CollectionForm = (props) => {
         loading={isButtonLoading}
         className="m-2"
         onClick={onClick}
-        type={type}>
+        type={type}
+      >
         {label}
       </LoadingButton>
     );
 
     const actionRenderers = {
-      [DOI_COLLECTION_ACTIONS.cancel]: (action) => renderLoadingActionButton({
-        label: action.label,
-        onClick: () => navigate("/"),
-      }),
-      [DOI_COLLECTION_ACTIONS.save]: (action) => renderLoadingActionButton({
-        label: action.label,
-        disabled: action.disabled,
-        loading: loading.button.save,
-        name: "save",
-        onClick: (e) => handleSubmit(e),
-        type: "submit",
-      }),
-      [DOI_COLLECTION_ACTIONS.publish]: (action) => renderLoadingActionButton({
-        label: action.label,
-        disabled: action.disabled,
-        loading: loading.button.publish,
-        name: "save",
-        onClick: (e) => handlePublish(e),
-        type: "submit",
-      }),
+      [DOI_COLLECTION_ACTIONS.cancel]: (action) =>
+        renderLoadingActionButton({
+          label: action.label,
+          onClick: () => navigate("/"),
+        }),
+      [DOI_COLLECTION_ACTIONS.save]: (action) =>
+        renderLoadingActionButton({
+          label: action.label,
+          disabled: action.disabled,
+          loading: loading.button.save,
+          name: "save",
+          onClick: (e) => handleSubmit(e),
+          type: "submit",
+        }),
+      [DOI_COLLECTION_ACTIONS.publish]: (action) =>
+        renderLoadingActionButton({
+          label: action.label,
+          disabled: action.disabled,
+          loading: loading.button.publish,
+          name: "save",
+          onClick: (e) => handlePublish(e),
+          type: "submit",
+        }),
     };
 
     return (
       <Box sx={{ textAlign: "right" }}>
-        {getDoiCollectionActions({ uuid, permissions, entityData }).map((action) => (
-          <React.Fragment key={action.id}>{actionRenderers[action.id](action)}</React.Fragment>
-        ))}
+        {getDoiCollectionActions({ uuid, permissions, entityData }).map(
+          (action) => (
+            <React.Fragment key={action.id}>
+              {actionRenderers[action.id](action)}
+            </React.Fragment>
+          ),
+        )}
       </Box>
     );
   };
@@ -343,14 +474,17 @@ export const CollectionForm = (props) => {
     return (
       <div className={formErrors}>
         <Grid container className="" sx={{ marginBottom: "10px" }}>
-          <FormHeader entityData={uuid ? entityData : ["new", "Collection"]} permissions={permissions} />
+          <FormHeader
+            entityData={uuid ? entityData : ["new", "Collection"]}
+            permissions={permissions}
+          />
         </Grid>
         <form onSubmit={(e) => handleSubmit(e)}>
-          <BulkSelector 
+          <BulkSelector
             tableTitle="Associated Dataset IDs"
             tableSubtitle="Datasets that are associated with this Collection"
-            dialogTitle= "Search for an Associated Dataset for your Collection"
-            dialogSubtitle= "Only Datasets may be selected for Collection sources"
+            dialogTitle="Search for an Associated Dataset for your Collection"
+            dialogSubtitle="Only Datasets may be selected for Collection sources"
             permissions={permissions}
             initialSelectedUUIDs={bulkSelection.uuids}
             initialSourcesData={bulkSelection.data}
@@ -366,11 +500,17 @@ export const CollectionForm = (props) => {
           />
           <ContributorsTable
             contributors={formValues.contributors}
-            onContributorsChange={(contributorRows) => handleContributorsChange(contributorRows)}
-            permissions={permissions}/>
-          {!uuid &&(
+            onContributorsChange={(contributorRows) =>
+              handleContributorsChange(contributorRows)
+            }
+            permissions={permissions}
+          />
+          {!uuid && (
             <Box className="my-3">
-              <InputLabel sx={{ color: "rgba(0, 0, 0, 0.38)" }} htmlFor="group_uuid">
+              <InputLabel
+                sx={{ color: "rgba(0, 0, 0, 0.38)" }}
+                htmlFor="group_uuid"
+              >
                 Group
               </InputLabel>
               <NativeSelect
@@ -381,7 +521,12 @@ export const CollectionForm = (props) => {
                 className="p-2"
                 sx={{ borderTopLeftRadius: "4px", borderTopRightRadius: "4px" }}
                 disabled={uuid ? true : false}
-                value={formValues["group_uuid"] || (JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid || "")}>
+                value={
+                  formValues["group_uuid"] ||
+                  JSON.parse(localStorage.getItem("userGroups"))[0]?.uuid ||
+                  ""
+                }
+              >
                 {memoizedUserGroupSelectMenu}
               </NativeSelect>
             </Box>
@@ -401,9 +546,11 @@ export const CollectionForm = (props) => {
             <strong>Error:</strong> {pageErrors.toString()}
           </Alert>
         )}
-        <SnackbarFeedback snackbarController={snackbarController} setSnackbarController={setSnackbarController}/>
+        <SnackbarFeedback
+          snackbarController={snackbarController}
+          setSnackbarController={setSnackbarController}
+        />
       </div>
     );
   }
 };
-          

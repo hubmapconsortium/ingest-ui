@@ -1,5 +1,6 @@
 import axios from "axios";
-import { stripHTML,toTitleCase } from '../utils/string_helper'
+import { stripHTML, toTitleCase } from "../utils/string_helper";
+import { logger } from "../utils/logger";
 
 /*
  * UBKG GET assaytype method
@@ -18,7 +19,7 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
  * return:  { status, results}
  */
 // export function ubkg_api_get_assay_type_set(scope) {
-//   // application_context 
+//   // application_context
 //   // console.debug("ubkg_api_get_assay_type_set", scope);
 //   let url = `${process.env.REACT_APP_UBKG_API_URL}/assaytype?application_context=HUBMAP`;
 //   // let url = `${process.env.REACT_APP_SEARCH_API_URL}/v3/assaytype`;
@@ -45,7 +46,7 @@ import { stripHTML,toTitleCase } from '../utils/string_helper'
 /*
  * UBKG GET organtype/all method
  *
- * 
+ *
  *
  * return: {'AO': 'Aorta' ... }
  */
@@ -53,36 +54,39 @@ export function ubkg_api_get_organ_type_set(format) {
   let url = `${process.env.REACT_APP_UBKG_API_URL}/organs/by-code?application_context=HUBMAP`;
   return axios
     .get(url)
-      .then(res => {
-        let data = res.data;
-        if(format && format === 'array'){
-          let organArray = Object.entries(data).map(([key, value]) => ({ key, value }));
-          return organArray;
-        }else{
-          return data;
-        }
-      })
-      .catch(error => {
-        captureError(error);
-      });
-};
+    .then((res) => {
+      let data = res.data;
+      if (format && format === "array") {
+        let organArray = Object.entries(data).map(([key, value]) => ({
+          key,
+          value,
+        }));
+        return organArray;
+      } else {
+        return data;
+      }
+    })
+    .catch((error) => {
+      captureError(error);
+    });
+}
 
 /*
  * UBKG GET extensive, RUI inclusive Organ Data
  *
  */
 export function ubkg_api_get_organs_full() {
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs?application_context=HUBMAP`; 
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/organs?application_context=HUBMAP`;
   return axios
     .get(url)
-      .then(res => {
-        let data = res.data;
-        return data;
-      })
-      .catch(error => {
-        captureError(error);
-      });
-};
+    .then((res) => {
+      let data = res.data;
+      return data;
+    })
+    .catch((error) => {
+      captureError(error);
+    });
+}
 
 /*
  * UBKG GET dataset types method
@@ -93,84 +97,93 @@ export function ubkg_api_get_dataset_type_set() {
   let url = `${process.env.REACT_APP_UBKG_API_URL}/dataset-types?application_context=HUBMAP`;
   return axios
     .get(url)
-      .then(res => {
-        // const newDataArray = [...new Set(
-        //   res.data.flatMap(item => item.assaytypes || [])
-        // )].map(assay => ({ value: assay, label: assay })); 
-        // return newDataArray;
-        return res.data;
-      })
-      .catch(error => {
-        captureError(error);
-      });
-};
+    .then((res) => {
+      // const newDataArray = [...new Set(
+      //   res.data.flatMap(item => item.assaytypes || [])
+      // )].map(assay => ({ value: assay, label: assay }));
+      // return newDataArray;
+      return res.data;
+    })
+    .catch((error) => {
+      captureError(error);
+    });
+}
 
 /*
  * UBKG GET Specilized Dataset Types for Uploads method
  *
  */
 export function ubkg_api_get_upload_dataset_types() {
-  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`; 
+  let url = `${process.env.REACT_APP_UBKG_API_URL}/valueset?parent_sab=HUBMAP&parent_code=C003041&child_sabs=HUBMAP`;
   return axios
     .get(url)
-      .then(res => {
-        let data = res.data;
-        return data;
-      })
-      .catch(error => {
-        captureError(error);
-      });
-};
+    .then((res) => {
+      let data = res.data;
+      return data;
+    })
+    .catch((error) => {
+      captureError(error);
+    });
+}
 
 /*
  * UBKG Generate Display Subtype method
  *
  */
 export function ubkg_api_generate_display_subtype(entity) {
-  console.debug('%c◉ ubkg_api_generate_display_subtype entity ', 'color:#00ff7b', entity);
-  var display_subtype = ""
-  var entity_type = entity.entity_type
-  if (entity_type === 'Sample' && 'sample_category' in entity){
-    if (entity.sample_category.toLowerCase() === 'organ'){
-        let organList = JSON.parse(localStorage.getItem('organs'));
-        display_subtype = organList[entity.organ]
+  logger.debug(
+    "%c◉ ubkg_api_generate_display_subtype entity ",
+    "color:#008000",
+    entity,
+  );
+  var display_subtype = "";
+  var entity_type = entity.entity_type;
+  if (entity_type === "Sample" && "sample_category" in entity) {
+    if (entity.sample_category.toLowerCase() === "organ") {
+      let organList = JSON.parse(localStorage.getItem("organs"));
+      display_subtype = organList[entity.organ];
     } else {
-      console.debug('%c◉  display_subtype=entity["sample_category"].toString();', 'color:#FFB700', );
-      display_subtype=entity['sample_category'].toString();
+      logger.debug(
+        '%c◉  display_subtype=entity["sample_category"].toString();',
+        "color:#FFB700",
+      );
+      display_subtype = entity["sample_category"].toString();
       // return entity['sample_category'].toString();
-    }  
-  }else if (entity_type === 'Dataset' && 'dataset_type' in entity){ 
-    console.debug('%c◉ entity_type === "Dataset && "dataset_type" in entity ', 'color:#FFB700', );
+    }
+  } else if (entity_type === "Dataset" && "dataset_type" in entity) {
+    logger.debug(
+      '%c◉ entity_type === "Dataset && "dataset_type" in entity ',
+      "color:#FFB700",
+    );
     // Datasets store in ugly format, need to reff pretty style
-    display_subtype=entity['dataset_type'].toString()
+    display_subtype = entity["dataset_type"].toString();
     // return (entity['dataset_type'].toString())
-  }else if (entity_type === 'Upload'){ 
-    console.debug('%c◉  entity_type === "Upload"', 'color:#FFB700', );
+  } else if (entity_type === "Upload") {
+    logger.debug('%c◉  entity_type === "Upload"', "color:#FFB700");
     // Uploads just need language fix
-    return ("Data Upload")
-  }else{ 
-    console.debug('%c◉ All Others ', 'color:#FFB700', );
+    return "Data Upload";
+  } else {
+    logger.debug("%c◉ All Others ", "color:#FFB700");
     // All others (Donors, & I'm asuming Collections and Publications) just use Entity Type
-    display_subtype= toTitleCase(entity_type.toString())
+    display_subtype = toTitleCase(entity_type.toString());
     // return ( toTitleCase(entity_type.toString()))
-  }    
-  return display_subtype
+  }
+  return display_subtype;
 }
 
-function captureError (error){
-
-  if(error.response ){
-    if(error.response.data ){
-      if(error.response.data.includes("<!DOCTYPE html>")){
-        var responseData = stripHTML(error.response.data)
-        return {status: error.response.status, results: responseData}
-      }else{
-        return {status: error.response.status, results: error.response.data}
+function captureError(error) {
+  if (error.response) {
+    if (error.response.data) {
+      if (error.response.data.includes("<!DOCTYPE html>")) {
+        var responseData = stripHTML(error.response.data);
+        return { status: error.response.status, results: responseData };
+      } else {
+        return { status: error.response.status, results: error.response.data };
       }
-    }else{
-      return {status: error.response.status, results: error.response.data}
+    } else {
+      return { status: error.response.status, results: error.response.data };
     }
   } else {
-    return {error}
+    return { error };
   }
 }
