@@ -302,7 +302,6 @@ export const DatasetForm = (props) => {
         entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
-              logger.all.info({message: `Datasets.handleSave ${entityData.hubmap_id}`, error_details: response})
               // The update request on Dataset of d1491af82e213e28ba6a5712ec205337 has been accepted, the backend may still be processing
               // need to replace string between "Dataset of" and "has been accepted" with entityData.humbap_id
               let message= `The update request for Dataset ${entityData.hubmap_id}  has been accepted; the backend may still be processing`
