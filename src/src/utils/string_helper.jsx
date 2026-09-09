@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { logger } from './logger';
 
 export function truncateString(str, max_length) {
   if (str && str.length > max_length) {
@@ -55,7 +56,7 @@ export function toTitleCase(str) {
       });
       return wordArr.join(" ");
     }catch(error) {
-      console.debug("toTitleCase ERR ",error); 
+      logger.all.error({message: `string_helper.toTitleCase`, error_details: {str, error}})
       return error
     }
   }else{
@@ -135,12 +136,10 @@ export function buildInUberonLink(organs) {
       if (!organ['organ_uberon']) continue
       const [organ_code_type, organ_code] = organ['organ_uberon'].split(':');
       if (organ_code_type.includes("UBERON")) {
-          organ["uberon_url"] = uberon_url_base + (organ_code_type + "_" + organ_code);
+        organ["uberon_url"] = uberon_url_base + (organ_code_type + "_" + organ_code);
       } else {
-        console.debug('%c◉ FMA Found: ', 'color:#00ff7b', organ, fma_url_base + organ_code);
-          organ["uberon_url"] = fma_url_base + organ_code;
+        organ["uberon_url"] = fma_url_base + organ_code;
       }
-      console.debug('%c◉ organ["uberon_url"] ', 'color:#00ff7b', organ["uberon_url"]);
   }
   return organs
 }

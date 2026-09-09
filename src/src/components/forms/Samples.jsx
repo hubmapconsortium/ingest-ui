@@ -52,6 +52,7 @@ import {
 } from "../../utils/validators";
 import NotFound from "../404";
 import {getSampleGenerationError} from "../../utils/errorAlert";
+import { logger } from "../../utils/logger";
 
 // @TODO: With Donors now in place, good opportunity to test out what can 
 export const SampleForm = (props) => {
@@ -210,14 +211,12 @@ export const SampleForm = (props) => {
             // let's check for the URL flag
             let params = Object.fromEntries(url.searchParams.entries());
             if(Object.keys(params).length > 0 && (params.openRUI)){
-              console.debug('%c◉ RUIOPEN ', 'color:#00ff7b',params );
               setRUIManagerObject((prevValues) => ({...prevValues, interface: {...prevValues.interface, JSONView: true}}))
             }
 
             // Permissions
             ingest_api_allowable_edit_states(entityInfo.uuid || uuid)
             .then((response) => {
-                console.debug('%c◉ entityData.uuidingest_api_allowable_edit_states ', 'color:#00ff7b',entityData, entityData.uuid);
                 const updatedPermissions = {
                   ...response.results,
                   ...(entityInfo.data_access_level === "public" && {has_write_priv: false})
@@ -230,7 +229,8 @@ export const SampleForm = (props) => {
                     // Is there a RUI enabled organ up the chain?
 
                     })
-                    .catch(() => {
+                    .catch((error_details) => {
+                      logger.all.error({message: 'SampleForm.ingest_api_get_associated_ids', error_details})
                     });
               })
               .catch((error) => {
@@ -242,6 +242,7 @@ export const SampleForm = (props) => {
         })
         .catch((error) => {
           if(error.status === 404 || error.status === 400){
+            logger.all.error({message: 'SampleForm.entity_api_get_entity', error_details: error})
             setNotFound(true);
             return;
           }
@@ -291,6 +292,7 @@ export const SampleForm = (props) => {
             }
           })
           .catch((error) => {
+            logger.all.error({message: 'SampleForm.entity_api_get_entity.ln295', error_details: error})
             setPageErrors(error);
           });
       }

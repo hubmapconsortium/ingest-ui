@@ -56,7 +56,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | b
     \. "$HOME/.nvm/nvm.sh" && \
     nvm install 24 && \
     npm install npm@latest -g && \
-    npm install && \
+    npm install --allow-git=root && \
     npm run build:tags && \
     rm -rf node_modules
 

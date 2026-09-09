@@ -9,6 +9,7 @@ import {ingest_api_validate_contributors} from '../../service/ingest_api';
 import {ParsePreflightString} from '../ui/formParts.jsx';
 // @TODO: Address with Search Upgrades & Move all this column def stuff into a managing component in the UI directory, not the search directory
 import {COLUMN_DEF_CONTRIBUTORS} from '../../components/ui/tableBuilder.jsx';
+import { logger } from '../../utils/logger.js';
 
 export function ContributorsTable({ contributors, onContributorsChange, permissions }) {
   let [fileDetails,setFileDetails] = useState();
@@ -137,7 +138,7 @@ export function ContributorsTable({ contributors, onContributorsChange, permissi
     }
   }
   function handleFileWipe(e) {
-    console.debug('%c◉ FILE WIPE ', 'color:#4000FF', );
+    logger.debug('%c◉ ContributorsTable.handleFileWipe ', 'color:#4000FF', );
     const { target = {} } = e || {};
     target.value = "";
   }

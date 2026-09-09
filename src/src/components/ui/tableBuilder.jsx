@@ -66,7 +66,6 @@ export const COLUMN_DEF_DATASET = [
     width: 200,
     valueGetter: getLabId,
     renderCell: params => {
-        console.debug('%c◉ lab_dataset_id ', 'background:#00ff7b, color:#000000', params.row['lab_dataset_id']);
         if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
           return nullCell();
         }

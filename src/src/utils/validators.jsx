@@ -1,6 +1,6 @@
+import { logger } from "./logger";
+
 export function validateRequired(value){
-  console.debug(typeof value);
-  console.debug("VALUE",value);
   if(typeof value === "string"){
     return value.trim() !== "";
   }else if(typeof value === "object"){
@@ -42,7 +42,7 @@ export function validateSingleProtocolIODOI(value){
 
   let checkVal = "doi.org"
   let count = value.split(checkVal).length - 1;
-  console.log("validateSingleProtocolIODOI", count); 
+  logger.debug("validateSingleProtocolIODOI", count); 
   if(count>1){
     return false;
   }else{
@@ -69,7 +69,6 @@ export function ValidateJSON(str){
 }
 
 export function ValidateLocalStoreValue(data){
-  console.debug('%c◉  ValidateLocalStoreValue', 'color:#00FFEE', data, !data.includes("[object Object]"), data !== undefined, typeof data !== "string");
   return data && (!data.includes("[object Object]") && data !== undefined && typeof data !== "string");
 }
 

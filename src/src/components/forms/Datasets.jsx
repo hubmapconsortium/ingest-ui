@@ -27,6 +27,7 @@ import {
   ingest_api_dataset_submit,
   ingest_api_notify_slack} from "../../service/ingest_api";
 import { prefillFormValuesFromUrl, EntityValidationMessage, redirectToEntityRoute, RenderSubmitModal } from "../ui/formParts";
+import { logger } from "../../utils/logger";
 export const DatasetForm = (props) => {
   let navigate = useNavigate();
 
@@ -301,7 +302,6 @@ export const DatasetForm = (props) => {
         entity_api_update_entity(entityData.hubmap_id, JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status < 300) {
-              console.log(response, entityData.hubmap_id)
               // The update request on Dataset of d1491af82e213e28ba6a5712ec205337 has been accepted, the backend may still be processing
               // need to replace string between "Dataset of" and "has been accepted" with entityData.humbap_id
               let message= `The update request for Dataset ${entityData.hubmap_id}  has been accepted; the backend may still be processing`
@@ -317,7 +317,6 @@ export const DatasetForm = (props) => {
           });
       } else {
         // If group_uuid is not set, default to first user group
-        console.debug('%c◉ form ', 'color:#00ff7b', );
         ingest_api_create_dataset(JSON.stringify(cleanForm))
           .then((response) => {
             if (response.status === 200) {

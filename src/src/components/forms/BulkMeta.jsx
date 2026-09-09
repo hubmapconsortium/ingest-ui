@@ -6,6 +6,7 @@ import Grid from '@mui/material/Grid';
 import Alert from "@mui/material/Alert";
 import {NewBadge,SnackbarFeedback} from "../ui/formParts";
 import {BulkMetaTable} from '../ui/bulkMetaTable';
+import { logger } from "../../utils/logger";
 
 export const BulkMetaForm = (props) => {
   const [pageErrors] = useState(null);
@@ -42,7 +43,7 @@ export const BulkMetaForm = (props) => {
         type={props.type}
         // columns={columns}
         onDataChange ={({data, errors})=>{
-          console.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);
+          logger.debug('%c◉ onDataChange ', 'background:#D000FF', data, errors);
           if(errors[0]?.name === "Too Many"){
             setTMError(true);
           }else{

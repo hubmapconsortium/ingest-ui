@@ -1,5 +1,6 @@
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
+import { logger } from "../../../utils/logger";
 
 export const DonorFieldSet = [
   {
@@ -43,13 +44,16 @@ export const DonorFormFields = ({
   permissions,
   handleInputChange,
 }) => {
-  console.debug('%c◉ formValErrors ', 'color:#00ff7b', formValErrors);
+  logger.debug("%c◉ formValErrors ", "color:#008000", formValErrors);
   return (
     <Box>
       {DonorFieldSet.map((field, index) => {
         const error = formErrors && formErrors[field.id];
-        if(error){
-          console.debug('%c◉ field error ', 'color:#f44336', field.id, error, formErrors[field.id]);
+        if (error) {
+          logger.all.error({
+            message: `DonorFormFields ${field.id}`,
+            error_details: { error, formErrors },
+          });
         }
         if (field.type === "text" || field.type === "textarea") {
           return (
@@ -70,21 +74,21 @@ export const DonorFormFields = ({
               value={formValues[field.id] ? formValues[field.id] : ""}
               helperText={
                 formErrors[field.id] && formErrors[field.id].length > 0
-                  ? (field.helperText +" " + formErrors[field.id])
+                  ? field.helperText + " " + formErrors[field.id]
                   : field.helperText
               }
               className={
                 "my-3 fieldInput " +
-                (formErrors[field.id] && formErrors[field.id].length > 0 ? "error fieldError" : "noerr")
+                (formErrors[field.id] && formErrors[field.id].length > 0
+                  ? "error fieldError"
+                  : "noerr")
               }
             />
           );
         }
 
         return null;
-      }
-      )}
+      })}
     </Box>
-  )
+  );
 };
- 

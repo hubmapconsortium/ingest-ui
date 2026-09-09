@@ -9,17 +9,13 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 
 const Result = (props) => {
-  console.debug('%c◉ props ', 'color:#00ff7b', props);
   const createdSamples = Array.isArray(props.result?.entity?.new_samples)
     ? props.result.entity.new_samples
     : [];
   const handleReturnClick = (e) => {
-    console.debug("handleReturnClick", e);
     if (props.onReturn) {
       props.onReturn();
-    } else {
-      console.debug();
-    }
+    } 
   };
 
   function renderField(label, value) {
@@ -32,7 +28,6 @@ const Result = (props) => {
 
   function newSampleSourcePreload() {
     let thisSource = props.result.entity;
-    console.debug('%c◉ thisSource ', 'color:#001AFF', thisSource);
     if(thisSource && thisSource.uuid) {
       let newURL = `/new/sample?direct_ancestor_uuid=${thisSource.uuid}`;
       window.location.replace(newURL);

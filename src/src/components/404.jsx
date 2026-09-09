@@ -1,11 +1,19 @@
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router";
 import HomeIcon from '@mui/icons-material/Home';
+import { useEffect } from "react";
+import { logger } from "../utils/logger";
 
 export default function NotFound({ entityID: entityIDProp } = {}) {
   const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const entityID = entityIDProp || params.get('entityID');
+  useEffect(() => {
+    logger.all.error({
+      message: 'NotFound',
+      error_details: entityID
+    })
+  }, [])
   return (
     <Box
       sx={{

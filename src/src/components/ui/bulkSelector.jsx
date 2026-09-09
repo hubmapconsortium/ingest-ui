@@ -1,39 +1,46 @@
-
 import React, { useState, useEffect, useCallback } from "react";
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
 import Button from "@mui/material/Button";
 import ClearIcon from "@mui/icons-material/Clear";
-import FormControl from '@mui/material/FormControl';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormHelperText from '@mui/material/FormHelperText';
+import FormControl from "@mui/material/FormControl";
+import DialogTitle from "@mui/material/DialogTitle";
+import FormHelperText from "@mui/material/FormHelperText";
 import { Typography } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import TableContainer from "@mui/material/TableContainer";
-import Tooltip from '@mui/material/Tooltip';
+import Tooltip from "@mui/material/Tooltip";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
 import TableBody from "@mui/material/TableBody";
-import TableChartIcon from '@mui/icons-material/TableChart';
-import PublishIcon from '@mui/icons-material/Publish';
+import TableChartIcon from "@mui/icons-material/TableChart";
+import PublishIcon from "@mui/icons-material/Publish";
 import { ubkg_api_generate_display_subtype } from "../../service/ubkg_api";
 import { toTitleCase } from "../../utils/string_helper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faPenToSquare, faFolderTree, faTrash, faCircleExclamation, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faPenToSquare,
+  faFolderTree,
+  faTrash,
+  faCircleExclamation,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import GridLoader from "react-spinners/GridLoader";
-import {EmbeddedSearch} from "../embeddedSearch"; 
+import { EmbeddedSearch } from "../embeddedSearch";
 import { getPublishStatusColor } from "../../utils/badgeClasses";
 import { FeedbackDialog } from "./formParts";
 import { search_api_es_query_ids } from "../../service/search_api";
+import { logger } from "../../utils/logger";
 
 export function BulkSelector({
   dialogTitle,
   dialogSubtitle,
-  tableTitle, 
+  tableTitle,
   tableSubtitle,
   permissions,
   initialSelectedHIDs = [],
@@ -58,34 +65,46 @@ export function BulkSelector({
   const [selected_UUIDs, setSelectedUUIDs] = useState(initialSelectedUUIDs);
   const [selected_string, setSelectedString] = useState(initialSelectedString);
   const [sourcesData, setSourcesData] = useState(initialSourcesData);
-  const [textFieldSourceString, setTextFieldSourceString] = useState(initialSourcesData);
+  const [textFieldSourceString, setTextFieldSourceString] =
+    useState(initialSourcesData);
   const title = dialogTitle || "Select a Source Entity ";
-  const subtitle = dialogSubtitle || "Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections"; 
-  let readOnlyState = readOnly || (permissions && permissions.has_write_priv === false);
-  let [loadingState, setLoadingState] = useState(preLoad)
+  const subtitle =
+    dialogSubtitle ||
+    "Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections";
+  let readOnlyState =
+    readOnly || (permissions && permissions.has_write_priv === false);
+  let [loadingState, setLoadingState] = useState(preLoad);
   const darkHeadBG = {
-      background: "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
-      color: "white",
-      padding: "2rem .0rem"
-    }
+    background:
+      "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
+    color: "white",
+    padding: "2rem .0rem",
+  };
 
-  console.debug('%c◉ readOnlyState ', 'color:#00ff7b', readOnlyState, readOnly);
+  logger.debug("%c◉ readOnlyState ", "color:#008000", readOnlyState, readOnly);
   // Sync sourcesData with prop changes
   useEffect(() => {
     let sources = assembleSourceAncestorData(initialSourcesData);
     setSourcesData(sources);
-    setTextFieldSourceString(sources.map(obj => obj.hubmap_id).join(", "))
+    setTextFieldSourceString(sources.map((obj) => obj.hubmap_id).join(", "));
   }, [initialSourcesData]);
 
   // Keep parent in sync
   useEffect(() => {
     if (onBulkSelectionChange) {
-      onBulkSelectionChange(selected_UUIDs, selected_HIDs, selected_string, sourcesData);
+      onBulkSelectionChange(
+        selected_UUIDs,
+        selected_HIDs,
+        selected_string,
+        sourcesData,
+      );
     }
   }, [selected_UUIDs, selected_HIDs, selected_string, sourcesData]);
 
   // Bulk dialog input
-  let [stringIDs, setStringIDs] = useState(selected_string ? selected_string : "");
+  let [stringIDs, setStringIDs] = useState(
+    selected_string ? selected_string : "",
+  );
   useEffect(() => {
     setStringIDs(selected_string);
   }, [selected_string]);
@@ -93,7 +112,7 @@ export function BulkSelector({
   // Check URL for source_list param on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlSourceList = params.get('source_list');
+    const urlSourceList = params.get("source_list");
     if (urlSourceList && urlSourceList.length > 0) {
       // Only run if not already loaded
       setStringIDs(urlSourceList);
@@ -102,7 +121,7 @@ export function BulkSelector({
     }
   }, []);
 
-  function stringFieldHandler(value){
+  function stringFieldHandler(value) {
     setTextFieldSourceString(value);
   }
 
@@ -113,7 +132,8 @@ export function BulkSelector({
     let goodArray = [];
     let typeArray = [];
     // Always use the original string array as provided, or split selected_string
-    let originalString = originalStringArr || selected_string.split(",").map(s => s.trim());
+    let originalString =
+      originalStringArr || selected_string.split(",").map((s) => s.trim());
 
     // Detect duplicates: count occurrences
     let idCounts = {};
@@ -122,53 +142,75 @@ export function BulkSelector({
       idCounts[id] = (idCounts[id] || 0) + 1;
     }
     // Duplicates are those with count > 1
-    let duplicates = Object.keys(idCounts).filter(id => idCounts[id] > 1);
+    let duplicates = Object.keys(idCounts).filter((id) => idCounts[id] > 1);
 
     // Entities requested by both UUID and HuBMAP ID
     const entitiesWithBoth = results.filter(
-      entity =>
-        originalString.includes(entity.uuid) && originalString.includes(entity.hubmap_id)
+      (entity) =>
+        originalString.includes(entity.uuid) &&
+        originalString.includes(entity.hubmap_id),
     );
-    let dupeEntList = entitiesWithBoth.map(entity => `${entity.hubmap_id} (${entity.uuid})`);
+    let dupeEntList = entitiesWithBoth.map(
+      (entity) => `${entity.hubmap_id} (${entity.uuid})`,
+    );
     let combined = [...dupeEntList, ...duplicates];
     if (combined.length > 0) {
-      warnArray.push([`The following  ${combined.length} Entit${combined.length > 1 ? 'ies' : 'y'} ${combined.length > 1 ? 'were' : 'was'} referenced more than once:`, combined]);
+      warnArray.push([
+        `The following  ${combined.length} Entit${combined.length > 1 ? "ies" : "y"} ${combined.length > 1 ? "were" : "was"} referenced more than once:`,
+        combined,
+      ]);
       setBulkWarning(warnArray);
       setShowBulkWarning(true);
     }
 
     // Errors: missing IDs
-    const missingIds = originalString
-      .filter(id => !results
-        .some(entity => entity.uuid === id || entity.hubmap_id === id)
-      );
+    const missingIds = originalString.filter(
+      (id) =>
+        !results.some(
+          (entity) => entity.uuid === id || entity.hubmap_id === id,
+        ),
+    );
     if (missingIds.length > 0) {
-      errorArray.push([`The following Entit${missingIds.length > 1 ? 'ies' : 'y'} ${missingIds.length > 1 ? 'were' : 'was'} not found, either because ${missingIds.length > 1 ? 'they do' : 'it does'} not exist or ${missingIds.length > 1 ? 'their' : 'its'} ${missingIds.length > 1 ? 'IDs are' : 'ID is'} not formatted correctly:`, missingIds]);
+      errorArray.push([
+        `The following Entit${missingIds.length > 1 ? "ies" : "y"} ${missingIds.length > 1 ? "were" : "was"} not found, either because ${missingIds.length > 1 ? "they do" : "it does"} not exist or ${missingIds.length > 1 ? "their" : "its"} ${missingIds.length > 1 ? "IDs are" : "ID is"} not formatted correctly:`,
+        missingIds,
+      ]);
     }
-    
+
     // Type check and only add unique entities to goodArray
     let addedIds = new Set();
     for (let entity of results) {
       // Only add the first occurrence of each entity (by uuid or hubmap_id)
       let entityId = entity.hubmap_id || entity.uuid;
       if (addedIds.has(entityId)) continue;
-      let menuMap = localStorage.getItem("menuMap") ? JSON.parse(localStorage.getItem("menuMap")) : {};
-      let currentForm = decodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || '');
+      let menuMap = localStorage.getItem("menuMap")
+        ? JSON.parse(localStorage.getItem("menuMap"))
+        : {};
+      let currentForm = decodeURIComponent(
+        window.location.pathname.split("/").filter(Boolean).pop() || "",
+      );
       let searchFilters = menuMap[currentForm] ? menuMap[currentForm] : {};
 
       if (
-        (searchFilters.blackList && searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
-        (searchFilters.whiteList && !searchFilters.whiteList.includes(entity.entity_type.toLowerCase())) 
+        (searchFilters.blackList &&
+          searchFilters.blackList.includes(entity.entity_type.toLowerCase())) ||
+        (searchFilters.whiteList &&
+          !searchFilters.whiteList.includes(entity.entity_type.toLowerCase()))
       ) {
-        typeArray.push(`${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`);
+        typeArray.push(
+          `${entity.hubmap_id} (Invalid Type: ${entity.entity_type})`,
+        );
       } else {
         goodArray.push(entity);
         addedIds.add(entityId);
       }
     }
 
-    if (typeArray.length > 0) { 
-      errorArray.push([`The following ${typeArray.length} ID${typeArray.length > 1 ? 's' : ''} ${typeArray.length > 1 ? 'are' : 'is'} of the wrong Type:`, typeArray]);
+    if (typeArray.length > 0) {
+      errorArray.push([
+        `The following ${typeArray.length} ID${typeArray.length > 1 ? "s" : ""} ${typeArray.length > 1 ? "are" : "is"} of the wrong Type:`,
+        typeArray,
+      ]);
     }
     if (errorArray.length > 0) {
       setBulkError(errorArray);
@@ -180,7 +222,7 @@ export function BulkSelector({
   // Helper to format display_subtype for sources
   function assembleSourceAncestorData(sources) {
     var dst = "";
-    sources.forEach(function(row, index) {
+    sources.forEach(function (row, index) {
       dst = ubkg_api_generate_display_subtype(row);
       if (row.entity_type !== "Dataset") {
         dst = toTitleCase(dst);
@@ -192,87 +234,107 @@ export function BulkSelector({
 
   // Handle bulk input dialog update
   // Modified handleInputUUIDs to accept an optional overrideString (e.g. from URL)
-  const handleInputUUIDs = useCallback((e, overrideString) => {
-    if (e) e.preventDefault();
-    setSourceTableError(false);
-    // If triggered by URL, treat as if showHIDList is false (i.e. go straight to else branch)
-    const triggeredByUrl = typeof overrideString === 'string';
-    if (!showHIDList || triggeredByUrl) {
-      if (!triggeredByUrl) {
-        setShowHIDList(true);
-        setStringIDs(selected_HIDs.join(", "));
-        setSourceBulkStatus("Waiting for Input...");
-        return;
+  const handleInputUUIDs = useCallback(
+    (e, overrideString) => {
+      if (e) e.preventDefault();
+      setSourceTableError(false);
+      // If triggered by URL, treat as if showHIDList is false (i.e. go straight to else branch)
+      const triggeredByUrl = typeof overrideString === "string";
+      if (!showHIDList || triggeredByUrl) {
+        if (!triggeredByUrl) {
+          setShowHIDList(true);
+          setStringIDs(selected_HIDs.join(", "));
+          setSourceBulkStatus("Waiting for Input...");
+          return;
+        }
+        // else, fall through to process the overrideString
       }
-      // else, fall through to process the overrideString
-    }
-    setShowHIDList(false);
-    setSourceBulkStatus("loading");
-    let idsToProcess = (typeof overrideString === 'string') ? overrideString : stringIDs;
-    let fieldVal = document.getElementById("dataset_uuids_string");
-    fieldVal = fieldVal ? fieldVal.value : null;
-    if(idsToProcess !== fieldVal && fieldVal && fieldVal.length > 0){
-      idsToProcess = fieldVal;
-    }
-    
-    // Split and trim, but do NOT dedupe here; pass all for duplicate detection
-    let allIds = idsToProcess
-      .split(",")
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-    // For search, only use unique IDs (first occurrence)
-    let seen = new Set();
-    let cleanList = [];
-    for (let id of allIds) {
-      if (!seen.has(id)) {
-        cleanList.push(id);
-        seen.add(id);
+      setShowHIDList(false);
+      setSourceBulkStatus("loading");
+      let idsToProcess =
+        typeof overrideString === "string" ? overrideString : stringIDs;
+      let fieldVal = document.getElementById("dataset_uuids_string");
+      fieldVal = fieldVal ? fieldVal.value : null;
+      if (idsToProcess !== fieldVal && fieldVal && fieldVal.length > 0) {
+        idsToProcess = fieldVal;
       }
-    }
-    if (allIds.length <= 0) {
-      setSourcesData([]);
-      setSelectedHIDs([]);
-      setSelectedString("");
-      setBulkError([]);
-      setBulkWarning([]);
-      setSourceBulkStatus("complete");
-      setSelectedUUIDs([]);
-      setLoadingState(false);
-    } else {
-      let cols = ["hubmap_id", "uuid", "entity_type", "subtype", "group_name", "status", "dataset_type", "display_subtype"];
-      search_api_es_query_ids(cleanList, ['datasets'], cols)
-        .then((response) => {
-          if (response.status >= 300) {
+
+      // Split and trim, but do NOT dedupe here; pass all for duplicate detection
+      let allIds = idsToProcess
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+      // For search, only use unique IDs (first occurrence)
+      let seen = new Set();
+      let cleanList = [];
+      for (let id of allIds) {
+        if (!seen.has(id)) {
+          cleanList.push(id);
+          seen.add(id);
+        }
+      }
+      if (allIds.length <= 0) {
+        setSourcesData([]);
+        setSelectedHIDs([]);
+        setSelectedString("");
+        setBulkError([]);
+        setBulkWarning([]);
+        setSourceBulkStatus("complete");
+        setSelectedUUIDs([]);
+        setLoadingState(false);
+      } else {
+        let cols = [
+          "hubmap_id",
+          "uuid",
+          "entity_type",
+          "subtype",
+          "group_name",
+          "status",
+          "dataset_type",
+          "display_subtype",
+        ];
+        search_api_es_query_ids(cleanList, ["datasets"], cols)
+          .then((response) => {
+            if (response.status >= 300) {
+              setSourceBulkStatus("error");
+              setBulkError([
+                ["Search error", [response.statusText || "Unknown error"]],
+              ]);
+              return;
+            } else if (response.results.length <= 0) {
+              setBulkError([["No Datasets Found for the provided IDs", []]]);
+            } else {
+              // Pass allIds (with possible duplicates) to preValidateSources for warning
+              let validatedSources = preValidateSources(
+                response.results,
+                allIds,
+              );
+              let entityHIDs = validatedSources.map((obj) => obj.hubmap_id);
+              let entityUUIDs = validatedSources.map((obj) => obj.uuid);
+              setSourcesData(validatedSources);
+              setSelectedHIDs(entityHIDs);
+              setSelectedUUIDs(entityUUIDs);
+              setSelectedString(entityHIDs.join(", "));
+              setShowHIDList(false);
+              setSourceBulkStatus("complete");
+            }
+          })
+          .catch((error) => {
+            setBulkError([["Error", [error?.message || "Unknown error"]]]);
             setSourceBulkStatus("error");
-            setBulkError([["Search error", [response.statusText || "Unknown error"]]]);
-            return;
-          } else if (response.results.length <= 0) {
-            setBulkError([["No Datasets Found for the provided IDs", []]]);
-          } else {
-            // Pass allIds (with possible duplicates) to preValidateSources for warning
-            let validatedSources = preValidateSources(response.results, allIds);
-            let entityHIDs = validatedSources.map(obj => obj.hubmap_id);
-            let entityUUIDs = validatedSources.map(obj => obj.uuid);
-            setSourcesData(validatedSources);
-            setSelectedHIDs(entityHIDs);
-            setSelectedUUIDs(entityUUIDs);
-            setSelectedString(entityHIDs.join(", "));
-            setShowHIDList(false);
-            setSourceBulkStatus("complete");
-          }
-        })
-        .catch((error) => {
-          setBulkError([["Error", [error?.message || "Unknown error"]]]);
-          setSourceBulkStatus("error");
-        });
-    }
-  }, [showHIDList, stringIDs, selected_HIDs]);
+          });
+      }
+    },
+    [showHIDList, stringIDs, selected_HIDs],
+  );
 
   // Remove a source from the table
   const sourceRemover = (row_uuid, hubmap_id) => {
     setSelectedUUIDs((prev) => prev.filter((uuid) => uuid !== row_uuid));
     setSelectedHIDs((prev) => prev.filter((id) => id !== hubmap_id));
-    setSourcesData((prev) => prev.filter((item) => item.hubmap_id !== hubmap_id));
+    setSourcesData((prev) =>
+      prev.filter((item) => item.hubmap_id !== hubmap_id),
+    );
     setSelectedString((prev) => {
       const filtered = prev
         .split(",")
@@ -300,18 +362,24 @@ export function BulkSelector({
       <Dialog
         open={showHIDList === true}
         sx={{ margin: "auto", border: "1px solid #444A65" }}
-        fullWidth={true}>
-        <DialogTitle sx={{
-          backgroundColor: "#444A65",
-          background: "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)",
-          borderBottom: "1px solid #444A65",
-          color: "white", padding: "2px 10px",
-          marginBottom: "10px"
-        }}>
-          <FontAwesomeIcon icon={faFolderTree} sx={{ marginRight: "10px" }} /> {title}
+        fullWidth={true}
+      >
+        <DialogTitle
+          sx={{
+            backgroundColor: "#444A65",
+            background:
+              "linear-gradient(180deg,rgba(68, 74, 101, 1) 0%, rgba(88, 94, 122, 1) 100%)",
+            borderBottom: "1px solid #444A65",
+            color: "white",
+            padding: "2px 10px",
+            marginBottom: "10px",
+          }}
+        >
+          <FontAwesomeIcon icon={faFolderTree} sx={{ marginRight: "10px" }} />{" "}
+          {title}
         </DialogTitle>
         <DialogContent>
-          <FormControl sx={{ width: "100%", }} >
+          <FormControl sx={{ width: "100%" }}>
             <TextField
               name="dataset_uuids_string"
               fullWidth={true}
@@ -324,26 +392,33 @@ export function BulkSelector({
               variant="standard"
               size="small"
               onChange={(event) => stringFieldHandler(event.target.value)}
-              value={textFieldSourceString} />
-            <FormHelperText id="component-helper-text" sx={{ width: "100%", marginLeft: "0px" }}>
+              value={textFieldSourceString}
+            />
+            <FormHelperText
+              id="component-helper-text"
+              sx={{ width: "100%", marginLeft: "0px" }}
+            >
               {"List of Dataset HuBMAP IDs or UUIDs, Comma Separated "}
             </FormHelperText>
           </FormControl>
         </DialogContent>
-        <DialogActions sx={{
-          background: "rgb(207, 211, 226)",
-          padding: "6px 10px",
-          display: "flex",
-          justifyContent: "space-between",
-          borderTop: "1px solid #444A6540"
-        }}>
+        <DialogActions
+          sx={{
+            background: "rgb(207, 211, 226)",
+            padding: "6px 10px",
+            display: "flex",
+            justifyContent: "space-between",
+            borderTop: "1px solid #444A6540",
+          }}
+        >
           <Button
             size="small"
             sx={{ background: "white", color: "#444a65" }}
             onClick={() => setShowHIDList(false)}
             variant="contained"
             startIcon={<ClearIcon />}
-            color="primary">
+            color="primary"
+          >
             Close
           </Button>
           <Button
@@ -351,7 +426,8 @@ export function BulkSelector({
             onClick={(e) => handleInputUUIDs(e)}
             variant="contained"
             endIcon={<PublishIcon />}
-            color="primary">
+            color="primary"
+          >
             Update
           </Button>
         </DialogActions>
@@ -360,30 +436,44 @@ export function BulkSelector({
   }
 
   function renderFeedbackDialog() {
-    return (<>
-      <FeedbackDialog
-        showMessage={showBulkError}
-        setShowMessage={setShowBulkError}
-        message={bulkError}
-        title={"Bulk Selection Error"}
-        color={"#d32f2f"}
-        summary={(bulkError && bulkError.length > 0 ? "" : "There are no errors at this time")}
-        note={"Acceptable results have already been attached to the table, and no further action is needed for them."}
-        icon={faCircleExclamation} />
-      <FeedbackDialog
-        showMessage={showBulkWarning}
-        setShowMessage={setShowBulkWarning}
-        message={bulkWarning}
-        title={"Bulk Selection Warning"}
-        summary={(bulkWarning && bulkWarning.length > 0 ? "" : "There are no warnings at this time")}
-        color={"#D3C52F"}
-        icon={faTriangleExclamation} />
-    </>);
+    return (
+      <>
+        <FeedbackDialog
+          showMessage={showBulkError}
+          setShowMessage={setShowBulkError}
+          message={bulkError}
+          title={"Bulk Selection Error"}
+          color={"#d32f2f"}
+          summary={
+            bulkError && bulkError.length > 0
+              ? ""
+              : "There are no errors at this time"
+          }
+          note={
+            "Acceptable results have already been attached to the table, and no further action is needed for them."
+          }
+          icon={faCircleExclamation}
+        />
+        <FeedbackDialog
+          showMessage={showBulkWarning}
+          setShowMessage={setShowBulkWarning}
+          message={bulkWarning}
+          title={"Bulk Selection Warning"}
+          summary={
+            bulkWarning && bulkWarning.length > 0
+              ? ""
+              : "There are no warnings at this time"
+          }
+          color={"#D3C52F"}
+          icon={faTriangleExclamation}
+        />
+      </>
+    );
   }
 
-  function handleOpenPage(e,row) {
-    e.preventDefault()    
-    let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`
+  function handleOpenPage(e, row) {
+    e.preventDefault();
+    let url = `${process.env.REACT_APP_URL}/${row.entity_type}/${row.uuid}/`;
     window.open(url, "_blank");
   }
 
@@ -401,257 +491,406 @@ export function BulkSelector({
   }
   let totalRejected = totalWarnings + totalErrors;
 
-  return (<>
-    {/* Search Dialog */}
-    <Dialog
-      fullWidth={true}
-      maxWidth="lg"
-      onClose={() => setShowSearchDialog(false)}
-      aria-labelledby="source-lookup-dialog"
-      open={showSearchDialog === true}>
-      <DialogContent>
-        <EmbeddedSearch
-          handleTableCellClick={(e) => handleSelectClick(e)}
-          modecheck="Source"
-          setBulkError={(e) => setBulkError(e)}
-					custom_title={title ? title :"Select a Source Entity"} 
-					custom_subtitle={subtitle ? subtitle : null}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setShowSearchDialog(false)}
-          variant="contained"
-          color="primary">
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+  return (
+    <>
+      {/* Search Dialog */}
+      <Dialog
+        fullWidth={true}
+        maxWidth="lg"
+        onClose={() => setShowSearchDialog(false)}
+        aria-labelledby="source-lookup-dialog"
+        open={showSearchDialog === true}
+      >
+        <DialogContent>
+          <EmbeddedSearch
+            handleTableCellClick={(e) => handleSelectClick(e)}
+            modecheck="Source"
+            setBulkError={(e) => setBulkError(e)}
+            custom_title={title ? title : "Select a Source Entity"}
+            custom_subtitle={subtitle ? subtitle : null}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setShowSearchDialog(false)}
+            variant="contained"
+            color="primary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-    {/* Bulk Input Field Dialog */}
-    {renderBulkDialog()}
-    {/* Feedback Dialogs */}
-    {renderFeedbackDialog()}
-    <Box sx={{
-      position: "relative",
-      top: 0,
-      transitionProperty: "height",
-      transitionTimingFunction: "ease-in",
-      transitionDuration: "1s"
-    }}>
-      <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontWeight: "bold", fontSize: "1rem", display: "inline-block", marginRight: "10px" }}><TableChartIcon sx={{ marginRight: "2px", fontSize: "1.5em", "verticalAlign": "text-bottom" }} /> {tableTitle}</Typography>
-        <Typography variant="caption">{tableSubtitle}</Typography>
-      </Box>
-      <Box className="sourceShade" sx={{
-        opacity: sourceBulkStatus === "loading" ? 1 : 0,
-        backgroundColor: "#444a65",
-        background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
-        width: "100%",
-        height: "48px",
-        position: "absolute",
-        color: "white",
-        zIndex: 999,
-        padding: "10px",
-        boxSizing: "border-box",
-        borderRadius: "0.375rem",
-        transitionProperty: "opacity",
-        transitionTimingFunction: "ease-in",
-        transitionDuration: "0.5s"
-      }}>
-        <GridLoader size="2px" color="white" width="30px" /> Loading ...
-      </Box>
-
-      <Box className={"associationTableWrap"} id="bulkTableWrapper" >
-        <TableContainer
-          style={{ border: sourceTableError ? "2px solid red" : "" }}
+      {/* Bulk Input Field Dialog */}
+      {renderBulkDialog()}
+      {/* Feedback Dialogs */}
+      {renderFeedbackDialog()}
+      <Box
+        sx={{
+          position: "relative",
+          top: 0,
+          transitionProperty: "height",
+          transitionTimingFunction: "ease-in",
+          transitionDuration: "1s",
+        }}
+      >
+        <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
+          <Typography
+            sx={{
+              fontWeight: "bold",
+              fontSize: "1rem",
+              display: "inline-block",
+              marginRight: "10px",
+            }}
+          >
+            <TableChartIcon
+              sx={{
+                marginRight: "2px",
+                fontSize: "1.5em",
+                verticalAlign: "text-bottom",
+              }}
+            />{" "}
+            {tableTitle}
+          </Typography>
+          <Typography variant="caption">{tableSubtitle}</Typography>
+        </Box>
+        <Box
+          className="sourceShade"
           sx={{
-            maxHeight: "450px",
-            scrollbarColor: "#cbcbcb #444a65",
-            overflowY: "scroll",
-            background: "#444a65"
-          }}>
-          <Table
-            // sx={{ borderLeft: "12px solid #444a65" }}
-            stickyHeader
-            aria-label={{ dialogTitle }}
-            size="small"
-            className="bulk-table shortFooter table table-striped table-hover mb-0 associationTable HDT">
-            <TableHead className="thead-dark font-size-sm" sx={{
-              background: "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
-              color: "white",
-              padding: "2rem .0rem"
-            }}>
-              <TableRow className="">
-                <TableCell sx={{...darkHeadBG, width: "220px"}}> Source ID</TableCell>
-                <TableCell sx={darkHeadBG} component="th">Subtype</TableCell>
-                <TableCell component="th" sx={{...darkHeadBG, maxWidth: "200px" }}>Group Name</TableCell>
-                <TableCell component="th" sx={darkHeadBG}>Status</TableCell>
-                {permissions.has_write_priv && !readOnlyState && (
-                  <TableCell component="th" sx={darkHeadBG} align="right">
-                    Action
+            opacity: sourceBulkStatus === "loading" ? 1 : 0,
+            backgroundColor: "#444a65",
+            background:
+              "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
+            width: "100%",
+            height: "48px",
+            position: "absolute",
+            color: "white",
+            zIndex: 999,
+            padding: "10px",
+            boxSizing: "border-box",
+            borderRadius: "0.375rem",
+            transitionProperty: "opacity",
+            transitionTimingFunction: "ease-in",
+            transitionDuration: "0.5s",
+          }}
+        >
+          <GridLoader size="2px" color="white" width="30px" /> Loading ...
+        </Box>
+
+        <Box className={"associationTableWrap"} id="bulkTableWrapper">
+          <TableContainer
+            style={{ border: sourceTableError ? "2px solid red" : "" }}
+            sx={{
+              maxHeight: "450px",
+              scrollbarColor: "#cbcbcb #444a65",
+              overflowY: "scroll",
+              background: "#444a65",
+            }}
+          >
+            <Table
+              // sx={{ borderLeft: "12px solid #444a65" }}
+              stickyHeader
+              aria-label={{ dialogTitle }}
+              size="small"
+              className="bulk-table shortFooter table table-striped table-hover mb-0 associationTable HDT"
+            >
+              <TableHead
+                className="thead-dark font-size-sm"
+                sx={{
+                  background:
+                    "linear-gradient(180deg,  rgb(88, 94, 122) 0%,  rgb(68, 74, 101) 100%) ",
+                  color: "white",
+                  padding: "2rem .0rem",
+                }}
+              >
+                <TableRow className="">
+                  <TableCell sx={{ ...darkHeadBG, width: "220px" }}>
+                    {" "}
+                    Source ID
                   </TableCell>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody >
-              {(!sourcesData || sourcesData.length === 0) && (
-                <TableRow sx={{ borderBottom: "0px!important" }}>
-                  <TableCell colSpan={6} sx={{ textAlign: "center" }}>
-                    No Data Loaded
-                    {loadingState === true && (<> <br />Loading...</>)}
+                  <TableCell sx={darkHeadBG} component="th">
+                    Subtype
                   </TableCell>
-                </TableRow>
-              )}
-              {(sourceBulkStatus === "loading") && (
-                <TableRow sx={{ borderBottom: "0px!important" }}>
-                  <TableCell colSpan={6} sx={{ textAlign: "center" }}><GridLoader size="2px" color="#444a65" width="30px" />  </TableCell>
-                </TableRow>
-              )}
-              {sourcesData.map((row, index) => (
-                <TableRow
-                  key={row.hubmap_id + "" + index}
-                  className="row-selection">
-                  <TableCell className="clicky-cell" sx={{ width: "220px" }} scope="row">
-                    <Button
-                      sx={{
-                        height: "28px;",
-                        width: "175px;",
-                        margin: "2px 9px !important;",
-                      }}
-                      fullWidth
-                      variant="contained"
-                      className="m-2"
-                      onClick={(e) => handleOpenPage(e,row)}>
-                    {row.hubmap_id}
-                    </Button> 
+                  <TableCell
+                    component="th"
+                    sx={{ ...darkHeadBG, maxWidth: "200px" }}
+                  >
+                    Group Name
                   </TableCell>
-                  <TableCell className="clicky-cell" scope="row" sx={{ maxWidth: "210px" }}>
-                    {row.dataset_type ? row.dataset_type : row.display_subtype}
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: "250px" }} className="clicky-cell" scope="row">
-                    {row.group_name}
-                  </TableCell>
-                  <TableCell className="clicky-cell" scope="row">
-                    {row.status && (
-                      <span className={"w-100 badge " + getPublishStatusColor(row.status, row.uuid)}>
-                        {" "}{row.status}
-                      </span>
-                    )}
+                  <TableCell component="th" sx={darkHeadBG}>
+                    Status
                   </TableCell>
                   {permissions.has_write_priv && !readOnlyState && (
-                    <TableCell
-                      className="clicky-cell"
-                      align="right"
-                      name="source_delete"
-                      scope="row">
-                      <React.Fragment>
-                        <FontAwesomeIcon
-                          className="inline-icon interaction-icon "
-                          icon={faTrash}
-                          color="red"
-                          onClick={() => sourceRemover(row.uuid, row.hubmap_id)}
-                        />
-                      </React.Fragment>
+                    <TableCell component="th" sx={darkHeadBG} align="right">
+                      Action
                     </TableCell>
                   )}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
-      <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
-        <Typography sx={{ fontSize: "0.8rem", float: "left" }}>Total{(permissions.has_write_priv)? "Selected " : ""}: {sourcesData.length}
-          {(permissions.has_write_priv && totalRejected > 0) && (
-            <Tooltip arrow title={
-              <React.Fragment>
-                <Typography color="inherit">{totalRejected} Rejected</Typography>
-                {"Explore the Warning and Error details for more information"}
-              </React.Fragment>}>
-              &nbsp;| <Typography component="span" sx={{ fontSize: "0.8rem", textDecoration: "underline" }}>Total Rejected: {totalRejected}</Typography>
-            </Tooltip>
-          )}
-        </Typography>
-        {(permissions.has_write_priv) &&(
-          <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
-            <Tooltip arrow title={
-              <React.Fragment>
-                <Typography color="inherit">{totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}</Typography>
-                {"Click to view Details"}
-              </React.Fragment>
-            }>
-              <span
-                onClick={() => setShowBulkWarning(true)}
-                style={
-                  bulkWarning && bulkWarning.length > 0 ? {
-                    textDecoration: "underline #D3C52F",
-                    marginLeft: "10px",
-                    cursor: "pointer"
-                  } : { marginLeft: "10px" }
-                }>
-                <FontAwesomeIcon
-                  icon={faTriangleExclamation}
-                  color={bulkWarning && bulkWarning.length > 0 ? "#D3C52F " : "rgb(68, 74, 101)"} />
-                &nbsp;{totalWarnings}
-              </span>
-            </Tooltip>
-            &nbsp;
-            <Tooltip arrow title={
-              <React.Fragment>
-                <Typography color="inherit">{totalErrors} Error{bulkError.length > 1 ? "s" : ""}</Typography>
-                {"Click to view Details"}
-              </React.Fragment>}>
-              <span
-                onClick={() => setShowBulkError(true)}
-                style={
-                  bulkError && bulkError.length > 0 ? {
-                    textDecoration: "underline #ff3028",
-                    marginLeft: "15px",
-                    cursor: "pointer"
-                  } : { marginLeft: "10px" }}>
-                <FontAwesomeIcon
-                  sx={{ paddingLeft: "1.2em" }}
-                  icon={faCircleExclamation}
-                  color={bulkError && bulkError.length > 0 ? "red " : "rgb(68, 74, 101)"} />
-                &nbsp;{totalErrors}
-              </span>
-            </Tooltip>
+              </TableHead>
+              <TableBody>
+                {(!sourcesData || sourcesData.length === 0) && (
+                  <TableRow sx={{ borderBottom: "0px!important" }}>
+                    <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                      No Data Loaded
+                      {loadingState === true && (
+                        <>
+                          {" "}
+                          <br />
+                          Loading...
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {sourceBulkStatus === "loading" && (
+                  <TableRow sx={{ borderBottom: "0px!important" }}>
+                    <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                      <GridLoader
+                        size="2px"
+                        color="#444a65"
+                        width="30px"
+                      />{" "}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {sourcesData.map((row, index) => (
+                  <TableRow
+                    key={row.hubmap_id + "" + index}
+                    className="row-selection"
+                  >
+                    <TableCell
+                      className="clicky-cell"
+                      sx={{ width: "220px" }}
+                      scope="row"
+                    >
+                      <Button
+                        sx={{
+                          height: "28px;",
+                          width: "175px;",
+                          margin: "2px 9px !important;",
+                        }}
+                        fullWidth
+                        variant="contained"
+                        className="m-2"
+                        onClick={(e) => handleOpenPage(e, row)}
+                      >
+                        {row.hubmap_id}
+                      </Button>
+                    </TableCell>
+                    <TableCell
+                      className="clicky-cell"
+                      scope="row"
+                      sx={{ maxWidth: "210px" }}
+                    >
+                      {row.dataset_type
+                        ? row.dataset_type
+                        : row.display_subtype}
+                    </TableCell>
+                    <TableCell
+                      sx={{ maxWidth: "250px" }}
+                      className="clicky-cell"
+                      scope="row"
+                    >
+                      {row.group_name}
+                    </TableCell>
+                    <TableCell className="clicky-cell" scope="row">
+                      {row.status && (
+                        <span
+                          className={
+                            "w-100 badge " +
+                            getPublishStatusColor(row.status, row.uuid)
+                          }
+                        >
+                          {" "}
+                          {row.status}
+                        </span>
+                      )}
+                    </TableCell>
+                    {permissions.has_write_priv && !readOnlyState && (
+                      <TableCell
+                        className="clicky-cell"
+                        align="right"
+                        name="source_delete"
+                        scope="row"
+                      >
+                        <React.Fragment>
+                          <FontAwesomeIcon
+                            className="inline-icon interaction-icon "
+                            icon={faTrash}
+                            color="red"
+                            onClick={() =>
+                              sourceRemover(row.uuid, row.hubmap_id)
+                            }
+                          />
+                        </React.Fragment>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        <Box sx={{ color: "#444a65", display: "inline-block", width: "100%;" }}>
+          <Typography sx={{ fontSize: "0.8rem", float: "left" }}>
+            Total{permissions.has_write_priv ? "Selected " : ""}:{" "}
+            {sourcesData.length}
+            {permissions.has_write_priv && totalRejected > 0 && (
+              <Tooltip
+                arrow
+                title={
+                  <React.Fragment>
+                    <Typography color="inherit">
+                      {totalRejected} Rejected
+                    </Typography>
+                    {
+                      "Explore the Warning and Error details for more information"
+                    }
+                  </React.Fragment>
+                }
+              >
+                &nbsp;|{" "}
+                <Typography
+                  component="span"
+                  sx={{ fontSize: "0.8rem", textDecoration: "underline" }}
+                >
+                  Total Rejected: {totalRejected}
+                </Typography>
+              </Tooltip>
+            )}
           </Typography>
-        )}
-      </Box>
-    </Box>
-
-    <Box className="mt-0 mb-4" >
-      <Box className="mt-2" sx={{ display: "inline-flex", flexDirection: "row", width: "100%" }} >
-        <Box className="m-0 text-right" id="bulkButtons" sx={{ display: (!permissions.has_write_priv || readOnlyState) ? "none" : "inline-flex", flexDirection: "row" }} >
-          <Button
-            sx={{ maxHeight: "35px", verticalAlign: 'bottom', background: "#444a65!important" }}
-            variant="contained"
-            type="button"
-            size="small"
-            disabled={!permissions.has_write_priv}
-            className="btn btn-neutral"
-            onClick={() => setShowSearchDialog(true)}>
-            Add
-            <FontAwesomeIcon
-              className="fa button-icon m-2"
-              icon={faPlus} />
-          </Button>
-          <Button
-            sx={{ maxHeight: "35px", verticalAlign: 'bottom', color: "#444a65" }}
-            variant="text"
-            type='link'
-            disabled={!permissions.has_write_priv}
-            size="small"
-            className='mx-2'
-            onClick={(e) => handleInputUUIDs(e)}>
-            {!showHIDList && (<>Bulk</>)}
-            {showHIDList && (<>UPDATE</>)}
-            <FontAwesomeIcon className='fa button-icon m-2' icon={faPenToSquare} />
-          </Button>
+          {permissions.has_write_priv && (
+            <Typography sx={{ fontSize: "0.8rem", float: "right" }}>
+              <Tooltip
+                arrow
+                title={
+                  <React.Fragment>
+                    <Typography color="inherit">
+                      {totalWarnings} Warning{bulkWarning.length > 1 ? "s" : ""}
+                    </Typography>
+                    {"Click to view Details"}
+                  </React.Fragment>
+                }
+              >
+                <span
+                  onClick={() => setShowBulkWarning(true)}
+                  style={
+                    bulkWarning && bulkWarning.length > 0
+                      ? {
+                          textDecoration: "underline #D3C52F",
+                          marginLeft: "10px",
+                          cursor: "pointer",
+                        }
+                      : { marginLeft: "10px" }
+                  }
+                >
+                  <FontAwesomeIcon
+                    icon={faTriangleExclamation}
+                    color={
+                      bulkWarning && bulkWarning.length > 0
+                        ? "#D3C52F "
+                        : "rgb(68, 74, 101)"
+                    }
+                  />
+                  &nbsp;{totalWarnings}
+                </span>
+              </Tooltip>
+              &nbsp;
+              <Tooltip
+                arrow
+                title={
+                  <React.Fragment>
+                    <Typography color="inherit">
+                      {totalErrors} Error{bulkError.length > 1 ? "s" : ""}
+                    </Typography>
+                    {"Click to view Details"}
+                  </React.Fragment>
+                }
+              >
+                <span
+                  onClick={() => setShowBulkError(true)}
+                  style={
+                    bulkError && bulkError.length > 0
+                      ? {
+                          textDecoration: "underline #ff3028",
+                          marginLeft: "15px",
+                          cursor: "pointer",
+                        }
+                      : { marginLeft: "10px" }
+                  }
+                >
+                  <FontAwesomeIcon
+                    sx={{ paddingLeft: "1.2em" }}
+                    icon={faCircleExclamation}
+                    color={
+                      bulkError && bulkError.length > 0
+                        ? "red "
+                        : "rgb(68, 74, 101)"
+                    }
+                  />
+                  &nbsp;{totalErrors}
+                </span>
+              </Tooltip>
+            </Typography>
+          )}
         </Box>
       </Box>
-    </Box>
-  </>);
+
+      <Box className="mt-0 mb-4">
+        <Box
+          className="mt-2"
+          sx={{ display: "inline-flex", flexDirection: "row", width: "100%" }}
+        >
+          <Box
+            className="m-0 text-right"
+            id="bulkButtons"
+            sx={{
+              display:
+                !permissions.has_write_priv || readOnlyState
+                  ? "none"
+                  : "inline-flex",
+              flexDirection: "row",
+            }}
+          >
+            <Button
+              sx={{
+                maxHeight: "35px",
+                verticalAlign: "bottom",
+                background: "#444a65!important",
+              }}
+              variant="contained"
+              type="button"
+              size="small"
+              disabled={!permissions.has_write_priv}
+              className="btn btn-neutral"
+              onClick={() => setShowSearchDialog(true)}
+            >
+              Add
+              <FontAwesomeIcon className="fa button-icon m-2" icon={faPlus} />
+            </Button>
+            <Button
+              sx={{
+                maxHeight: "35px",
+                verticalAlign: "bottom",
+                color: "#444a65",
+              }}
+              variant="text"
+              type="link"
+              disabled={!permissions.has_write_priv}
+              size="small"
+              className="mx-2"
+              onClick={(e) => handleInputUUIDs(e)}
+            >
+              {!showHIDList && <>Bulk</>}
+              {showHIDList && <>UPDATE</>}
+              <FontAwesomeIcon
+                className="fa button-icon m-2"
+                icon={faPenToSquare}
+              />
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </>
+  );
 }

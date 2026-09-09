@@ -1,19 +1,19 @@
-import {useEffect,useState,useMemo} from "react";
-import { useLocation } from 'react-router';
-import {DataGrid} from "@mui/x-data-grid";
-import {SAMPLE_CATEGORIES} from "../constants";
+import { useEffect, useState, useMemo } from "react";
+import { useLocation } from "react-router";
+import { DataGrid } from "@mui/x-data-grid";
+import { SAMPLE_CATEGORIES } from "../constants";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
-import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import TextField from "@mui/material/TextField";
+import FormControl from "@mui/material/FormControl";
 import GridLoader from "react-spinners/GridLoader";
-import {CombinedEmbeddedEntityOptions} from "./ui/formParts";
-import {RenderError} from "../utils/errorAlert";
-import {toTitleCase} from "../utils/string_helper";
+import { CombinedEmbeddedEntityOptions } from "./ui/formParts";
+import { RenderError } from "../utils/errorAlert";
+import { toTitleCase } from "../utils/string_helper";
 import {
   COLUMN_DEF_DONOR,
   COLUMN_DEF_COLLECTION,
@@ -24,22 +24,19 @@ import {
   COLUMN_DEF_UPLOADS,
   COLUMN_DEF_MIXED,
 } from "./ui/tableBuilder";
-import {api_search2} from "../service/search_api";
+import { api_search2 } from "../service/search_api";
+import { logger } from "../utils/logger";
 
-export function EmbeddedSearch({  
+export function EmbeddedSearch({
   custom_title,
   custom_subtitle,
   searchFilters: initialSearchFilters,
   urlChange,
   modecheck,
   handleTableCellClick,
-}){
-  var [searchTitle] = useState(
-    custom_title ? 
-    custom_title : "Search" );
-  var [searchSubtitle] = useState(
-    custom_subtitle ? 
-    custom_subtitle : null);
+}) {
+  var [searchTitle] = useState(custom_title ? custom_title : "Search");
+  var [searchSubtitle] = useState(custom_subtitle ? custom_subtitle : null);
 
   // Restrictions / Filters (memoized)
   const location = useLocation();
@@ -48,35 +45,49 @@ export function EmbeddedSearch({
       const raw = localStorage.getItem("menuMap");
       return raw ? JSON.parse(raw) : {};
     } catch (e) {
-      console.debug('Invalid menuMap in localStorage', e);
+      logger.all.error({
+        message: "EmbeddedSearch.menuFilterMap Invalid menuMap in localStorage",
+        error_details: e,
+      });
       return {};
     }
   }, []);
 
   const currentForm = useMemo(() => {
-    const path = (location?.pathname || window.location.pathname) || '';
-    const segments = path.split('/').filter(Boolean);
-    if (!segments || segments.length === 0) return '';
-    const pick = (segments[0] && String(segments[0]).toLowerCase() === 'new') ? segments[segments.length - 1] : segments[0];
+    const path = location?.pathname || window.location.pathname || "";
+    const segments = path.split("/").filter(Boolean);
+    if (!segments || segments.length === 0) return "";
+    const pick =
+      segments[0] && String(segments[0]).toLowerCase() === "new"
+        ? segments[segments.length - 1]
+        : segments[0];
     try {
       return decodeURIComponent(String(pick)).toLowerCase();
     } catch {
       return String(pick).toLowerCase();
     }
   }, [location?.pathname]);
-    
-  const restrictions = useMemo(() => (menuFilterMap[currentForm] || {}), [menuFilterMap, currentForm]);
-  const whiteList = useMemo(() => (restrictions.whiteList || restrictions.whitelist || []), [restrictions]);
-  console.debug('%c◉ res/white ', 'color:#00ff7b', restrictions, whiteList);
+
+  const restrictions = useMemo(
+    () => menuFilterMap[currentForm] || {},
+    [menuFilterMap, currentForm],
+  );
+  const whiteList = useMemo(
+    () => restrictions.whiteList || restrictions.whitelist || [],
+    [restrictions],
+  );
+  logger.debug("%c◉ res/white ", "color:#008000", restrictions, whiteList);
 
   // TABLE & FILTER VALUES
-  var allGroups = localStorage.getItem("allGroups") ? JSON.parse(localStorage.getItem("allGroups")) : [];
+  var allGroups = localStorage.getItem("allGroups")
+    ? JSON.parse(localStorage.getItem("allGroups"))
+    : [];
   var [searchFilters, setSearchFilters] = useState(initialSearchFilters);
   var [formFilters, setFormFilters] = useState(
-    searchFilters ? 
-    searchFilters : {});
+    searchFilters ? searchFilters : {},
+  );
   var [page, setPage] = useState(0);
-  var [pageSize,setPageSize] = useState(100);
+  var [pageSize, setPageSize] = useState(100);
 
   // TABLE DATA
   var [results, setResults] = useState({
@@ -90,7 +101,14 @@ export function EmbeddedSearch({
   // ERROR THINGS
   var [error, setError] = useState();
   var [errorState, setErrorState] = useState();
-  const simpleColumns = ["Donor", "Dataset", "Publication", "Upload", "Collection","EPICollection"];
+  const simpleColumns = [
+    "Donor",
+    "Dataset",
+    "Publication",
+    "Upload",
+    "Collection",
+    "EPICollection",
+  ];
 
   const colDefDep = results ? results.colDef : null;
   const hiddenFields = useMemo(() => {
@@ -108,7 +126,11 @@ export function EmbeddedSearch({
     if (colDefDep && colDefDep !== COLUMN_DEF_MIXED) {
       hf.push("entity_type");
     }
-    if (colDefDep && colDefDep === COLUMN_DEF_MIXED && (!modecheck || modecheck !== "Source")) {
+    if (
+      colDefDep &&
+      colDefDep === COLUMN_DEF_MIXED &&
+      (!modecheck || modecheck !== "Source")
+    ) {
       hf.push("uuid");
     }
     return hf;
@@ -123,7 +145,10 @@ export function EmbeddedSearch({
   }, [hiddenFields]);
 
   const getTogglableColumns = useMemo(() => {
-    return (columns) => columns.filter((column) => !hiddenFields.includes(column.field)).map((column) => column.field);
+    return (columns) =>
+      columns
+        .filter((column) => !hiddenFields.includes(column.field))
+        .map((column) => column.field);
   }, [hiddenFields]);
 
   const csvOptions = useMemo(() => ({ fileName: "hubmap_ingest_export" }), []);
@@ -137,35 +162,58 @@ export function EmbeddedSearch({
       COLUMN_DEF_DATASET,
       COLUMN_DEF_UPLOADS,
       COLUMN_DEF_DONOR,
-      COLUMN_DEF_MIXED
+      COLUMN_DEF_MIXED,
     );
     const unique = [...new Set(fieldArray.map((item) => item.field))];
     return unique;
   }
 
   useEffect(() => {
-    var searchFilterParams = searchFilters ? searchFilters : { entity_type: "DonorSample" };
+    var searchFilterParams = searchFilters
+      ? searchFilters
+      : { entity_type: "DonorSample" };
     setTableLoading(true);
-    if (searchFilterParams?.entity_type && searchFilterParams?.entity_type !== "----") {
+    if (
+      searchFilterParams?.entity_type &&
+      searchFilterParams?.entity_type !== "----"
+    ) {
       let entityTypes = {
-        donor: "Donor" ,
+        donor: "Donor",
         sample: "Sample",
-        dataset: "Dataset", 
+        dataset: "Dataset",
         upload: "Data Upload",
         publication: "Publication",
         collection: "Collection",
         epicollection: "EPICollection",
-      }
-      if (entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        console.debug('%c◉ hasOwnProperty  searchFilterParams.entity_type', 'color:#00ff7b', searchFilterParams.entity_type);
-        searchFilterParams.entity_type = toTitleCase(searchFilterParams.entity_type);
-      } else if (SAMPLE_CATEGORIES.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())) {
-        console.debug('%c◉ has  SAMPLE_CATEGORIES', 'color:#00ff7b', );
-        searchFilterParams.sample_category = searchFilterParams.entity_type.toLowerCase();
+      };
+      if (
+        entityTypes.hasOwnProperty(searchFilterParams.entity_type.toLowerCase())
+      ) {
+        logger.debug(
+          "%c◉ hasOwnProperty  searchFilterParams.entity_type",
+          "color:#008000",
+          searchFilterParams.entity_type,
+        );
+        searchFilterParams.entity_type = toTitleCase(
+          searchFilterParams.entity_type,
+        );
+      } else if (
+        SAMPLE_CATEGORIES.hasOwnProperty(
+          searchFilterParams.entity_type.toLowerCase(),
+        )
+      ) {
+        logger.debug("%c◉ has  SAMPLE_CATEGORIES", "color:#008000");
+        searchFilterParams.sample_category =
+          searchFilterParams.entity_type.toLowerCase();
       } else {
-        if(searchFilters && searchFilters.entityType !=="DonorSample"){
-          console.debug('%c◉ searchFilters.entityType ', 'color:#00ff7b', searchFilters.entityType);
-          searchFilterParams.organ = searchFilterParams.entity_type.toUpperCase();
+        if (searchFilters && searchFilters.entityType !== "DonorSample") {
+          logger.debug(
+            "%c◉ searchFilters.entityType ",
+            "color:#008000",
+            searchFilters.entityType,
+          );
+          searchFilterParams.organ =
+            searchFilterParams.entity_type.toUpperCase();
         }
       }
     }
@@ -177,7 +225,8 @@ export function EmbeddedSearch({
       searchFilterParams.entity_type = toTitleCase(whiteList[0]);
       setFormFilters((prevValues) => ({
         ...prevValues,
-      entity_type: whiteList[0]}));
+        entity_type: whiteList[0],
+      }));
     }
 
     var fieldSearchSet = resultFieldSet();
@@ -186,68 +235,74 @@ export function EmbeddedSearch({
       page * pageSize,
       pageSize,
       fieldSearchSet,
-      "newTable"
+      "newTable",
     )
-    .then((response) => {
-      if(response.error){
-        console.debug('%c◉ Error on Search ', 'color:#C800FF', response.error);
-        setErrorState(true)
-        setError(response.error?.message || "Unable to reach Search API.")
-        setTableLoading(false);
-        return;
-      }
-      if (response.total > 0 && response.status === 200) {
-        let colDefs;
-        if(searchFilterParams.entity_type === "Epicollection"){
-          searchFilterParams.entity_type = "EPICollection";
+      .then((response) => {
+        if (response.error) {
+          logger.debug("%c◉ Error on Search ", "color:#C800FF", response.error);
+          setErrorState(true);
+          setError(response.error?.message || "Unable to reach Search API.");
+          setTableLoading(false);
+          return;
         }
-        if(simpleColumns.includes(searchFilterParams.entity_type) ){
-          console.debug('%c◉ HAS CORE TYPE ', 'color:#F6FF00', );
-          colDefs = columnDefType(searchFilterParams.entity_type);
-          console.debug('%c◉ colDefs ', 'color:#00ff7b', colDefs);
-        }else if(!searchFilterParams.entity_type || searchFilterParams.entity_type === undefined || searchFilterParams.entity_type === "---"){
-          colDefs = COLUMN_DEF_MIXED
-        }else{
-          colDefs = COLUMN_DEF_MIXED
-        }
-        setResults({
-          dataRows: response.results,
-          rowCount: response.total,
-          colDef: colDefs,
-        });
-        console.debug('%c◉ colDefs ', 'color:#71BAF9', colDefs);
-        setTableLoading(false);
-      } else if (response.total === 0) {
-        setResults({
-          dataRows: response.results,
-          rowCount: response.total,
-          colDef: COLUMN_DEF_MIXED,
-        });
-        setTableLoading(false);
-      } else {
-        var errStringMSG = "";
-        var errString =response.results.data.error.root_cause[0].type +" | " +response.results.data.error.root_cause[0].reason;
+        if (response.total > 0 && response.status === 200) {
+          let colDefs;
+          if (searchFilterParams.entity_type === "Epicollection") {
+            searchFilterParams.entity_type = "EPICollection";
+          }
+          if (simpleColumns.includes(searchFilterParams.entity_type)) {
+            logger.debug("%c◉ HAS CORE TYPE ", "color:#F6FF00");
+            colDefs = columnDefType(searchFilterParams.entity_type);
+            logger.debug("%c◉ colDefs ", "color:#008000", colDefs);
+          } else if (
+            !searchFilterParams.entity_type ||
+            searchFilterParams.entity_type === undefined ||
+            searchFilterParams.entity_type === "---"
+          ) {
+            colDefs = COLUMN_DEF_MIXED;
+          } else {
+            colDefs = COLUMN_DEF_MIXED;
+          }
+          setResults({
+            dataRows: response.results,
+            rowCount: response.total,
+            colDef: colDefs,
+          });
+          logger.debug("%c◉ colDefs ", "color:#71BAF9", colDefs);
+          setTableLoading(false);
+        } else if (response.total === 0) {
+          setResults({
+            dataRows: response.results,
+            rowCount: response.total,
+            colDef: COLUMN_DEF_MIXED,
+          });
+          setTableLoading(false);
+        } else {
+          var errStringMSG = "";
+          var errString =
+            response.results.data.error.root_cause[0].type +
+            " | " +
+            response.results.data.error.root_cause[0].reason;
           typeof errString.type === "string"
             ? (errStringMSG = "Error on Search")
             : (errStringMSG = errString);
-          setErrorState(true)
-          setError(errStringMSG)
+          setErrorState(true);
+          setError(errStringMSG);
           setTableLoading(false);
         }
-    })
-    .catch(() => {
-      setTableLoading(false);
-    });
-
+      })
+      .catch(() => {
+        setTableLoading(false);
+      });
   }, [page, pageSize, searchFilters, restrictions]);
 
   function handlePageChange(pageInfo) {
     setPage(pageInfo.page);
     setPageSize(pageInfo.pageSize);
   }
-  
+
   function columnDefType(et) {
-    console.debug('%c◉ columnDefType ', 'color:#9900FF', et );
+    logger.debug("%c◉ columnDefType ", "color:#9900FF", et);
     if (et === "Donor") {
       return COLUMN_DEF_DONOR;
     }
@@ -274,33 +329,40 @@ export function EmbeddedSearch({
 
   function handleInputChange(e) {
     // Values for filtering the table data are set here
-    const {name, value } = e.target;
-    console.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
+    const { name, value } = e.target;
+    logger.debug("%c⊙", "color:#FF7300", "HandleINputChange", name, value, e);
     switch (name) {
       case "group_uuid":
         if (value !== "All Components" && value !== "allcom") {
-          setFormFilters((prevValues) => ({...prevValues,
-            group_uuid: value,}));
+          setFormFilters((prevValues) => ({
+            ...prevValues,
+            group_uuid: value,
+          }));
         } else {
-          setFormFilters((prevValues) => ({...prevValues,
-            group_uuid: "",}));
+          setFormFilters((prevValues) => ({ ...prevValues, group_uuid: "" }));
         }
         break;
       case "entity_type":
-        console.debug('%c◉ Entity Time ', 'color:#00ff7b', value);
+        logger.debug("%c◉ Entity Time ", "color:#008000", value);
         if (value !== "---") {
-          console.debug('%c◉ Setting Entity Type from formFilters ', 'color:#00ff7b', );
-          setFormFilters((prevValues) => ({...prevValues,
-            entity_type: value}));
-          } else {
-            console.debug('%c◉ Clearing Entity Type from formFilters ', 'color:#00ff7b', );
-            setFormFilters((prevValues) => ({...prevValues,
-            entity_type: "",}));
+          logger.debug(
+            "%c◉ Setting Entity Type from formFilters ",
+            "color:#008000",
+          );
+          setFormFilters((prevValues) => ({
+            ...prevValues,
+            entity_type: value,
+          }));
+        } else {
+          logger.debug(
+            "%c◉ Clearing Entity Type from formFilters ",
+            "color:#008000",
+          );
+          setFormFilters((prevValues) => ({ ...prevValues, entity_type: "" }));
         }
-        break
+        break;
       case "keywords":
-        setFormFilters((prevValues) => ({...prevValues,
-          keywords: value,}));
+        setFormFilters((prevValues) => ({ ...prevValues, keywords: value }));
         break;
       default:
         break;
@@ -314,35 +376,37 @@ export function EmbeddedSearch({
       urlChange(typeText + "/" + params.row.uuid);
     }
   }
-  
+
   function handleClearFilter(e) {
-    if(e.ctrlKey || e.metaKey){
-        window.open("/newSearch",'_blank')
-    }else{
+    if (e.ctrlKey || e.metaKey) {
+      window.open("/newSearch", "_blank");
+    } else {
       setFormFilters({
         group_uuid: "",
         entity_type: "",
-        keywords: ""
-      })
+        keywords: "",
+      });
       setSearchFilters({
         group_uuid: "allcom",
         entity_type: "---",
-        keywords: ""
-      })
+        keywords: "",
+      });
     }
   }
-      
+
   function handleSearchClick(event) {
-    if(event){event.preventDefault()}
+    if (event) {
+      event.preventDefault();
+    }
     setTableLoading(true);
-    setPage(0)
+    setPage(0);
     var group_uuid = formFilters.group_uuid;
     var entityType;
-    if(formFilters.entity_type){
+    if (formFilters.entity_type) {
       entityType = formFilters.entity_type;
-    }else if(formFilters.organ){
+    } else if (formFilters.organ) {
       entityType = formFilters.organ;
-    }else if(formFilters.sample_category){
+    } else if (formFilters.sample_category) {
       entityType = formFilters.sample_category;
     }
     var keywords = formFilters.keywords;
@@ -350,7 +414,7 @@ export function EmbeddedSearch({
     if (entityType) {
       let colSet = entityType.toLowerCase();
       if (which_cols_def) {
-        console.debug('%c◉ colSet ', 'color:#9900FF', colSet);
+        logger.debug("%c◉ colSet ", "color:#9900FF", colSet);
         if (colSet === "donor") {
           which_cols_def = COLUMN_DEF_DONOR;
         } else if (colSet === "sample") {
@@ -364,34 +428,35 @@ export function EmbeddedSearch({
         } else if (colSet === "collection") {
           which_cols_def = COLUMN_DEF_COLLECTION;
         } else if (colSet === "epicollection") {
-          console.debug('%c◉ EPIC ', 'color:#D0FF00', );
+          logger.debug("%c◉ EPIC ", "color:#D0FF00");
           which_cols_def = COLUMN_DEF_EPICOLLECTION;
         }
       }
     }
-    console.debug('%c◉ which_cols_def ', 'color:#D0FF00', which_cols_def);
+    logger.debug("%c◉ which_cols_def ", "color:#D0FF00", which_cols_def);
 
     let params = {}; // Will become the searchFilters
     if (keywords) {
       params["keywords"] = keywords.trim();
-    } 
+    }
     if (group_uuid && group_uuid !== "All Components") {
       params["group_uuid"] = group_uuid;
-    } 
+    }
     if (entityType && entityType !== "----") {
       params["entity_type"] = entityType;
-    }   
-   setSearchFilters(params);
-  };
+    }
+    setSearchFilters(params);
+  }
 
   function renderView() {
     return (
-      <div style={{ width: "100%", textAlign: "center"}}>
+      <div style={{ width: "100%", textAlign: "center" }}>
         {/* {renderFilterControls()} */}
-        { renderFilterControls()}
+        {renderFilterControls()}
         {results.dataRows && results.dataRows.length > 0 && renderTable()}
         {results.dataRows && results.dataRows.length === 0 && !tableLoading && (
-          <div className="text-center">No record found.</div>)}
+          <div className="text-center">No record found.</div>
+        )}
       </div>
     );
   }
@@ -407,52 +472,58 @@ export function EmbeddedSearch({
     ];
 
     if (results.colDef !== COLUMN_DEF_MIXED) {
-      hiddenFields.push("entity_type",)
-    }    
-    if (results.colDef === COLUMN_DEF_MIXED && (
-      !modecheck || 
-      modecheck !== "Source")) {
-      hiddenFields.push("uuid",)
+      hiddenFields.push("entity_type");
+    }
+    if (
+      results.colDef === COLUMN_DEF_MIXED &&
+      (!modecheck || modecheck !== "Source")
+    ) {
+      hiddenFields.push("uuid");
     }
 
     // use memoized columnFilters and getTogglableColumns defined at component scope
-    console.debug('%c◉ results.colDef ', 'color:#9900FF', results.colDef);
+    logger.debug("%c◉ results.colDef ", "color:#9900FF", results.colDef);
 
     return (
-      <div style={{height: 590, width: "100%", position: "relative" }}>
-        <Box className="sourceShade" sx={{
-          opacity: tableLoading ? 1 : 0,
-          backgroundColor: "#444a65",
-          background: "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
-          width: "100%",
-          maxWidth: "1266px",
-          pointerEvents: "none",
-          height: "48px",
-          position: "absolute",
-          color: "white",
-          zIndex: 999,
-          padding: "10px",
-          boxSizing: "border-box",
-          borderRadius: "0.375rem",
-          transitionProperty: "opacity",
-          transitionTimingFunction: "ease-in",
-          transitionDuration: "0.5s"
-        }}>
+      <div style={{ height: 590, width: "100%", position: "relative" }}>
+        <Box
+          className="sourceShade"
+          sx={{
+            opacity: tableLoading ? 1 : 0,
+            backgroundColor: "#444a65",
+            background:
+              "linear-gradient(180deg, rgba(88, 94, 122, 1) 0%,  rgba(68, 74, 101, 1) 100%)",
+            width: "100%",
+            maxWidth: "1266px",
+            pointerEvents: "none",
+            height: "48px",
+            position: "absolute",
+            color: "white",
+            zIndex: 999,
+            padding: "10px",
+            boxSizing: "border-box",
+            borderRadius: "0.375rem",
+            transitionProperty: "opacity",
+            transitionTimingFunction: "ease-in",
+            transitionDuration: "0.5s",
+          }}
+        >
           <GridLoader size="2px" color="white" width="30px" /> Loading ...
         </Box>
         <DataGrid
           sx={{
-            '.MuiTablePagination-select': {
-              'background': '#eee',
+            ".MuiTablePagination-select": {
+              background: "#eee",
             },
-            '.MuiTablePagination-displayedRows': {
-              'marginTop': '1em',
-              'marginBottom': '1em'
+            ".MuiTablePagination-displayedRows": {
+              marginTop: "1em",
+              marginBottom: "1em",
             },
-            '.MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel': {
-              'marginTop': '1em',
-              'marginBottom': '1em'
-            }
+            ".MuiTablePagination-displayedRows, .MuiTablePagination-selectLabel":
+              {
+                marginTop: "1em",
+                marginBottom: "1em",
+              },
           }}
           id="SearchDataGrid"
           className="SearchGridWrap associationTable HDT"
@@ -463,8 +534,12 @@ export function EmbeddedSearch({
           hideFooterSelectedRowCount
           loading={tableLoading}
           onCellClick={
-            handleTableCellClick ? (event, params, details)=> 
-            handleTableCellClick(event, params, details) : (event, params, details) => handleTableCellClickDefault(event, params, details)} // this allows a props handler to override the local handler
+            handleTableCellClick
+              ? (event, params, details) =>
+                  handleTableCellClick(event, params, details)
+              : (event, params, details) =>
+                  handleTableCellClickDefault(event, params, details)
+          } // this allows a props handler to override the local handler
           onPaginationModelChange={(e) => handlePageChange(e)}
           pageSizeOptions={[10, 50, 100]}
           pagination
@@ -488,25 +563,34 @@ export function EmbeddedSearch({
   function renderPreamble() {
     return (
       <Box
-        sx={{flexDirection: "column",
+        sx={{
+          flexDirection: "column",
           justifyContent: "center",
-          marginBottom: 2,}}>
-        
-        <span className="portal-label text-center" style={{width: "100%", display: "inline-block"}}>{searchTitle} </span>
-          {!searchSubtitle &&(
-            <Typography align={"center"} variant="subtitle1" gutterBottom >
-              Use the filter controls to search for Donors, Samples, Datasets, Data Uploads, Publications, Collections, or EPICollections<br />
-              If you know a specific ID you can enter it into the keyword field to locate individual entities.
-            </Typography>
-          )}
-          {searchSubtitle &&(
-            <Typography align={"center"} variant="caption" gutterBottom>
-              {searchSubtitle} <br/>
-              If you know a specific ID you can enter it into the keyword field to locate individual entities.
-
-            </Typography>
-          )}
-          
+          marginBottom: 2,
+        }}
+      >
+        <span
+          className="portal-label text-center"
+          style={{ width: "100%", display: "inline-block" }}
+        >
+          {searchTitle}{" "}
+        </span>
+        {!searchSubtitle && (
+          <Typography align={"center"} variant="subtitle1" gutterBottom>
+            Use the filter controls to search for Donors, Samples, Datasets,
+            Data Uploads, Publications, Collections, or EPICollections
+            <br />
+            If you know a specific ID you can enter it into the keyword field to
+            locate individual entities.
+          </Typography>
+        )}
+        {searchSubtitle && (
+          <Typography align={"center"} variant="caption" gutterBottom>
+            {searchSubtitle} <br />
+            If you know a specific ID you can enter it into the keyword field to
+            locate individual entities.
+          </Typography>
+        )}
       </Box>
     );
   }
@@ -519,40 +603,54 @@ export function EmbeddedSearch({
         <form
           onSubmit={(e) => {
             handleSearchClick(e);
-          }}>
-        {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
+          }}
+        >
+          {/* <FormControl sx={{ m:1, minWidth:120 }}> */}
 
           <Grid
             container
             spacing={3}
-            sx={{display: "flex",justifyContent: "flex-start",textAlign: "left", marginBottom: "36px",}}>
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              textAlign: "left",
+              marginBottom: "36px",
+            }}
+          >
             <Grid size={6}>
-            <FormControl sx={{ width: "100%", marginTop: "26px", display: "block" }} >
-              <InputLabel htmlFor="group_uuid" id="group_label">Group</InputLabel>
-              <Select
-                native 
-                fullWidth
-                labelid="group_label"
-                id="group_uuid"
-                name="group_uuid"
-                label="Group"
-                value={formFilters.group_uuid?formFilters.group_uuid : ""}
-                onChange={(event) => handleInputChange(event)}>
-                <option value="allcom"></option>
-                {allGroups.map((group, index) => {
-                  return (
-                    <option key={index + 1} value={group.uuid}>
-                      {group.shortName}
-                    </option>
-                  );
-                })}
+              <FormControl
+                sx={{ width: "100%", marginTop: "26px", display: "block" }}
+              >
+                <InputLabel htmlFor="group_uuid" id="group_label">
+                  Group
+                </InputLabel>
+                <Select
+                  native
+                  fullWidth
+                  labelid="group_label"
+                  id="group_uuid"
+                  name="group_uuid"
+                  label="Group"
+                  value={formFilters.group_uuid ? formFilters.group_uuid : ""}
+                  onChange={(event) => handleInputChange(event)}
+                >
+                  <option value="allcom"></option>
+                  {allGroups.map((group, index) => {
+                    return (
+                      <option key={index + 1} value={group.uuid}>
+                        {group.shortName}
+                      </option>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Grid>
             <Grid size={6}>
-              <InputLabel htmlFor="entity_type" id="entity_type_label">Type</InputLabel>
+              <InputLabel htmlFor="entity_type" id="entity_type_label">
+                Type
+              </InputLabel>
               <Select
-                native 
+                native
                 fullWidth
                 labelid="entity_type_label"
                 name="entity_type"
@@ -560,22 +658,25 @@ export function EmbeddedSearch({
                 label="Type"
                 value={formFilters.entity_type}
                 onChange={(e) => handleInputChange(e)}
-                disabled={whiteList && whiteList.length > 0 ? true : false }>
+                disabled={whiteList && whiteList.length > 0 ? true : false}
+              >
                 <CombinedEmbeddedEntityOptions />
-                </Select>
+              </Select>
             </Grid>
             <Grid size={12}>
-            <InputLabel htmlFor="keywords" id="keywords_label">Keywords</InputLabel>
-            <TextField
-              labelid="keywords_label"
-              name="keywords"
-              id="keywords"
-              helperText="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-              // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
-              fullWidth
-              value={formFilters.keywords?formFilters.keywords : ""}
-              onChange={(e) => handleInputChange(e)}/>
-              
+              <InputLabel htmlFor="keywords" id="keywords_label">
+                Keywords
+              </InputLabel>
+              <TextField
+                labelid="keywords_label"
+                name="keywords"
+                id="keywords"
+                helperText="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                // placeholder="Enter a keyword or HuBMAP/Submission/Lab ID;  For wildcard searches use *  e.g., VAN004*"
+                fullWidth
+                value={formFilters.keywords ? formFilters.keywords : ""}
+                onChange={(e) => handleInputChange(e)}
+              />
             </Grid>
             <Grid size={2}></Grid>
             <Grid size={4}>
@@ -584,7 +685,8 @@ export function EmbeddedSearch({
                 color="primary"
                 variant="contained"
                 size="large"
-                onClick={(e) => handleSearchClick(e)}>
+                onClick={(e) => handleSearchClick(e)}
+              >
                 Search
               </Button>
             </Grid>
@@ -595,7 +697,8 @@ export function EmbeddedSearch({
                 color="primary"
                 size="large"
                 sx={{ border: "1px solid #aaa" }}
-                onClick={(e) => handleClearFilter(e)}>
+                onClick={(e) => handleClearFilter(e)}
+              >
                 Clear
               </Button>
             </Grid>
@@ -610,5 +713,4 @@ export function EmbeddedSearch({
   }
 
   return renderView();
-
-};
+}

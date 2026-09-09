@@ -1,5 +1,6 @@
 
 import axios from "axios";
+import { logger } from "../utils/logger";
 
 export function gatewayServiceHealth(data = {}) {
   const connectionHealth = (value) => {
@@ -26,10 +27,11 @@ export function gateway_api_status() {
   return axios
     .get(`https://gateway.api.hubmapconsortium.org/status.json`)
       .then(res => {
-        console.debug("gateway_api_status RES", res.status, res.data);
+        logger.debug("gateway_api_status RES", res.status, res.data);
         return {status: res.status, results: gatewayServiceHealth(res.data)};
       })
       .catch(error => {
+        logger.all.error({message: 'gateway_api_status', error_details: error})
         return {status: error.response ? error.response.status : 500, results: null}
       });
 }

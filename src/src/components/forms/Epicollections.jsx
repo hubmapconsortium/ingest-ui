@@ -18,6 +18,7 @@ import {ingest_api_publish_collection,ingest_api_allowable_edit_states } from ".
 import { validateRequired } from "../../utils/validators";
 import { DOI_COLLECTION_ACTIONS, getDoiCollectionActions } from "../formActionRules/doiCollectionActionRules";
 import NotFound from "../404";
+import { logger } from "../../utils/logger";
 
 export const EPICollectionForm = (props) => {
   const navigate = useNavigate();
@@ -198,12 +199,11 @@ export const EPICollectionForm = (props) => {
           ...(deliniatedContacts.contacts ? {contacts: deliniatedContacts.contacts} : {}),
           ...(deliniatedContacts.contributors ? {contributors: deliniatedContacts.contributors} : {}),
         }
-        console.debug('%c◉ updateForm ', 'color:#00ff7b', updateForm);
         entity_api_update_entity(entityData.hubmap_id, JSON.stringify(updateForm))
           .then((response) => {
             setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
             if (response.status < 300) {
-            console.debug('%c◉ response.results ', 'color:#00ff7b', response.results);
+              logger.all.warn({message: 'EPICollectionForm.handleSubmit.entity_api_update_entity', error_details: response.results})
               let respMessage = response.results.message.replace(/\b[0-9a-f]{32}\b/i, entityData.hubmap_id);
               const out = {
                 message:respMessage
@@ -232,7 +232,6 @@ export const EPICollectionForm = (props) => {
         if (selectedGroup?.value) {
           newForm = { ...newForm, group_uuid: selectedGroup.value };
         }
-        console.debug('%c◉ newForm','color:#E7EEFF;background: #9359FF;padding:200', newForm);
         entity_api_create_entity("epicollection", JSON.stringify(newForm))
           .then((response) => {
             setLoading(prevVals => ({ ...prevVals, button: { ...prevVals.button, save: false } }));
