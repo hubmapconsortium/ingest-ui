@@ -115,7 +115,7 @@ export function getSampleGenerationError(error) {
 export const RenderError = (props) => {
   var [errorMSG, setErrorMSG] = useState(true);
   useEffect(() => {
-    logger.all.error({message: 'RenderError', error_details: props.errorMSG});
+    logger.all.error({message: 'RenderError', error_details: `${props.errorMSG} ${props.error}`});
     setErrorMSG(props.error);
   }, [props.error, props.errorMSG]);
 
