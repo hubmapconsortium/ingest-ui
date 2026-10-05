@@ -14,7 +14,7 @@
     "@mui/material": "^9.2.0",
     "@mui/x-data-grid": "^9.10.1",
     "@mui/x-date-pickers": "^9.10.1",
-    "axios": "^1.18.1",
+    "axios": "^1.20.0",
     "bootstrap": "^5.2.0-beta1",
     "dayjs": "^1.11.21",
     "dompurify": "^3.4.12",
