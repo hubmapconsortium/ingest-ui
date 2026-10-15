@@ -317,7 +317,6 @@ export const COLUMN_DEF_MIXED = [
     flex: 1,
     minWidth: 150,
     //description: "This column has a value getter and is not sortable.",
-    sortable: false,
     valueGetter: getLabId,
     renderCell: params => {
       if (!params.row['lab_donor_id'] && !params.row['lab_tissue_sample_id'] && !params.row['lab_dataset_id']) {
@@ -345,7 +344,6 @@ export const COLUMN_DEF_MIXED = [
     headerName: "Type",
     flex: 1,
     minWidth: 150,
-    sortable: false,
     valueGetter: getTypeValue,
     renderCell: params => {
       let typeVal = getTypeValue(params)
@@ -372,7 +370,6 @@ export const COLUMN_DEF_MIXED = [
     flex: 1,
     minWidth: 150,
     headerName: "Status / Access Level",
-    sortable: false,
     valueGetter: getStatusAccess,
     renderCell: renderStatusAccess
   }, 
