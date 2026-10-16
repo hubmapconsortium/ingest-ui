@@ -335,7 +335,7 @@ export function Search({
 
       setFormFilters(newForm);
       // trigger the search effect by setting the searchFiltersState
-      setSearchFiltersState(paramsObj);
+      setSearchFiltersState({...paramsObj, sort_field: getElasticSearchSortFields(paramsObj.sort_field)});
       setHasSearched(true);
       // record that these filters were just applied so we can detect changes
       lastAppliedFiltersRef.current = paramsObj;
@@ -501,6 +501,19 @@ export function Search({
     ? { flex: "1 1 0", minWidth: 0, display: "flex" }
     : { flex: "0 0 auto", display: "flex" };
 
+  function getElasticSearchSortFields(field) {
+    if (field === 'type') {
+      return ['display_subtype.keyword', 'organ.keyword', 'entity_type.keyword']
+    } 
+    if (field === 'computed_lab_id_type') {
+      return ['lab_donor_id.keyword', 'lab_tissue_sample_id.keyword', 'lab_dataset_id.keyword']
+    }
+    if (field === 'statusAccess') {
+      return ['data_access_level.keyword', 'status.keyword']
+    }
+
+    return field;
+  }
   function applySort(nextField, nextDir, showColumnSort = true) {
     setSortField(nextField);
     setSortDir(nextDir);
@@ -517,7 +530,7 @@ export function Search({
     setPage(0);
     setSearchFiltersState((prev) => ({
       ...(prev || {}),
-      sort_field: nextField,
+      sort_field: getElasticSearchSortFields(nextField),
       sort_dir: nextDir,
     }));
   }

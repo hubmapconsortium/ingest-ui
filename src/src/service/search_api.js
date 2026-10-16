@@ -93,7 +93,7 @@ export function api_search(params) {
 }
 
 export function api_search2(params, from, size, fields, searchMode) {
-  if (params.sort_field && params.sort_field.indexOf(".keyword") === -1) {
+  if ( params.sort_field && !Array.isArray(params.sort_field) && params.sort_field.indexOf(".keyword") === -1) {
     params.sort_field = `${params.sort_field}.keyword`;
   }
   let payload = search_api_filter_es_query_builder(
@@ -336,6 +336,15 @@ export function search_api_filter_es_query_builder(
       ? fields["sort_dir"]
       : "asc";
 
+  let sortFields = Array.isArray(sortField) ? sortField : sortField.split(',')
+  let sortPart = esb.sort(sortFields[0], sortDir);
+  let sortMethod = "sort";
+
+  if (sortFields.length > 1) {
+    sortPart = sortFields.map((field) => esb.sort(field, sortDir));
+    
+    sortMethod = "sorts";
+  }
   if (
     fields["keywords"] &&
     fields["keywords"].indexOf("HBM") > -1 &&
@@ -345,7 +354,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(1)
-      .sort(esb.sort(sortField, sortDir))
+      [sortMethod](sortPart)
       .source(colFields)
       .trackTotalHits(true);
   } else {
@@ -353,7 +362,7 @@ export function search_api_filter_es_query_builder(
       .query(boolQuery)
       .from(from)
       .size(size)
-      .sort(esb.sort(sortField, sortDir))
+      [sortMethod](sortPart)
       .source(colFields)
       .trackTotalHits(true);
   }
