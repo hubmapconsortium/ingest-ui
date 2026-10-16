@@ -7,6 +7,8 @@ on:
     branches: [ "main", "dev-integrate" ]
   pull_request:
     branches: [ "main", "dev-integrate" ]
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
